@@ -54,3 +54,7 @@ Lưu ý: bước gộp chữ lặp biến "too" thành "to" và "xoong" thành "
 |---|---|
 | Bỏ sót biến thể từ tục | Chủ kênh tự bổ sung từ qua FR-09 |
 | Khớp nhầm câu bình thường | Có test chống khớp nhầm (TC-03.7) |
+## Bổ sung v2
+- `export function detectIntent(text, lists) // -> string | null`. Quét các khóa của `lists.intents`, chọn khóa có vị trí xuất hiện nhỏ nhất trong `' ' + fold(text) + ' '`.
+- `isTrigger` trả true nếu khớp `triggers` **hoặc** `detectIntent` khác null.
+- `loadLists` đọc thêm `intents.json` và `couplets.json`. `saveLists` ghi cả 4 file.

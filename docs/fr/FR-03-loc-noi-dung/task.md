@@ -24,3 +24,7 @@
 - [ ] Thêm test TC-03.14 (sửa lúc chạy) và TC-03.15 (save atomically: ghi xong file tạm rồi mới rename).
 - [ ] Viết `server/lists.js`. Chạy, thấy PASS.
 - [ ] Commit `feat(fr03): content filter and lists`.
+## T03.6 (v2) Lời cầu và câu đối
+- [ ] Thêm test TC-03.17 đến TC-03.19.
+- [ ] Viết `detectIntent`. Sửa `isTrigger`. Tạo `intents.json` và `couplets.json`. Sửa `loadLists` và `saveLists`.
+- [ ] Chạy test, thấy PASS. Commit.

@@ -15,9 +15,9 @@ Chữ hiện lên stream gồm tên người xem và bong bóng lời nguyện, 
 ## 3. Quy tắc nghiệp vụ
 | Mã | Quy tắc |
 |---|---|
-| BR-03.1 | **Fold** (chuẩn hóa để so khớp), theo thứ tự: NFC → chữ thường → bỏ dấu (đ→d) → bỏ ký tự vô hình (zero-width, control) → gộp chữ lặp liên tiếp (`moooo`→`mo`) → nối các chữ cái đơn bị tách bằng `.`, `_`, `-` hoặc khoảng trắng (`v.c.l`→`vcl`, `n a m`→`nam`) → gộp khoảng trắng. |
+| BR-03.1 | **Fold** (chuẩn hóa để so khớp), theo thứ tự: NFC → chữ thường → bỏ dấu (đ→d) → bỏ ký tự vô hình (zero-width, control) → gộp chữ lặp liên tiếp (`moooo`→`mo`) → nối các chữ cái đơn bị tách, làm hai lượt: trước bằng `.`, `_`, `-` (`v.c.l`→`vcl`, `n.a.m m.o`→`nam mo`), sau bằng khoảng trắng (`n a m`→`nam`) → gộp khoảng trắng. |
 | BR-03.2 | **Câu kích hoạt mặc định:** `nam mo`, `namo`, `a di da phat`, `adida`, `adidaphat`, `quan the am`, `mo phat`. Một câu khớp khi fold của nó xuất hiện trong fold của comment, có ranh giới từ ở hai đầu. |
-| BR-03.3 | **Từ cấm** lấy từ `server/data/badwords.json` (đã fold sẵn). So khớp theo **nguyên token hoặc chuỗi token** trên văn bản đã fold, có ranh giới từ. Không bỏ khoảng trắng khi so, để "ad mình" không khớp nhầm với "dm". |
+| BR-03.3 | **Từ cấm** lấy từ `server/data/badwords.json`. *(Chốt 31/10)* Từ cấm so trên văn bản fold **giữ dấu** (bỏ bước bỏ dấu), để `cặc` không trùng `các`. Danh sách nguồn đã bỏ các từ không dấu trùng từ thường (`cac`, `bo me`, `sang`, `di`, `ngu`, `buoi`, cụm `<x> lon`…). Chấp nhận lọt vài từ tục gõ không dấu. So khớp theo **nguyên token hoặc chuỗi token** trên văn bản đã fold, có ranh giới từ. Không bỏ khoảng trắng khi so, để "ad mình" không khớp nhầm với "dm". |
 | BR-03.4 | **Bong bóng** bị loại (trả `null`) khi: có từ cấm; có URL (dạng `xxx.com`, `.vn`, `.net`, `.org`, `.me`, `.io`, `.xyz`, `http://`, `https://`); có số điện thoại (≥ 8 chữ số, kể cả khi bị ngăn cách bằng khoảng trắng hoặc dấu chấm); có `@mention`; hoặc rỗng sau khi làm sạch. |
 | BR-03.5 | **Bong bóng hợp lệ:** NFC, bỏ ký tự vô hình, gộp khoảng trắng, cắt còn **40 code point**. Giữ nguyên dấu tiếng Việt để hiển thị. Emoji giữ lại trong bong bóng. |
 | BR-03.6 | **Tên:** NFC, bỏ emoji (`\p{Extended_Pictographic}`), bỏ ký tự vô hình, gộp khoảng trắng, cắt còn **16 code point** rồi trim. Nếu rỗng hoặc chứa từ cấm thì dùng `Phật tử`. |
@@ -39,4 +39,13 @@ Mỗi comment xử lý dưới 0,2 ms với danh sách 2.000 từ cấm. Dùng `
 Lọc theo ngữ cảnh bằng AI để V2. Danh sách từ cấm chỉ dựa trên nguồn mở.
 
 ## 7. Câu hỏi mở
-- **Q-03.1** Danh sách từ cấm khởi tạo từ `vietnamese-offensive-words`, sau đó chủ kênh bổ sung. **Mặc định: làm như vậy.**
+- **Q-03.1** Danh sách từ cấm khởi tạo từ `vietnamese-offensive-words`, sau đó chủ kênh bổ sung. **Đã chốt 31/10.** Nguồn: `blue-eyes-vn/vietnamese-offensive-words`, license MIT.
+## Bổ sung v2 (31/10, D-09): lời cầu
+| Mã | Quy tắc |
+|---|---|
+| BR-03.9 | **Nhận diện lời cầu.** `lists.intents` mặc định gồm: `binh an → Cầu Bình An`, `tai loc → Cầu Tài Lộc`, `suc khoe → Cầu Sức Khỏe`, `tinh duyen → Cầu Tình Duyên`, `gia dao → Cầu Gia Đạo`, `hoc hanh → Cầu Học Hành`, `cong danh → Cầu Công Danh`. Có hoặc không có chữ "cầu" đứng trước đều khớp. So khớp trên văn bản đã fold, có ranh giới từ. Nếu khớp nhiều lời cầu thì lấy lời cầu **xuất hiện đầu tiên** trong comment. |
+| BR-03.10 | **Lời cầu cũng là câu kích hoạt.** Comment có lời cầu được tính như comment có câu niệm, kể cả khi không có "nam mô". Ví dụ: "cầu sức khỏe cho mẹ". |
+| BR-03.11 | **Danh sách câu đối** `lists.couplets` mặc định là 5 cặp đã ghi ở research/09. Mỗi vế dài tối đa 26 ký tự *(nâng từ 24, vì 2 vế ghi từ live mẫu dài 25 và 26)*. Lưu trong `server/data/couplets.json`. |
+
+- **AC-03.7** "Cầu tài lộc nam mô" → `'Cầu Tài Lộc'`. "nam mô" → `null` (FR-04 sẽ dùng mặc định Bình An). "binh an va suc khoe" → `'Cầu Bình An'`.
+- **AC-03.8** `isTrigger('cầu sức khỏe cho mẹ')` trả `true`.
