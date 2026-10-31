@@ -15,3 +15,10 @@
 |---|---|---|---|---|
 | 1 | | | | |
 | 8 | | | | |
+## Kết quả đã chạy (31/10/2026, máy dev)
+| ID | Kết quả |
+|---|---|
+| TC-08.1 | Pass (`test/prune.test.js`) |
+| TC-08.3 | Pass một phần. Kill PID node của `run.cmd --mock`: server lên lại sau **2,1 s**, `logs/restarts.log` có dòng `server thoat (ma -1)`, tab Chrome đang mở tự nối lại. Chưa thử với Link Source. |
+| TC-08.2 | Mới smoke 7 s (`SOAK_EVERY_MS=2000`): CSV ghi đúng, RSS khoảng 60 MB. Chưa chạy 8 giờ. |
+| TC-08.4–08.7 | Chưa làm, cần LIVE Studio và tài khoản phụ. |
