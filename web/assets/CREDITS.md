@@ -6,7 +6,8 @@ Mỗi file trong `web/assets/` phải có một dòng ở đây: nguồn, tác g
 
 | Asset | Nguồn | Tác giả | License | Ghi chú |
 |---|---|---|---|---|
-| Chánh điện, cột, bàn thờ, đèn lồng, bồ đoàn, thảm | Dựng bằng code (`web/scene/hall.js`) | Team | Tự làm | Không có file |
+| Chánh điện, cột, bàn thờ, hốc vòm, hoành phi, đèn lồng, nến, lư hương, bồ đoàn, thảm, vân gỗ, sơn mài | Dựng và vẽ bằng code (`web/scene/hall.js`) | Team | Tự làm | Không có file |
+| Phản chiếu vàng và sơn mài | `RoomEnvironment` của three.js (sinh lúc chạy) | three.js authors | MIT | Không có file |
 | Tượng Phật tạm | Dựng bằng code (`LatheGeometry`) | Team | Tự làm | Bị thay khi có `models/buddha.glb` |
 | Nhân vật tạm (áo tràng lam) | Dựng bằng code (`web/scene/actors.js`) | Team | Tự làm | Bị thay khi có `models/layman_{0..3}.vrm` |
 | Sprite hoa, sen, khói, hào quang, đèn | Vẽ bằng `CanvasTexture` lúc chạy | Team | Tự làm | Không có file |
