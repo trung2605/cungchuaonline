@@ -25,4 +25,5 @@
 |---|---|---|---|---|---|
 | TC-03.17 | Unit | Nhận diện lời cầu | 'Cầu tài lộc nam mô'; 'nam mô'; 'binh an va suc khoe' | 'Cầu Tài Lộc'; null; 'Cầu Bình An' | AC-03.7 |
 | TC-03.18 | Unit | Lời cầu là câu kích hoạt | 'cầu sức khỏe cho mẹ' | `isTrigger === true` | AC-03.8 |
-| TC-03.19 | Unit | Load câu đối | `loadLists()` | Có 5 cặp, mỗi vế ≤ 24 ký tự | BR-03.11 |
+| TC-03.19 | Unit | Load câu đối | `loadLists()` | Có 5 cặp, mỗi vế ≤ 26 ký tự | BR-03.11 |
+| TC-03.20 | Unit | Danh sách thật không chặn nhầm | 'Nam mô, cầu cho bố mẹ bình an'; 'chuc cac ban buoi sang binh an'; 'con đi ngủ đây'; 'tuổi lớn rồi'… | Giữ nguyên. 'đồ cặc', 'địt mẹ', 'clgt' → `null` | BR-03.3 |

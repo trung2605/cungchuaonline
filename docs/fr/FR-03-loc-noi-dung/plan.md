@@ -29,7 +29,8 @@ s.normalize('NFC').toLowerCase()
  .normalize('NFD').replace(/\p{M}/gu, '').replace(/đ/g, 'd')
  .replace(/[\u200B-\u200D\uFEFF\p{Cc}]/gu, '')
  .replace(/(\p{L})\1+/gu, '$1')
- .replace(/\b(\p{L})(?:[._\-\s](\p{L})\b)+/gu, m => m.replace(/[._\-\s]/g, ''))  // nối chữ đơn bị tách
+ .replace(/(?<!\p{L})\p{L}(?:[._\-]\p{L}(?!\p{L}))+/gu, m => m.replace(/[._\-]/g, ''))  // nối chữ đơn tách bằng ._-
+ .replace(/(?<!\p{L})\p{L}(?: \p{L}(?!\p{L}))+/gu, m => m.replace(/ /g, ''))          // rồi tách bằng khoảng trắng
  .replace(/\s+/g, ' ').trim()
 
 // matchesAny: so khớp có ranh giới từ
@@ -42,7 +43,8 @@ Lưu ý: bước gộp chữ lặp biến "too" thành "to" và "xoong" thành "
 - **Code point, không phải UTF-16:** cắt độ dài bằng `Array.from(s).slice(0, n).join('')` để không làm vỡ ký tự.
 - **Regex số điện thoại:** `/(?:\d[\s.\-]?){8,}/`.
 - **Regex mention:** `/(^|\s)@\w/`.
-- **Nguồn từ cấm:** dự án `vietnamese-offensive-words` trên GitHub. License chưa rõ, nên chỉ chép danh sách từ (dữ liệu) và ghi nguồn trong `server/data/README.md`.
+- **Nguồn từ cấm:** dự án `vietnamese-offensive-words` trên GitHub. License MIT. Ghi nguồn và commit trong `server/data/README.md`.
+- **Fold giữ dấu cho từ cấm:** `fold(s, {keepMarks:true})`. Câu kích hoạt và lời cầu vẫn fold bỏ dấu. Phrase được fold qua memo `Map`, nên sửa list lúc chạy có hiệu lực ngay mà không fold lại mỗi lần.
 
 ## Phụ thuộc
 - Không phụ thuộc FR nào.
