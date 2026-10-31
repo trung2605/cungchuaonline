@@ -4,6 +4,8 @@ import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
+import { VignetteShader } from 'three/addons/shaders/VignetteShader.js';
 import { createWorld, applyMsg, stepWorld } from './scene/reducer.js';
 import { buildHall } from './scene/hall.js';
 import { createActors } from './scene/actors.js';
@@ -26,7 +28,9 @@ const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('c'),
 renderer.setPixelRatio(1);
 renderer.setSize(W, H, false);
 renderer.shadowMap.enabled = !low;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.15;
 const labels = new CSS2DRenderer({ element: document.getElementById('labels') });
 labels.setSize(W, H);
 
@@ -37,10 +41,17 @@ const CAM = new THREE.Vector3(0, 12, 21), LOOK = new THREE.Vector3(0, 1.2, -4);
 
 const composer = new EffectComposer(renderer);
 composer.addPass(new RenderPass(scene, camera));
-if (params.get('bloom') !== '0') composer.addPass(new UnrealBloomPass(new THREE.Vector2(W, H), 0.6, 0.4, 0.85));
+// Bloom only on flames and lanterns: high threshold so gilt highlights stay crisp.
+if (params.get('bloom') !== '0') composer.addPass(new UnrealBloomPass(new THREE.Vector2(W / 2, H / 2), 0.55, 0.5, 0.9));
+// Candlelit interiors fall off toward the frame edge; the vignette keeps the eye on the altar.
+const vignette = new ShaderPass(VignetteShader);
+// darkness mixes toward (1 - darkness): above 1 that color goes negative and tints the edges cyan.
+vignette.uniforms.offset.value = 1.1;
+vignette.uniforms.darkness.value = 1;
+composer.addPass(vignette);
 composer.addPass(new OutputPass());
 
-const hall = buildHall(scene, { low });
+const hall = buildHall(scene, { low, renderer });
 const actors = await createActors(scene);
 const fx = createFx(scene, { low, smokeOrigin: hall.smokeOrigin });
 const audio = createAudio();

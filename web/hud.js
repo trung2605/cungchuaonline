@@ -56,7 +56,14 @@ export function createHud() {
     handle(msg) {
       switch (msg.t) {
         case 'counter':
-          if (msg.key === 'namo') $('#namo span').textContent = msg.value.toLocaleString('vi-VN');
+          if (msg.key === 'namo') {
+            $('#namo span').textContent = msg.value.toLocaleString('vi-VN');
+            // Restart the bump: drop the class, force a reflow, add it back.
+            const el = $('#namo');
+            el.classList.remove('bump');
+            void el.offsetWidth;
+            el.classList.add('bump');
+          }
           break;
         case 'banner': {
           const el = $('#banner');

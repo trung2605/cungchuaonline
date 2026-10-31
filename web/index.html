@@ -23,38 +23,69 @@
   #labels { pointer-events: none; z-index: 0; }
   #stage > :not(#c):not(#labels) { z-index: 1; }
   /* HUD stays inside the 12%-70% band or on the right edge, never in the 300x300 top-left camera (FR-08). */
-  .pill { background: rgba(40, 14, 4, .85); border: 1px solid rgba(255, 200, 90, .45); border-radius: 14px; }
-  #namo { right: 24px; top: 240px; padding: 10px 18px; font-size: 30px; font-weight: 700; color: #ffd66b; }
-  #banner { left: 50%; top: 240px; transform: translateX(-50%); max-width: 520px; padding: 10px 22px; font-size: 28px;
-    text-align: center; transition: opacity .4s; opacity: 0; }
-  #banner.on { opacity: 1; }
-  .couplet { top: 330px; width: 64px; padding: 18px 0; background: linear-gradient(#a3120f, #7a0c0a);
-    border: 3px solid #d9a441; border-radius: 6px; color: #ffd66b; font-size: 30px; font-weight: 700; line-height: 1.25;
-    text-align: center; transition: opacity .8s; }
-  #couplet-l { left: 190px; } #couplet-r { right: 190px; }
+  /* Lacquer + gilt, matched to the hall. Motion: one ease, entries slower than exits. */
+  :root {
+    --gilt: #e2b866; --gilt-line: rgba(226, 184, 102, .55); --ink: #fff1dc;
+    --ease-out: cubic-bezier(.22, 1, .36, 1); --in: 520ms; --out: 260ms;
+  }
+  .pill {
+    background: linear-gradient(180deg, rgba(52, 16, 8, .92), rgba(23, 5, 3, .92));
+    border: 1px solid var(--gilt-line); border-radius: 12px;
+    box-shadow: inset 0 1px 0 rgba(255, 222, 150, .18), 0 8px 22px rgba(0, 0, 0, .5);
+  }
+  #namo { right: 24px; top: 240px; padding: 10px 18px; font-size: 30px; font-weight: 700; color: var(--gilt);
+    font-variant-numeric: tabular-nums; }
+  #namo span { display: inline-block; }
+  #namo.bump span { animation: bump 600ms var(--ease-out); }
+  @keyframes bump { 30% { transform: scale(1.12); color: #fff2c4; } }
+  #banner { left: 50%; top: 240px; translate: -50% 0; max-width: 520px; padding: 10px 22px; font-size: 28px; color: var(--ink);
+    text-align: center; opacity: 0; transform: translateY(-10px) scale(.98);
+    transition: opacity var(--out) ease-in, transform var(--out) ease-in; }
+  #banner.on { opacity: 1; transform: none; transition: opacity var(--in) var(--ease-out), transform var(--in) var(--ease-out); }
+  /* Hanging couplet boards: red lacquer, gilt double frame, engraved gilt letters. */
+  .couplet { top: 330px; width: 66px; padding: 22px 0; border-radius: 3px;
+    background: linear-gradient(90deg, #5c0d08, #8c160e 45%, #6e100a);
+    outline: 2px solid #b8893a; outline-offset: -7px; border: 2px solid #3a0704;
+    box-shadow: 0 14px 28px rgba(0, 0, 0, .55);
+    color: var(--gilt); font-size: 30px; font-weight: 700; line-height: 1.25; text-align: center;
+    text-shadow: 0 1px 0 rgba(0, 0, 0, .7), 0 -1px 0 rgba(255, 230, 170, .25);
+    transition: opacity .8s ease; }
+  .couplet::before, .couplet::after { content: ''; position: absolute; left: -6px; right: -6px; height: 8px; border-radius: 3px;
+    background: linear-gradient(#e8c278, #8a6424); }
+  .couplet::before { top: -6px; } .couplet::after { bottom: -6px; }
+  #couplet-l { left: 210px; } #couplet-r { right: 210px; }
   #altar-cards { left: 0; right: 0; top: 800px; height: 0; }
-  .card { position: absolute; display: flex; align-items: center; gap: 10px; padding: 8px 14px 8px 8px; transform: translateX(-50%);
-    transition: opacity .3s; white-space: nowrap; }
-  .card.off { opacity: 0; }
-  .avatar { flex: none; width: 46px; height: 46px; border-radius: 50%; background: #c58a1b; color: #3a1800; font-weight: 700;
-    font-size: 24px; display: grid; place-items: center; }
-  .card b { display: block; font-size: 22px; max-width: 190px; overflow: hidden; text-overflow: ellipsis; }
-  .card span { font-size: 19px; color: #ffd66b; }
+  .card { position: absolute; display: flex; align-items: center; gap: 10px; padding: 8px 14px 8px 8px; translate: -50% 0;
+    white-space: nowrap; animation: card-in var(--in) var(--ease-out); }
+  @keyframes card-in { from { opacity: 0; transform: translateY(14px); } }
+  .avatar { flex: none; width: 46px; height: 46px; border-radius: 50%; color: #3a1800; font-weight: 700; font-size: 24px;
+    display: grid; place-items: center; background: radial-gradient(circle at 35% 30%, #f6d68a, #b8862e 70%);
+    box-shadow: inset 0 -2px 3px rgba(0, 0, 0, .3), 0 0 0 2px rgba(226, 184, 102, .35); }
+  .card b { display: block; font-size: 22px; max-width: 190px; overflow: hidden; text-overflow: ellipsis; color: var(--ink); }
+  .card span { font-size: 19px; color: var(--gilt); }
   #donor { right: 24px; top: 960px; width: 290px; }
-  #donor .card { position: static; transform: none; }
-  #board { right: 24px; top: 1050px; width: 290px; padding: 10px 14px; font-size: 20px; }
-  #board h3 { margin: 0 0 6px; text-align: center; color: #ffd66b; letter-spacing: 4px; font-size: 22px; }
-  #board ol { margin: 0; padding-left: 26px; }
-  #board li { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.45; }
-  #footer { left: 24px; top: 1225px; width: 720px; padding: 10px 16px; font-size: 22px; line-height: 1.4; text-align: center; }
-  #footer div:first-child { font-size: 27px; font-weight: 700; color: #ffd66b; }
+  #donor .card { position: static; translate: none; animation-name: donor-in; }
+  @keyframes donor-in { from { opacity: 0; transform: translateX(28px); } }
+  #board { right: 24px; top: 1050px; width: 290px; padding: 12px 16px; font-size: 20px; }
+  #board h3 { margin: 0 0 8px; padding-bottom: 6px; text-align: center; color: var(--gilt); letter-spacing: 6px; font-size: 22px;
+    border-bottom: 1px solid var(--gilt-line); }
+  #board ol { margin: 0; padding-left: 26px; font-variant-numeric: tabular-nums; }
+  #board li { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.5; color: var(--ink); }
+  #board li::marker { color: var(--gilt); }
+  #footer { left: 24px; top: 1225px; width: 720px; padding: 12px 18px; font-size: 22px; line-height: 1.4; text-align: center; color: #f3dcc0; }
+  #footer div:first-child { font-size: 28px; font-weight: 700; color: var(--gilt); margin-bottom: 2px; }
   #credit { left: 24px; top: 1350px; font-size: 13px; opacity: .7; }
   #fps { right: 8px; bottom: 8px; font: 20px monospace; display: none; }
-  .label { font-size: 15px; color: #fff; text-shadow: 0 0 3px #000, 0 0 6px #000; white-space: nowrap; text-align: center; }
-  .label.gold { color: #ffd66b; padding: 1px 6px; border: 1px solid #ffd66b; border-radius: 8px; background: rgba(60, 30, 0, .55); }
-  .bubble { margin-bottom: 3px; padding: 4px 9px; max-width: 220px; white-space: normal; background: rgba(255, 250, 235, .92);
-    color: #4a2a00; border-radius: 12px; font-size: 15px; text-shadow: none; transition: opacity .6s; }
-  #sound { right: 24px; bottom: 24px; padding: 14px 22px; font-size: 22px; display: none; }
+  .label { font-size: 15px; color: #fff4e4; text-shadow: 0 1px 2px #000, 0 0 6px rgba(0, 0, 0, .9); white-space: nowrap; text-align: center; }
+  .label.gold { color: var(--gilt); padding: 1px 7px; border: 1px solid var(--gilt-line); border-radius: 8px; background: rgba(42, 12, 4, .7); }
+  .bubble { margin-bottom: 4px; padding: 5px 10px; max-width: 220px; white-space: normal; background: rgba(255, 246, 228, .94);
+    color: #4a2a00; border-radius: 12px 12px 12px 4px; font-size: 15px; text-shadow: none;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, .4); transition: opacity .6s; }
+  #sound { right: 24px; bottom: 24px; padding: 14px 22px; font-size: 22px; display: none; color: var(--gilt); font-family: inherit; }
+  @media (prefers-reduced-motion: reduce) {
+    #banner, #banner.on { transform: none; transition: opacity .2s; }
+    .card, #donor .card, #namo.bump span { animation: none; }
+  }
 </style>
 </head>
 <body>

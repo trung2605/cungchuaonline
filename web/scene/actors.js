@@ -93,7 +93,15 @@ async function loadTemplates() {
 const REST = { 1: new THREE.Vector3(1, 0, 0), [-1]: new THREE.Vector3(-1, 0, 0) };
 const PRAY = {};
 for (const sx of [1, -1]) PRAY[sx] = [new THREE.Vector3(0.35 * sx, -0.8, 0.45), new THREE.Vector3(-0.8 * sx, 0.5, 0.35)].map(d => d.normalize());
+// Lạy: joined hands rise to the forehead, then reach forward to the floor as the torso folds.
+const FORE = {}, PALM = {};
+for (const sx of [1, -1]) {
+  FORE[sx] = [new THREE.Vector3(0.35 * sx, 0.1, 0.9), new THREE.Vector3(-0.8 * sx, 0.55, 0.3)].map(d => d.normalize());
+  PALM[sx] = [new THREE.Vector3(0.3 * sx, 0.3, 0.9), new THREE.Vector3(-0.15 * sx, 0.8, 0.5)].map(d => d.normalize());
+}
+const smooth = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
 const tmp = new THREE.Vector3(), down = new THREE.Vector3(), qi = new THREE.Quaternion();
+const armU = new THREE.Vector3(), armL = new THREE.Vector3();
 function aim(upper, lower, rest, upDir, loDir) {
   if (!upper || !lower) return;
   upper.quaternion.setFromUnitVectors(rest, upDir);
@@ -111,11 +119,16 @@ function applyPose(rig, p, now, seed) {
   else if (p.phase === 'altar') k = Math.min(1, p.ms / 400);
   else if (p.phase === 'idle' || p.phase === 'bow') k = 1;
 
-  const bow = Math.sin(Math.PI * p.bowT01) * 1.1;
+  // One 0.8 s bow (BR-07.3): hands to forehead, fold down, short hold, slower rise.
+  const u = p.bowT01;
+  const raise = u > 0 ? smooth(0, 0.18, u) * (1 - smooth(0.3, 0.42, u)) : 0;
+  const fold = u > 0 ? smooth(0.12, 0.48, u) * (1 - smooth(0.64, 1, u)) : 0;
+  const bow = fold * 1.3;
   const breathe = p.phase === 'idle' ? 0.03 * Math.sin(now / 1300 + seed) : 0;
+  b.hips?.rotation.set(fold * 0.35 * k, 0, 0);
   b.spine?.rotation.set(bow * 0.5, 0, 0);
   b.chest?.rotation.set(bow * 0.45 + breathe, 0, 0);
-  b.neck?.rotation.set(bow * 0.15, 0, 0);
+  b.neck?.rotation.set(bow * 0.15 - raise * 0.15, 0, 0);
 
   const swing = walking ? Math.sin(now / 160 + seed) : 0;
   for (const [side, sx] of [['left', 1], ['right', -1]]) {
@@ -124,9 +137,12 @@ function applyPose(rig, p, now, seed) {
       down.set(0.12 * sx, -1, -0.35 * s).normalize();
       aim(b[side + 'UpperArm'], b[side + 'LowerArm'], REST[sx], down, down);
     } else {
-      aim(b[side + 'UpperArm'], b[side + 'LowerArm'], REST[sx], PRAY[sx][0], PRAY[sx][1]);
+      armU.copy(PRAY[sx][0]).lerp(FORE[sx][0], raise).lerp(PALM[sx][0], fold).normalize();
+      armL.copy(PRAY[sx][1]).lerp(FORE[sx][1], raise).lerp(PALM[sx][1], fold).normalize();
+      aim(b[side + 'UpperArm'], b[side + 'LowerArm'], REST[sx], armU, armL);
     }
-    b[side + 'UpperLeg']?.rotation.set(-1.45 * k + 0.45 * s, 0, 0);
+    // Hip pitch is cancelled at the thighs so the knees stay planted while the torso folds.
+    b[side + 'UpperLeg']?.rotation.set(-1.45 * k + 0.45 * s - fold * 0.35 * k, 0, 0);
     b[side + 'LowerLeg']?.rotation.set(2.9 * k + 0.5 * Math.max(0, -s), 0, 0);
   }
   rig.restHipY ??= b.hips.position.y;

@@ -12,11 +12,82 @@ const lotusTex = canvasTex(64, 64, g => {
   g.fillStyle = r;
   g.beginPath(); g.moveTo(32, 4); g.quadraticCurveTo(60, 40, 32, 60); g.quadraticCurveTo(4, 40, 32, 4); g.fill();
 });
-const smokeTex = canvasTex(64, 64, (g, w) => {
-  const r = g.createRadialGradient(w / 2, w / 2, 0, w / 2, w / 2, w / 2);
-  r.addColorStop(0, 'rgba(200,190,180,.18)'); r.addColorStop(1, 'rgba(200,190,180,0)');
-  g.fillStyle = r; g.fillRect(0, 0, w, w);
+// Lumpy puff: several offset soft blobs, so overlapping particles read as a wisp, not as dots.
+const smokeTex = canvasTex(128, 128, (g, w) => {
+  for (let i = 0; i < 9; i++) {
+    const a = i * 2.4, d = i ? 18 + (i % 3) * 8 : 0;
+    const x = w / 2 + Math.cos(a) * d, y = w / 2 + Math.sin(a) * d, r = 34 - (i % 3) * 6;
+    const gr = g.createRadialGradient(x, y, 0, x, y, r);
+    gr.addColorStop(0, 'rgba(255,255,255,.55)'); gr.addColorStop(1, 'rgba(255,255,255,0)');
+    g.fillStyle = gr; g.fillRect(0, 0, w, w);
+  }
 });
+
+// Incense smoke: each puff grows, fades in then out, drifts sideways on a slow curl.
+// Normal blending so it veils what is behind it instead of glowing.
+function smokeSystem(scene, max) {
+  const pos = new Float32Array(max * 3).fill(-100), vel = new Float32Array(max * 3);
+  const age = new Float32Array(max), life = new Float32Array(max).fill(1), seed = new Float32Array(max);
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  geo.setAttribute('age', new THREE.BufferAttribute(age, 1));
+  geo.setAttribute('seed', new THREE.BufferAttribute(seed, 1));
+  const mat = new THREE.ShaderMaterial({
+    uniforms: { map: { value: smokeTex }, tint: { value: new THREE.Color(0x8c7a68) }, alpha: { value: 0.11 } },
+    vertexShader: `
+      attribute float age; attribute float seed;
+      varying float vAge; varying float vRot;
+      void main() {
+        vAge = age; vRot = seed * 6.28 + age * (seed - 0.5) * 3.0;
+        vec4 mv = modelViewMatrix * vec4(position, 1.0);
+        gl_PointSize = mix(0.25, 1.9, sqrt(age)) * 1100.0 / -mv.z;
+        gl_Position = projectionMatrix * mv;
+      }`,
+    fragmentShader: `
+      uniform sampler2D map; uniform vec3 tint; uniform float alpha;
+      varying float vAge; varying float vRot;
+      void main() {
+        if (vAge <= 0.0 || vAge >= 1.0) discard;
+        vec2 p = gl_PointCoord - 0.5;
+        float c = cos(vRot), s = sin(vRot);
+        vec4 t = texture2D(map, vec2(c * p.x - s * p.y, s * p.x + c * p.y) + 0.5);
+        float a = t.a * alpha * smoothstep(0.0, 0.12, vAge) * pow(1.0 - vAge, 1.6);
+        gl_FragColor = vec4(tint, a);
+      }`,
+    transparent: true, depthWrite: false,
+  });
+  const points = new THREE.Points(geo, mat);
+  points.frustumCulled = false;
+  scene.add(points);
+  let next = 0;
+  return {
+    emit(x, y, z, vx, vy, vz, seconds) {
+      const i = next;
+      next = (next + 1) % max;
+      pos.set([x, y, z], i * 3);
+      vel.set([vx, vy, vz], i * 3);
+      age[i] = 0.0001;
+      life[i] = seconds;
+      seed[i] = Math.random();
+    },
+    update(dt, t) {
+      for (let i = 0; i < max; i++) {
+        if (age[i] <= 0) continue;
+        age[i] += dt / life[i];
+        if (age[i] >= 1) { age[i] = 0; pos[i * 3 + 1] = -100; continue; }
+        const j = i * 3, a = age[i];
+        // Rises fast at first, slows and spreads as it cools.
+        const curl = Math.sin(t * 0.9 + seed[i] * 9 + a * 5) * 0.12 * a;
+        pos[j] += (vel[j] + curl) * dt;
+        pos[j + 1] += vel[j + 1] * (1 - 0.6 * a) * dt;
+        pos[j + 2] += (vel[j + 2] + Math.cos(t * 0.7 + seed[i] * 5) * 0.05 * a) * dt;
+      }
+      geo.attributes.position.needsUpdate = true;
+      geo.attributes.age.needsUpdate = true;
+      geo.attributes.seed.needsUpdate = true;
+    },
+  };
+}
 
 function pool(scene, { tex, max, size, additive = false, floor = false, gravity = 0, sway = 0 }) {
   const pos = new Float32Array(max * 3).fill(-100), vel = new Float32Array(max * 3), col = new Float32Array(max * 3).fill(1);
@@ -64,7 +135,7 @@ export function createFx(scene, { low = false, smokeOrigin }) {
   const P = {
     petal: pool(scene, { tex: petalTex, max: 1200, size: 0.22, floor: true, gravity: -0.15, sway: 0.5 }),
     lotus: pool(scene, { tex: lotusTex, max: 1000, size: 0.4, floor: true, gravity: -0.1, sway: 0.7 }),
-    smoke: pool(scene, { tex: smokeTex, max: 400, size: 0.9, additive: true, sway: 0.15 }),
+    smoke: smokeSystem(scene, 260),
     lamp: pool(scene, { tex: glowTex, max: 60, size: 0.9, additive: true, sway: 0.2 }),
     glow: pool(scene, { tex: glowTex, max: 8, size: 6, additive: true }),
   };
@@ -103,8 +174,9 @@ export function createFx(scene, { low = false, smokeOrigin }) {
     update(now, dt) {
       // Incense always smokes a little; 'smoke' thickens it for 3 s, scaled by power.
       if (now > smokeUntil) smokePower = 0;
-      smokeAcc += dt * (3 + smokePower * 2) * q;
-      for (; smokeAcc >= 1; smokeAcc--) P.smoke.emit(smokeOrigin.x + rnd(-0.1, 0.1), smokeOrigin.y, smokeOrigin.z, rnd(-0.08, 0.08), rnd(0.5, 0.8), rnd(-0.05, 0.1), 2.8); // fades before reaching the statue's face
+      smokeAcc += dt * (9 + smokePower * 6) * q;
+      // Fades out around 1.8 m above the censer, below the statue's face.
+      for (; smokeAcc >= 1; smokeAcc--) P.smoke.emit(smokeOrigin.x + rnd(-0.08, 0.08), smokeOrigin.y, smokeOrigin.z, rnd(-0.04, 0.04), rnd(0.55, 0.75), rnd(0, 0.06), rnd(3.2, 4.2));
       if (now < lotusUntil) {
         lotusAcc += dt * 50 * q;
         for (; lotusAcc >= 1; lotusAcc--) P.lotus.emit(rnd(-7, 7), rnd(9, 11), rnd(-8, 9), 0, rnd(-1.4, -0.8), 0, 12);
