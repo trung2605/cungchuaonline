@@ -31,4 +31,22 @@
 ## Kết quả đo (điền khi chạy)
 | Ngày | Máy | Số nhân vật | FPS trung bình | FPS p5 | Ghi chú |
 |---|---|---|---|---|---|
-| | | | | | |
+| 31/10 | Laptop dev, Chrome (DevTools MCP), cửa sổ 540×960, rig tạm | 37–99 | 84–101 | — | Đo nhanh, chưa phải TC-07.17. Lúc mưa sen ~48 fps với 87 nhân vật. Cần đo 10 phút trên máy chuẩn |
+## Bổ sung v2
+| ID | Loại | Mô tả | Bước | Kỳ vọng | Truy vết |
+|---|---|---|---|---|---|
+| TC-07.21 | Unit | Không slot nào nằm trên thảm | `slotPosition(0..149)` | Mọi slot có `|x| ≥ 1.5` | BR-07.16 |
+| TC-07.22 | Unit | Chia đều hai bên | Đếm slot có x < 0 và x > 0 | Mỗi bên 75 | BR-04.17 |
+| TC-07.23 | Unit | Hàng chờ chỗ lạy | 5 nhân vật cùng `requestAltar` | 3 người được chỗ, 2 người ở pha `queue`; khi một người xong thì người vào hàng chờ trước được chỗ | AC-07.9 |
+| TC-07.24 | Unit | Vòng đời đầy đủ | Spawn với 2 lạy, chạy `step` qua thời gian | Lần lượt `enter`, `altar` (1,6 s), `toSeat`, `kneel`, `idle` | BR-07.17 |
+| TC-07.25 | Unit | Lên lại bàn thờ khi có quà | Đang `idle`, nhận `bow` với `visit:true` | `standUp`, rồi `enter`, rồi `altar`, … , rồi `idle` | BR-07.17 |
+| TC-07.26 | Thủ công | Model | `npm run demo` | Có nam và nữ mặc áo tràng lam, quỳ lạy tự nhiên, không bị xuyên mesh rõ rệt | BR-07.15 |
+| TC-07.27 | Thủ công | HUD | Cho mock tặng quà liên tục | Câu đối đổi mỗi 10 s; bảng tri ân và thẻ người tặng đúng nội dung; nhãn lớn không chồng nhau | AC-07.10 |
+| TC-07.28 | Thủ công | Nhạc | Bật và tắt `scene.sound` | Nhạc không lời phát lặp; tắt `scene.sound` thì im lặng hoàn toàn | BR-07.23 |
+## Kết quả chạy (31/10)
+- Unit: 17 test trong `test/web/` pass (TC-07.1–07.3, 07.5–07.10, 07.20–07.25). Toàn bộ `npm test`: 107/107.
+- TC-07.13 (reload): đạt, 99 nhân vật hiện ngay ở pha idle đúng chỗ.
+- TC-07.14 (mất server): đạt, cảnh chạy tiếp ~93 fps khi server tắt; bật lại thì nhận snapshot sau ~0,6 s.
+- TC-07.15 (hình): đạt phần hình cho lotus, bell, halo, smoke, flower, lamp (qua `?debug=1`). Chưa nghe thử âm thanh.
+- TC-07.16: đạt, chuyển night → ram → day mượt; chân trang đúng câu chữ.
+- Lưu ý: TC-03.16 (test hiệu năng bộ lọc) có thể fail khi máy đang bận (demo + Chrome chạy cùng lúc). Chạy riêng thì pass.

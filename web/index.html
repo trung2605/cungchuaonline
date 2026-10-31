@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>Chùa Online</title>
+<link rel="stylesheet" href="/vendor/font/400.css">
+<link rel="stylesheet" href="/vendor/font/700.css">
+<script type="importmap">
+{ "imports": {
+  "three": "/vendor/three/build/three.module.js",
+  "three/addons/": "/vendor/three/examples/jsm/",
+  "@pixiv/three-vrm": "/vendor/three-vrm/lib/three-vrm.module.js"
+} }
+</script>
+<style>
+  html, body { margin: 0; height: 100%; background: #000; overflow: hidden; }
+  body { font-family: 'Be Vietnam Pro', 'Segoe UI', sans-serif; color: #fff3d6; }
+  /* Fixed 1080x1920 stage, scaled to fit the window (scale is 1 inside LIVE Studio). */
+  #stage { position: absolute; width: 1080px; height: 1920px; transform-origin: 0 0; overflow: hidden; }
+  #stage > * { position: absolute; }
+  #c, #labels { inset: 0; }
+  /* CSS2DRenderer sets z-index on each label; contain them below the HUD. */
+  #labels { pointer-events: none; z-index: 0; }
+  #stage > :not(#c):not(#labels) { z-index: 1; }
+  /* HUD stays inside the 12%-70% band or on the right edge, never in the 300x300 top-left camera (FR-08). */
+  .pill { background: rgba(40, 14, 4, .85); border: 1px solid rgba(255, 200, 90, .45); border-radius: 14px; }
+  #namo { right: 24px; top: 240px; padding: 10px 18px; font-size: 30px; font-weight: 700; color: #ffd66b; }
+  #banner { left: 50%; top: 240px; transform: translateX(-50%); max-width: 520px; padding: 10px 22px; font-size: 28px;
+    text-align: center; transition: opacity .4s; opacity: 0; }
+  #banner.on { opacity: 1; }
+  .couplet { top: 330px; width: 64px; padding: 18px 0; background: linear-gradient(#a3120f, #7a0c0a);
+    border: 3px solid #d9a441; border-radius: 6px; color: #ffd66b; font-size: 30px; font-weight: 700; line-height: 1.25;
+    text-align: center; transition: opacity .8s; }
+  #couplet-l { left: 190px; } #couplet-r { right: 190px; }
+  #altar-cards { left: 0; right: 0; top: 800px; height: 0; }
+  .card { position: absolute; display: flex; align-items: center; gap: 10px; padding: 8px 14px 8px 8px; transform: translateX(-50%);
+    transition: opacity .3s; white-space: nowrap; }
+  .card.off { opacity: 0; }
+  .avatar { flex: none; width: 46px; height: 46px; border-radius: 50%; background: #c58a1b; color: #3a1800; font-weight: 700;
+    font-size: 24px; display: grid; place-items: center; }
+  .card b { display: block; font-size: 22px; max-width: 190px; overflow: hidden; text-overflow: ellipsis; }
+  .card span { font-size: 19px; color: #ffd66b; }
+  #donor { right: 24px; top: 960px; width: 290px; }
+  #donor .card { position: static; transform: none; }
+  #board { right: 24px; top: 1050px; width: 290px; padding: 10px 14px; font-size: 20px; }
+  #board h3 { margin: 0 0 6px; text-align: center; color: #ffd66b; letter-spacing: 4px; font-size: 22px; }
+  #board ol { margin: 0; padding-left: 26px; }
+  #board li { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.45; }
+  #footer { left: 24px; top: 1225px; width: 720px; padding: 10px 16px; font-size: 22px; line-height: 1.4; text-align: center; }
+  #footer div:first-child { font-size: 27px; font-weight: 700; color: #ffd66b; }
+  #credit { left: 24px; top: 1350px; font-size: 13px; opacity: .7; }
+  #fps { right: 8px; bottom: 8px; font: 20px monospace; display: none; }
+  .label { font-size: 15px; color: #fff; text-shadow: 0 0 3px #000, 0 0 6px #000; white-space: nowrap; text-align: center; }
+  .label.gold { color: #ffd66b; padding: 1px 6px; border: 1px solid #ffd66b; border-radius: 8px; background: rgba(60, 30, 0, .55); }
+  .bubble { margin-bottom: 3px; padding: 4px 9px; max-width: 220px; white-space: normal; background: rgba(255, 250, 235, .92);
+    color: #4a2a00; border-radius: 12px; font-size: 15px; text-shadow: none; transition: opacity .6s; }
+  #sound { right: 24px; bottom: 24px; padding: 14px 22px; font-size: 22px; display: none; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <canvas id="c" width="1080" height="1920"></canvas>
+  <div id="labels"></div>
+  <div id="couplet-l" class="couplet"></div>
+  <div id="couplet-r" class="couplet"></div>
+  <div id="altar-cards"></div>
+  <div id="namo" class="pill">Đã niệm: <span>0</span></div>
+  <div id="banner" class="pill"></div>
+  <div id="donor"></div>
+  <div id="board" class="pill"><h3>TRI ÂN</h3><ol></ol></div>
+  <div id="footer" class="pill">
+    <div>Gõ "Nam mô A Di Đà Phật" để vào lễ Phật</div>
+    <div>Thêm "cầu bình an / tài lộc / sức khỏe / tình duyên / gia đạo / học hành / công danh" để gửi lời cầu</div>
+  </div>
+  <div id="credit"></div>
+  <div id="fps"></div>
+  <button id="sound" class="pill">Bật âm thanh</button>
+</div>
+<script type="module" src="main.js"></script>
+</body>
+</html>

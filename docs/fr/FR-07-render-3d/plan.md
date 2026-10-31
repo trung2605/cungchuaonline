@@ -67,3 +67,47 @@ export function applyMsg(world, msg, now)   // -> Cmd[]
 | 150 nhân vật skinned không đạt 30 fps | Đặt `.env MAX_ACTORS=100` (FR-04 nhận qua constructor). V2 bake sẵn animation để dùng instancing |
 | Tên bone của KayKit khác dự kiến | T07.4 đọc tên bone thật rồi ghi vào `actors.js` |
 | CEF của LIVE Studio không hỗ trợ WebGL2 | Thử sớm ở T07.3 (FR-08). Nếu lỗi, chuyển sang Window Capture một cửa sổ Chrome |
+## Bổ sung v2
+- **Nhân vật:** thay KayKit bằng Quaternius Universal Base Characters (CC0) và Universal Animation Library (CC0; cần các clip walk, idle, sit/kneel). Áo tràng làm trong Blender: thêm mesh vạt áo dài và tay áo rộng, skin vào bone `hips`, `spine` và các bone chân. Có 2 file glb: `layman_m.glb` và `layman_f.glb`. Mỗi file có 2 material skin.
+- **`layout.js` v2:**
+  - `ALTAR_SPOTS = [{x:-1.6,z:-6.8},{x:0,z:-6.8},{x:1.6,z:-6.8}]`
+  - `CARPET_X = 0`
+  - `slotPosition(i)`:
+    - `i < 20`: hàng `r = floor(i/10)`, `k = i%10`. Bên trái nếu `k < 5`, ngược lại bên phải. `x = sign·(1.6 + (k%5)·1.1)`, `z = -5 + r·1.2`.
+    - `i ≥ 20`: `j = i-20`, hàng `r = floor(j/12)`, `k = j%12`. Bên trái nếu `k < 6`. `x = sign·(1.6 + (k%6)·1.0)`, `z = -2.6 + r·1.1`.
+  - `pathTo(slot)`: đường đi qua các điểm cổng → thảm → chỗ lạy → điểm trên thảm ngang hàng với slot → slot.
+- **`actorFsm.js` v2:**
+  - các pha: `enter`, `queue`, `altar`, `toSeat`, `kneel`, `idle`, `standUp`, `move`, `leave`, `done`;
+  - `requestAltar(st)`;
+  - lớp `AltarQueue` có 3 chỗ, FIFO, thuần JS.
+- **`hud.js`:** thêm `couplets` (dùng `setInterval` 10 s), `board`, `donorCard` (hàng chờ tối đa 5).
+- **`audio.js`:** đổi `ambient` thành `music`.
+## Bổ sung v2.1 (D-13): nhân vật dựng bằng VRoid. Phần này thay mục "Nhân vật" của v2.
+- **Dựng nhân vật.** Dùng **VRoid Studio** để dựng 4 nhân vật Phật tử (2 nam tóc ngắn, 2 nữ tóc búi). Trang phục là áo tràng lam, dựng bằng công cụ áo dài hoặc váy dài rồi chỉnh màu `#7F93AD` / `#9DB0C8`, tay áo rộng.
+- **Xuất file VRM.** Mỗi nhân vật xuất một file VRM 1.0 (`web/assets/models/layman_{0..3}.vrm`) với các thiết lập:
+  - giảm polygon xuống khoảng 15–20k tri;
+  - gộp material;
+  - atlas texture 1024;
+  - tắt hoặc xóa spring bone ở tóc.
+
+  Cả hai giới hạn dưới đây là để chịu được 150 nhân vật. Mục tiêu mỗi file ≤ 3 MB.
+- **License.** Nhân vật tự dựng bằng VRoid thì người dựng giữ quyền và được dùng thương mại. Ghi "tự dựng bằng VRoid Studio" vào CREDITS. Không dùng model tải từ VRoid Hub, trừ khi model đó ghi rõ cho phép dùng thương mại.
+- **Nạp và hiển thị.**
+  - Thư viện: `@pixiv/three-vrm@3` (ghim version, mount `/vendor/three-vrm/`), nạp bằng `GLTFLoader.register(p => new VRMLoaderPlugin(p))`.
+  - Clone: nạp 4 model gốc, rồi clone bằng `SkeletonUtils.clone`.
+  - Xoay mặt: VRM 1.0 nhìn về +Z, cần `VRMUtils.rotateVRM0` nếu model là VRM 0.x.
+  - Tối ưu: `VRMUtils.removeUnnecessaryVertices` và `combineSkeletons`.
+- **Động tác.** Mọi động tác đều làm bằng code, qua `vrm.humanoid.getNormalizedBoneNode(name)`:
+  - đi: lắc chân và tay theo sin;
+  - quỳ: gập đùi và gối;
+  - lạy: cúi `spine`, `chest`, `neck`, đưa tay chắp ra trước;
+  - chắp tay: `upperArm`, `lowerArm`, `hand`.
+
+  Không cần file animation nên không phát sinh license. Nếu muốn dáng đi tự nhiên hơn, có thể dùng file `.vrma` có license phù hợp.
+- **Hiệu năng.** Chỉ gọi `vrm.update(dt)` cho các nhân vật đang chuyển động. Các nhân vật đang ở pha `idle` chỉ cập nhật thở nhẹ mỗi 3 frame một lần. Vẫn còn rủi ro không đạt 30 fps với 150 nhân vật, khi đó giảm `MAX_ACTORS` (đã ghi ở FR-04).
+- **Nhạc.** Tìm trên Pixabay Music (license cho phép dùng thương mại, kể cả livestream) hoặc Freesound CC0, từ khóa "zen meditation instrumental", "buddhist temple ambient". Ghi link và chụp trang license.
+## Ghi chú thực hiện (31/10)
+- `slotPosition`: hai bên trái/phải **xen kẽ** trong mỗi hàng (`k%2`, cột `floor(k/2)`) thay cho `k<5` / `k<6`. Vẫn đúng BR-04.17 (5|5, 6|6 mỗi hàng), và hàng cuối thiếu (10 chỗ) vẫn chia đều, nên đạt TC-07.22 (75/75). Slot thấp được lấp từ giữa ra.
+- `actorFsm.js` thêm pha `bow` (lạy tại bồ đoàn khi nhận `bow` không có `visit`). Nhân vật từ snapshot không lạy lại số lạy còn treo.
+- Phụ thuộc mới (ghim): `@pixiv/three-vrm@3.5.5` (mount `/vendor/three-vrm/`), `@fontsource/be-vietnam-pro@5.3.0` (mount `/vendor/font/`).
+- Camera: `(0, 12, 21)` nhìn `(0, 1.2, -4)`, fov 50. Khung dọc nên ghế ngoài cùng ở các hàng gần camera bị cắt mép; các hàng này nằm dưới vùng comment TikTok.

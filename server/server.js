@@ -47,7 +47,11 @@ export async function startServer({
   port = 8787,
   host = '127.0.0.1',
   webRoot = 'web',
-  mounts = { '/vendor/three/': 'node_modules/three/' },
+  mounts = {
+    '/vendor/three/': 'node_modules/three/',
+    '/vendor/three-vrm/': 'node_modules/@pixiv/three-vrm/',
+    '/vendor/font/': 'node_modules/@fontsource/be-vietnam-pro/',
+  },
   getSnapshot,
 }) {
   // Longest prefix first so mounts win over '/'.

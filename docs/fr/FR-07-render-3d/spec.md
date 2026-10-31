@@ -51,3 +51,38 @@ Trang web dựng cảnh chánh điện 3D theo khung dọc 1080×1920. Trang nh�
 - **Q-07.1 Tượng Phật.** (a) Dùng mẫu Sloyd "Buddha Sculpture" CC BY 4.0, có ghi công. (b) Tạo bằng AI image-to-3D. (c) Dựng thủ công bằng primitive. **Đã chốt 31/10: (a) Sloyd CC BY 4.0, ghi công ở góc màn hình.**
 - **Q-07.2 Âm thanh.** Nguồn là CC0 từ Freesound, hoặc tự thu tiếng chuông và mõ. Nhạc tụng kinh có người hát dễ dính bản quyền. **Đã chốt 31/10: ambient, chuông và mõ CC0, không có giọng tụng.**
 - **Q-07.3 Âm thanh qua Link Source.** Chưa xác minh được LIVE Studio có thu âm thanh từ Link Source hay không. Nếu không thu, phải thêm nguồn âm thanh desktop trong LIVE Studio (ghi trong runbook FR-08).
+## Bổ sung v2 (31/10, D-10, D-11, D-12). Phần này thay các mục tương ứng ở trên.
+
+| Mã | Quy tắc |
+|---|---|
+| BR-07.15 | **Nhân vật (thay chú tiểu chibi).** Nhân vật là Phật tử tại gia mặc **áo tràng lam**: áo dài tới gần mắt cá, tay rộng, màu lam xám `#7F93AD` hoặc lam nhạt `#9DB0C8`. Tỉ lệ người thật. Có 4 skin: skin 0 và 1 là **nam** (tóc ngắn), skin 2 và 3 là **nữ** (tóc búi). `skin = hash(uid) % 4` (BR-04.10), nên giới tính được gán ngẫu nhiên nhưng cố định theo uid. Không dùng hình tăng ni. |
+| BR-07.16 | **Bố cục.** Thảm đỏ chạy dọc chính giữa, từ cổng tới bậc bàn thờ. Bồ đoàn đỏ xếp hai bên thảm theo BR-04.17. Bồ đoàn trống vẫn được vẽ. Trước bàn thờ có **3 chỗ lạy**: trái, giữa, phải. |
+| BR-07.17 | **Vòng đời nhân vật v2 (thay BR-07.3).** |
+| | ENTERING: đi theo thảm đỏ từ cổng lên chỗ lạy trống, mất 2,5 s. Nếu cả 3 chỗ lạy đều bận thì đứng chờ trên thảm, xếp hàng theo FIFO. |
+| | ALTAR_BOW: lạy hết số lạy trong hàng chờ, mỗi lạy 0,8 s. Lúc này hiện **nhãn lớn** gồm tên và "🙏 {intent}". |
+| | TO_SEAT: đi tới bồ đoàn của mình, mất 1,5 s. |
+| | KNEELING: 0,5 s. |
+| | IDLE: quỳ chắp tay. Hiện **nhãn nhỏ** gồm tên, và huy hiệu 💎N nếu `diamonds > 0`. |
+| | Khi nhận `bow` có `visit:true`: đứng dậy (0,5 s), quay lại ENTERING bắt đầu từ chỗ đang ngồi (đi lên thảm rồi lên bàn thờ), lạy, rồi về chỗ. |
+| | Khi nhận `bow` không có `visit`: lạy ngay tại bồ đoàn. |
+| | Khi nhận `move`: đổi bồ đoàn. |
+| | Khi nhận `leave`: đứng dậy, đi ra cổng theo thảm. |
+| BR-07.18 | **Nhãn lớn.** Hình tròn chứa chữ cái đầu của tên (không tải avatar từ TikTok), tên, và lời cầu. Khu bàn thờ hiện tối đa 3 nhãn lớn cùng lúc, các nhãn **không được chồng lên nhau** (cải thiện so với live mẫu, research/09). |
+| BR-07.19 | **Câu đối.** Hai băng đỏ dọc đặt hai bên tượng, chữ vàng viết dọc. Mỗi 10 s đổi sang cặp câu kế tiếp, có hiệu ứng mờ dần 0,8 s. Danh sách lấy từ `couplets` trong snapshot, và cập nhật khi nhận message `couplets`. |
+| BR-07.20 | **Bảng tri ân.** Khung ở mép phải, tiêu đề "TRI ÂN", hiện tối đa 8 dòng dạng `tên · 💎N`. Cập nhật khi nhận `board`. |
+| BR-07.21 | **Thẻ người tặng gần nhất.** Đặt ở mép phải, phía trên bảng tri ân. Thẻ gồm hình tròn chữ cái đầu, tên, và dòng "{giftName} ×{repeat}". **Không** ghi lời cầu lên thẻ, vì quà không gắn với lời cầu (D-09). Mỗi thẻ hiện 6 s và lấy từ hàng chờ. |
+| BR-07.22 | **Hướng dẫn ở chân trang (thay câu chân trang cũ).** Hai dòng: `Gõ "Nam mô A Di Đà Phật" để vào lễ` và `Thêm "cầu bình an / tài lộc / sức khỏe / tình duyên / gia đạo / học hành / công danh" để gửi lời cầu`. Vẫn đặt trong vùng an toàn của FR-08. |
+| BR-07.23 | **Nhạc Phật (thay ambient ở BR-07.9).** Phát lặp `audio/music.mp3` là nhạc thiền **không lời**, âm lượng 0,35. File phải có license dùng thương mại; nếu chủ kênh tự cung cấp thì ghi rõ nguồn trong CREDITS. Tiếng mõ và chuông giữ như cũ. `scene.sound = false` tắt toàn bộ âm thanh. |
+
+- **AC-07.8** Một uid mới được spawn: nhân vật đi trên thảm, lạy trước bàn thờ với nhãn lớn có lời cầu, rồi về đúng bồ đoàn của mình và hiện nhãn nhỏ.
+- **AC-07.9** 10 nhân vật được spawn cùng lúc: tối đa 3 người ở chỗ lạy, số còn lại xếp hàng trên thảm. Không có nhãn lớn nào chồng lên nhau.
+- **AC-07.10** Câu đối đổi mỗi 10 s. Bảng tri ân và thẻ người tặng cập nhật đúng theo message.
+
+### Câu hỏi mở v2
+- **Q-07.4 Nguồn model Phật tử áo tràng.** Có 3 phương án:
+  - (a) **Quaternius Universal Base Characters / Ultimate Modular Men & Women** (CC0, glTF, có rig). Áo tràng làm thêm trong Blender bằng cách kéo dài vạt áo. Người làm: artist, hoặc chủ kênh tự làm.
+  - (b) **VRoid Studio**: tự dựng nhân vật có áo dài, xuất VRM, tải bằng `@pixiv/three-vrm`. Phong cách hơi anime.
+  - (c) Thuê ngoài.
+
+  **Đã chốt 31/10: (b) VRoid Studio.**
+- **Q-07.5 Nhạc Phật.** Lấy nhạc thiền không lời có license thương mại, hay chủ kênh tự cung cấp? **Đã chốt 31/10: tìm nhạc royalty-free có license thương mại** (Pixabay Music hoặc Freesound CC0), lưu bản chụp trang license vào `web/assets/audio/LICENSES/`.
