@@ -13,7 +13,7 @@
 |---|---|
 | BR-10.1 | Nếu `.env` có `TIKFINITY_WS` (ví dụ `ws://127.0.0.1:21213/`) thì bật adapter TikFinity, chạy song song với connector. Để trống thì không bật. |
 | BR-10.2 | Event TikFinity được map về `NormEvent` với `src:'tikfinity'`, theo đúng quy tắc BR-02.1 đến BR-02.5. |
-| BR-10.3 | Hai nguồn đi chung một bộ chống trùng (FR-02). Khóa không chứa `src` nên cùng một event chỉ được tính một lần nếu hai nguồn cùng gửi trong vòng 5 s. |
+| BR-10.3 | Hai nguồn đi chung một bộ chống trùng (FR-02). Khóa không chứa `src` nên cùng một event chỉ được tính một lần nếu hai nguồn cùng gửi trong vòng 5 s. Mapper TikFinity **phải điền `group` từ `groupId`** giống FR-02, nếu không khóa gift của hai nguồn sẽ lệch và quà bị tính hai lần. |
 | BR-10.4 | Mất kết nối TikFinity thì thử lại sau mỗi **5 s**. Không áp dụng backoff mũ vì đây là kết nối trên localhost. |
 | BR-10.5 | Mỗi nguồn có trạng thái riêng: `tiktok` và `tikfinity`, mỗi nguồn ở một trong bốn trạng thái `connecting`, `connected`, `disconnected`, `ended`. Mọi thay đổi trạng thái được in ra console và gửi qua `onStatus(src, state)`. |
 | BR-10.6 | Không tự động chuyển nguồn và không cần nguồn "chính". Hai nguồn luôn chạy. |

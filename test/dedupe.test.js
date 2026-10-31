@@ -10,7 +10,8 @@ const chat = { kind: 'chat', src: 'tiktok', uid: 'u1', name: 'Lan', text: 'nam m
 
 test('dedupeKey shapes', () => {
   assert.equal(dedupeKey(chat), 'chat|u1|nam mo');
-  assert.equal(dedupeKey({ kind: 'gift', uid: 'u1', giftId: 5655, repeat: 7 }), 'gift|u1|5655:7');
+  assert.equal(dedupeKey({ kind: 'gift', uid: 'u1', giftId: 5655, repeat: 7, group: 'g9' }), 'gift|u1|5655:7:g9');
+  assert.equal(dedupeKey({ kind: 'gift', uid: 'u1', giftId: 5655, repeat: 7 }), 'gift|u1|5655:7:');
   assert.equal(dedupeKey({ kind: 'like', uid: 'u1', count: 3 }), 'like|u1|3');
   assert.equal(dedupeKey({ kind: 'join', uid: 'u1' }), 'join|u1');
   assert.equal(dedupeKey({ kind: 'viewers', count: 1 }), null);
@@ -36,7 +37,7 @@ test('TC-02.9 outside window', () => {
 test('TC-02.10 same gift from another source is a duplicate', () => {
   const c = clock();
   const d = createDedupe({ now: c.now });
-  const g = { kind: 'gift', src: 'tiktok', uid: 'u1', name: 'Lan', giftId: 5655, giftName: 'Rose', diamonds: 1, repeat: 7, ts: 0 };
+  const g = { kind: 'gift', src: 'tiktok', uid: 'u1', name: 'Lan', giftId: 5655, giftName: 'Rose', diamonds: 1, repeat: 7, group: 'g1', ts: 0 };
   assert.equal(d.seen(g), false);
   c.set(300);
   assert.equal(d.seen({ ...g, src: 'tikfinity' }), true);
@@ -57,4 +58,14 @@ test('TC-02.12 expired keys are pruned', () => {
   c.set(6000);
   d.seen(chat);
   assert.ok(d.size() <= 1, `size ${d.size()}`);
+});
+
+test('TC-02.13 same gift twice with different groupId is kept', () => {
+  const c = clock();
+  const d = createDedupe({ now: c.now });
+  const g = { kind: 'gift', src: 'tiktok', uid: 'u1', name: 'Lan', giftId: 11046, giftName: 'Galaxy', diamonds: 1000, repeat: 1, group: 'g1', ts: 0 };
+  assert.equal(d.seen(g), false);
+  c.set(1000);
+  assert.equal(d.seen({ ...g, group: 'g2' }), false);
+  assert.equal(d.seen({ ...g, group: 'g2' }), true);
 });

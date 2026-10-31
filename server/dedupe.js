@@ -2,7 +2,7 @@
 export function dedupeKey(e) {
   switch (e.kind) {
     case 'chat': return `chat|${e.uid}|${e.text}`;
-    case 'gift': return `gift|${e.uid}|${e.giftId}:${e.repeat}`;
+    case 'gift': return `gift|${e.uid}|${e.giftId}:${e.repeat}:${e.group ?? ''}`;
     case 'like': return `like|${e.uid}|${e.count}`;
     case 'join': return `join|${e.uid}`;
     default: return null;

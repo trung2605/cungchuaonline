@@ -20,8 +20,8 @@ test('TC-02.3 combo in progress -> null', () => {
 });
 
 test('TC-02.4 combo end', () => {
-  assert.deepEqual(mapTiktok('gift', gift({ repeatCount: 7, repeatEnd: 1 }), 1),
-    { kind: 'gift', src: 'tiktok', uid: 'u1', name: 'Lan', giftId: 5655, giftName: 'Rose', diamonds: 1, repeat: 7, ts: 1 });
+  assert.deepEqual(mapTiktok('gift', gift({ repeatCount: 7, repeatEnd: 1, groupId: 'g1' }), 1),
+    { kind: 'gift', src: 'tiktok', uid: 'u1', name: 'Lan', giftId: 5655, giftName: 'Rose', diamonds: 1, repeat: 7, group: 'g1', ts: 1 });
 });
 
 test('TC-02.5 non-combo gift maps immediately', () => {
@@ -29,6 +29,7 @@ test('TC-02.5 non-combo gift maps immediately', () => {
   assert.equal(e.repeat, 1);
   assert.equal(e.diamonds, 1000);
   assert.equal(e.giftId, 11046);
+  assert.equal(e.group, '');
 });
 
 test('TC-02.6 member, roomUser, streamEnd, like', () => {

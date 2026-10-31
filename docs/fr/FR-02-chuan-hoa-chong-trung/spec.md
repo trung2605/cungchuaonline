@@ -18,7 +18,7 @@
 | BR-02.3 | Quà combo (`gift.type === 1`) chỉ được map khi `repeatEnd` khác 0, với `repeat = repeatCount`. Quà không combo thì map ngay, với `repeat = repeatCount \|\| 1`. |
 | BR-02.4 | `diamonds` là giá của **một** quà (`diamondCount`). Tổng giá trị là `diamonds × repeat`, được tính ở FR-04 và FR-05. |
 | BR-02.5 | `like.count = count \|\| 1`. `viewers.count = Number(roomUser.total)`. `diamonds = gift.diamondCount`, `giftName = gift.name`, `giftId = Number(giftId)`. |
-| BR-02.6 | Khóa chống trùng có dạng `kind\|uid\|payload`. Payload: chat là `text`, gift là `giftId:repeat`, like là `count`. Join chỉ dùng `kind\|uid`. `viewers` và `end` không chống trùng. |
+| BR-02.6 | Khóa chống trùng có dạng `kind\|uid\|payload`. Payload: chat là `text`, gift là `giftId:repeat:group` (`group` lấy từ `groupId` của TikTok, mỗi lần tặng một id; không có thì để rỗng), like là `count`. Join chỉ dùng `kind\|uid`. `viewers` và `end` không chống trùng. |
 | BR-02.7 | Một khóa đã gặp trong vòng **≤ 5000 ms** thì event bị **bỏ**. Khóa không chứa `src`, nên cùng một event đến từ hai nguồn chỉ được giữ một lần. |
 | BR-02.8 | Bộ nhớ chống trùng tự dọn các khóa cũ hơn 5000 ms. |
 
@@ -28,6 +28,7 @@
 - **AC-02.3** Cùng một chat đến hai lần cách nhau 4 s thì lần sau bị bỏ. Cách nhau 5,1 s thì được giữ.
 - **AC-02.4** Cùng một gift đến từ `tiktok` và `tikfinity` cách nhau 300 ms thì chỉ giữ một.
 - **AC-02.5** Nạp 10.000 khóa khác nhau, tua 6 s, rồi nạp thêm 1 event: kích thước bộ nhớ chống trùng ≤ 1.
+- **AC-02.6** Cùng người tặng cùng một quà hai lần trong 5 s, khác `groupId`: giữ cả hai. Cùng `groupId`: bỏ lần sau.
 
 ## 5. Phi chức năng
 Mỗi event xử lý O(1). Chi phí dọn bộ nhớ chia đều cho các lần gọi.

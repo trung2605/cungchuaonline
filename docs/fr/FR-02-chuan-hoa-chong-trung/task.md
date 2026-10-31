@@ -7,7 +7,7 @@
 - [x] Commit `feat(fr02): map tiktok events`.
 
 ## T02.2 Chống trùng
-- [x] Viết `test/dedupe.test.js` (TC-02.8 đến TC-02.12), dùng `now` giả. Chạy và xác nhận FAIL.
+- [x] Viết `test/dedupe.test.js` (TC-02.8 đến TC-02.13), dùng `now` giả. Chạy và xác nhận FAIL.
 - [x] Viết `dedupeKey` và `createDedupe`. Chạy và xác nhận PASS.
 - [x] Commit `feat(fr02): time-window dedupe`.
 - [x] Ghi chú: dedupe được gắn vào pipeline ở T04.3.

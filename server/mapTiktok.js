@@ -27,6 +27,8 @@ export function mapTiktok(name, data, now = Date.now()) {
         giftName: data.gift?.name ?? data.extendedGiftInfo?.name ?? '',
         diamonds: data.gift?.diamondCount ?? data.extendedGiftInfo?.diamond_count ?? 0,
         repeat: combo ? data.repeatCount : data.repeatCount || 1,
+        // One id per send (a whole combo streak shares it); '0' means unknown.
+        group: data.groupId && data.groupId !== '0' ? String(data.groupId) : '',
         ts: now,
       };
     }
