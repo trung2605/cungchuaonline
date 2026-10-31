@@ -5,6 +5,7 @@ import { createLog } from './log.js';
 import { createPipeline } from './pipeline.js';
 import { startMock } from './adapters/mock.js';
 import { startTiktok } from './adapters/tiktok.js';
+import { mapTiktok } from './mapTiktok.js';
 
 const { values: args } = parseArgs({
   options: { mock: { type: 'boolean', default: false }, rate: { type: 'string', default: '5' } },
@@ -41,7 +42,7 @@ if (args.mock) {
   const adapter = startTiktok(user, ingest, {
     signApiKey: process.env.EULER_KEY || undefined,
     Connection: TikTokLiveConnection,
-    map: () => null, // FR-02 provides mapTiktok
+    map: mapTiktok,
     onStatus: (s, err) => console.log(`[${stamp()}] tiktok @${user}: ${s}${err ? ` (${err.reason ?? err.message ?? err})` : ''}`),
   });
   stop = () => adapter.stop();
