@@ -9,7 +9,7 @@
   * { box-sizing: border-box; }
   body { margin: 0; background: var(--bg); color: var(--fg); font: 14px/1.45 system-ui, "Segoe UI", sans-serif; }
   header { display: flex; gap: 16px; align-items: center; padding: 10px 20px; border-bottom: 1px solid var(--line); }
-  header h1 { font-size: 16px; margin: 0 12px 0 0; color: var(--gold); }
+  header h1 { font-size: 20px; margin: 0 12px 0 0; color: var(--gold); }
   nav button { background: none; border: 0; color: var(--mute); padding: 8px 12px; font: inherit; cursor: pointer; border-bottom: 2px solid transparent; }
   nav button[aria-selected="true"] { color: var(--fg); border-color: var(--gold); }
   #msg { margin-left: auto; color: var(--mute); }
@@ -26,7 +26,8 @@
   button.danger { color: var(--red); }
   .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
   .card { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 12px 14px; }
-  .card h3 { margin: 0 0 8px; font-size: 13px; color: var(--mute); font-weight: 500; }
+  h2 { margin: 16px 0 8px; font-size: 15px; font-weight: 500; }
+  .card h2 { margin: 0 0 8px; font-size: 13px; color: var(--mute); font-weight: 500; }
   .big { font-size: 26px; color: var(--gold); }
   textarea, input[type=text], input[type=number] { width: 100%; background: var(--bg); color: var(--fg); border: 1px solid var(--line); border-radius: 4px; padding: 6px 8px; font: 13px/1.4 ui-monospace, monospace; }
   textarea { min-height: 260px; resize: vertical; }
@@ -53,15 +54,15 @@
       <thead><tr><th>Tên</th><th>uid</th><th>Lời gần nhất</th><th>Lúc</th><th></th></tr></thead>
       <tbody id="recent"></tbody>
     </table>
-    <h3>Đang chặn</h3>
+    <h2>Đang chặn</h2>
     <table><tbody id="blocked"></tbody></table>
   </section>
 
   <section id="lists" hidden>
     <div class="grid">
-      <div class="card"><h3>Từ cấm (mỗi dòng một từ)</h3><textarea id="badwords"></textarea></div>
-      <div class="card"><h3>Câu kích hoạt (mỗi dòng một câu)</h3><textarea id="triggers"></textarea></div>
-      <div class="card"><h3>Lời cầu (mỗi dòng: cụm từ =&gt; nhãn)</h3><textarea id="intents"></textarea></div>
+      <div class="card"><h2>Từ cấm (mỗi dòng một từ)</h2><textarea id="badwords"></textarea></div>
+      <div class="card"><h2>Câu kích hoạt (mỗi dòng một câu)</h2><textarea id="triggers"></textarea></div>
+      <div class="card"><h2>Lời cầu (mỗi dòng: cụm từ =&gt; nhãn)</h2><textarea id="intents"></textarea></div>
     </div>
     <p><button class="act" id="saveLists">Lưu danh sách</button> <button class="act" id="reloadLists">Tải lại từ server</button></p>
   </section>
@@ -69,31 +70,31 @@
   <section id="stats" hidden>
     <div class="grid" id="statCards"></div>
     <div class="grid" style="margin-top:16px">
-      <div class="card"><h3>Top lời nguyện</h3><ol id="topPrayers"></ol></div>
-      <div class="card"><h3>Top người dâng lễ</h3><ol id="topDonors"></ol></div>
-      <div class="card"><h3>Nguồn event</h3><div id="sources"></div></div>
+      <div class="card"><h2>Top lời nguyện</h2><ol id="topPrayers"></ol></div>
+      <div class="card"><h2>Top người dâng lễ</h2><ol id="topDonors"></ol></div>
+      <div class="card"><h2>Nguồn event</h2><div id="sources"></div></div>
     </div>
   </section>
 
   <section id="scene" hidden>
     <div class="grid">
       <div class="card">
-        <h3>Cảnh</h3>
+        <h2>Cảnh</h2>
         <label class="row"><input type="radio" name="theme" value="day"> Ngày</label>
         <label class="row"><input type="radio" name="theme" value="night"> Đêm</label>
         <label class="row"><input type="radio" name="theme" value="ram"> Rằm</label>
         <label class="row"><input type="checkbox" id="sound"> Âm thanh / nhạc</label>
       </div>
       <div class="card">
-        <h3>Banner thủ công (tối đa 60 ký tự)</h3>
+        <h2>Banner thủ công (tối đa 60 ký tự)</h2>
         <input type="text" id="bannerText" maxlength="60">
         <p><button class="act" id="sendBanner">Phát banner</button></p>
-        <h3>Demo (event giả, không tính tiền)</h3>
+        <h2>Demo (event giả, không tính tiền)</h2>
         <label class="row"><input type="checkbox" id="demoOn"> Bật demo</label>
         <label class="row">Tốc độ <input type="number" id="demoRate" min="1" max="50" value="3" style="width:80px"> event/giây</label>
       </div>
       <div class="card">
-        <h3>Câu đối (mỗi dòng: vế trái | vế phải, mỗi vế ≤ 24 ký tự)</h3>
+        <h2>Câu đối (mỗi dòng: vế trái | vế phải, mỗi vế ≤ 24 ký tự)</h2>
         <textarea id="couplets" style="min-height:160px"></textarea>
         <p><button class="act" id="saveCouplets">Lưu câu đối</button></p>
       </div>
@@ -172,7 +173,7 @@ function renderStats() {
   ];
   $('statCards').replaceChildren(...cards.map(([k, v]) => {
     const c = el('div', null, 'card');
-    c.append(el('h3', k), el('div', String(v), 'big'));
+    c.append(el('h2', k), el('div', String(v), 'big'));
     return c;
   }));
   $('topPrayers').replaceChildren(...s.topPrayers.map(p => el('li', `${p.text} — ${p.count}`)));
