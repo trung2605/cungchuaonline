@@ -10,3 +10,9 @@
 | TC-06.6 | Unit | Số người xem | Event viewers 3500 | `{t:'counter', key:'viewers', value:3500}` | BR-06.2 |
 | TC-06.7 | Tích hợp | Snapshot có counters | Pipeline + 2 trigger | `snapshot().counters.namo === 2` | AC-06.5 |
 | TC-06.8 | Unit | Tên trên banner đã làm sạch | Join với tên `'🙏dm'` | Text là `Phật tử vừa vào chùa` | BR-06.3 |
+## Bổ sung v2
+| ID | Loại | Mô tả | Bước | Kỳ vọng | Truy vết |
+|---|---|---|---|---|---|
+| TC-06.9 | Unit | Thẻ người tặng | gift Rose ×3 | `{t:'donor', giftName:'Rose', repeat:3, diamonds:3}` | BR-06.9 |
+| TC-06.10 | Unit | Giới hạn tần suất bảng tri ân | 3 gift lúc t=0, 300, 600; tick lúc t=2100 | 1 message `board` lúc t=0, 1 message `board` lúc tick | AC-06.6 |
+| TC-06.11 | Unit | Top 8 sắp giảm dần | 12 người tặng với mức khác nhau | Đúng 8 dòng, giảm dần, bằng nhau thì ai đến trước đứng trên | AC-06.7 |

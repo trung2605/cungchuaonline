@@ -12,6 +12,7 @@ import { createDedupe } from './dedupe.js';
 import { Stage } from './stage.js';
 import { createBowRules } from './bowRules.js';
 import { createEffects } from './effects.js';
+import { createCounters } from './counters.js';
 
 const { values: args } = parseArgs({
   options: { mock: { type: 'boolean', default: false }, rate: { type: 'string', default: '5' } },
@@ -32,10 +33,11 @@ const log = createLog();
 const lists = loadLists();
 const blocked = new Set(JSON.parse(fs.readFileSync(new URL('./data/blocked.json', import.meta.url), 'utf8')));
 const stage = new Stage({ max: Number(process.env.MAX_ACTORS || 150) });
+const counters = createCounters({ lists });
 const pipeline = createPipeline({
-  stage, lists, blocked,
+  stage, lists, blocked, counters,
   dedupe: createDedupe(),
-  rules: [createBowRules({ stage, lists }), createEffects()],
+  rules: [createBowRules({ stage, lists }), createEffects(), counters],
 });
 const srv = await startServer({ getSnapshot: () => pipeline.snapshot() });
 console.log(`[${stamp()}] Render + WS: http://127.0.0.1:${srv.port}`);

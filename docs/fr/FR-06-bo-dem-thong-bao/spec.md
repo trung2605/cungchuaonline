@@ -36,4 +36,13 @@ Tạo cảm giác "cả chùa cùng niệm":
 - Cách hiển thị banner (FR-07).
 
 ## 6. Câu hỏi mở
-- **Q-06.1** Bộ đếm niệm có cần giữ qua nhiều phiên không, ví dụ "tổng từ trước tới nay"? **Mặc định: không.** Chỉ đếm trong phiên.
+- **Q-06.1** Bộ đếm niệm có cần giữ qua nhiều phiên không, ví dụ "tổng từ trước tới nay"? **Đã chốt 31/10: chỉ đếm trong phiên.**
+## Bổ sung v2 (31/10, D-11)
+| Mã | Quy tắc |
+|---|---|
+| BR-06.9 | **Thẻ người tặng gần nhất.** Mỗi gift (sau khi đã chống trùng) phát `{t:'donor', uid, name, giftName, repeat, diamonds: diamonds×repeat}`. Client hiện mỗi thẻ 6 s, xếp hàng chờ tối đa 5 thẻ, đầy thì bỏ thẻ cũ nhất. |
+| BR-06.10 | **Bảng tri ân.** Lấy top 8 uid theo tổng kim cương trong phiên, sắp giảm dần; bằng nhau thì ai đạt mức đó trước đứng trên. Khi bảng thay đổi, phát `{t:'board', top}` **tối đa 1 lần mỗi 2000 ms**. Thay đổi rơi vào lúc đang chờ thì được phát ở `tick()` kế tiếp. Event có `src:'mock'` vẫn hiện trên bảng (để chạy demo), nhưng FR-09 không tính các event này vào doanh thu. |
+| BR-06.11 | **Câu đối.** Snapshot gửi kèm `couplets`. Khi admin sửa danh sách (FR-09), phát `{t:'couplets', pairs}`. Client tự đổi câu mỗi **10 s**. |
+
+- **AC-06.6** 3 gift trong 1 s: có 3 message `donor`, nhưng chỉ 1 message `board` ngay lúc đó. Message `board` kế tiếp được phát ở `tick` sau khi đủ 2 s.
+- **AC-06.7** Bảng tri ân không bao giờ vượt quá 8 dòng và luôn sắp giảm dần.
