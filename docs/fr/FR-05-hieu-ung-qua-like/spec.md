@@ -32,4 +32,4 @@ Mỗi event chạy O(1).
 Cách vẽ và âm thanh của từng hiệu ứng thuộc FR-07.
 
 ## 7. Câu hỏi mở
-- **Q-05.1** Mốc like 1000 dựa theo phòng khoảng 3.000 người xem như video 1. **Mặc định: 1000.** Có thể chỉnh trong FR-09.
+- **Q-05.1** Mốc like 1000 dựa theo phòng khoảng 3.000 người xem như video 1. **Đã chốt 31/10: 1000.**

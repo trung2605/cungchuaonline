@@ -11,6 +11,7 @@ import { loadLists } from './lists.js';
 import { createDedupe } from './dedupe.js';
 import { Stage } from './stage.js';
 import { createBowRules } from './bowRules.js';
+import { createEffects } from './effects.js';
 
 const { values: args } = parseArgs({
   options: { mock: { type: 'boolean', default: false }, rate: { type: 'string', default: '5' } },
@@ -34,7 +35,7 @@ const stage = new Stage({ max: Number(process.env.MAX_ACTORS || 150) });
 const pipeline = createPipeline({
   stage, lists, blocked,
   dedupe: createDedupe(),
-  rules: [createBowRules({ stage, lists })],
+  rules: [createBowRules({ stage, lists }), createEffects()],
 });
 const srv = await startServer({ getSnapshot: () => pipeline.snapshot() });
 console.log(`[${stamp()}] Render + WS: http://127.0.0.1:${srv.port}`);
