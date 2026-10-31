@@ -1,0 +1,1 @@
+{ "event": "gift", "data": { "userId": "7001", "uniqueId": "u1", "nickname": "Lan", "giftId": 5655, "giftName": "Rose", "diamondCount": 1, "giftType": 1, "repeatCount": 7, "repeatEnd": true, "groupId": "g1" } }

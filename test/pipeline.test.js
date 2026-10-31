@@ -4,6 +4,7 @@ import { Stage } from '../server/stage.js';
 import { createDedupe } from '../server/dedupe.js';
 import { createBowRules } from '../server/bowRules.js';
 import { createPipeline } from '../server/pipeline.js';
+import { createEffects } from '../server/effects.js';
 
 const lists = { badwords: [], triggers: ['nam mo'], intents: {}, couplets: [['a', 'b']] };
 
@@ -41,4 +42,20 @@ test('TC-04.19 snapshot', () => {
   assert.deepEqual(s.counters, { namo: 0, viewers: 0 });
   assert.deepEqual(s.scene, { theme: 'night', sound: true });
   assert.deepEqual(s.couplets, [['a', 'b']]);
+});
+
+test('TC-10.5 same gift from tiktok then tikfinity 1.5 s later counts once', () => {
+  const clock = { t: 0 };
+  const now = () => clock.t;
+  const stage = new Stage({ now });
+  const p = createPipeline({
+    stage, lists, dedupe: createDedupe({ now }),
+    rules: [createBowRules({ stage, lists, now }), createEffects()],
+  });
+  const g = src => ({ kind: 'gift', src, uid: 'u1', name: 'Lan', giftId: 5655, giftName: 'Rose', diamonds: 1, repeat: 7, group: 'g1', ts: clock.t });
+  const first = p.handle(g('tiktok'));
+  assert.equal(first.filter(m => m.t === 'fx').length, 1);
+  assert.ok(first.some(m => m.t !== 'fx'));
+  clock.t = 1500;
+  assert.deepEqual(p.handle(g('tikfinity')), []);
 });

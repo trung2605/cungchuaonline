@@ -1,0 +1,1 @@
+{ "event": "like", "data": { "userId": "7001", "uniqueId": "u1", "nickname": "Lan", "likeCount": 15, "totalLikeCount": 300 } }

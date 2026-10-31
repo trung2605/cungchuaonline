@@ -16,6 +16,7 @@ Copy `.env.example` thành `.env`, rồi điền:
 | `TIKTOK_USER` | Tên kênh, **không có** dấu @. Ví dụ `chuaonline` |
 | `EULER_KEY` | Không bắt buộc. Có key thì kết nối ổn định hơn |
 | `MAX_ACTORS` | Để `150`. Nếu máy yếu thì giảm xuống `80` |
+| `TIKFINITY_WS` | Không bắt buộc. Nguồn dự phòng: mở app TikFinity, bật WebSocket, điền URL (thường `ws://127.0.0.1:21213/`). Để trống thì không dùng |
 
 **Không bao giờ điền mật khẩu TikTok vào bất cứ đâu.** Hệ thống chỉ đọc sự kiện công khai của phiên live.
 

@@ -57,7 +57,7 @@ export function startTiktok(user, ingest, {
     });
     // Listener required: an unhandled 'error' would crash the process.
     c.on('error', err => {
-      if (live()) console.warn('[tiktok] error:', err?.message ?? err);
+      if (live()) console.warn('[tiktok] error:', err?.message ?? err?.info ?? err);
     });
 
     onStatus('connecting');

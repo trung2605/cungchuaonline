@@ -30,5 +30,5 @@
 - Nguồn thứ ba.
 
 ## 6. Rủi ro và câu hỏi mở
-- **Q-10.1** Định dạng WebSocket và cổng của TikFinity cần xác minh khi cài app (T10.1). Giả định hiện tại: TikFinity phát JSON có dạng `{ event, data }`, trong đó `data` giống payload của tiktok-live-connector.
+- **Q-10.1** Định dạng WebSocket và cổng của TikFinity cần xác minh khi cài app (T10.1). Giả định hiện tại: TikFinity phát JSON có dạng `{ event, data }`. Mapper nhận cả hai kiểu `data`: kiểu lồng của connector v2 (`user.displayId`, `content`) và kiểu phẳng v1 (`uniqueId`, `comment`, `giftType`, `likeCount`, `viewerCount`). **Chưa xác minh với app thật**, fixture hiện là mẫu giả định.
 - **R-10.1** Nếu hai nguồn gửi cùng một event lệch nhau hơn 5 s, event đó sẽ bị tính hai lần. Cần đo độ lệch ở T10.3. Nếu lệch nhiều, nâng cửa sổ chống trùng cho riêng gift lên 10 s.

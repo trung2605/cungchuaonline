@@ -10,3 +10,10 @@
 | TC-10.6 | Live | Đo độ lệch | Chạy cả hai nguồn, ghi `ts` của 20 event | Độ lệch p95 < 5 s; ghi số đo | R-10.1 |
 | TC-10.7 | Thủ công | Mất connector | Cho adapter connector `stop()` | Chat qua TikFinity vẫn tạo nhân vật | AC-10.3 |
 | TC-10.8 | Thủ công | Mất TikFinity | Tắt app TikFinity | Không crash; console in `disconnected` rồi thử lại mỗi 5 s | AC-10.4 |
+
+## Kết quả (2026-10-31)
+- **TC-10.1 đến TC-10.5:** PASS (`npm test` 120/120). TC-10.1, TC-10.2 chạy trên fixture giả định.
+- **TC-10.7 (thử trên máy dev):** PASS. Server chạy với `TIKTOK_USER` không tồn tại (connector lỗi liên tục) và một WS server giả đóng vai TikFinity. Chat "Nam mô A Di Đà Phật" gửi qua WS giả tạo được nhân vật.
+- **TC-10.8 (thử trên máy dev):** PASS. Tắt WS giả: console in `disconnected` một lần, không crash. Bật lại: `connected` trong vòng 5 s.
+- **TC-10.6:** chưa làm, cần live thật có cả hai nguồn.
+- TC-10.4 trong code có thêm `connecting` ở đầu dãy trạng thái.

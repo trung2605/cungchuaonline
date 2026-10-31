@@ -7,6 +7,7 @@ import { createPipeline } from './pipeline.js';
 import { startMock } from './adapters/mock.js';
 import { startTiktok } from './adapters/tiktok.js';
 import { mapTiktok } from './mapTiktok.js';
+import { startTikfinity } from './adapters/tikfinity.js';
 import { loadLists } from './lists.js';
 import { createDedupe } from './dedupe.js';
 import { Stage } from './stage.js';
@@ -48,24 +49,37 @@ const ingest = e => {
 };
 const ticker = setInterval(() => srv.broadcast(pipeline.tick()), 1000);
 
-let stop;
+// Per-source state (BR-10.5); FR-09 admin reads it.
+const status = {};
+const onStatus = (src, label) => (s, err) => {
+  status[src] = s;
+  console.log(`[${stamp()}] ${label}: ${s}${err ? ` (${err.reason ?? err.message ?? err})` : ''}`);
+};
+
+const stops = [];
 if (args.mock) {
   console.log(`[${stamp()}] Nguồn: mock, ${rate} event/giây`);
-  stop = startMock(ingest, { rate });
+  stops.push(startMock(ingest, { rate }));
 } else {
   const { TikTokLiveConnection } = await import('tiktok-live-connector');
   const adapter = startTiktok(user, ingest, {
     signApiKey: process.env.EULER_KEY || undefined,
     Connection: TikTokLiveConnection,
     map: mapTiktok,
-    onStatus: (s, err) => console.log(`[${stamp()}] tiktok @${user}: ${s}${err ? ` (${err.reason ?? err.message ?? err})` : ''}`),
+    onStatus: onStatus('tiktok', `tiktok @${user}`),
   });
-  stop = () => adapter.stop();
+  stops.push(() => adapter.stop());
+  // BR-10.1/10.6: TikFinity runs alongside the connector, both feed the same ingest + dedupe.
+  const tfUrl = process.env.TIKFINITY_WS?.trim();
+  if (tfUrl) {
+    const tf = startTikfinity(tfUrl, ingest, { onStatus: onStatus('tikfinity', `tikfinity ${tfUrl}`) });
+    stops.push(() => tf.stop());
+  }
 }
 
 process.once('SIGINT', async () => {
   console.log(`[${stamp()}] Đang dừng...`);
-  stop();
+  stops.forEach(f => f());
   clearInterval(ticker);
   await log.close();
   await srv.close();
