@@ -14,10 +14,10 @@
 | Mã | Quy tắc |
 |---|---|
 | BR-02.1 | Ánh xạ tên event: `chat→chat`, `like→like`, `gift→gift`, `member→join`, `roomUser→viewers`, `streamEnd→end`. Event khác trả `null`. |
-| BR-02.2 | `uid = user.uniqueId`. `name = user.nickname`; nếu nickname rỗng thì lấy `uniqueId`. `ts` mặc định là thời điểm nhận. `src = 'tiktok'`. |
-| BR-02.3 | Quà combo (`giftType === 1`) chỉ được map khi `repeatEnd === true`, với `repeat = repeatCount`. Quà không combo thì map ngay, với `repeat = repeatCount \|\| 1`. |
+| BR-02.2 | `uid = user.displayId` (handle `@uniqueId`; rỗng thì lấy `user.id`). `name = user.nickname`; nếu nickname rỗng thì lấy `uid`. Chat lấy `text = content`. `ts` mặc định là thời điểm nhận. `src = 'tiktok'`. |
+| BR-02.3 | Quà combo (`gift.type === 1`) chỉ được map khi `repeatEnd` khác 0, với `repeat = repeatCount`. Quà không combo thì map ngay, với `repeat = repeatCount \|\| 1`. |
 | BR-02.4 | `diamonds` là giá của **một** quà (`diamondCount`). Tổng giá trị là `diamonds × repeat`, được tính ở FR-04 và FR-05. |
-| BR-02.5 | `like.count = likeCount \|\| 1`. |
+| BR-02.5 | `like.count = count \|\| 1`. `viewers.count = Number(roomUser.total)`. `diamonds = gift.diamondCount`, `giftName = gift.name`, `giftId = Number(giftId)`. |
 | BR-02.6 | Khóa chống trùng có dạng `kind\|uid\|payload`. Payload: chat là `text`, gift là `giftId:repeat`, like là `count`. Join chỉ dùng `kind\|uid`. `viewers` và `end` không chống trùng. |
 | BR-02.7 | Một khóa đã gặp trong vòng **≤ 5000 ms** thì event bị **bỏ**. Khóa không chứa `src`, nên cùng một event đến từ hai nguồn chỉ được giữ một lần. |
 | BR-02.8 | Bộ nhớ chống trùng tự dọn các khóa cũ hơn 5000 ms. |
