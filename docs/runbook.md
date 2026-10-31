@@ -15,6 +15,7 @@ Copy `.env.example` thành `.env`, rồi điền:
 |---|---|
 | `TIKTOK_USER` | Tên kênh, **không có** dấu @. Ví dụ `chuaonline` |
 | `EULER_KEY` | Không bắt buộc. Có key thì kết nối ổn định hơn |
+| `ADMIN_PASSWORD` | Mật khẩu trang admin http://127.0.0.1:8788 (đăng nhập user `admin`). Để trống thì không chạy admin |
 | `MAX_ACTORS` | Để `150`. Nếu máy yếu thì giảm xuống `80` |
 | `TIKFINITY_WS` | Không bắt buộc. Nguồn dự phòng: mở app TikFinity, bật WebSocket, điền URL (thường `ws://127.0.0.1:21213/`). Để trống thì không dùng |
 
@@ -82,7 +83,7 @@ Mỗi sự cố phải ghi vào `docs/incident-log.md`.
 | **Không có người mới vào lễ hơn 60 giây** dù chat vẫn chạy | Xem console: nếu đang `reconnecting` thì server đang tự nối lại, cứ đợi. Nếu lỗi kéo dài trên 3 phút, người dẫn chuyển sang nói chuyện trực tiếp; các nhân vật cũ vẫn ở trên màn hình cho đến khi hết giờ. |
 | **Cảnh đứng hình** hoặc màn hình đen | Chuột phải Link Source → *Refresh*. Cảnh tự khôi phục từ snapshot. |
 | **Console báo server thoát** | `run.cmd` tự bật lại trong khoảng 3 giây, trang tự nối lại, không cần làm gì. Nếu server cứ thoát liên tục, chụp màn hình console, tắt Link Source và báo kỹ thuật. |
-| **Chữ phản cảm lên màn hình** | 1. Thêm `uniqueId` của người đó (tên @, không có dấu @) vào `server/data/blocked.json`, ví dụ `["kenh_xau"]`. 2. Bấm `Ctrl+C` trong cửa sổ `run.cmd`, rồi chạy lại `scripts\run.cmd`. 3. Sau buổi live, bổ sung từ đó vào danh sách từ cấm. (Từ V1, chặn ngay trên trang admin.) |
+| **Chữ phản cảm lên màn hình** | 1. Mở admin http://127.0.0.1:8788, tab *Người dùng*, bấm **Chặn** ở dòng người đó: nhân vật rời chánh điện ngay. 2. Thêm từ đó vào tab *Danh sách từ* → *Lưu*, có hiệu lực ngay. (Không có admin thì thêm `uniqueId` vào `server/data/blocked.json` rồi khởi động lại `scripts\run.cmd`.) |
 | **TikTok gửi cảnh báo hoặc strike** | Tắt (ẩn) Link Source game ngay. Người dẫn vẫn tiếp tục. Đọc kỹ thông báo, chụp màn hình, ghi vào nhật ký. Không bật lại game cho đến khi biết lý do. |
 
 ## 8. Tắt live và lưu log

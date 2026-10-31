@@ -77,4 +77,12 @@ Mọi thay đổi có hiệu lực ngay, không cần khởi động lại.
 - Xuất CSV (để V2).
 
 ## 9. Câu hỏi mở
-- **Q-09.1** Có cho admin truy cập qua LAN, ví dụ moderator dùng điện thoại? **Mặc định: không**, vì chỉ có Basic Auth qua HTTP, không an toàn khi ra ngoài máy.
+- **Q-09.1** Có cho admin truy cập qua LAN, ví dụ moderator dùng điện thoại? **Đã chốt 31/10: không, chỉ dùng localhost.**
+## Bổ sung v2 (31/10)
+| Mã | Quy tắc |
+|---|---|
+| BR-09.12 | `PUT /api/lists` nhận thêm `intents` (object `cụm từ → nhãn`; khóa được fold, nhãn dài tối đa 20 ký tự) và `couplets` (mảng các cặp; mỗi vế dài tối đa 24 ký tự, chạy qua `cleanBubble`). Khi `couplets` thay đổi thì phát `{t:'couplets', pairs}` tới trang render. |
+| BR-09.13 | Tab "Cảnh" có ô sửa câu đối, mỗi dòng một cặp viết dạng `vế trái | vế phải`. Có thêm nút bật/tắt nhạc dùng chung với `scene.sound`. |
+
+- **AC-09.9** Sửa câu đối trên admin: trang render đổi sang danh sách mới trong ≤ 10 s.
+- **TC-09.19** (API) `PUT /api/lists {couplets:[['Tâm an','Đời an']]}` trả 200 và phát message `couplets`. Gửi vế dài 30 ký tự thì trả 400.

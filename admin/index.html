@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cúng chùa · Admin</title>
+<style>
+  :root { --bg: #1b1410; --panel: #261c16; --line: #3d2e24; --fg: #f3e9dc; --mute: #b09c88; --gold: #e0b45a; --red: #d0644f; --ok: #7fb27a; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font: 14px/1.45 system-ui, "Segoe UI", sans-serif; }
+  header { display: flex; gap: 16px; align-items: center; padding: 10px 20px; border-bottom: 1px solid var(--line); }
+  header h1 { font-size: 16px; margin: 0 12px 0 0; color: var(--gold); }
+  nav button { background: none; border: 0; color: var(--mute); padding: 8px 12px; font: inherit; cursor: pointer; border-bottom: 2px solid transparent; }
+  nav button[aria-selected="true"] { color: var(--fg); border-color: var(--gold); }
+  #msg { margin-left: auto; color: var(--mute); }
+  #msg.err { color: var(--red); }
+  main { padding: 16px 20px; max-width: 1240px; }
+  section[hidden] { display: none; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { color: var(--mute); font-weight: 500; }
+  td.uid { color: var(--mute); font-family: ui-monospace, monospace; font-size: 12px; }
+  tr.blocked td { opacity: .5; }
+  button.act { background: var(--panel); color: var(--fg); border: 1px solid var(--line); border-radius: 4px; padding: 4px 10px; cursor: pointer; font: inherit; }
+  button.act:hover { border-color: var(--gold); }
+  button.danger { color: var(--red); }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 12px 14px; }
+  .card h3 { margin: 0 0 8px; font-size: 13px; color: var(--mute); font-weight: 500; }
+  .big { font-size: 26px; color: var(--gold); }
+  textarea, input[type=text], input[type=number] { width: 100%; background: var(--bg); color: var(--fg); border: 1px solid var(--line); border-radius: 4px; padding: 6px 8px; font: 13px/1.4 ui-monospace, monospace; }
+  textarea { min-height: 260px; resize: vertical; }
+  label.row { display: flex; gap: 8px; align-items: center; margin: 6px 0; }
+  ol { margin: 0; padding-left: 20px; }
+  .on { color: var(--ok); } .off { color: var(--red); }
+</style>
+</head>
+<body>
+<header>
+  <h1>Cúng chùa · Admin</h1>
+  <nav role="tablist">
+    <button role="tab" data-tab="users" aria-selected="true">Người dùng</button>
+    <button role="tab" data-tab="lists">Danh sách từ</button>
+    <button role="tab" data-tab="stats">Thống kê</button>
+    <button role="tab" data-tab="scene">Cảnh</button>
+  </nav>
+  <span id="msg" role="status"></span>
+</header>
+<main>
+  <section id="users">
+    <label class="row"><input type="checkbox" id="raw"> Hiện lời gốc (chưa lọc)</label>
+    <table>
+      <thead><tr><th>Tên</th><th>uid</th><th>Lời gần nhất</th><th>Lúc</th><th></th></tr></thead>
+      <tbody id="recent"></tbody>
+    </table>
+    <h3>Đang chặn</h3>
+    <table><tbody id="blocked"></tbody></table>
+  </section>
+
+  <section id="lists" hidden>
+    <div class="grid">
+      <div class="card"><h3>Từ cấm (mỗi dòng một từ)</h3><textarea id="badwords"></textarea></div>
+      <div class="card"><h3>Câu kích hoạt (mỗi dòng một câu)</h3><textarea id="triggers"></textarea></div>
+      <div class="card"><h3>Lời cầu (mỗi dòng: cụm từ =&gt; nhãn)</h3><textarea id="intents"></textarea></div>
+    </div>
+    <p><button class="act" id="saveLists">Lưu danh sách</button> <button class="act" id="reloadLists">Tải lại từ server</button></p>
+  </section>
+
+  <section id="stats" hidden>
+    <div class="grid" id="statCards"></div>
+    <div class="grid" style="margin-top:16px">
+      <div class="card"><h3>Top lời nguyện</h3><ol id="topPrayers"></ol></div>
+      <div class="card"><h3>Top người dâng lễ</h3><ol id="topDonors"></ol></div>
+      <div class="card"><h3>Nguồn event</h3><div id="sources"></div></div>
+    </div>
+  </section>
+
+  <section id="scene" hidden>
+    <div class="grid">
+      <div class="card">
+        <h3>Cảnh</h3>
+        <label class="row"><input type="radio" name="theme" value="day"> Ngày</label>
+        <label class="row"><input type="radio" name="theme" value="night"> Đêm</label>
+        <label class="row"><input type="radio" name="theme" value="ram"> Rằm</label>
+        <label class="row"><input type="checkbox" id="sound"> Âm thanh / nhạc</label>
+      </div>
+      <div class="card">
+        <h3>Banner thủ công (tối đa 60 ký tự)</h3>
+        <input type="text" id="bannerText" maxlength="60">
+        <p><button class="act" id="sendBanner">Phát banner</button></p>
+        <h3>Demo (event giả, không tính tiền)</h3>
+        <label class="row"><input type="checkbox" id="demoOn"> Bật demo</label>
+        <label class="row">Tốc độ <input type="number" id="demoRate" min="1" max="50" value="3" style="width:80px"> event/giây</label>
+      </div>
+      <div class="card">
+        <h3>Câu đối (mỗi dòng: vế trái | vế phải, mỗi vế ≤ 24 ký tự)</h3>
+        <textarea id="couplets" style="min-height:160px"></textarea>
+        <p><button class="act" id="saveCouplets">Lưu câu đối</button></p>
+      </div>
+    </div>
+  </section>
+</main>
+<script>
+// Everything from the server goes through textContent (TC-09.16): names and comments are user input.
+const $ = id => document.getElementById(id);
+const el = (tag, text, cls) => { const e = document.createElement(tag); if (text != null) e.textContent = text; if (cls) e.className = cls; return e; };
+const fmtTime = ts => new Date(ts).toLocaleTimeString('vi-VN', { hour12: false });
+const fmtDur = ms => { const s = Math.floor(ms / 1000); return `${Math.floor(s / 3600)}h ${String(Math.floor(s / 60) % 60).padStart(2, '0')}m`; };
+let state = null;
+
+function say(text, err = false) {
+  $('msg').textContent = text;
+  $('msg').className = err ? 'err' : '';
+}
+
+async function api(method, path, body) {
+  // location.origin drops user:pass@, which fetch() rejects when the page was opened that way.
+  const r = await fetch(location.origin + path, { method, headers: body ? { 'content-type': 'application/json' } : {}, body: body && JSON.stringify(body) });
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(data.error || `HTTP ${r.status}`);
+  return data;
+}
+const act = (fn, okText) => async () => {
+  try { await fn(); if (okText) say(okText); await refresh(); } catch (e) { say(e.message, true); }
+};
+
+for (const b of document.querySelectorAll('nav button')) {
+  b.onclick = () => {
+    for (const x of document.querySelectorAll('nav button')) x.setAttribute('aria-selected', x === b);
+    for (const s of document.querySelectorAll('main section')) s.hidden = s.id !== b.dataset.tab;
+  };
+}
+
+const unblockBtn = (uid, label) => {
+  const b = el('button', 'Bỏ chặn', 'act');
+  b.onclick = act(() => api('DELETE', `/api/block/${encodeURIComponent(uid)}`), `Đã bỏ chặn ${label}`);
+  return b;
+};
+
+function renderUsers() {
+  const raw = $('raw').checked;
+  $('recent').replaceChildren(...state.recent.map(r => {
+    const tr = el('tr', null, r.blocked ? 'blocked' : '');
+    let btn = unblockBtn(r.uid, r.name);
+    if (!r.blocked) {
+      btn = el('button', 'Chặn', 'act danger');
+      btn.onclick = act(() => api('POST', '/api/block', { uid: r.uid }), `Đã chặn ${r.name}`);
+    }
+    const text = raw ? (r.raw ?? '') : (r.text ?? (r.raw ? '(bị lọc)' : ''));
+    const cell = el('td');
+    cell.append(btn);
+    tr.append(el('td', r.name), el('td', r.uid, 'uid'), el('td', text), el('td', fmtTime(r.ts)), cell);
+    return tr;
+  }));
+  const rows = state.blocked.map(uid => {
+    const tr = el('tr');
+    const cell = el('td');
+    cell.append(unblockBtn(uid, uid));
+    tr.append(el('td', uid, 'uid'), cell);
+    return tr;
+  });
+  if (!rows.length) rows.push(el('tr')), rows[0].append(el('td', 'Chưa chặn ai'));
+  $('blocked').replaceChildren(...rows);
+}
+
+function renderStats() {
+  const s = state.stats;
+  const cards = [
+    ['Đã live', fmtDur(s.uptime)], ['Người lạy', s.uniqueBowers], ['Lượt lạy', s.bows],
+    ['Số lần niệm', s.namo], ['Kim cương', s.diamonds], ['Kim cương / giờ', s.diamondsPerHour],
+    ['Comment bị lọc', s.filtered], ['Đỉnh người xem', s.viewersPeak],
+  ];
+  $('statCards').replaceChildren(...cards.map(([k, v]) => {
+    const c = el('div', null, 'card');
+    c.append(el('h3', k), el('div', String(v), 'big'));
+    return c;
+  }));
+  $('topPrayers').replaceChildren(...s.topPrayers.map(p => el('li', `${p.text} — ${p.count}`)));
+  $('topDonors').replaceChildren(...s.topDonors.map(d => el('li', `${d.name} (${d.uid}) — ${d.diamonds} 💎`)));
+  $('sources').replaceChildren(...Object.entries(s.sources).map(([k, v]) => {
+    const p = el('div', `${k}: `);
+    p.append(el('span', v, v === 'connected' ? 'on' : 'off'));
+    return p;
+  }));
+}
+
+function renderScene() {
+  for (const r of document.querySelectorAll('input[name=theme]')) r.checked = r.value === state.scene.theme;
+  $('sound').checked = state.scene.sound;
+  $('demoOn').checked = state.demo.on;
+  if (state.demo.on && document.activeElement !== $('demoRate')) $('demoRate').value = state.demo.rate;
+}
+
+// Text areas are filled only on first load / after save, so polling never wipes an edit in progress.
+function fillLists() {
+  const l = state.lists;
+  $('badwords').value = l.badwords.join('\n');
+  $('triggers').value = l.triggers.join('\n');
+  $('intents').value = Object.entries(l.intents).map(([k, v]) => `${k} => ${v}`).join('\n');
+  $('couplets').value = l.couplets.map(p => p.join(' | ')).join('\n');
+}
+
+async function refresh() {
+  try {
+    const first = !state;
+    state = await api('GET', '/api/state');
+    renderUsers();
+    renderStats();
+    renderScene();
+    if (first) fillLists();
+  } catch (e) {
+    say(`Mất kết nối admin: ${e.message}`, true);
+  }
+}
+
+const lines = id => $(id).value.split('\n').map(s => s.trim()).filter(Boolean);
+
+$('raw').onchange = () => state && renderUsers();
+$('saveLists').onclick = act(async () => {
+  const intents = {};
+  for (const line of lines('intents')) {
+    const [k, v] = line.split('=>').map(s => s.trim());
+    if (!k || !v) throw new Error(`Dòng lời cầu sai dạng "cụm từ => nhãn": ${line}`);
+    intents[k] = v;
+  }
+  const r = await api('PUT', '/api/lists', { badwords: lines('badwords'), triggers: lines('triggers'), intents });
+  state.lists = r.lists;
+  fillLists();
+}, 'Đã lưu danh sách');
+$('reloadLists').onclick = () => state && fillLists();
+$('saveCouplets').onclick = act(async () => {
+  const couplets = lines('couplets').map(line => {
+    const parts = line.split('|').map(s => s.trim());
+    if (parts.length !== 2 || !parts[0] || !parts[1]) throw new Error(`Dòng câu đối sai dạng "vế trái | vế phải": ${line}`);
+    return parts;
+  });
+  const r = await api('PUT', '/api/lists', { couplets });
+  state.lists = r.lists;
+  fillLists();
+}, 'Đã lưu câu đối');
+for (const r of document.querySelectorAll('input[name=theme]')) r.onchange = act(() => api('POST', '/api/scene', { theme: r.value }), 'Đã đổi cảnh');
+$('sound').onchange = act(() => api('POST', '/api/scene', { sound: $('sound').checked }), 'Đã đổi âm thanh');
+$('sendBanner').onclick = act(async () => {
+  await api('POST', '/api/banner', { text: $('bannerText').value });
+  $('bannerText').value = '';
+}, 'Đã phát banner');
+const setDemo = act(() => api('POST', '/api/demo', { on: $('demoOn').checked, rate: Number($('demoRate').value) }), 'Đã cập nhật demo');
+$('demoOn').onchange = setDemo;
+$('demoRate').onchange = () => $('demoOn').checked && setDemo();
+
+refresh();
+setInterval(refresh, 2000);
+</script>
+</body>
+</html>

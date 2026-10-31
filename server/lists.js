@@ -9,12 +9,15 @@ export function loadLists(dir = DEFAULT_DIR) {
   return Object.fromEntries(NAMES.map(n => [n, JSON.parse(fs.readFileSync(path.join(dir, `${n}.json`), 'utf8'))]));
 }
 
-// Each file is written to .tmp then renamed, so a crash never leaves a half-written list.
-export async function saveLists(lists, dir = DEFAULT_DIR) {
-  await fs.promises.mkdir(dir, { recursive: true });
-  for (const n of NAMES) {
-    const file = path.join(dir, `${n}.json`);
-    await fs.promises.writeFile(`${file}.tmp`, JSON.stringify(lists[n], null, 2) + '\n');
-    await fs.promises.rename(`${file}.tmp`, file);
-  }
+// Written to .tmp then renamed, so a crash never leaves a half-written file.
+async function writeAtomic(file, value) {
+  await fs.promises.mkdir(path.dirname(file), { recursive: true });
+  await fs.promises.writeFile(`${file}.tmp`, JSON.stringify(value, null, 2) + '\n');
+  await fs.promises.rename(`${file}.tmp`, file);
 }
+
+export async function saveLists(lists, dir = DEFAULT_DIR) {
+  for (const n of NAMES) await writeAtomic(path.join(dir, `${n}.json`), lists[n]);
+}
+
+export const saveBlocked = (blocked, dir = DEFAULT_DIR) => writeAtomic(path.join(dir, 'blocked.json'), [...blocked]);

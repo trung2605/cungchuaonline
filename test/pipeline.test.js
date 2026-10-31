@@ -59,3 +59,9 @@ test('TC-10.5 same gift from tiktok then tikfinity 1.5 s later counts once', () 
   clock.t = 1500;
   assert.deepEqual(p.handle(g('tikfinity')), []);
 });
+
+test('TC-09.2 setScene merges and snapshot follows', () => {
+  const { p } = setup();
+  assert.deepEqual(p.setScene({ theme: 'ram' }), [{ t: 'scene', scene: { theme: 'ram', sound: true } }]);
+  assert.equal(p.snapshot().scene.theme, 'ram');
+});

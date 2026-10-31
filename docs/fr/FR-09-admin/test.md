@@ -40,3 +40,20 @@
 | TC-09.16 | Thủ công | Tên chứa HTML | Mock gửi tên `<img src=x onerror=alert(1)>` | Hiện nguyên chữ, không chạy script | Bảo mật |
 | TC-09.17 | Thủ công | Demo | Bật demo rate 5 trong 10 s | Khoảng 50 event mock; `diamonds` không đổi | AC-09.7 |
 | TC-09.18 | Thủ công | Thiếu mật khẩu | Xóa `ADMIN_PASSWORD` khỏi env | Admin không chạy, có cảnh báo; server chính vẫn chạy | BR-09.1 |
+
+## Kết quả (31/10)
+| ID | Kết quả | Ghi chú |
+|---|---|---|
+| TC-09.1, TC-09.2 | PASS | `test/stage.test.js`, `test/pipeline.test.js` |
+| TC-09.3 → TC-09.6 | PASS | `test/stats.test.js`. Khớp số kỳ vọng của kịch bản mẫu |
+| TC-09.7 → TC-09.14, TC-09.19 | PASS | `test/admin.test.js`. Kiểm thêm: AC-09.4, intents, demo, content-type sai → 415, `Host` lạ → 403 |
+| TC-09.15 | PASS | Chạy server `--mock` với admin thật và một WS client. Client nhận `leave` ngay. Trong 5 s sau đó không có message nào của uid bị chặn. Bỏ chặn trả 200 |
+| AC-09.5 | PASS | Client đang mở nhận `scene`. Client kết nối sau nhận snapshot có `theme: 'ram'` |
+| TC-09.16 | PASS | Chèn tên `<img src=x onerror=…>` vào bảng: hiện nguyên chữ, không tạo thẻ `img` nào |
+| TC-09.17 | PASS | Bật rồi tắt demo qua API: `diamonds` không đổi |
+| TC-09.18 | PASS | Để `ADMIN_PASSWORD` rỗng: server in cảnh báo, cổng 8787 vẫn trả 200, cổng 8788 không mở |
+| Phi chức năng | PASS | `GET /api/state` trung bình 0,8 ms. Giao diện ở 1280 px hiển thị ổn |
+| AC-09.9 | PASS (qua API) | Server phát `couplets` ngay khi lưu. Trang web đã xử lý message này từ FR-07 |
+| BR-09.11 (ghi `stats-*.json`) | **Chưa kiểm** | Script không gửi được SIGINT trên Windows. Cần tự bấm `Ctrl+C` một lần rồi xem thư mục `logs/` |
+
+`npm test`: 141/141 pass.

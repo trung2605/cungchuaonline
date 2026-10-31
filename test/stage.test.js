@@ -89,3 +89,11 @@ test('TC-04.23 diamonds kept across re-enter', () => {
   assert.equal(out[0].actor.diamonds, 33);
   assert.deepEqual(out[1], { t: 'badge', id: 'a', diamonds: 33 });
 });
+
+test('TC-09.1 remove', () => {
+  const [s] = setup();
+  s.enter('a', 'A', 0, 1);
+  assert.deepEqual(s.remove('a'), [{ t: 'leave', id: 'a' }]);
+  assert.equal(s.has('a'), false);
+  assert.deepEqual(s.remove('x'), []);
+});

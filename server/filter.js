@@ -51,10 +51,10 @@ export function detectIntent(text, lists) {
 
 export const isTrigger = (text, lists) => matchesAny(text, lists.triggers) || detectIntent(text, lists) !== null;
 
-export function cleanBubble(text, lists) {
+export function cleanBubble(text, lists, max = 40) {
   const s = text.normalize('NFC').replace(INVISIBLE, '').replace(/\s+/g, ' ').trim();
   if (!s || URL_RE.test(s) || PHONE_RE.test(s) || MENTION_RE.test(s) || hasBadword(s, lists)) return null;
-  return cut(s, 40);
+  return cut(s, max);
 }
 
 export function cleanName(name, lists) {

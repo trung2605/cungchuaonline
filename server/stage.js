@@ -90,6 +90,11 @@ export class Stage {
     return [...this.actors.values()].filter(a => a.expiresAt <= t).map(a => this.#remove(a.id));
   }
 
+  // Admin block (BR-09.2): drop the actor now instead of waiting for TTL.
+  remove(uid) {
+    return this.actors.has(uid) ? [this.#remove(uid)] : [];
+  }
+
   has(uid) {
     return this.actors.has(uid);
   }

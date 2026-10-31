@@ -110,3 +110,7 @@ test('TC-03.20 real badwords list does not block common phrases', () => {
   for (const s of ['đồ cặc', 'dm', 'v.c.l', 'địt mẹ', 'clgt'])
     assert.equal(cleanBubble(s, l), null, s);
 });
+
+test('cleanBubble max param (admin banner 60)', () => {
+  assert.equal(cleanBubble('a'.repeat(80), lists(), 60).length, 60);
+});

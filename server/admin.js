@@ -1,0 +1,202 @@
+import http from 'node:http';
+import fs from 'node:fs';
+import crypto from 'node:crypto';
+import { fold, cleanBubble } from './filter.js';
+
+const PAGE = new URL('../admin/index.html', import.meta.url);
+const BODY_MAX = 64 * 1024;
+const THEMES = ['day', 'night', 'ram'];
+// BR-08 / BR-09.8: "tặng" + one of these is never shown on screen.
+const GIFT_BAIT = ['de duoc', 'duoc lay', 'phu ho', 'giai han'];
+
+class HttpError extends Error {
+  constructor(code, msg) {
+    super(msg);
+    this.code = code;
+  }
+}
+const bad = msg => new HttpError(400, msg);
+
+const send = (res, code, body) =>
+  res.writeHead(code, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' }).end(JSON.stringify(body));
+
+// Pad both sides so timingSafeEqual never throws on length mismatch.
+function authorized(header, password) {
+  const m = /^Basic (.+)$/.exec(header ?? '');
+  if (!m) return false;
+  const [user, ...rest] = Buffer.from(m[1], 'base64').toString('utf8').split(':');
+  const a = Buffer.from(rest.join(':'));
+  const b = Buffer.from(password);
+  const len = Math.max(a.length, b.length);
+  const eq = crypto.timingSafeEqual(Buffer.concat([a, Buffer.alloc(len - a.length)]), Buffer.concat([b, Buffer.alloc(len - b.length)]));
+  return user === 'admin' && a.length === b.length && eq;
+}
+
+async function readJson(req) {
+  // application/json forces a CORS preflight, so other sites can't post with the browser's cached Basic creds.
+  if (!/^application\/json\b/.test(req.headers['content-type'] ?? '')) throw new HttpError(415, 'cần content-type application/json');
+  const chunks = [];
+  let size = 0;
+  for await (const c of req) {
+    size += c.length;
+    if (size > BODY_MAX) throw new HttpError(413, 'body quá 64 KB');
+    chunks.push(c);
+  }
+  let body;
+  try {
+    body = JSON.parse(Buffer.concat(chunks).toString('utf8'));
+  } catch {
+    throw bad('body không phải JSON');
+  }
+  if (!body || typeof body !== 'object' || Array.isArray(body)) throw bad('body phải là object');
+  return body;
+}
+
+const words = (v, opts) => {
+  if (!Array.isArray(v) || v.some(w => typeof w !== 'string')) throw bad('danh sách phải là mảng chuỗi');
+  return [...new Set(v.map(w => fold(w, opts)).filter(Boolean))];
+};
+
+// BR-09.5, BR-09.12. Validates everything before touching `lists`, so a 400 changes nothing.
+function nextLists(body, lists) {
+  const next = {};
+  if (body.badwords !== undefined) next.badwords = words(body.badwords, { keepMarks: true });
+  if (body.triggers !== undefined) next.triggers = words(body.triggers);
+  if (body.intents !== undefined) {
+    if (!body.intents || typeof body.intents !== 'object' || Array.isArray(body.intents)) throw bad('intents phải là object');
+    next.intents = {};
+    for (const [k, label] of Object.entries(body.intents)) {
+      const key = fold(k);
+      const l = typeof label === 'string' ? label.trim() : '';
+      if (!l || Array.from(l).length > 20) throw bad(`nhãn của "${k}" phải dài 1–20 ký tự`);
+      if (key) next.intents[key] = l;
+    }
+  }
+  if (body.couplets !== undefined) {
+    if (!Array.isArray(body.couplets)) throw bad('couplets phải là mảng');
+    const check = { ...lists, ...next };
+    next.couplets = body.couplets.map(pair => {
+      if (!Array.isArray(pair) || pair.length !== 2) throw bad('mỗi câu đối phải là cặp [trái, phải]');
+      return pair.map(side => {
+        const s = typeof side === 'string' ? side.trim() : '';
+        if (!s || Array.from(s).length > 24) throw bad(`vế "${s}" phải dài 1–24 ký tự`);
+        const c = cleanBubble(s, check, 24);
+        if (!c) throw bad(`vế "${s}" bị bộ lọc loại`);
+        return c;
+      });
+    });
+  }
+  return next;
+}
+
+// ctx: { pipeline, stage, lists, blocked, stats, counters, status, broadcast, saveLists, saveBlocked, demo }
+export async function startAdmin({ port = 8788, host = '127.0.0.1', password, ctx }) {
+  const { pipeline, stage, lists, blocked, stats, counters, status, broadcast, demo } = ctx;
+  let okHosts = new Set();
+
+  const routes = {
+    'GET /': (req, res) =>
+      fs.readFile(PAGE, (err, html) =>
+        err ? send(res, 500, { error: 'thiếu admin/index.html' })
+          : res.writeHead(200, { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' }).end(html)),
+
+    'GET /api/state': () => ({
+      stats: stats.state(status, counters),
+      recent: stats.recent().map(r => ({ ...r, blocked: blocked.has(r.uid) })),
+      blocked: [...blocked],
+      lists,
+      scene: pipeline.snapshot().scene,
+      demo: demo.state(),
+    }),
+
+    'POST /api/block': async req => {
+      const { uid } = await readJson(req);
+      if (typeof uid !== 'string' || !uid || uid.length > 128) throw bad('uid không hợp lệ');
+      blocked.add(uid);
+      await ctx.saveBlocked(blocked);
+      broadcast(stage.remove(uid));
+      return { ok: true };
+    },
+
+    'DELETE /api/block/:uid': async (req, res, uid) => {
+      blocked.delete(uid);
+      await ctx.saveBlocked(blocked);
+      return { ok: true };
+    },
+
+    'PUT /api/lists': async req => {
+      const next = nextLists(await readJson(req), lists);
+      const coupletsChanged = next.couplets && JSON.stringify(next.couplets) !== JSON.stringify(lists.couplets);
+      Object.assign(lists, next);
+      await ctx.saveLists(lists);
+      if (coupletsChanged) broadcast([{ t: 'couplets', pairs: lists.couplets }]);
+      return { lists };
+    },
+
+    'POST /api/scene': async req => {
+      const { theme, sound } = await readJson(req);
+      if (theme !== undefined && !THEMES.includes(theme)) throw bad(`theme phải là ${THEMES.join('/')}`);
+      if (sound !== undefined && typeof sound !== 'boolean') throw bad('sound phải là boolean');
+      const msgs = pipeline.setScene({ ...(theme && { theme }), ...(sound !== undefined && { sound }) });
+      broadcast(msgs);
+      return { scene: msgs[0].scene };
+    },
+
+    'POST /api/banner': async req => {
+      const { text } = await readJson(req);
+      if (typeof text !== 'string') throw bad('thiếu text');
+      const f = fold(text);
+      if (f.includes('tang') && GIFT_BAIT.some(p => f.includes(p))) throw bad('không được dùng câu "tặng … để được …"');
+      const clean = cleanBubble(text, lists, 60);
+      if (!clean) throw bad('text rỗng hoặc bị bộ lọc loại (từ cấm, link, số điện thoại, @)');
+      broadcast([{ t: 'banner', text: clean, ms: 5000 }]);
+      return { ok: true };
+    },
+
+    'POST /api/demo': async req => {
+      const { on, rate = 3 } = await readJson(req);
+      if (typeof on !== 'boolean') throw bad('on phải là boolean');
+      if (!(Number.isFinite(rate) && rate >= 1 && rate <= 50)) throw bad('rate phải từ 1 đến 50');
+      if (on) demo.start(rate);
+      else demo.stop();
+      return { demo: demo.state() };
+    },
+  };
+
+  const server = http.createServer(async (req, res) => {
+    // Host check blocks DNS rebinding; auth covers every route including the page.
+    if (!okHosts.has(req.headers.host)) return send(res, 403, { error: 'host không hợp lệ' });
+    if (!authorized(req.headers.authorization, password)) {
+      return res.writeHead(401, { 'www-authenticate': 'Basic realm="cungchua-admin", charset="UTF-8"' }).end();
+    }
+    const path = req.url.split('?')[0];
+    const m = /^\/api\/block\/(.+)$/.exec(path);
+    let uid;
+    try {
+      uid = m && decodeURIComponent(m[1]);
+    } catch {
+      return send(res, 400, { error: 'uid không hợp lệ' });
+    }
+    const route = routes[`${req.method} ${m ? '/api/block/:uid' : path}`];
+    if (!route) return send(res, 404, { error: 'không có route' });
+    try {
+      const out = await route(req, res, uid);
+      if (out !== undefined) send(res, 200, out);
+    } catch (err) {
+      if (!(err instanceof HttpError)) console.error('[admin]', err);
+      send(res, err.code ?? 500, { error: err instanceof HttpError ? err.message : 'lỗi server' });
+    }
+  });
+
+  await new Promise((resolve, reject) => {
+    server.once('error', reject);
+    server.listen(port, host, resolve);
+  });
+  const real = server.address().port;
+  okHosts = new Set([`127.0.0.1:${real}`, `localhost:${real}`]);
+
+  return {
+    port: real,
+    close: () => new Promise(r => server.close(() => r())),
+  };
+}
