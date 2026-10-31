@@ -24,3 +24,10 @@ Fixture: `let t = 0; const now = () => t;`, `stage = new Stage({ now })`, `lists
 | TC-04.18 | Unit | Chống trùng trong pipeline | Cùng một chat 2 lần trong 4 s | Lần 2 trả `[]` | FR-02 |
 | TC-04.19 | Unit | Snapshot | Sau 2 lần spawn | `{t:'snapshot', actors.length:2, counters, scene}` | FR-01 |
 | TC-04.20 | Thủ công | Demo | `npm run demo` + WS client trong 2 phút | Thấy spawn, bow, say, leave; số actor ≤ 150 | Tổng hợp |
+## Bổ sung v2
+| ID | Loại | Mô tả | Bước | Kỳ vọng | Truy vết |
+|---|---|---|---|---|---|
+| TC-04.21 | Unit | Lời cầu từ chat | chat 'cầu tài lộc' | `spawn.actor.intent === 'Cầu Tài Lộc'` | AC-04.9 |
+| TC-04.22 | Unit | Lời cầu mặc định khi tặng quà | gift từ uid mới | `intent === 'Cầu Bình An'` | BR-04.14 |
+| TC-04.23 | Unit | Kim cương giữ qua lần vào lại | Rose ×3, tick hết hạn, Doughnut ×1 | `spawn.actor.diamonds === 33` | AC-04.10 |
+| TC-04.24 | Unit | Quà cho người đang ngồi | chat (spawn) rồi gift Rose | `[{t:'bow', times:1, visit:true}, {t:'badge', diamonds:1}, ...]` | AC-04.11 |

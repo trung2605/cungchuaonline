@@ -49,3 +49,14 @@ Hiệu ứng quà (FR-05). Bộ đếm và banner (FR-06). Animation (FR-07).
 ## 8. Câu hỏi mở
 - **Q-04.1** Người xem đang trong 10 phút chờ có cần được báo "còn X phút" không? **Đã chốt 31/10: không báo.**
 - **Q-04.2** Khi nhân vật được lên hàng đầu: **Đã chốt 31/10: đi thẳng lên, dùng message `move`.**
+## Bổ sung v2 (31/10, D-09, D-11)
+| Mã | Quy tắc |
+|---|---|
+| BR-04.14 | **Lời cầu của nhân vật.** Khi chat được cấp lượt lạy, `intent = detectIntent(text) ?? intent hiện có ?? 'Cầu Bình An'`. Quà **không** đổi lời cầu; uid mới tặng quà thì nhân vật nhận lời cầu `Cầu Bình An`. Chat trong 10 phút chờ không đổi lời cầu. |
+| BR-04.15 | **Kim cương theo uid.** Mỗi quà cộng `diamonds × repeat` vào tổng của uid trong phiên. Tổng này vẫn được giữ khi nhân vật rời đi rồi quay lại. `Actor.diamonds` lấy giá trị tổng này. Mỗi lần cộng phát ra `{t:'badge', id, diamonds}`, đặt sau message `bow` hoặc `spawn`. |
+| BR-04.16 | **Lên bàn thờ.** `spawn` luôn hiểu là nhân vật đi lên bàn thờ trước rồi mới về chỗ (FR-07). Quà tặng cho nhân vật đã có mặt phát `{t:'bow', id, times, visit:true}`. Lượt lạy không do quà thì `visit` là false hoặc không có. |
+| BR-04.17 | **Bố cục bồ đoàn** (thay cách diễn giải chỗ ngồi ở BR-04.7, số slot giữ nguyên). Slot 0–19 là 2 hàng bồ đoàn gần bàn thờ nhất, mỗi hàng chia 5 bên trái và 5 bên phải. Slot 20–149 là các hàng sau, mỗi hàng 12 chỗ chia 6 trái và 6 phải. Ở giữa là thảm đỏ, không có slot. |
+
+- **AC-04.9** Comment "cầu tài lộc" lần đầu: `spawn` có `intent:'Cầu Tài Lộc'`. Gift lần đầu: `intent:'Cầu Bình An'`.
+- **AC-04.10** Uid tặng Rose ×3, nhân vật rời đi, sau đó tặng Doughnut (30) ×1: `spawn` có `diamonds:33`.
+- **AC-04.11** Nhân vật đang ngồi, nhận Rose: có `{t:'bow', times:1, visit:true}` rồi `{t:'badge'}`.

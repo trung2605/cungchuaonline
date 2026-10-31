@@ -1,4 +1,5 @@
 import 'dotenv/config';
+import fs from 'node:fs';
 import { parseArgs } from 'node:util';
 import { startServer } from './server.js';
 import { createLog } from './log.js';
@@ -6,6 +7,10 @@ import { createPipeline } from './pipeline.js';
 import { startMock } from './adapters/mock.js';
 import { startTiktok } from './adapters/tiktok.js';
 import { mapTiktok } from './mapTiktok.js';
+import { loadLists } from './lists.js';
+import { createDedupe } from './dedupe.js';
+import { Stage } from './stage.js';
+import { createBowRules } from './bowRules.js';
 
 const { values: args } = parseArgs({
   options: { mock: { type: 'boolean', default: false }, rate: { type: 'string', default: '5' } },
@@ -23,7 +28,14 @@ if (!(rate > 0)) {
 
 const stamp = () => new Date().toLocaleTimeString('vi-VN', { hour12: false });
 const log = createLog();
-const pipeline = createPipeline();
+const lists = loadLists();
+const blocked = new Set(JSON.parse(fs.readFileSync(new URL('./data/blocked.json', import.meta.url), 'utf8')));
+const stage = new Stage({ max: Number(process.env.MAX_ACTORS || 150) });
+const pipeline = createPipeline({
+  stage, lists, blocked,
+  dedupe: createDedupe(),
+  rules: [createBowRules({ stage, lists })],
+});
 const srv = await startServer({ getSnapshot: () => pipeline.snapshot() });
 console.log(`[${stamp()}] Render + WS: http://127.0.0.1:${srv.port}`);
 

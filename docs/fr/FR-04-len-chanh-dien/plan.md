@@ -57,3 +57,9 @@ export function createPipeline({ stage, dedupe, blocked = new Set(), rules = [],
 - FR-02: `createDedupe`.
 - FR-03: `isTrigger`, `cleanBubble`, `cleanName`, `loadLists`.
 - FR-01: `index.js` cần sửa để dùng pipeline thật.
+## Bổ sung v2
+- `Stage.enter(uid, name, tier, addBows, { intent, addDiamonds = 0, visit = false } = {})`. Stage giữ `diamondsByUid: Map` sống qua các lần vào/ra trong phiên.
+- `bowRules` gọi `detectIntent` (FR-03) cho chat, truyền `intent` và `visit:false`. Với gift, truyền `addDiamonds: diamonds*repeat` và `visit: true`.
+- Hằng số `DEFAULT_INTENT = 'Cầu Bình An'` đặt trong `stage.js`.
+- `pipeline.tick()` = `stage.tick()` cộng `rules.flatMap(r => r.tick?.() ?? [])`. Bảng tri ân của FR-06 cần thay đổi này.
+- `snapshot()` có thêm `board: counters?.board() ?? []` và `couplets: lists.couplets`.
