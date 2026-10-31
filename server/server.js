@@ -32,7 +32,7 @@ function resolveFile(url, roots) {
   } catch {
     return null;
   }
-  if (p.includes('\0') || p.split(/[\/]/).includes('..')) return null;
+  if (p.includes('\0') || p.split(/[\\/]/).includes('..')) return null;
   for (const [prefix, root] of roots) {
     if (!p.startsWith(prefix)) continue;
     let rel = p.slice(prefix.length);

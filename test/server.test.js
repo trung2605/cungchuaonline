@@ -59,7 +59,7 @@ test('TC-01.2 broadcast reaches every client', async () => {
 });
 
 test('TC-01.3 path traversal returns 404', async () => {
-  for (const p of ['/../package.json', '/%2e%2e/package.json', '/vendor/three/../../package.json', '/vendor/three/%2e%2e%2f%2e%2e%2fpackage.json', '/%00']) {
+  for (const p of ['/../package.json', '/%2e%2e/package.json', '/vendor/three/../../package.json', '/vendor/three/%2e%2e%2f%2e%2e%2fpackage.json', '/%00', '/..%5Cpackage.json', '/vendor/three/..%5C..%5Cpackage.json']) {
     assert.equal((await get(p)).statusCode, 404, p);
   }
 });

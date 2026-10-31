@@ -3,6 +3,6 @@ export function createPipeline(opts = {}) {
   return {
     handle: e => [],
     tick: () => [],
-    snapshot: () => ({ t: 'snapshot', actors: [], counters: { namo: 0, viewers: 0 }, scene: { theme: 'night', sound: true } }),
+    snapshot: () => ({ t: 'snapshot', actors: [], counters: { namo: 0, viewers: 0 }, scene: { theme: 'night', sound: true }, board: [], couplets: [] }),
   };
 }

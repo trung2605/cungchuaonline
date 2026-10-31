@@ -47,7 +47,7 @@
 ## T01.6 Pipeline stub + index.js
 - [x] Viết `server/pipeline.js` dạng stub:
   - `handle` và `tick` trả `[]`.
-  - `snapshot` trả `{t:'snapshot', actors:[], counters:{namo:0,viewers:0}, scene:{theme:'night',sound:true}}`.
+  - `snapshot` trả `{t:'snapshot', actors:[], counters:{namo:0,viewers:0}, scene:{theme:'night',sound:true}, board:[], couplets:[]}` (v2).
 - [x] Viết `server/index.js`:
   1. `import 'dotenv/config'`, đọc `--mock` và `--rate`.
   2. Tạo `log` và `pipeline`, gọi `srv = await startServer({ getSnapshot: () => pipeline.snapshot() })`.
