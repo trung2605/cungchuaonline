@@ -83,82 +83,82 @@
   .wave i:nth-child(3) { animation-delay: 320ms; height: 10px; }
   @keyframes wave-bar { to { height: 20px; background: var(--gold); } }
 
-  /* Left Safe-Zone Flex Column: starts at top: 268px (40px below TikTok Daily Ranking badge) with 18px gap so boxes never collide */
+  /* Left Safe-Zone Flex Column: starts at top: 268px (40px below TikTok Daily Ranking badge) with extra-large mobile fonts */
   #left-col {
-    left: 16px; top: 268px; width: 256px;
-    display: flex; flex-direction: column; gap: 18px;
+    left: 12px; top: 268px; width: 298px;
+    display: flex; flex-direction: column; gap: 16px;
     pointer-events: none;
   }
-  #guide { width: 100%; padding: 14px 16px; font-size: 17.5px; pointer-events: none; }
-  #guide h3 { margin: 0 0 10px; padding-bottom: 8px; text-align: center; color: var(--gold); letter-spacing: 1.2px; font-size: 21px; font-weight: 800; border-bottom: 1.5px solid var(--gold-line); }
-  #guide .tier { margin-bottom: 9px; padding-bottom: 9px; border-bottom: 1px dashed rgba(255, 255, 255, .2); line-height: 1.35; font-weight: 700; font-variant-numeric: tabular-nums; color: #f0f7ff; }
+  #guide { width: 100%; padding: 15px 16px; font-size: 22px; pointer-events: none; }
+  #guide h3 { margin: 0 0 11px; padding-bottom: 8px; text-align: center; color: var(--gold); letter-spacing: 0.8px; font-size: 26px; font-weight: 800; border-bottom: 2px solid var(--gold-line); }
+  #guide .tier { margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1.5px dashed rgba(255, 255, 255, .24); line-height: 1.35; font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; color: #ffffff; }
   #guide .tier:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
-  #guide .tier b { display: block; color: var(--cyan); font-size: 19px; font-weight: 800; margin-bottom: 3px; }
+  #guide .tier b { display: block; color: var(--cyan); font-size: 24px; font-weight: 800; margin-bottom: 3px; }
 
-  #joins { width: 100%; padding: 14px 16px; font-size: 18px; pointer-events: none; }
-  #joins h3 { margin: 0 0 8px; padding-bottom: 7px; text-align: center; color: var(--cyan); letter-spacing: 1.1px; font-size: 20px; font-weight: 800; border-bottom: 1.5px solid var(--line); }
+  #joins { width: 100%; padding: 14px 16px; font-size: 22px; pointer-events: none; }
+  #joins h3 { margin: 0 0 9px; padding-bottom: 7px; text-align: center; color: var(--cyan); letter-spacing: 0.8px; font-size: 25px; font-weight: 800; border-bottom: 2px solid var(--line); }
   #joins ul { margin: 0; padding: 0; list-style: none; }
-  #joins li { padding: 6px 0; border-bottom: 1px dashed rgba(255, 255, 255, .18); font-size: 18px; font-weight: 700; line-height: 1.38; white-space: normal; word-break: break-word; }
+  #joins li { padding: 7px 0; border-bottom: 1.5px dashed rgba(255, 255, 255, .22); font-size: 22.5px; font-weight: 700; line-height: 1.36; white-space: normal; word-break: break-word; color: #ffffff; }
   #joins li:last-child { border-bottom: none; padding-bottom: 0; }
   #joins li b { color: var(--gold); font-weight: 800; }
 
-  /* Right Safe-Zone Flex Column: starts at top: 185px (below TikTok viewer avatars) with 18px gap */
+  /* Right Safe-Zone Flex Column: starts at top: 185px (below TikTok viewer avatars) with extra-large mobile fonts */
   #right-col {
-    right: 16px; top: 185px; width: 256px;
-    display: flex; flex-direction: column; gap: 18px;
+    right: 12px; top: 185px; width: 298px;
+    display: flex; flex-direction: column; gap: 16px;
     pointer-events: none;
   }
   #odometer {
     width: 100%; padding: 14px 16px; text-align: center;
     font-variant-numeric: tabular-nums; border-color: var(--gold-line); pointer-events: none;
   }
-  #odometer b { display: block; font-size: 18px; font-weight: 800; color: var(--gold); letter-spacing: 1px; }
-  #world-dist { display: block; font-size: 32px; font-weight: 800; color: #fff; margin: 3px 0; }
-  #runner-count { display: block; font-size: 18px; font-weight: 700; color: var(--cyan); }
+  #odometer b { display: block; font-size: 22px; font-weight: 800; color: var(--gold); letter-spacing: 0.8px; }
+  #world-dist { display: block; font-size: 38px; font-weight: 800; color: #fff; margin: 4px 0; }
+  #runner-count { display: block; font-size: 22px; font-weight: 700; color: var(--cyan); }
 
-  #board { width: 100%; padding: 14px 16px; font-size: 18.5px; pointer-events: none; }
-  #board h3 { margin: 0 0 9px; padding-bottom: 7px; text-align: center; color: var(--gold); letter-spacing: 1.2px; font-size: 20px; font-weight: 800; border-bottom: 1.5px solid var(--gold-line); }
-  #board ol { margin: 0; padding-left: 24px; font-variant-numeric: tabular-nums; }
-  #board li { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.55; color: #f0f7ff; font-size: 18.5px; font-weight: 800; margin-bottom: 3px; }
+  #board { width: 100%; padding: 15px 16px; font-size: 22.5px; pointer-events: none; }
+  #board h3 { margin: 0 0 10px; padding-bottom: 8px; text-align: center; color: var(--gold); letter-spacing: 0.8px; font-size: 25px; font-weight: 800; border-bottom: 2px solid var(--gold-line); }
+  #board ol { margin: 0; padding-left: 28px; font-variant-numeric: tabular-nums; }
+  #board li { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.5; color: #ffffff; font-size: 22.5px; font-weight: 800; margin-bottom: 4px; }
   #board li::marker { color: var(--gold); font-weight: 800; }
-  #board .empty-board { font-size: 17.5px; font-weight: 700; color: #b8d4f2; text-align: center; padding: 8px 2px; line-height: 1.4; }
+  #board .empty-board { font-size: 21.5px; font-weight: 700; color: #d6eaff; text-align: center; padding: 8px 2px; line-height: 1.38; }
 
   #donor { width: 100%; pointer-events: none; }
-  #donor .card { display: flex; align-items: center; gap: 10px; padding: 11px 14px; border-color: var(--gold); box-shadow: 0 0 18px rgba(255, 209, 102, .35); }
-  #donor .avatar { flex: none; width: 42px; height: 42px; font-size: 20px; border-radius: 50%; background: linear-gradient(135deg, var(--gold), #ff7b00); color: #051020; font-weight: 800; display: grid; place-items: center; }
-  #donor .card b { display: block; font-size: 19.5px; font-weight: 800; color: #fff; max-width: 175px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  #donor .card span { display: block; font-size: 17px; font-weight: 700; color: var(--gold); line-height: 1.3; }
+  #donor .card { display: flex; align-items: center; gap: 11px; padding: 12px 14px; border-color: var(--gold); box-shadow: 0 0 18px rgba(255, 209, 102, .35); }
+  #donor .avatar { flex: none; width: 48px; height: 48px; font-size: 24px; border-radius: 50%; background: linear-gradient(135deg, var(--gold), #ff7b00); color: #051020; font-weight: 800; display: grid; place-items: center; }
+  #donor .card b { display: block; font-size: 23px; font-weight: 800; color: #fff; max-width: 210px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #donor .card span { display: block; font-size: 20.5px; font-weight: 700; color: var(--gold); line-height: 1.32; }
 
   /* Call-To-Action Card inside Right Safe-Zone Column (Zero overlap with TikTok Mobile Chat!) */
   #footer {
-    width: 100%; padding: 13px 15px;
+    width: 100%; padding: 15px 16px;
     text-align: left; border-color: var(--gold-line); pointer-events: none;
     font-variant-numeric: tabular-nums;
   }
   #footer h3 {
-    margin: 0 0 8px; padding-bottom: 6px; text-align: center;
-    color: var(--gold); letter-spacing: 1px; font-size: 20px; font-weight: 800;
-    border-bottom: 1.5px solid var(--gold-line);
+    margin: 0 0 10px; padding-bottom: 8px; text-align: center;
+    color: var(--gold); letter-spacing: 0.8px; font-size: 25px; font-weight: 800;
+    border-bottom: 2px solid var(--gold-line);
   }
-  #footer .title { font-size: 18.5px; font-weight: 800; color: #fff; margin-bottom: 6px; line-height: 1.35; }
-  #footer .sub { font-size: 17.5px; font-weight: 700; color: #bfe0ff; margin-bottom: 7px; padding-bottom: 7px; border-bottom: 1px dashed rgba(255, 209, 102, .3); line-height: 1.35; }
-  #footer .tiers { font-size: 17.5px; font-weight: 800; color: var(--cyan); line-height: 1.35; }
+  #footer .title { font-size: 22.5px; font-weight: 800; color: #fff; margin-bottom: 8px; line-height: 1.36; }
+  #footer .sub { font-size: 21.5px; font-weight: 700; color: #d6eaff; margin-bottom: 9px; padding-bottom: 9px; border-bottom: 1.5px dashed rgba(255, 209, 102, .35); line-height: 1.36; }
+  #footer .tiers { font-size: 21.5px; font-weight: 800; color: var(--cyan); line-height: 1.36; }
 
   /* 3D Runner Overhead Labels */
   .label {
-    font-size: 21px; font-weight: 800; color: #fff;
-    padding: 4px 12px; border-radius: 999px;
-    background: rgba(6, 16, 34, .88); border: 1.5px solid rgba(255, 255, 255, .42);
+    font-size: 25px; font-weight: 800; color: #fff;
+    padding: 5px 15px; border-radius: 999px;
+    background: rgba(6, 16, 34, .92); border: 2px solid rgba(255, 255, 255, .5);
     text-shadow: 0 2px 4px #000; white-space: nowrap; font-variant-numeric: tabular-nums;
   }
-  .label.tier1 { font-size: 22px; font-weight: 800; border-color: #38bdf8; color: #e0f2fe; background: rgba(7, 42, 74, .92); }
-  .label.tier2 { font-size: 22.5px; font-weight: 800; border-color: #f59e0b; color: #fef3c7; background: rgba(68, 36, 6, .94); }
-  .label.tier3 { font-size: 23px; font-weight: 800; border-color: #fb7185; color: #ffe4e6; background: rgba(76, 12, 30, .95); box-shadow: 0 0 12px rgba(244, 63, 94, .45); }
-  .label.tier4 { font-size: 24px; font-weight: 800; border-color: #ffd700; color: #fffbeb; padding: 5px 15px; background: linear-gradient(180deg, rgba(92, 54, 4, .96), rgba(44, 22, 2, .96)); box-shadow: 0 0 16px rgba(255, 215, 0, .6); }
+  .label.tier1 { font-size: 26px; font-weight: 800; border-color: #38bdf8; color: #e0f2fe; background: rgba(7, 42, 74, .94); }
+  .label.tier2 { font-size: 26.5px; font-weight: 800; border-color: #f59e0b; color: #fef3c7; background: rgba(68, 36, 6, .95); }
+  .label.tier3 { font-size: 27px; font-weight: 800; border-color: #fb7185; color: #ffe4e6; background: rgba(76, 12, 30, .96); box-shadow: 0 0 12px rgba(244, 63, 94, .45); }
+  .label.tier4 { font-size: 28px; font-weight: 800; border-color: #ffd700; color: #fffbeb; padding: 6px 18px; background: linear-gradient(180deg, rgba(92, 54, 4, .96), rgba(44, 22, 2, .96)); box-shadow: 0 0 16px rgba(255, 215, 0, .6); }
   .bubble {
-    margin-bottom: 7px; padding: 8px 16px; max-width: 290px; white-space: normal;
-    background: rgba(255, 252, 240, .98); color: #0a192f; border: 2px solid #ffd166; border-radius: 16px 16px 16px 4px;
-    font-size: 21px; font-weight: 800; line-height: 1.34; text-shadow: none; box-shadow: 0 6px 16px rgba(0, 0, 0, .55);
+    margin-bottom: 8px; padding: 10px 18px; max-width: 330px; white-space: normal;
+    background: rgba(255, 252, 240, .98); color: #0a192f; border: 2.5px solid #ffd166; border-radius: 18px 18px 18px 4px;
+    font-size: 25px; font-weight: 800; line-height: 1.34; text-shadow: none; box-shadow: 0 6px 16px rgba(0, 0, 0, .6);
     transition: opacity .5s;
   }
   #sound { right: 24px; bottom: 24px; padding: 14px 22px; font-size: 20px; font-weight: 800; display: none; color: var(--gold); cursor: pointer; }
