@@ -4,7 +4,16 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
+import dns from 'node:dns';
 import { MongoClient } from 'mongodb';
+
+// Ensure SRV queries (_mongodb._tcp.*) resolve reliably on Windows / ISP routers
+try {
+  const currentServers = dns.getServers();
+  const preferred = ['8.8.8.8', '1.1.1.1', '8.8.4.4'];
+  const merged = [...new Set([...preferred, ...currentServers])];
+  dns.setServers(merged);
+} catch {}
 
 export const DEFAULT_GIFT_CATALOG = [
   { giftId: 5655, giftName: 'Rose', giftVi: 'Hoa Hồng', diamonds: 1, tier: 1, chuaReward: 'Dâng 3 nén hương · Tiếng khánh & Đọc tên', duaReward: 'Đôi Cánh Năng Lượng · Tốc độ ×1.8 (+80m)' },
@@ -86,8 +95,19 @@ export function createDatabase({
     error: null,
   };
 
-  function maskUri(u = '') {
+  function normalizeMongoUri(u = '') {
     const s = String(u || '').trim();
+    if (!s) return '';
+    // If password contains unescaped '@' (e.g. mongodb+srv://user:p@ss@cluster...), encode the inner '@'
+    const m = s.match(/^(mongodb(?:\+srv)?:\/\/)([^/:]+):(.+)@([^@]+)$/);
+    if (m && m[3].includes('@')) {
+      return `${m[1]}${m[2]}:${m[3].replace(/@/g, '%40')}@${m[4]}`;
+    }
+    return s;
+  }
+
+  function maskUri(u = '') {
+    const s = normalizeMongoUri(u);
     if (!s) return '';
     return s.replace(/\/\/([^:]+):([^@]+)@/, '//$1:****@');
   }
@@ -113,7 +133,7 @@ export function createDatabase({
   }
 
   async function connectMongo(newUri = mongoUri, newDbName = mongoDbName) {
-    mongoUri = String(newUri || '').trim();
+    mongoUri = normalizeMongoUri(newUri);
     mongoDbName = String(newDbName || 'live_tiktok').trim() || 'live_tiktok';
     mongoStatus.uriConfigured = Boolean(mongoUri);
     mongoStatus.maskedUri = maskUri(mongoUri);
@@ -132,7 +152,7 @@ export function createDatabase({
     }
 
     try {
-      client = new MongoClient(mongoUri, { serverSelectionTimeoutMS: 5000, connectTimeoutMS: 5000 });
+      client = new MongoClient(mongoUri, { serverSelectionTimeoutMS: 8000, connectTimeoutMS: 8000 });
       await client.connect();
       db = client.db(mongoDbName);
       await db.command({ ping: 1 });
@@ -153,24 +173,26 @@ export function createDatabase({
   async function syncToMongo() {
     if (!db) return false;
     try {
+      const tasks = [];
       if (state.giftCatalog.length) {
-        const col = db.collection('gift_catalog');
-        for (const item of state.giftCatalog) {
-          await col.updateOne({ giftId: item.giftId }, { $set: item }, { upsert: true });
-        }
+        const ops = state.giftCatalog.map(item => ({
+          updateOne: { filter: { giftId: item.giftId }, update: { $set: item }, upsert: true },
+        }));
+        tasks.push(db.collection('gift_catalog').bulkWrite(ops, { ordered: false }));
       }
       if (state.workLogs.length) {
-        const col = db.collection('work_logs');
-        for (const item of state.workLogs.slice(0, 200)) {
-          await col.updateOne({ id: item.id }, { $set: item }, { upsert: true });
-        }
+        const ops = state.workLogs.slice(0, 200).map(item => ({
+          updateOne: { filter: { id: item.id }, update: { $set: item }, upsert: true },
+        }));
+        tasks.push(db.collection('work_logs').bulkWrite(ops, { ordered: false }));
       }
       if (state.gifts.length) {
-        const col = db.collection('gifts');
-        for (const g of state.gifts.slice(0, 300)) {
-          await col.updateOne({ id: g.id }, { $set: g }, { upsert: true });
-        }
+        const ops = state.gifts.slice(0, 300).map(g => ({
+          updateOne: { filter: { id: g.id }, update: { $set: g }, upsert: true },
+        }));
+        tasks.push(db.collection('gifts').bulkWrite(ops, { ordered: false }));
       }
+      await Promise.all(tasks);
       mongoStatus.lastSyncAt = new Date(now()).toISOString();
       return true;
     } catch (err) {
