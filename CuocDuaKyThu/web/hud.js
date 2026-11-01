@@ -41,10 +41,18 @@ export function createRaceHud() {
   return {
     setBiome(biome, worldDistanceM = 0) {
       if (biome) {
+        const eyebrowEl = $('#biome-eyebrow');
         const titleEl = $('#biome-name');
         const subEl = $('#biome-sub');
+        if (eyebrowEl) {
+          if (biome.province?.name) {
+            eyebrowEl.textContent = `🇻🇳 ĐI BỘ XUYÊN VIỆT · TỈNH ${biome.province.code}/${biome.province.total || 63}: ${biome.province.name.toUpperCase()}`;
+          } else {
+            eyebrowEl.textContent = '🇻🇳 HÀNH TRÌNH ĐI BỘ XUYÊN VIỆT 63 TỈNH THÀNH';
+          }
+        }
         if (titleEl) titleEl.textContent = biome.name;
-        if (subEl) subEl.textContent = biome.sub || '';
+        if (subEl) subEl.textContent = biome.province?.landmark ? `${biome.sub} · 📍 ${biome.province.landmark}` : (biome.sub || '');
       }
       const distEl = $('#world-dist');
       if (distEl) distEl.textContent = fmtDist(worldDistanceM);
@@ -56,7 +64,7 @@ export function createRaceHud() {
     },
     setActiveCount(n) {
       const el = $('#runner-count');
-      if (el) el.textContent = `Đang đua: ${n} VĐV`;
+      if (el) el.textContent = `Đang đi: ${n} người`;
     },
     showWelcome(msg) {
       const card = $('#welcome-card');

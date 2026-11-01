@@ -92,13 +92,24 @@ for (const ev of ['pointerdown', 'pointermove', 'mousemove', 'touchstart', 'keyd
   addEventListener(ev, autoUnlock, { passive: true });
 }
 
+let lastBiomeId = '';
+function applyBiomeChange(biome, distM = 0) {
+  const bId = biome?.id || '';
+  world3d.setBiome(bId);
+  hud.setBiome(biome, distM);
+  if (bId && bId !== lastBiomeId) {
+    lastBiomeId = bId;
+    audio.setBiomeMusic?.(bId);
+    syncBgmBtn();
+  }
+}
+
 function handleMsg(msg) {
   switch (msg.t) {
     case 'snapshot':
       runners.clear();
       for (const r of msg.runners || []) runners.addOrUpdate(r);
-      world3d.setBiome(msg.biome?.id);
-      hud.setBiome(msg.biome, msg.worldDistanceM || 0);
+      applyBiomeChange(msg.biome, msg.worldDistanceM || 0);
       hud.updateBoard(msg.board || []);
       hud.setActiveCount(runners.count());
       if (msg.scene?.sound !== undefined) audio.setEnabled(msg.scene.sound);
@@ -133,15 +144,13 @@ function handleMsg(msg) {
       fx.spawn(msg.kind, msg.power);
       break;
     case 'biome':
-      world3d.setBiome(msg.biome?.id);
-      hud.setBiome(msg.biome, msg.worldDistanceM);
+      applyBiomeChange(msg.biome, msg.worldDistanceM);
       break;
     case 'banner':
       hud.showBanner(msg.text, msg.ms);
       break;
     case 'worldTick':
-      world3d.setBiome(msg.biome?.id);
-      hud.setBiome(msg.biome, msg.worldDistanceM);
+      applyBiomeChange(msg.biome, msg.worldDistanceM);
       hud.updateBoard(msg.board || []);
       runners.syncTick(msg.runners || [], msg.board || []);
       hud.setActiveCount(runners.count());

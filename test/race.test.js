@@ -35,7 +35,7 @@ test('TC-RACE-02: Gift tiers upgrade speed, mount, and distance bonus accurately
   const out1 = rules.handle({ kind: 'gift', src: 'tiktok', uid: 'g1', name: 'Minh An', giftId: 5655, giftName: 'Rose', diamonds: 1, repeat: 2, ts: t });
   const donor1 = out1.find(m => m.t === 'donor');
   assert.equal(donor1.giftVi, 'Hoa Hồng');
-  assert.equal(donor1.mountLabel, 'Đôi Cánh Năng Lượng');
+  assert.equal(donor1.mountLabel, 'Đôi Cánh Chim Lạc');
   assert.equal(donor1.bonusM, 160);
   assert.equal(stage.runners.get('g1').speedMult, 1.8);
 
@@ -43,14 +43,14 @@ test('TC-RACE-02: Gift tiers upgrade speed, mount, and distance bonus accurately
   const out4 = rules.handle({ kind: 'gift', src: 'tiktok', uid: 'g4', name: 'Đại Gia', giftId: 11046, giftName: 'Galaxy', diamonds: 1000, repeat: 1, ts: t });
   const donor4 = out4.find(m => m.t === 'donor');
   assert.equal(donor4.giftVi, 'Dải Ngân Hà');
-  assert.equal(donor4.mountLabel, 'Siêu Phi Thuyền Ngân Hà');
+  assert.equal(donor4.mountLabel, 'Rồng Vàng Lạc Long Quân');
   assert.equal(donor4.bonusM, 10000);
   assert.equal(stage.runners.get('g4').speedMult, 6.5);
   assert.equal(stage.runners.get('g4').tier, 4);
 
   const tts = formatGiftBoostSpeech(donor4);
   assert.ok(tts.includes('Chào mừng Đại Gia vừa vào chùa lễ Phật'));
-  assert.ok(tts.includes('Siêu Phi Thuyền Ngân Hà'));
+  assert.ok(tts.includes('Rồng Vàng Lạc Long Quân'));
 });
 
 test('TC-RACE-03: Endless world tick advances distance and cycles through world biomes', () => {
@@ -64,8 +64,9 @@ test('TC-RACE-03: Endless world tick advances distance and cycles through world 
   t += 1000;
   const msgs2 = stage.tick();
   const all = [...msgs1, ...msgs2];
-  assert.ok(all.some(m => m.t === 'biome' && m.biome.id === 'japan'));
-  assert.equal(stage.currentBiome().id, 'japan');
+  assert.ok(all.some(m => m.t === 'biome' && m.biome.id === BIOMES[1].id));
+  assert.equal(stage.currentBiome().id, BIOMES[1].id);
+  assert.ok(stage.currentBiome().province?.name, 'should include current Vietnamese province milestone');
 });
 
 test('TC-RACE-04: Likes accumulate and trigger Global Rainbow Turbo every 500 likes', () => {

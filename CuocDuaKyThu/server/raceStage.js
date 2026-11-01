@@ -1,21 +1,212 @@
-// RaceStage: manages 3D runners on the endless world exploration track,
-// their speed multipliers, boost tiers, accumulated distance, and current world biome.
+// RaceStage: manages 3D walkers on the Cross-Vietnam Walking Journey ("Hành Trình Đi Bộ Xuyên Việt 63 Tỉnh Thành"),
+// their speed multipliers, boost tiers, accumulated distance, current Vietnamese landmark biome, and province milestone.
 
-export const BIOMES = [
-  { id: 'vietnam', name: 'Vịnh Hạ Long & Phố Cổ Việt Nam 🇻🇳', sub: 'Kỳ quan thiên nhiên & đèn lồng rực rỡ', lengthM: 600 },
-  { id: 'japan', name: 'Núi Phú Sĩ & Cổng Torii Nhật Bản 🇯🇵', sub: 'Mùa hoa anh đào dưới chân núi tuyết', lengthM: 600 },
-  { id: 'egypt', name: 'Kim Tự Tháp Giza Ai Cập 🇪🇬', sub: 'Hành trình xuyên sa mạc vàng cổ đại', lengthM: 600 },
-  { id: 'france', name: 'Tháp Eiffel Paris Pháp 🇫🇷', sub: 'Kinh đô ánh sáng bên dòng sông Seine', lengthM: 600 },
-  { id: 'usa', name: 'Tượng Nữ Thần Tự Do & Cầu Cổng Vàng 🇺🇸', sub: 'Đại lộ nhịp sống hiện đại rực sáng', lengthM: 600 },
-  { id: 'cosmos', name: 'Cung Đường Ngân Hà Vũ Trụ 🌌', sub: 'Đường đua cầu vồng xuyên qua các vì sao', lengthM: 600 },
+export const VN_PROVINCES_63 = [
+  // Đông Bắc & Tây Bắc (1–14)
+  { code: 1, name: 'Hà Giang', landmark: 'Đèo Mã Pí Lèng & Cột Cờ Lũng Cú', biomeId: 'vn_hagiang' },
+  { code: 2, name: 'Cao Bằng', landmark: 'Thác Bản Giốc & Suối Lê Nin', biomeId: 'vn_hagiang' },
+  { code: 3, name: 'Bắc Kạn', landmark: 'Hồ Ba Bể Xanh Ngọc', biomeId: 'vn_hagiang' },
+  { code: 4, name: 'Lạng Sơn', landmark: 'Đỉnh Mẫu Sơn & Thành Nhà Mạc', biomeId: 'vn_hagiang' },
+  { code: 5, name: 'Tuyên Quang', landmark: 'Khu Sinh Thái Na Hang', biomeId: 'vn_hagiang' },
+  { code: 6, name: 'Thái Nguyên', landmark: 'Đồi Chè Tân Cương & Hồ Núi Cốc', biomeId: 'vn_hagiang' },
+  { code: 7, name: 'Lào Cai', landmark: 'Đỉnh Fansipan & Ruộng Bậc Thang Sa Pa', biomeId: 'vn_sapa' },
+  { code: 8, name: 'Yên Bái', landmark: 'Ruộng Bậc Thang Mù Cang Chải', biomeId: 'vn_sapa' },
+  { code: 9, name: 'Lai Châu', landmark: 'Đèo Ô Quy Hồ & Đỉnh Pu Ta Leng', biomeId: 'vn_sapa' },
+  { code: 10, name: 'Điện Biên', landmark: 'Đèo Pha Đin & Cánh Đồng Mường Thanh', biomeId: 'vn_sapa' },
+  { code: 11, name: 'Sơn La', landmark: 'Cao Nguyên Mộc Châu Mùa Hoa Cải', biomeId: 'vn_sapa' },
+  { code: 12, name: 'Hòa Bình', landmark: 'Thung Nai & Bản Lác Mai Châu', biomeId: 'vn_sapa' },
+  { code: 13, name: 'Phú Thọ', landmark: 'Đền Hùng Đất Tổ Vua Hùng', biomeId: 'vn_hanoi' },
+  { code: 14, name: 'Vĩnh Phúc', landmark: 'Đỉnh Tam Đảo Mờ Sương', biomeId: 'vn_hanoi' },
+
+  // Đồng Bằng Sông Hồng & Duyên Hải Bắc Bộ (15–25)
+  { code: 15, name: 'Quảng Ninh', landmark: 'Kỳ Quan Vịnh Hạ Long & Yên Tử', biomeId: 'vn_halong' },
+  { code: 16, name: 'Hải Phòng', landmark: 'Đảo Cát Bà & Đồ Sơn Hoa Phượng Đỏ', biomeId: 'vn_halong' },
+  { code: 17, name: 'Bắc Giang', landmark: 'Tây Yên Tử & Đồi Vải Lục Ngạn', biomeId: 'vn_halong' },
+  { code: 18, name: 'Bắc Ninh', landmark: 'Miền Quan Họ & Chùa Dâu Cổ Kính', biomeId: 'vn_halong' },
+  { code: 19, name: 'Hải Dương', landmark: 'Côn Sơn Kiếp Bạc', biomeId: 'vn_halong' },
+  { code: 20, name: 'Hưng Yên', landmark: 'Phố Hiến Cổ Kính & Đầm Sen', biomeId: 'vn_halong' },
+  { code: 21, name: 'Thủ Đô Hà Nội', landmark: 'Hồ Gươm, Cầu Thê Húc & 36 Phố Phường', biomeId: 'vn_hanoi' },
+  { code: 22, name: 'Hà Nam', landmark: 'Quần Thể Chùa Tam Chúc', biomeId: 'vn_ninhbinh' },
+  { code: 23, name: 'Thái Bình', landmark: 'Chùa Keo & Biển Cồn Vành', biomeId: 'vn_ninhbinh' },
+  { code: 24, name: 'Nam Định', landmark: 'Đền Trần & Phủ Dầy Cổ Kính', biomeId: 'vn_ninhbinh' },
+  { code: 25, name: 'Ninh Bình', landmark: 'Danh Thắng Tràng An & Chùa Bái Đính', biomeId: 'vn_ninhbinh' },
+
+  // Bắc Trung Bộ & Cố Đô Huế (26–31)
+  { code: 26, name: 'Thanh Hóa', landmark: 'Thành Nhà Hồ & Biển Sầm Sơn', biomeId: 'vn_ninhbinh' },
+  { code: 27, name: 'Nghệ An', landmark: 'Làng Sen Quê Bác & Biển Cửa Lò', biomeId: 'vn_ninhbinh' },
+  { code: 28, name: 'Hà Tĩnh', landmark: 'Chùa Hương Tích & Núi Hồng Sông La', biomeId: 'vn_ninhbinh' },
+  { code: 29, name: 'Quảng Bình', landmark: 'Hang Sơn Đoòng & Động Phong Nha', biomeId: 'vn_hue' },
+  { code: 30, name: 'Quảng Trị', landmark: 'Cầu Hiền Lương Sông Bến Hải', biomeId: 'vn_hue' },
+  { code: 31, name: 'Thừa Thiên Huế', landmark: 'Kinh Thành Huế, Ngọ Môn & Cầu Trường Tiền', biomeId: 'vn_hue' },
+
+  // Đà Nẵng, Hội An & Duyên Hải Nam Trung Bộ (32–39)
+  { code: 32, name: 'Đà Nẵng', landmark: 'Cầu Vàng Bà Nà Hills & Cầu Rồng Sông Hàn', biomeId: 'vn_danang' },
+  { code: 33, name: 'Quảng Nam', landmark: 'Phố Cổ Hội An & Thánh Địa Mỹ Sơn', biomeId: 'vn_hoian' },
+  { code: 34, name: 'Quảng Ngãi', landmark: 'Đảo Lý Sơn & Núi Ấn Sông Trà', biomeId: 'vn_hoian' },
+  { code: 35, name: 'Bình Định', landmark: 'Eo Gió Kỳ Co Quy Nhơn & Tháp Đôi', biomeId: 'vn_hoian' },
+  { code: 36, name: 'Phú Yên', landmark: 'Ghềnh Đá Đĩa & Hoa Vàng Trên Cỏ Xanh', biomeId: 'vn_hoian' },
+  { code: 37, name: 'Khánh Hòa', landmark: 'Vịnh Nha Trang & Tháp Bà Ponagar', biomeId: 'vn_nhatrang' },
+  { code: 38, name: 'Ninh Thuận', landmark: 'Vịnh Vĩnh Hy & Tháp Chăm Po Klong Garai', biomeId: 'vn_nhatrang' },
+  { code: 39, name: 'Bình Thuận', landmark: 'Đồi Cát Bay Mũi Né & Hải Đăng Kê Gà', biomeId: 'vn_nhatrang' },
+
+  // Tây Nguyên Đại Ngàn (40–44)
+  { code: 40, name: 'Kon Tum', landmark: 'Nhà Rông Ba Na & Cầu Treo Kon Klor', biomeId: 'vn_dalat' },
+  { code: 41, name: 'Gia Lai', landmark: 'Biển Hồ T’Nưng Đôi Mắt Pleiku', biomeId: 'vn_dalat' },
+  { code: 42, name: 'Đắk Lắk', landmark: 'Buôn Ma Thuột & Thác Dray Nur', biomeId: 'vn_dalat' },
+  { code: 43, name: 'Đắk Nông', landmark: 'Hồ Tà Đùng Vịnh Hạ Long Tây Nguyên', biomeId: 'vn_dalat' },
+  { code: 44, name: 'Lâm Đồng', landmark: 'Quảng Trường Lâm Viên & Rừng Thông Đà Lạt', biomeId: 'vn_dalat' },
+
+  // Đông Nam Bộ & TP. Hồ Chí Minh (45–50)
+  { code: 45, name: 'Bình Phước', landmark: 'Vườn Quốc Gia Bù Gia Mập & Sóc Bom Bo', biomeId: 'vn_saigon' },
+  { code: 46, name: 'Tây Ninh', landmark: 'Đỉnh Núi Bà Đen Nóc Nhà Nam Bộ', biomeId: 'vn_saigon' },
+  { code: 47, name: 'Bình Dương', landmark: 'Chùa Hội Khánh & Làng Gốm Lái Thiêu', biomeId: 'vn_saigon' },
+  { code: 48, name: 'Đồng Nai', landmark: 'Khu Du Lịch Bửu Long & Rừng Nam Cát Tiên', biomeId: 'vn_saigon' },
+  { code: 49, name: 'Bà Rịa – Vũng Tàu', landmark: 'Hải Đăng Vũng Tàu & Biển Hồ Tràm', biomeId: 'vn_saigon' },
+  { code: 50, name: 'TP. Hồ Chí Minh', landmark: 'Bến Nhà Rồng, Chợ Bến Thành & Landmark 81', biomeId: 'vn_saigon' },
+
+  // Miền Tây Sông Nước Đồng Bằng Sông Cửu Long (51–63)
+  { code: 51, name: 'Long An', landmark: 'Làng Nổi Tân Lập Rừng Tràm Xanh', biomeId: 'vn_mientay' },
+  { code: 52, name: 'Tiền Giang', landmark: 'Cù Lao Thới Sơn & Chợ Nổi Cái Bè', biomeId: 'vn_mientay' },
+  { code: 53, name: 'Bến Tre', landmark: 'Xứ Dừa Xanh Mát & Cồn Phụng', biomeId: 'vn_mientay' },
+  { code: 54, name: 'Trà Vinh', landmark: 'Ao Bà Om & Chùa Âng Khmer Cổ Kính', biomeId: 'vn_mientay' },
+  { code: 55, name: 'Vĩnh Long', landmark: 'Cù Lao An Bình & Vương Quốc Gốm Đỏ', biomeId: 'vn_mientay' },
+  { code: 56, name: 'Đồng Tháp', landmark: 'Đồng Sen Tháp Mười & Làng Hoa Sa Đéc', biomeId: 'vn_mientay' },
+  { code: 57, name: 'An Giang', landmark: 'Rừng Tràm Trà Sư & Núi Cấm Thất Sơn', biomeId: 'vn_mientay' },
+  { code: 58, name: 'Kiên Giang', landmark: 'Đảo Ngọc Phú Quốc & Hà Tiên Thập Cảnh', biomeId: 'vn_mientay' },
+  { code: 59, name: 'TP. Cần Thơ', landmark: 'Bến Ninh Kiều & Chợ Nổi Cái Răng', biomeId: 'vn_mientay' },
+  { code: 60, name: 'Hậu Giang', landmark: 'Khu Bảo Tồn Lung Ngọc Hoàng', biomeId: 'vn_mientay' },
+  { code: 61, name: 'Sóc Trăng', landmark: 'Chùa Dơi & Chợ Nổi Ngã Năm', biomeId: 'vn_mientay' },
+  { code: 62, name: 'Bạc Liêu', landmark: 'Cánh Đồng Điện Gió & Nhà Công Tử Bạc Liêu', biomeId: 'vn_mientay' },
+  { code: 63, name: 'Cà Mau', landmark: 'Cột Mốc Tọa Độ Quốc Gia Đất Mũi Cà Mau', biomeId: 'vn_mientay' },
 ];
 
-// Gift tier mapping for Cuộc Đua Kỳ Thú:
+export const BIOMES = [
+  {
+    id: 'vn_hagiang',
+    name: 'Đèo Mã Pí Lèng & Cột Cờ Lũng Cú – Hà Giang 🇻🇳',
+    sub: 'Cung đường đèo chữ S hùng vĩ & hoa tam giác mạch nở rộ',
+    region: 'Đông Bắc Bộ (Tỉnh 1–6/63)',
+    trailStyle: 'winding_pass',
+    lengthM: 600,
+  },
+  {
+    id: 'vn_sapa',
+    name: 'Đỉnh Fansipan & Ruộng Bậc Thang – Sa Pa, Tây Bắc 🇻🇳',
+    sub: 'Đường bờ lúa chín vàng óng uốn lượn giữa biển mây Tây Bắc',
+    region: 'Tây Bắc Bộ (Tỉnh 7–12/63)',
+    trailStyle: 'terraced_ridge',
+    lengthM: 600,
+  },
+  {
+    id: 'vn_halong',
+    name: 'Kỳ Quan Vịnh Hạ Long – Quảng Ninh & Hải Phòng 🇻🇳',
+    sub: 'Cung đường ven vịnh biển ngọc bích & Hòn Trống Mái kỳ vĩ',
+    region: 'Duyên Hải Bắc Bộ (Tỉnh 15–20/63)',
+    trailStyle: 'bay_boardwalk',
+    lengthM: 600,
+  },
+  {
+    id: 'vn_hanoi',
+    name: 'Hồ Gươm, Cầu Thê Húc & Phố Cổ – Thủ Đô Hà Nội 🇻🇳',
+    sub: 'Nhịp cầu gỗ đỏ uốn vòm qua mặt hồ & Tháp Rùa ngàn năm văn hiến',
+    region: 'Đồng Bằng Sông Hồng (Tỉnh 13–14, 21/63)',
+    trailStyle: 'arch_red_bridge',
+    lengthM: 600,
+  },
+  {
+    id: 'vn_ninhbinh',
+    name: 'Danh Thắng Tràng An & Chùa Bái Đính – Ninh Bình 🇻🇳',
+    sub: 'Đường đá cổ rêu phong xuyên đầm sen hồng & non nước cố đô',
+    region: 'Nam Đồng Bằng & Bắc Trung Bộ (Tỉnh 22–28/63)',
+    trailStyle: 'lotus_stone_causeway',
+    lengthM: 600,
+  },
+  {
+    id: 'vn_hue',
+    name: 'Kinh Thành Huế, Ngọ Môn & Sông Hương – Cố Đô Huế 🇻🇳',
+    sub: 'Đường gạch Bát Tràng lát xéo cung đình & Cầu Trường Tiền',
+    region: 'Bắc Trung Bộ (Tỉnh 29–31/63)',
+    trailStyle: 'imperial_diagonal',
+    lengthM: 600,
+  },
+  {
+    id: 'vn_danang',
+    name: 'Cầu Vàng Bà Nà Hills & Cầu Rồng – Đà Nẵng 🇻🇳',
+    sub: 'Cung đường vàng cánh cung trên đôi bàn tay đá khổng lồ giữa mây',
+    region: 'Trung Trung Bộ (Tỉnh 32/63)',
+    trailStyle: 'golden_bridge_arc',
+    lengthM: 600,
+  },
+  {
+    id: 'vn_hoian',
+    name: 'Phố Cổ Hội An & Chùa Cầu Hoa Đăng – Quảng Nam 🇻🇳',
+    sub: 'Đường cổ ven sông Hoài rực rỡ ngàn đèn lồng lụa & giàn hoa giấy',
+    region: 'Duyên Hải Miền Trung (Tỉnh 33–36/63)',
+    trailStyle: 'lantern_riverside',
+    lengthM: 600,
+  },
+  {
+    id: 'vn_dalat',
+    name: 'Quảng Trường Lâm Viên & Rừng Thông – Đà Lạt, Tây Nguyên 🇻🇳',
+    sub: 'Đường dốc thông uốn lượn sương mù, Nụ Atiso & Nhà Rông đại ngàn',
+    region: 'Tây Nguyên (Tỉnh 40–44/63)',
+    trailStyle: 'pine_slope_curve',
+    lengthM: 600,
+  },
+  {
+    id: 'vn_nhatrang',
+    name: 'Tháp Bà Ponagar & Vịnh Biển Xanh – Nha Trang, Mũi Né 🇻🇳',
+    sub: 'Cung đường cát trắng ôm bờ biển sóng vỗ & rặng dừa nghiêng bóng',
+    region: 'Nam Trung Bộ (Tỉnh 37–39/63)',
+    trailStyle: 'coastal_sand_curve',
+    lengthM: 600,
+  },
+  {
+    id: 'vn_saigon',
+    name: 'Bến Nhà Rồng, Chợ Bến Thành & Landmark 81 – TP.HCM 🇻🇳',
+    sub: 'Đại lộ đá hoa cương Phố đi bộ Nguyễn Huệ & nhạc nước rực sáng',
+    region: 'Đông Nam Bộ (Tỉnh 45–50/63)',
+    trailStyle: 'saigon_promenade',
+    lengthM: 600,
+  },
+  {
+    id: 'vn_mientay',
+    name: 'Chợ Nổi Cái Răng Cần Thơ & Đất Mũi Cà Mau – Miền Tây 🇻🇳',
+    sub: 'Cầu ván gỗ uốn lượn giữa ghe bầu trái cây & cột mốc cực Nam Tổ quốc',
+    region: 'Đồng Bằng Sông Cửu Long (Tỉnh 51–63/63)',
+    trailStyle: 'mekong_wooden_plank',
+    lengthM: 600,
+  },
+];
+
+// Optional international biomes preserved so Admin or API calls can still switch to them if desired
+export const WORLD_BIOMES = [
+  { id: 'vietnam', name: 'Vịnh Hạ Long & Phố Cổ Việt Nam 🇻🇳', sub: 'Kỳ quan thiên nhiên & đèn lồng rực rỡ', trailStyle: 'lantern_riverside', lengthM: 600 },
+  { id: 'japan', name: 'Núi Phú Sĩ & Cổng Torii Nhật Bản 🇯🇵', sub: 'Mùa hoa anh đào dưới chân núi tuyết', trailStyle: 'arch_red_bridge', lengthM: 600 },
+  { id: 'egypt', name: 'Kim Tự Tháp Giza Ai Cập 🇪🇬', sub: 'Hành trình xuyên sa mạc vàng cổ đại', trailStyle: 'winding_pass', lengthM: 600 },
+  { id: 'france', name: 'Tháp Eiffel Paris Pháp 🇫🇷', sub: 'Kinh đô ánh sáng bên dòng sông Seine', trailStyle: 'saigon_promenade', lengthM: 600 },
+  { id: 'usa', name: 'Tượng Nữ Thần Tự Do & Cầu Cổng Vàng 🇺🇸', sub: 'Đại lộ nhịp sống hiện đại rực sáng', trailStyle: 'golden_bridge_arc', lengthM: 600 },
+  { id: 'cosmos', name: 'Cung Đường Ngân Hà Vũ Trụ 🌌', sub: 'Đường đua cầu vồng xuyên qua các vì sao', trailStyle: 'golden_bridge_arc', lengthM: 600 },
+];
+
+export const ALL_BIOMES = [...BIOMES, ...WORLD_BIOMES];
+
+export function getProvinceForState(worldDistanceM = 0, biomeId = '') {
+  const biomeProvinces = VN_PROVINCES_63.filter(p => p.biomeId === biomeId);
+  if (biomeProvinces.length > 0) {
+    const localStep = Math.floor((worldDistanceM % 600) / Math.max(1, Math.floor(600 / biomeProvinces.length)));
+    return biomeProvinces[Math.min(biomeProvinces.length - 1, localStep)];
+  }
+  const idx = Math.floor(worldDistanceM / 95) % VN_PROVINCES_63.length;
+  return VN_PROVINCES_63[idx];
+}
+
+// Gift tier mapping for Hành Trình Đi Bộ Xuyên Việt:
 // Tier 0: Free join / comment / like (Runner, 1.0x speed, TTL 90s)
-// Tier 1: 1-9 💎 (Energy Wings, 1.8x speed for 10s, +80m/gift, TTL 150s)
-// Tier 2: 10-99 💎 (Golden Hoverboard, 2.8x speed for 18s, +350m/gift, TTL 240s)
-// Tier 3: 100-999 💎 (Lightning Jet, 4.2x speed for 28s, +1500m/gift, TTL 360s)
-// Tier 4: 1000+ 💎 (Cosmic Warp Champion, 6.5x speed for 45s, +10000m/gift, TTL 600s)
+// Tier 1: 1-9 💎 (Đôi Cánh Chim Lạc, 1.8x speed for 10s, +80m/gift, TTL 150s)
+// Tier 2: 10-99 💎 (Xe Cub Phượt Xuyên Việt, 2.8x speed for 18s, +350m/gift, TTL 240s)
+// Tier 3: 100-999 💎 (Chiến Mã Thánh Gióng, 4.2x speed for 28s, +1500m/gift, TTL 360s)
+// Tier 4: 1000+ 💎 (Rồng Vàng Lạc Long Quân, 6.5x speed for 45s, +10000m/gift, TTL 600s)
 export const RACE_TTL = { 0: 300_000, 1: 600_000, 2: 900_000, 3: 1_500_000, 4: 2_700_000 };
 export const BOOST_SPEED = { 0: 1.0, 1: 1.8, 2: 2.8, 3: 4.2, 4: 6.5 };
 export const BOOST_MS = { 0: 0, 1: 10_000, 2: 18_000, 3: 28_000, 4: 45_000 };
@@ -30,11 +221,11 @@ export function raceGiftTier(totalDiamonds) {
 }
 
 export const TIER_MOUNT_LABEL = {
-  0: 'Chạy bộ khám phá',
-  1: 'Đôi Cánh Năng Lượng',
-  2: 'Ván Trượt Hoàng Kim',
-  3: 'Tên Lửa Tia Chớp',
-  4: 'Siêu Phi Thuyền Ngân Hà',
+  0: 'Đi bộ xuyên Việt',
+  1: 'Đôi Cánh Chim Lạc',
+  2: 'Xe Cub Phượt Xuyên Việt',
+  3: 'Chiến Mã Thánh Gióng',
+  4: 'Rồng Vàng Lạc Long Quân',
 };
 
 function skinOf(uid) {
@@ -100,10 +291,15 @@ export class RaceStage {
   }
 
   currentBiome() {
+    let base = BIOMES[this.biomeIdx % BIOMES.length];
     if (this.forcedBiome) {
-      return BIOMES.find(b => b.id === this.forcedBiome) || BIOMES[0];
+      base = ALL_BIOMES.find(b => b.id === this.forcedBiome) || base;
     }
-    return BIOMES[this.biomeIdx % BIOMES.length];
+    const prov = getProvinceForState(this.worldDistanceM, base.id);
+    return {
+      ...base,
+      province: prov ? { ...prov, total: VN_PROVINCES_63.length } : null,
+    };
   }
 
   setBiome(biomeId) {
@@ -114,12 +310,14 @@ export class RaceStage {
       if (idx !== -1) {
         this.biomeIdx = idx;
         this.forcedBiome = biomeId;
+      } else if (ALL_BIOMES.some(b => b.id === biomeId)) {
+        this.forcedBiome = biomeId;
       }
     }
     const b = this.currentBiome();
     return [
       { t: 'biome', biome: b, worldDistanceM: Math.round(this.worldDistanceM) },
-      { t: 'banner', text: `🌍 Khám phá điểm đến: ${b.name}`, ms: 4500 },
+      { t: 'banner', text: `🇻🇳 Hành trình đi bộ khám phá: ${b.name}`, ms: 4500 },
     ];
   }
 

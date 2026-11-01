@@ -225,6 +225,51 @@ export function createRaceAudio({ onSpeak = null } = {}) {
       ],
     },
     {
+      id: 'tay_bac',
+      title: 'Sáo Mèo Tây Bắc – Inh Lả Ơi',
+      stepMs: 290,
+      bassRoots: [N.A3, N.E3, N.D3, N.A3],
+      drumPattern: [0.85, 0, 0.4, 0.3, 0.75, 0, 0.5, 0],
+      notes: [
+        // "Inh lả ơi, sao noọng ời, khắp núi rừng Tây Bắc sáng ngời..."
+        [N.A4, 1, 'flute'], [N.C5, 1, 'flute'], [N.D5, 2, 'both'], [N.E5, 1, 'flute'],
+        [N.G5, 1, 'flute'], [N.E5, 2, 'both'], [N.D5, 1, 'zither'], [N.C5, 1, 'flute'],
+        [N.A4, 2, 'both'], [N.G4, 1, 'flute'], [N.A4, 1, 'zither'],
+        [N.C5, 1, 'flute'], [N.D5, 1, 'both'], [N.E5, 2, 'flute'], [N.D5, 1, 'zither'],
+        [N.C5, 1, 'flute'], [N.A4, 1, 'zither'], [N.G4, 1, 'flute'], [N.A4, 2, 'both'],
+      ],
+    },
+    {
+      id: 'luu_thuy',
+      title: 'Lưu Thủy Kim Tiền (Nhã Nhạc Huế)',
+      stepMs: 300,
+      bassRoots: [N.D3, N.A3, N.G3, N.D3],
+      drumPattern: [0.9, 0, 0.5, 0, 0.85, 0.4, 0.5, 0],
+      notes: [
+        // Giai điệu Nhã nhạc cung đình Huế trang nhã, rộn ràng
+        [N.D4, 1, 'zither'], [N.F4, 1, 'zither'], [N.G4, 1, 'both'], [N.A4, 2, 'zither'],
+        [N.C5, 1, 'flute'], [N.D5, 1, 'both'], [N.C5, 1, 'zither'], [N.A4, 1, 'zither'],
+        [N.G4, 1, 'both'], [N.F4, 1, 'zither'], [N.G4, 2, 'flute'],
+        [N.A4, 1, 'zither'], [N.C5, 1, 'zither'], [N.D5, 2, 'both'], [N.F5, 1, 'flute'],
+        [N.D5, 1, 'zither'], [N.C5, 1, 'zither'], [N.A4, 1, 'both'], [N.D4, 2, 'both'],
+      ],
+    },
+    {
+      id: 'tay_nguyen',
+      title: 'Đàn T’rưng Đà Lạt & Phố Biển',
+      stepMs: 265,
+      bassRoots: [N.C3, N.G3, N.E3, N.A3],
+      drumPattern: [0.9, 0.3, 0.5, 0, 0.8, 0.3, 0.6, 0],
+      notes: [
+        // Âm hưởng Đàn T'rưng tre nứa Tây Nguyên & nắng gió biển Nha Trang
+        [N.G4, 1, 'zither'], [N.C5, 1, 'zither'], [N.E5, 1, 'both'], [N.G5, 1, 'zither'],
+        [N.E5, 1, 'zither'], [N.D5, 1, 'flute'], [N.C5, 2, 'both'],
+        [N.A4, 1, 'zither'], [N.C5, 1, 'zither'], [N.D5, 1, 'both'], [N.E5, 1, 'flute'],
+        [N.D5, 1, 'zither'], [N.C5, 1, 'zither'], [N.G4, 2, 'both'],
+        [N.E4, 1, 'zither'], [N.G4, 1, 'zither'], [N.A4, 1, 'flute'], [N.C5, 2, 'both'],
+      ],
+    },
+    {
       id: 'hoa_thom',
       title: 'Hoa Thơm Bướm Lượn (Quan Họ)',
       stepMs: 310,
@@ -240,6 +285,23 @@ export function createRaceAudio({ onSpeak = null } = {}) {
       ],
     },
   ];
+
+  // Maps each Vietnamese biome ID to its signature regional folk melody ID
+  const BIOME_SONG_MAP = {
+    vn_hagiang: 'tay_bac',
+    vn_sapa: 'tay_bac',
+    vn_halong: 'beo_dat',
+    vn_hanoi: 'trong_com',
+    vn_ninhbinh: 'co_la',
+    vn_hue: 'luu_thuy',
+    vn_danang: 'hoa_thom',
+    vn_hoian: 'beo_dat',
+    vn_dalat: 'tay_nguyen',
+    vn_nhatrang: 'tay_nguyen',
+    vn_saigon: 'trong_com',
+    vn_mientay: 'ly_cay_bong',
+    vietnam: 'trong_com',
+  };
 
   // Plucked Đàn Tranh (16-string Vietnamese zither)
   function playDanTranh(freq, start, dur, vol = 0.14) {
@@ -598,6 +660,16 @@ export function createRaceAudio({ onSpeak = null } = {}) {
       }
       bgmMuted = true;
       duckBgm(false);
+      return this.getBgmLabel();
+    },
+    setBiomeMusic(biomeId) {
+      const targetSongId = BIOME_SONG_MAP[biomeId];
+      if (!targetSongId) return this.getBgmLabel();
+      const idx = VN_SONGS.findIndex(s => s.id === targetSongId);
+      if (idx !== -1 && idx !== currentSongIdx) {
+        currentSongIdx = idx;
+        noteCursor = 0;
+      }
       return this.getBgmLabel();
     },
     unlock() {
