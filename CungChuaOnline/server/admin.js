@@ -196,11 +196,13 @@ export async function startAdmin({ port = 8788, host = '127.0.0.1', password, ct
       const ingest = ctx.ingest || (e => broadcast(pipeline.handle(e)));
       const src = body.src || 'mock';
       if (action === 'gift1') {
-        ingest({ kind: 'gift', src, uid, name: rawName, giftId: 5655, giftName: 'Rose', diamonds: 1, repeat: Number(body.repeat) || 3, ts });
+        ingest({ kind: 'gift', src, uid, name: rawName, giftId: 5655, giftName: 'Rose', diamonds: 1, repeat: Number(body.repeat) || 1, ts });
+      } else if (action === 'gift5') {
+        ingest({ kind: 'gift', src, uid, name: rawName, giftId: 5487, giftName: 'Finger Heart', diamonds: 5, repeat: Number(body.repeat) || 1, ts });
       } else if (action === 'gift10') {
-        ingest({ kind: 'gift', src, uid, name: rawName, giftId: 5879, giftName: 'Hoa Đăng', diamonds: 30, repeat: Number(body.repeat) || 1, ts });
-      } else if (action === 'gift1000') {
-        ingest({ kind: 'gift', src, uid, name: rawName, giftId: 11046, giftName: 'Galaxy', diamonds: 1000, repeat: 1, ts });
+        ingest({ kind: 'gift', src, uid, name: rawName, giftId: 5901, giftName: 'Rosa', diamonds: 10, repeat: Number(body.repeat) || 1, ts });
+      } else if (action === 'gift20' || action === 'gift1000') {
+        ingest({ kind: 'gift', src, uid, name: rawName, giftId: 5658, giftName: 'Perfume', diamonds: 20, repeat: Number(body.repeat) || 1, ts });
       } else {
         const prayerText = typeof body.text === 'string' && body.text.trim() ? body.text.trim() : 'Nam mô A Di Đà Phật cầu bình an tài lộc';
         ingest({ kind: 'chat', src, uid, name: rawName, text: prayerText, ts });

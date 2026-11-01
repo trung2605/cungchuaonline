@@ -79,20 +79,20 @@ let lastStateCache = null;
 // Built-in sample dataset used ONLY when showMockData === true so the admin can preview
 // charts/tables with sample data without polluting real database records
 const SAMPLE_PREVIEW = {
-  chuaDiamonds: 1033,
-  duaDiamonds: 352,
-  giftsCount: 6,
-  namo: 48,
-  bows: 96,
-  bowers: 18,
-  duaDistM: 1850,
-  duaLikes: 640,
-  duaChats: 29,
+  chuaDiamonds: 36,
+  duaDiamonds: 45,
+  giftsCount: 5,
+  namo: 28,
+  bows: 64,
+  bowers: 12,
+  duaDistM: 1240,
+  duaLikes: 420,
+  duaChats: 19,
   topDonors: [
-    { name: 'Đại Thí Chủ (Mẫu)', totalDiamonds: 1000 },
-    { name: 'Tay Đua Ngân Hà (Mẫu)', totalDiamonds: 320 },
-    { name: 'Phật Tử Thiện Tâm (Mẫu)', totalDiamonds: 33 },
-    { name: 'Minh An (Mẫu)', totalDiamonds: 32 },
+    { name: 'Phật Tử Thiện Tâm (Mẫu)', totalDiamonds: 25 },
+    { name: 'Minh An (Mẫu)', totalDiamonds: 30 },
+    { name: 'Lê Trí Trung (Mẫu)', totalDiamonds: 15 },
+    { name: 'An Nhiên (Mẫu)', totalDiamonds: 11 },
   ],
   topPrayers: [
     { text: 'Nam mô A Di Đà Phật cầu bình an (Mẫu)', count: 22 },
@@ -100,22 +100,24 @@ const SAMPLE_PREVIEW = {
     { text: 'Cầu tài lộc hanh thông (Mẫu)', count: 11 },
   ],
   topRacers: [
-    { name: 'Tay Đua Ngân Hà (Mẫu)', distanceM: 1850, diamonds: 320, tier: 3 },
-    { name: 'Lê Trí Trung (Mẫu)', distanceM: 940, diamonds: 32, tier: 2 },
-    { name: 'Minh An (Mẫu)', distanceM: 420, diamonds: 0, tier: 1 },
+    { name: 'Minh An (Mẫu)', distanceM: 1240, diamonds: 30, tier: 3 },
+    { name: 'Lê Trí Trung (Mẫu)', distanceM: 680, diamonds: 15, tier: 2 },
+    { name: 'An Nhiên (Mẫu)', distanceM: 320, diamonds: 1, tier: 1 },
   ],
   chuaActors: [
-    { id: 'sample_chua_1', name: 'Đại Thí Chủ (Mẫu)', tier: 2, intent: 'Cầu Bình An', bows: 12, diamonds: 1000, src: 'mock' },
-    { id: 'sample_chua_2', name: 'Phật Tử Thiện Tâm (Mẫu)', tier: 1, intent: 'Cầu Tài Lộc', bows: 5, diamonds: 33, src: 'mock' },
+    { id: 'sample_chua_1', name: 'Phật Tử Thiện Tâm (Mẫu)', tier: 2, intent: 'Cầu Bình An', bows: 6, diamonds: 20, src: 'mock' },
+    { id: 'sample_chua_2', name: 'An Nhiên (Mẫu)', tier: 1, intent: 'Cầu Tài Lộc', bows: 4, diamonds: 10, src: 'mock' },
   ],
   duaRunners: [
-    { id: 'sample_dua_1', name: 'Tay Đua Ngân Hà (Mẫu)', tier: 3, speedMult: 4.2, distanceM: 1850, diamonds: 320, cheer: 'Bứt tốc tên lửa! (Mẫu)', src: 'mock' },
-    { id: 'sample_dua_2', name: 'Minh An (Mẫu)', tier: 2, speedMult: 2.8, distanceM: 940, diamonds: 32, cheer: 'Khám phá thế giới! (Mẫu)', src: 'mock' },
+    { id: 'sample_dua_1', name: 'Minh An (Mẫu)', tier: 3, speedMult: 4.8, distanceM: 1240, diamonds: 30, cheer: 'Bứt tốc tên lửa! (Mẫu)', src: 'mock' },
+    { id: 'sample_dua_2', name: 'Lê Trí Trung (Mẫu)', tier: 2, speedMult: 2.8, distanceM: 680, diamonds: 15, cheer: 'Khám phá thế giới! (Mẫu)', src: 'mock' },
   ],
   gifts: [
-    { time: 'Mẫu Demo', game: 'cung-chua-online', gameLabel: 'Cúng Chùa Online 3D', name: 'Đại Thí Chủ (Mẫu)', giftVi: 'Dải Ngân Hà', repeat: 1, totalDiamonds: 1000, reward: 'Áo tràng Hoàng Kim · Quỳ hàng đầu & Đại hồng chung', src: 'mock' },
-    { time: 'Mẫu Demo', game: 'cuoc-dua-ky-thu', gameLabel: 'Cuộc Đua Kỳ Thú 3D', name: 'Tay Đua Ngân Hà (Mẫu)', giftVi: 'Vòng Hoa', repeat: 1, totalDiamonds: 299, reward: 'Tên Lửa Tia Chớp · Tốc độ ×4.2 (+1.500m)', src: 'mock' },
-    { time: 'Mẫu Demo', game: 'cung-chua-online', gameLabel: 'Cúng Chùa Online 3D', name: 'Phật Tử Thiện Tâm (Mẫu)', giftVi: 'Bánh Vòng', repeat: 1, totalDiamonds: 30, reward: 'Áo tràng Vàng · Thắp đèn hoa đăng & Chuông chùa', src: 'mock' },
+    { time: 'Mẫu Demo', game: 'cung-chua-online', gameLabel: 'Cúng Chùa Online 3D', name: 'Phật Tử Thiện Tâm (Mẫu)', giftVi: 'Nước Hoa', repeat: 1, totalDiamonds: 20, reward: 'Áo tràng Hoàng Kim · Thắp đại hoa đăng, Hào quang & Đại hồng chung', src: 'mock' },
+    { time: 'Mẫu Demo', game: 'cuoc-dua-ky-thu', gameLabel: 'Cuộc Đua Kỳ Thú 3D', name: 'Minh An (Mẫu)', giftVi: 'Bánh Vòng', repeat: 1, totalDiamonds: 30, reward: 'Tên Lửa Hoàng Kim · Tốc độ ×4.8 (+1.500m)', src: 'mock' },
+    { time: 'Mẫu Demo', game: 'cung-chua-online', gameLabel: 'Cúng Chùa Online 3D', name: 'An Nhiên (Mẫu)', giftVi: 'Hoa Rosa', repeat: 1, totalDiamonds: 10, reward: 'Khoác Áo tràng Vàng · Thắp đèn hoa đăng & Chuông chùa', src: 'mock' },
+    { time: 'Mẫu Demo', game: 'cung-chua-online', gameLabel: 'Cúng Chùa Online 3D', name: 'Phật Tử Thiện Tâm (Mẫu)', giftVi: 'Tim Tay', repeat: 1, totalDiamonds: 5, reward: 'Dâng hoa sen & Đèn hoa đăng · Chuông gia trì & Đọc tên', src: 'mock' },
+    { time: 'Mẫu Demo', game: 'cung-chua-online', gameLabel: 'Cúng Chùa Online 3D', name: 'An Nhiên (Mẫu)', giftVi: 'Hoa Hồng', repeat: 1, totalDiamonds: 1, reward: 'Dâng 3 nén hương trầm · Tiếng khánh & Đọc tên cầu an', src: 'mock' },
   ],
 };
 

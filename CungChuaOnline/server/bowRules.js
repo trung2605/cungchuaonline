@@ -2,8 +2,8 @@ import { isTrigger, detectIntent, cleanBubble, cleanName } from './filter.js';
 
 export const giftTier = total => (total >= 1000 ? 2 : total >= 10 ? 1 : 0);
 
-const INCENSE_RE = /\b(rose|hoa hong|tiktok|gg|nhang|huong|incense|tram)\b/i;
-const LAMP_RE = /\b(lamp|light|candle|lantern|heart|tim|nen|den|star|sao)\b/i;
+const INCENSE_RE = /\b(rose|hoa hong|tiktok|gg|nhang|huong|incense|tram|thumbs up|like)\b/i;
+const LAMP_RE = /\b(lamp|light|candle|lantern|heart|tim|nen|den|star|sao|rosa|necklace|vong|non la|hat|bottle|binh)\b/i;
 
 export const TIKTOK_GIFT_VI = {
   rose: 'Hoa Hồng',
@@ -11,24 +11,32 @@ export const TIKTOK_GIFT_VI = {
   gg: 'GG',
   'heart me': 'Trái Tim',
   'ice cream cone': 'Kem Ốc Quế',
+  'wishing bottle': 'Bình Ước Nguyện',
+  'thumbs up': 'Like Vàng',
+  'love letter': 'Thư Tình',
   lotus: 'Hoa Sen',
   'finger heart': 'Tim Tay',
+  'little yellow duck': 'Vịt Vàng',
+  duck: 'Vịt Vàng',
+  panda: 'Gấu Trúc',
+  mic: 'Micro Vàng',
+  'club cheers': 'Trà Sen',
   rosa: 'Hoa Rosa',
   'friendship necklace': 'Vòng Hữu Nghị',
-  perfume: 'Nước Hoa',
-  doughnut: 'Bánh Vòng',
-  'paper crane': 'Hạc Giấy',
   'little crown': 'Vương Miện Nhỏ',
   'hand hearts': 'Tim Đôi',
+  'conical hat': 'Nón Lá',
+  perfume: 'Nước Hoa',
+  doughnut: 'Bánh Vòng',
+  bouquet: 'Bó Hoa Tươi',
+  mirror: 'Gương Thần',
+  'paper crane': 'Hạc Giấy',
   confetti: 'Pháo Hoa',
   hearts: 'Mưa Tim',
   garland: 'Vòng Hoa',
   'money gun': 'Pháo Lộc Vàng',
   swan: 'Thiên Nga',
   galaxy: 'Dải Ngân Hà',
-  'whale diving': 'Cá Voi',
-  lion: 'Sư Tử Vàng',
-  'tiktok universe': 'Vũ Trụ TikTok',
 };
 
 export function translateGiftName(giftName = '') {

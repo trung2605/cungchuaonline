@@ -125,13 +125,13 @@ export async function startRaceAdmin({ port = 8790, host = '127.0.0.1', password
       }
       const src = body.src || 'mock';
       if (action === 'gift1') {
-        ingest({ kind: 'gift', src, uid, name: rawName, giftId: 5655, giftName: 'Rose', diamonds: 1, repeat: Number(body.repeat) || 3, ts });
-      } else if (action === 'gift30') {
+        ingest({ kind: 'gift', src, uid, name: rawName, giftId: 5655, giftName: 'Rose', diamonds: 1, repeat: Number(body.repeat) || 1, ts });
+      } else if (action === 'gift5') {
+        ingest({ kind: 'gift', src, uid, name: rawName, giftId: 5487, giftName: 'Finger Heart', diamonds: 5, repeat: Number(body.repeat) || 1, ts });
+      } else if (action === 'gift10') {
+        ingest({ kind: 'gift', src, uid, name: rawName, giftId: 5901, giftName: 'Rosa', diamonds: 10, repeat: Number(body.repeat) || 1, ts });
+      } else if (action === 'gift30' || action === 'gift300' || action === 'gift1000') {
         ingest({ kind: 'gift', src, uid, name: rawName, giftId: 5879, giftName: 'Doughnut', diamonds: 30, repeat: Number(body.repeat) || 1, ts });
-      } else if (action === 'gift300') {
-        ingest({ kind: 'gift', src, uid, name: rawName, giftId: 6012, giftName: 'Garland', diamonds: 299, repeat: 1, ts });
-      } else if (action === 'gift1000') {
-        ingest({ kind: 'gift', src, uid, name: rawName, giftId: 11046, giftName: 'Galaxy', diamonds: 1000, repeat: 1, ts });
       } else {
         // Test join + greeting: remove existing first if they want to test fresh welcome greeting
         if (action === 'join' && stage.has(uid)) broadcast(stage.remove(uid));

@@ -241,7 +241,8 @@ export async function createActors(scene) {
     add(actor) {
       remove(actor.id);
       const holder = new THREE.Group();
-      const rig = templates[actor.skin] ? vrmRig(templates[actor.skin]) : placeholderRig(actor.skin, actor.tier);
+      const visualTier = (actor.diamonds >= 20 || actor.tier === 2) ? 2 : (actor.diamonds >= 5 || actor.tier === 1) ? 1 : 0;
+      const rig = templates[actor.skin] ? vrmRig(templates[actor.skin]) : placeholderRig(actor.skin, visualTier);
       holder.add(rig.root);
       const el = document.createElement('div');
       el.style.cssText = 'display:flex;flex-direction:column;align-items:center';
@@ -249,17 +250,17 @@ export async function createActors(scene) {
       bubbleEl.className = 'label bubble';
       bubbleEl.style.display = 'none';
       const nameEl = document.createElement('div');
-      nameEl.className = 'label' + (actor.tier === 2 ? ' gold' : actor.tier === 1 ? ' tier1' : '');
+      nameEl.className = 'label' + (visualTier === 2 ? ' gold' : visualTier === 1 ? ' tier1' : '');
       nameEl.textContent = nameText(actor);
       el.append(bubbleEl, nameEl);
       const label = new CSS2DObject(el);
       label.center.set(0.5, 1);
       const halo = new THREE.Sprite(haloMat.clone());
       halo.scale.setScalar(1.65);
-      halo.visible = actor.tier === 2;
+      halo.visible = visualTier === 2;
       holder.add(label, halo);
       scene.add(holder);
-      live.set(actor.id, { actor: { ...actor }, holder, rig, label, nameEl, bubbleEl, halo, haloUntil: 0, prevBow: 0, seed: Math.random() * 10 });
+      live.set(actor.id, { actor: { ...actor, tier: visualTier }, holder, rig, label, nameEl, bubbleEl, halo, haloUntil: 0, prevBow: 0, seed: Math.random() * 10 });
     },
     remove,
     clear() {
@@ -284,7 +285,7 @@ export async function createActors(scene) {
       const e = live.get(id);
       if (e) {
         e.actor.diamonds = diamonds;
-        const newTier = diamonds >= 1000 ? 2 : diamonds >= 10 ? 1 : 0;
+        const newTier = diamonds >= 20 ? 2 : diamonds >= 5 ? 1 : 0;
         if (newTier > (e.actor.tier ?? 0)) {
           e.actor.tier = newTier;
           e.rig.setTier?.(newTier);

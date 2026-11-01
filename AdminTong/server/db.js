@@ -16,20 +16,31 @@ try {
 } catch {}
 
 export const DEFAULT_GIFT_CATALOG = [
-  { giftId: 5655, giftName: 'Rose', giftVi: 'Hoa Hồng', diamonds: 1, tier: 1, chuaReward: 'Dâng 3 nén hương · Tiếng khánh & Đọc tên', duaReward: 'Đôi Cánh Năng Lượng · Tốc độ ×1.8 (+80m)' },
+  // Mốc 1 Kim Cương: Dâng hương trầm & Khởi động đường đua
+  { giftId: 5655, giftName: 'Rose', giftVi: 'Hoa Hồng', diamonds: 1, tier: 1, chuaReward: 'Dâng 3 nén hương trầm · Tiếng khánh & Đọc tên', duaReward: 'Đôi Cánh Năng Lượng · Tốc độ ×1.8 (+80m)' },
   { giftId: 5269, giftName: 'TikTok', giftVi: 'TikTok', diamonds: 1, tier: 1, chuaReward: 'Dâng hương trầm · Tiếng khánh & Đọc tên', duaReward: 'Đôi Cánh Năng Lượng · Tốc độ ×1.8 (+80m)' },
-  { giftId: 5901, giftName: 'Lotus', giftVi: 'Hoa Sen', diamonds: 2, tier: 1, chuaReward: 'Dâng đóa hoa sen · Tiếng khánh & Đọc tên', duaReward: 'Đôi Cánh Năng Lượng · Tốc độ ×1.8 (+80m)' },
-  { giftId: 5487, giftName: 'Finger Heart', giftVi: 'Tim Tay', diamonds: 5, tier: 1, chuaReward: 'Dâng đèn hoa đăng · Tiếng khánh & Đọc tên', duaReward: 'Đôi Cánh Năng Lượng · Tốc độ ×1.8 (+80m)' },
-  { giftId: 5658, giftName: 'Perfume', giftVi: 'Nước Hoa', diamonds: 20, tier: 2, chuaReward: 'Áo tràng Vàng · Thắp đèn hoa đăng & Chuông chùa', duaReward: 'Ván Trượt Hoàng Kim · Tốc độ ×2.8 (+350m)' },
-  { giftId: 5879, giftName: 'Doughnut', giftVi: 'Bánh Vòng', diamonds: 30, tier: 2, chuaReward: 'Áo tràng Vàng · Thắp đèn hoa đăng & Chuông chùa', duaReward: 'Ván Trượt Hoàng Kim · Tốc độ ×2.8 (+350m)' },
-  { giftId: 5659, giftName: 'Paper Crane', giftVi: 'Hạc Giấy', diamonds: 99, tier: 2, chuaReward: 'Áo tràng Vàng · Thắp đèn hoa đăng & Chuông chùa', duaReward: 'Ván Trượt Hoàng Kim · Tốc độ ×2.8 (+350m)' },
-  { giftId: 6012, giftName: 'Garland', giftVi: 'Vòng Hoa', diamonds: 299, tier: 3, chuaReward: 'Áo tràng Vàng · Đại hoa đăng & Chuông chùa', duaReward: 'Tên Lửa Tia Chớp · Tốc độ ×4.2 (+1.500m)' },
-  { giftId: 6104, giftName: 'Money Gun', giftVi: 'Pháo Lộc Vàng', diamonds: 500, tier: 3, chuaReward: 'Áo tràng Vàng · Đại hoa đăng & Chuông chùa', duaReward: 'Tên Lửa Tia Chớp · Tốc độ ×4.2 (+1.500m)' },
-  { giftId: 6201, giftName: 'Swan', giftVi: 'Thiên Nga', diamonds: 699, tier: 3, chuaReward: 'Áo tràng Vàng · Đại hoa đăng & Chuông chùa', duaReward: 'Tên Lửa Tia Chớp · Tốc độ ×4.2 (+1.500m)' },
-  { giftId: 11046, giftName: 'Galaxy', giftVi: 'Dải Ngân Hà', diamonds: 1000, tier: 4, chuaReward: 'Áo tràng Hoàng Kim · Quỳ hàng đầu · Hào quang & Đại hồng chung', duaReward: 'Siêu Phi Thuyền Ngân Hà · Dẫn đầu ×6.5 (+10.000m)' },
-  { giftId: 12001, giftName: 'Whale Diving', giftVi: 'Cá Voi', diamonds: 2150, tier: 4, chuaReward: 'Áo tràng Hoàng Kim · Quỳ hàng đầu · Hào quang & Đại hồng chung', duaReward: 'Siêu Phi Thuyền Ngân Hà · Dẫn đầu ×6.5 (+10.000m)' },
-  { giftId: 15002, giftName: 'Lion', giftVi: 'Sư Tử Vàng', diamonds: 29999, tier: 4, chuaReward: 'Áo tràng Hoàng Kim · Quỳ hàng đầu · Hào quang & Đại hồng chung', duaReward: 'Siêu Phi Thuyền Ngân Hà · Dẫn đầu ×6.5 (+10.000m)' },
-  { giftId: 19999, giftName: 'TikTok Universe', giftVi: 'Vũ Trụ TikTok', diamonds: 44999, tier: 4, chuaReward: 'Áo tràng Hoàng Kim · Quỳ hàng đầu · Hào quang & Đại hồng chung', duaReward: 'Siêu Phi Thuyền Ngân Hà · Dẫn đầu ×6.5 (+10.000m)' },
+  { giftId: 5301, giftName: 'GG', giftVi: 'GG', diamonds: 1, tier: 1, chuaReward: 'Dâng nén tâm hương · Tiếng khánh & Đọc tên', duaReward: 'Đôi Cánh Năng Lượng · Tốc độ ×1.8 (+80m)' },
+  { giftId: 5310, giftName: 'Heart Me', giftVi: 'Trái Tim', diamonds: 1, tier: 1, chuaReward: 'Dâng hoa cúc vàng · Tiếng khánh & Đọc tên', duaReward: 'Đôi Cánh Năng Lượng · Tốc độ ×1.8 (+80m)' },
+  { giftId: 5827, giftName: 'Ice Cream Cone', giftVi: 'Kem Ốc Quế', diamonds: 1, tier: 1, chuaReward: 'Dâng phẩm vật ngọt lành · Tiếng khánh & Đọc tên', duaReward: 'Giày Tia Chớp · Tốc độ ×1.8 (+80m)' },
+  { giftId: 5338, giftName: 'Wishing Bottle', giftVi: 'Bình Ước Nguyện', diamonds: 1, tier: 1, chuaReward: 'Gửi bình ước nguyện bình an · Tiếng khánh & Đọc tên', duaReward: 'La Bàn Khám Phá · Tốc độ ×1.8 (+80m)' },
+
+  // Mốc 2–5 Kim Cương: Dâng hoa sen, Thắp đèn hoa đăng & Khoác Áo Vàng
+  { giftId: 5901, giftName: 'Lotus', giftVi: 'Hoa Sen', diamonds: 2, tier: 1, chuaReward: 'Dâng đóa hoa sen hồng · Tiếng khánh & Đọc tên', duaReward: 'Đôi Cánh Hoa Sen · Tốc độ ×2.0 (+120m)' },
+  { giftId: 5487, giftName: 'Finger Heart', giftVi: 'Tim Tay', diamonds: 5, tier: 2, chuaReward: 'Khoác Áo tràng Vàng · Thắp đèn hoa đăng & Chuông gia trì', duaReward: 'Ván Trượt Ánh Sáng · Tốc độ ×2.4 (+220m)' },
+  { giftId: 5492, giftName: 'Little Yellow Duck', giftVi: 'Vịt Vàng', diamonds: 5, tier: 2, chuaReward: 'Khoác Áo tràng Vàng · Dâng lộc an vui & Chuông gia trì', duaReward: 'Ván Trượt Ánh Sáng · Tốc độ ×2.4 (+220m)' },
+  { giftId: 5509, giftName: 'Panda', giftVi: 'Gấu Trúc', diamonds: 5, tier: 2, chuaReward: 'Khoác Áo tràng Vàng · Dâng trà sen thanh tịnh & Đọc tên', duaReward: 'Ván Trượt Ánh Sáng · Tốc độ ×2.4 (+220m)' },
+
+  // Mốc 10–15 Kim Cương: Pháp phục Áo Vàng & Đèn hoa đăng cát tường
+  { giftId: 5585, giftName: 'Rosa', giftVi: 'Hoa Rosa', diamonds: 10, tier: 2, chuaReward: 'Khoác Áo tràng Vàng · Thắp đôi đèn hoa đăng & Chuông chùa', duaReward: 'Ván Trượt Hoàng Kim · Tốc độ ×2.8 (+350m)' },
+  { giftId: 5610, giftName: 'Friendship Necklace', giftVi: 'Vòng Hữu Nghị', diamonds: 10, tier: 2, chuaReward: 'Khoác Áo tràng Vàng · Dâng tràng hạt kết duyên & Chuông chùa', duaReward: 'Ván Trượt Hoàng Kim · Tốc độ ×2.8 (+350m)' },
+  { giftId: 5624, giftName: 'Hand Hearts', giftVi: 'Tim Đôi', diamonds: 10, tier: 2, chuaReward: 'Khoác Áo tràng Vàng · Cầu tình duyên gia đạo & Chuông chùa', duaReward: 'Ván Trượt Hoàng Kim · Tốc độ ×2.8 (+350m)' },
+  { giftId: 5642, giftName: 'Conical Hat', giftVi: 'Nón Lá', diamonds: 15, tier: 2, chuaReward: 'Khoác Áo tràng Vàng · Dâng lễ truyền thống & Chuông chùa', duaReward: 'Ván Trượt Hoàng Kim · Tốc độ ×3.2 (+500m)' },
+
+  // Mốc 20+ Kim Cương: Phát tâm công đức · Áo Hoàng Kim · Hào quang & Đại hồng chung
+  { giftId: 5658, giftName: 'Perfume', giftVi: 'Nước Hoa', diamonds: 20, tier: 3, chuaReward: 'Áo tràng Hoàng Kim · Dâng nước tịnh bình · Hào quang & Đại hồng chung', duaReward: 'Tên Lửa Tia Chớp · Tốc độ ×4.2 (+1.000m)' },
+  { giftId: 5879, giftName: 'Doughnut', giftVi: 'Bánh Vòng', diamonds: 30, tier: 3, chuaReward: 'Áo tràng Hoàng Kim · Đại hoa đăng · Hào quang & Đại hồng chung', duaReward: 'Tên Lửa Hoàng Kim · Tốc độ ×4.8 (+1.500m)' },
+  { giftId: 5890, giftName: 'Bouquet', giftVi: 'Bó Hoa Tươi', diamonds: 30, tier: 3, chuaReward: 'Áo tràng Hoàng Kim · Đại lễ hoa tươi · Hào quang & Đại hồng chung', duaReward: 'Tên Lửa Hoàng Kim · Tốc độ ×4.8 (+1.500m)' },
+  { giftId: 5659, giftName: 'Paper Crane', giftVi: 'Hạc Giấy', diamonds: 99, tier: 4, chuaReward: 'Áo tràng Hoàng Kim · Quỳ hàng đầu · Hào quang & Đại hồng chung', duaReward: 'Siêu Phi Thuyền Ngân Hà · Dẫn đầu ×6.5 (+5.000m)' },
 ];
 
 export const INITIAL_WORK_LOGS = [
@@ -119,7 +130,14 @@ export function createDatabase({
       if (Array.isArray(raw.gifts)) state.gifts = raw.gifts.slice(0, 2000);
       if (Array.isArray(raw.events)) state.events = raw.events.slice(0, 1000);
       if (Array.isArray(raw.workLogs) && raw.workLogs.length) state.workLogs = raw.workLogs.slice(0, 500);
-      if (Array.isArray(raw.giftCatalog) && raw.giftCatalog.length) state.giftCatalog = raw.giftCatalog;
+      if (Array.isArray(raw.giftCatalog) && raw.giftCatalog.length) {
+        // Keep custom user-added gifts under 200💎, and ensure all 1–20+💎 DEFAULT_GIFT_CATALOG items are present & updated
+        const map = new Map(DEFAULT_GIFT_CATALOG.map(g => [g.giftId, { ...g }]));
+        for (const item of raw.giftCatalog) {
+          if (item.diamonds <= 200 && !map.has(item.giftId)) map.set(item.giftId, item);
+        }
+        state.giftCatalog = [...map.values()].sort((a, b) => a.diamonds - b.diamonds);
+      }
     }
   } catch {}
 
@@ -175,6 +193,8 @@ export function createDatabase({
     try {
       const tasks = [];
       if (state.giftCatalog.length) {
+        const ids = state.giftCatalog.map(x => x.giftId);
+        tasks.push(db.collection('gift_catalog').deleteMany({ giftId: { $nin: ids } }));
         const ops = state.giftCatalog.map(item => ({
           updateOne: { filter: { giftId: item.giftId }, update: { $set: item }, upsert: true },
         }));

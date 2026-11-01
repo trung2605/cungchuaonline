@@ -53,11 +53,11 @@ let blessingIdx = 0;
 export function formatTtsBlessing({ name = '', offering = 'dâng hương', repeat = 1, diamonds = 1 } = {}) {
   const base = formatTtsThanks({ name, offering, repeat });
   const idx = blessingIdx++;
-  if (diamonds >= 1000 || offering === 'phát tâm công đức') {
+  if (diamonds >= 20 || offering === 'phát tâm công đức') {
     const b = BLESSINGS_TIER2[idx % BLESSINGS_TIER2.length];
     return `Nam mô A Di Đà Phật. ${base}. ${b}`;
   }
-  if (diamonds >= 10 || offering === 'dâng đèn hoa đăng') {
+  if (diamonds >= 5 || offering === 'dâng đèn hoa đăng') {
     const b = BLESSINGS_TIER1[idx % BLESSINGS_TIER1.length];
     return `A Di Đà Phật. ${base}, ${b}`;
   }
@@ -389,8 +389,8 @@ export function createAudio({ onSpeak = null } = {}) {
       if (!enabled || !d) return;
       const total = d.diamonds ?? 1;
       const offering = d.offering || 'dâng hương';
-      if (total >= 1000) bell();
-      else if (total >= 10 || offering === 'dâng đèn hoa đăng') mediumBell();
+      if (total >= 20) bell();
+      else if (total >= 5 || offering === 'dâng đèn hoa đăng') mediumBell();
       else chime();
 
       const repeat = Number(d.repeat) || 1;
