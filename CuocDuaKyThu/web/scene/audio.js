@@ -70,24 +70,24 @@ export function cleanRaceTtsName(raw = '') {
 }
 
 const WELCOME_TEMPLATES = [
-  name => `A Di Đà Phật. Chào mừng Phật tử ${name} vào chùa lễ Phật`,
+  name => `Chào mừng ${name} cùng tham gia hành trình đi bộ xuyên Việt`,
 ];
 let welcomeTemplateIdx = 0;
 
 export function formatWelcomeSpeech(name = '', useFixed = true) {
   const who = cleanRaceTtsName(name);
   if (useFixed) {
-    return `A Di Đà Phật. Chào mừng Phật tử ${who} vào chùa lễ Phật`;
+    return `Chào mừng ${who} cùng tham gia hành trình đi bộ xuyên Việt`;
   }
   const fn = WELCOME_TEMPLATES[welcomeTemplateIdx++ % WELCOME_TEMPLATES.length];
   return fn(who);
 }
 
-export function formatGiftBoostSpeech({ name = '', giftVi = 'lễ vật', repeat = 1, mountLabel = 'Đôi Cánh Năng Lượng', bonusM = 80, isNewJoin = false } = {}) {
+export function formatGiftBoostSpeech({ name = '', giftVi = 'lễ vật', repeat = 1, mountLabel = 'Đôi Cánh Chim Lạc', bonusM = 80, isNewJoin = false } = {}) {
   const who = cleanRaceTtsName(name);
-  const greet = isNewJoin ? `Chào mừng ${who} vừa vào chùa lễ Phật. ` : '';
+  const greet = isNewJoin ? `Chào mừng ${who} cùng tham gia hành trình đi bộ xuyên Việt. ` : '';
   const combo = repeat > 1 ? `${repeat} ${giftVi}` : giftVi;
-  return `${greet}Cảm ơn Phật tử ${who} đã phát tâm tặng ${combo}, nhận ${mountLabel}, tiến thêm ${bonusM} mét trên đường hành hương!`;
+  return `${greet}Cảm ơn ${who} đã tặng ${combo}, nhận ${mountLabel}, tiến thêm ${bonusM} mét trên hành trình xuyên Việt!`;
 }
 
 export function createRaceAudio({ onSpeak = null } = {}) {

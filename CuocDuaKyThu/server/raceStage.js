@@ -242,7 +242,7 @@ function laneOf(uid, occupiedCount) {
 }
 
 export class RaceStage {
-  constructor({ max = 120, now = Date.now, baseSpeedMps = 14, stayMinutes = 5 } = {}) {
+  constructor({ max = 120, now = Date.now, baseSpeedMps = 16, stayMinutes = 5 } = {}) {
     Object.assign(this, { max, now, baseSpeedMps });
     this.runners = new Map(); // uid -> Runner
     this.statsByUid = new Map(); // uid -> { name, distanceM, diamonds, tier, src, updatedAt }
@@ -410,7 +410,7 @@ export class RaceStage {
     };
     this.runners.set(uid, runner);
 
-    const welcomeText = `Chào mừng ${name} vừa vào chùa lễ Phật và khởi hành vãn cảnh`;
+    const welcomeText = `Chào mừng ${name} cùng tham gia hành trình đi bộ xuyên Việt`;
     out.push(
       { t: 'spawn', runner: { ...runner } },
       { t: 'welcome', id: uid, name, text: welcomeText, tier: bestTier, src: finalSrc, ...(giftTierLevel > 0 && { fromGift: true }) },
@@ -475,7 +475,7 @@ export class RaceStage {
       const b = this.currentBiome();
       out.push(
         { t: 'biome', biome: b, worldDistanceM: Math.round(this.worldDistanceM) },
-        { t: 'banner', text: `🌍 Đoàn đua tiến vào: ${b.name}`, ms: 5000 },
+        { t: 'banner', text: `🇻🇳 Đoàn xuyên Việt tiến vào: ${b.name}`, ms: 5000 },
       );
     }
 

@@ -71,7 +71,7 @@ export function createRaceHud() {
       const txt = $('#welcome-text');
       const toast = $('#voice-toast');
       if (card && txt && (!toast || !toast.classList.contains('on'))) {
-        txt.textContent = msg.text || `Chào mừng ${msg.name} vừa vào chùa lễ Phật và khởi hành vãn cảnh`;
+        txt.textContent = msg.text || `Chào mừng ${msg.name} cùng tham gia hành trình đi bộ xuyên Việt`;
         card.classList.add('on');
         clearTimeout(welcomeTimer);
         welcomeTimer = setTimeout(() => card.classList.remove('on'), 4500);
@@ -86,8 +86,8 @@ export function createRaceHud() {
         feed.replaceChildren(...joinFeed.map(item => {
           const li = document.createElement('li');
           const b = document.createElement('b');
-          b.textContent = `🏁 ${item.name}: `;
-          li.append(b, document.createTextNode('Đã tham gia cuộc đua!'));
+          b.textContent = `🇻🇳 ${item.name}: `;
+          li.append(b, document.createTextNode('Đã tham gia đi bộ xuyên Việt!'));
           return li;
         }));
       }
