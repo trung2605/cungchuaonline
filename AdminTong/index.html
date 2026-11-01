@@ -1,0 +1,522 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Admin Tổng · Hệ Sinh Thái Live TikTok</title>
+<style>
+  :root {
+    --bg: #070b14; --panel: #0f172a; --elev: #162038;
+    --ink: #f1f5f9; --mute: #94a3b8; --gold: #f5c242; --cyan: #00f5d4;
+    --line: rgba(148, 163, 184, .18); --gold-line: rgba(245, 194, 66, .45);
+    --ok: #10b981; --red: #f43f5e;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--ink); font-size: 14px; line-height: 1.45; }
+  .hub-bar {
+    background: #04070d; border-bottom: 1px solid var(--gold-line);
+    padding: 8px 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; font-size: 12.5px;
+  }
+  .hub-bar a { text-decoration: none; padding: 4px 11px; border-radius: 99px; font-weight: 600; color: var(--mute); border: 1px solid var(--line); }
+  .hub-bar a.active { background: linear-gradient(90deg, var(--gold), #e09f24); color: #050a14; border: none; font-weight: 700; }
+  header {
+    background: var(--panel); border-bottom: 1px solid var(--line);
+    padding: 12px 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+    position: sticky; top: 0; z-index: 20;
+  }
+  h1 { margin: 0; font-size: 18px; color: var(--gold); display: flex; align-items: center; gap: 8px; }
+  nav { display: flex; gap: 6px; flex-wrap: wrap; }
+  nav button {
+    background: transparent; color: var(--mute); border: 1px solid transparent;
+    padding: 7px 14px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13.5px;
+  }
+  nav button[aria-selected="true"] { background: rgba(245, 194, 66, .16); color: var(--gold); border-color: var(--gold-line); }
+  main { max-width: 1400px; margin: 0 auto; padding: 20px 24px 64px; }
+  section[hidden] { display: none; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 16px; }
+  .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 16px; }
+  @media (max-width: 1024px) { .grid-4, .grid-2 { grid-template-columns: 1fr; } }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px; box-shadow: 0 6px 18px rgba(0, 0, 0, .3); }
+  .card.gold { border-color: var(--gold-line); }
+  .card h2 { margin: 0 0 8px; font-size: 13.5px; color: var(--mute); font-weight: 600; display: flex; align-items: center; justify-content: space-between; }
+  .big { font-size: 26px; font-weight: 700; color: var(--gold); font-variant-numeric: tabular-nums; }
+  .sub { font-size: 12.5px; color: var(--mute); margin-top: 4px; }
+  button, .btn {
+    background: var(--elev); color: var(--ink); border: 1px solid var(--line);
+    padding: 7px 12px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13px; text-decoration: none; display: inline-flex; align-items: center; gap: 5px;
+  }
+  button:hover, .btn:hover { border-color: var(--cyan); }
+  button.primary { background: linear-gradient(180deg, #f5c242, #d4961a); color: #070d19; border: none; font-weight: 700; }
+  button.cyan { background: rgba(0, 245, 212, .14); border-color: var(--cyan); color: var(--cyan); }
+  button.danger { background: rgba(244, 63, 94, .14); border-color: var(--red); color: #fda4af; }
+  input, select, textarea {
+    background: var(--bg); color: var(--ink); border: 1px solid var(--line);
+    padding: 8px 10px; border-radius: 6px; font-size: 13.5px; width: 100%; font-family: inherit;
+  }
+  .btn-group { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { padding: 8px 10px; border-bottom: 1px solid var(--line); text-align: left; }
+  th { color: var(--mute); font-weight: 600; background: rgba(0, 0, 0, .25); position: sticky; top: 0; }
+  .scroll { max-height: 380px; overflow-y: auto; border: 1px solid var(--line); border-radius: 8px; background: var(--elev); }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 99px; font-size: 11.5px; font-weight: 700; }
+  .badge.ok { background: rgba(16, 185, 129, .18); color: #34d399; border: 1px solid rgba(16, 185, 129, .4); }
+  .badge.warn { background: rgba(245, 194, 66, .18); color: var(--gold); border: 1px solid var(--gold-line); }
+  .badge.cyan { background: rgba(0, 245, 212, .16); color: var(--cyan); border: 1px solid rgba(0, 245, 212, .35); }
+  #msg { color: var(--cyan); font-weight: 600; font-size: 13px; }
+</style>
+</head>
+<body>
+<div class="hub-bar">
+  <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+    <span style="color:var(--gold);font-weight:700">👑 HỆ SINH THÁI LIVE TIKTOK:</span>
+    <a href="http://127.0.0.1:8791" class="active">🌐 Admin Tổng (:8791)</a>
+    <a href="http://127.0.0.1:8788" target="_blank">🏮 Admin Cúng Chùa (:8788) ↗</a>
+    <a href="http://127.0.0.1:8790" target="_blank">🏁 Admin Cuộc Đua Kỳ Thú (:8790) ↗</a>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px">
+    <a href="http://127.0.0.1:8787" target="_blank" style="color:var(--gold);border-color:var(--gold-line)">🏮 Màn Hình 3D Chùa (:8787) ↗</a>
+    <a href="http://127.0.0.1:8789" target="_blank" style="color:var(--cyan);border-color:rgba(0,245,212,.4)">🏁 Màn Hình 3D Đua Xe (:8789) ↗</a>
+  </div>
+</div>
+
+<header>
+  <h1>👑 Admin Tổng · Quản Lý Toàn Bộ Trò Chơi &amp; Quà Tặng Livestream</h1>
+  <nav role="tablist">
+    <button role="tab" data-tab="games" aria-selected="true">🎮 Quản Lý Trò Chơi</button>
+    <button role="tab" data-tab="gifts">🎁 Quà Tặng Livestream &amp; Danh Mục</button>
+    <button role="tab" data-tab="work">📜 Lịch Sử Các Phần Đã Làm</button>
+    <button role="tab" data-tab="database">🗄️ Cấu Hình MongoDB</button>
+  </nav>
+  <span id="msg"></span>
+</header>
+
+<main>
+  <!-- TAB 1: QUẢN LÝ TOÀN BỘ TRÒ CHƠI -->
+  <section id="games">
+    <div class="grid-4">
+      <div class="card gold">
+        <h2>📡 Kênh TikTok LIVE Toàn Hệ Thống</h2>
+        <div class="big" id="topTiktok">@adidaphat20266</div>
+        <div style="display:flex;gap:6px;margin-top:8px">
+          <input id="globalTiktokInput" placeholder="Nhập @username TikTok">
+          <button class="primary" id="saveGlobalTiktokBtn" style="white-space:nowrap">Đổi Tất Cả Game</button>
+        </div>
+      </div>
+      <div class="card">
+        <h2>💎 Tổng Kim Cương Livestream</h2>
+        <div class="big" id="topRealDiamonds">0 💎</div>
+        <div class="sub">Cùng mô phỏng Demo: <b id="topAllDiamonds">0 💎</b></div>
+      </div>
+      <div class="card">
+        <h2>🎁 Tổng Lượt Nhận Quà</h2>
+        <div class="big" id="topGiftCount">0</div>
+        <div class="sub">Chùa: <b id="topChuaDiamonds">0💎</b> · Đua: <b id="topDuaDiamonds">0💎</b></div>
+      </div>
+      <div class="card">
+        <h2>🗄️ Trạng Thái Cơ Sở Dữ Liệu</h2>
+        <div id="topDbBadge" style="margin:6px 0"><span class="badge warn">Lưu JSON Cục Bộ</span></div>
+        <div class="sub" id="topDbSub">Chờ cấu hình MONGODB_URI trong .env</div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <!-- GAME 1 CARD -->
+      <div class="card gold">
+        <h2>
+          <span>🏮 Game 1: Cúng Chùa Online 3D</span>
+          <span id="chuaOnlineBadge" class="badge ok">Đang chạy (:8787 / :8788)</span>
+        </h2>
+        <div class="grid-2" style="margin:10px 0">
+          <div>
+            <div class="sub">Phật tử đang lễ trên điện:</div>
+            <div class="big" id="chuaActors">0</div>
+          </div>
+          <div>
+            <div class="sub">Tổng lượt niệm Nam Mô:</div>
+            <div class="big" id="chuaNamo">0</div>
+          </div>
+        </div>
+        <div class="sub" id="chuaMeta">Chế độ Demo: Đang kiểm tra...</div>
+        <div class="btn-group">
+          <button class="primary" onclick="gameAction('cung-chua-online','/api/test-event',{action:'prayer',name:'Phật Tử Thiện Tâm'})">🙏 Test Phật Tử Lễ Phật</button>
+          <button class="cyan" onclick="gameAction('cung-chua-online','/api/test-event',{action:'gift1',name:'Phật Tử Thiện Tâm'})">🌹 Test Hoa Hồng (1💎)</button>
+          <button class="cyan" onclick="gameAction('cung-chua-online','/api/test-event',{action:'gift10',name:'Phật Tử Thiện Tâm'})">🪷 Test Hoa Đăng (30💎)</button>
+          <button class="primary" onclick="gameAction('cung-chua-online','/api/test-event',{action:'gift1000',name:'Đại Thí Chủ'})">👑 Test Galaxy (1000💎)</button>
+          <button onclick="gameAction('cung-chua-online','/api/demo',{on:true,rate:3})">▶️ Bật Demo</button>
+          <button onclick="gameAction('cung-chua-online','/api/demo',{on:false,rate:3})">⏹️ Tắt Demo</button>
+        </div>
+        <div class="btn-group" style="margin-top:10px;padding-top:10px;border-top:1px solid var(--line)">
+          <a class="btn cyan" href="http://127.0.0.1:8787" target="_blank">Mở Màn Hình 3D Chùa (:8787) ↗</a>
+          <a class="btn" href="http://127.0.0.1:8788" target="_blank">Mở Admin Chi Tiết Chùa (:8788) ↗</a>
+        </div>
+      </div>
+
+      <!-- GAME 2 CARD -->
+      <div class="card gold">
+        <h2>
+          <span>🏁 Game 2: Cuộc Đua Kỳ Thú 3D (Chạy Vô Hạn)</span>
+          <span id="duaOnlineBadge" class="badge ok">Đang chạy (:8789 / :8790)</span>
+        </h2>
+        <div class="grid-2" style="margin:10px 0">
+          <div>
+            <div class="sub">Vận động viên trên đường đua:</div>
+            <div class="big" id="duaRunners">0</div>
+          </div>
+          <div>
+            <div class="sub">Quãng đường khám phá:</div>
+            <div class="big" id="duaDist">0 m</div>
+          </div>
+        </div>
+        <div class="sub" id="duaMeta">Địa điểm hiện tại: Vịnh Hạ Long 🇻🇳</div>
+        <div class="btn-group">
+          <button class="primary" onclick="gameAction('cuoc-dua-ky-thu','/api/test-event',{action:'join',name:'Lê Trí Trung'})">👋 Test Lời Chào Nhập Cuộc</button>
+          <button class="cyan" onclick="gameAction('cuoc-dua-ky-thu','/api/test-event',{action:'gift1',name:'Lê Trí Trung'})">🌹 Test Đôi Cánh (1💎)</button>
+          <button class="cyan" onclick="gameAction('cuoc-dua-ky-thu','/api/test-event',{action:'gift30',name:'Lê Trí Trung'})">🛹 Test Ván Trượt Vàng (30💎)</button>
+          <button class="primary" onclick="gameAction('cuoc-dua-ky-thu','/api/test-event',{action:'gift1000',name:'Lê Trí Trung'})">👑 Test Phi Thuyền (1000💎)</button>
+          <button onclick="gameAction('cuoc-dua-ky-thu','/api/demo',{on:true,rate:2.5})">▶️ Bật Demo</button>
+          <button onclick="gameAction('cuoc-dua-ky-thu','/api/demo',{on:false,rate:2.5})">⏹️ Tắt Demo</button>
+        </div>
+        <div class="btn-group" style="margin-top:10px;padding-top:10px;border-top:1px solid var(--line)">
+          <a class="btn cyan" href="http://127.0.0.1:8789" target="_blank">Mở Màn Hình 3D Đua Xe (:8789) ↗</a>
+          <a class="btn" href="http://127.0.0.1:8790" target="_blank">Mở Admin Chi Tiết Đua Xe (:8790) ↗</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TAB 2: QUẢN LÝ QUÀ TẶNG LIVESTREAM & DANH MỤC -->
+  <section id="gifts" hidden>
+    <div class="grid-2">
+      <div class="card">
+        <h2>
+          <span>🎁 Nhật Ký Quà Nhận Livestream Toàn Hệ Thống</span>
+          <div style="display:flex;gap:6px">
+            <select id="filterGiftGame" style="width:auto;padding:4px 8px;font-size:12px">
+              <option value="all">Mọi trò chơi</option>
+              <option value="cung-chua-online">🏮 Cúng Chùa Online</option>
+              <option value="cuoc-dua-ky-thu">🏁 Cuộc Đua Kỳ Thú</option>
+            </select>
+            <select id="filterGiftSrc" style="width:auto;padding:4px 8px;font-size:12px">
+              <option value="all">TikTok + Demo</option>
+              <option value="tiktok">Chỉ TikTok thật</option>
+              <option value="mock">Chỉ Demo</option>
+            </select>
+          </div>
+        </h2>
+        <div class="scroll">
+          <table>
+            <thead>
+              <tr><th>Thời gian</th><th>Game</th><th>Nguồn</th><th>Người tặng</th><th>Quà</th><th>💎</th><th>Phần thưởng</th></tr>
+            </thead>
+            <tbody id="globalGiftBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>🏆 Bảng Vàng Người Tặng Quà Hàng Đầu (Top Donors)</h2>
+        <div class="scroll">
+          <table>
+            <thead>
+              <tr><th>#</th><th>Tên Người Tặng</th><th>Số lần tặng</th><th>Quà gần nhất</th><th>Tổng 💎</th></tr>
+            </thead>
+            <tbody id="globalDonorBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="card gold">
+      <h2>⚙️ Quản Lý Danh Mục Quà Tặng TikTok &amp; Phần Thưởng Trong Game</h2>
+      <div style="display:grid;grid-template-columns:90px 1fr 1fr 90px 1.4fr 1.4fr auto;gap:8px;margin-bottom:12px;align-items:center">
+        <input id="catId" placeholder="ID (VD: 5655)">
+        <input id="catName" placeholder="Tên gốc TikTok (Rose)">
+        <input id="catVi" placeholder="Tên TV (Hoa Hồng)">
+        <input id="catDiamonds" type="number" placeholder="Số 💎" value="10">
+        <input id="catChua" placeholder="Thưởng Cúng Chùa Online">
+        <input id="catDua" placeholder="Thưởng Cuộc Đua Kỳ Thú">
+        <button class="primary" id="saveCatBtn">Lưu Quà</button>
+      </div>
+      <div class="scroll" style="max-height:320px">
+        <table>
+          <thead>
+            <tr><th>Gift ID</th><th>Tên TikTok</th><th>Tên Tiếng Việt</th><th>💎</th><th>Thưởng Cúng Chùa Online</th><th>Thưởng Cuộc Đua Kỳ Thú</th><th>Thao tác</th></tr>
+          </thead>
+          <tbody id="catalogBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- TAB 3: LỊCH SỬ CÁC PHẦN ĐÃ LÀM -->
+  <section id="work" hidden>
+    <div class="card gold" style="margin-bottom:16px">
+      <h2>✍️ Ghi Chú Thêm Hạng Mục Công Việc / Lịch Sử Cải Tiến</h2>
+      <div style="display:grid;grid-template-columns:150px 180px 1fr 1.5fr auto;gap:8px">
+        <select id="workCat">
+          <option value="feature">Tính năng mới</option>
+          <option value="ui_ux">Giao diện UI/UX</option>
+          <option value="gift_catalog">Đồng bộ quà TikTok</option>
+          <option value="database">Cơ sở dữ liệu</option>
+          <option value="note">Ghi chú vận hành</option>
+        </select>
+        <select id="workGame">
+          <option value="all">Toàn hệ thống</option>
+          <option value="cung-chua-online">Cúng Chùa Online</option>
+          <option value="cuoc-dua-ky-thu">Cuộc Đua Kỳ Thú</option>
+        </select>
+        <input id="workTitle" placeholder="Tiêu đề phần việc đã thực hiện">
+        <input id="workDetail" placeholder="Chi tiết nội dung, cấu hình hoặc ghi chú...">
+        <button class="primary" id="addWorkBtn">Lưu Lịch Sử</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>📜 Lịch Sử Các Phần Đã Làm &amp; Nhật Ký Quản Trị Hệ Thống (<span id="workCount">0</span> mục)</h2>
+      <div class="scroll" style="max-height:480px">
+        <table>
+          <thead>
+            <tr><th>Thời gian</th><th>Phân loại</th><th>Phạm vi</th><th>Tiêu đề hạng mục</th><th>Chi tiết thực hiện</th></tr>
+          </thead>
+          <tbody id="workBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- TAB 4: CẤU HÌNH MONGODB -->
+  <section id="database" hidden>
+    <div class="card gold">
+      <h2>🗄️ Kết Nối Cơ Sở Dữ Liệu MongoDB (Lưu Trữ Quà Tặng, Người Chơi &amp; Lịch Sử Công Việc)</h2>
+      <p class="sub" style="margin-bottom:14px">
+        Khi bạn điền <code>MONGODB_URI</code> (vào file <code>.env</code> hoặc dán trực tiếp vào ô bên dưới), hệ thống sẽ tự động kết nối tới MongoDB và đồng bộ toàn bộ lịch sử quà tặng (<code>gifts</code>), danh mục quà (<code>gift_catalog</code>), sự kiện (<code>events</code>) và lịch sử các phần đã làm (<code>work_logs</code>). Khi chưa điền URI, dữ liệu vẫn được lưu an toàn tại <code>logs/master-db.json</code>.
+      </p>
+      <div style="display:grid;grid-template-columns:2fr 1fr auto;gap:10px;margin-bottom:14px">
+        <input id="mongoUriInput" placeholder="mongodb+srv://username:password@cluster.mongodb.net/...">
+        <input id="mongoDbInput" value="live_tiktok" placeholder="Tên Database (VD: live_tiktok)">
+        <button class="primary" id="saveMongoBtn">Lưu vào .env &amp; Kết Nối Ngay</button>
+      </div>
+      <div id="mongoStatusBox" class="card" style="background:var(--elev)"></div>
+    </div>
+  </section>
+</main>
+
+<script>
+const $ = s => document.querySelector(s);
+const flash = t => { $('#msg').textContent = t; setTimeout(() => { $('#msg').textContent = ''; }, 3500); };
+
+document.querySelectorAll('nav button[data-tab]').forEach(btn => {
+  btn.onclick = () => {
+    document.querySelectorAll('nav button[data-tab]').forEach(b => b.setAttribute('aria-selected', String(b === btn)));
+    document.querySelectorAll('main > section').forEach(sec => { sec.hidden = sec.id !== btn.dataset.tab; });
+  };
+});
+
+async function api(method, path, body) {
+  const r = await fetch(path, {
+    method,
+    headers: body ? { 'content-type': 'application/json' } : {},
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  const data = await r.json();
+  if (!r.ok) throw new Error(data.error || r.statusText);
+  return data;
+}
+
+window.gameAction = async (game, endpoint, payload) => {
+  try {
+    await api('POST', '/api/game-action', { game, endpoint, payload });
+    flash('Đã gửi lệnh điều khiển thành công!');
+    refresh();
+  } catch (e) {
+    flash('Lỗi: ' + e.message);
+  }
+};
+
+let lastState = null;
+
+function renderGiftsTable() {
+  if (!lastState?.db) return;
+  const gGame = $('#filterGiftGame').value;
+  const gSrc = $('#filterGiftSrc').value;
+  const list = (lastState.db.recentGifts || []).filter(g => {
+    if (gGame !== 'all' && g.game !== gGame) return false;
+    if (gSrc !== 'all' && g.src !== gSrc) return false;
+    return true;
+  });
+  $('#globalGiftBody').replaceChildren(...list.slice(0, 60).map(g => {
+    const tr = document.createElement('tr');
+    for (const v of [
+      g.time,
+      g.game === 'cuoc-dua-ky-thu' ? '🏁 Đua Kỳ Thú' : '🏮 Cúng Chùa',
+      g.src === 'mock' ? 'Demo' : 'TikTok',
+      g.name,
+      `${g.giftVi} ×${g.repeat}`,
+      `💎${g.totalDiamonds}`,
+      g.reward,
+    ]) {
+      const td = document.createElement('td');
+      td.textContent = v;
+      tr.append(td);
+    }
+    return tr;
+  }));
+}
+
+$('#filterGiftGame').onchange = renderGiftsTable;
+$('#filterGiftSrc').onchange = renderGiftsTable;
+
+async function refresh() {
+  try {
+    const s = await api('GET', '/api/state');
+    lastState = s;
+    const db = s.db || {};
+    const tot = db.totals || {};
+
+    $('#topTiktok').textContent = '@' + (s.config?.tiktokUser || 'adidaphat20266');
+    if (document.activeElement !== $('#globalTiktokInput') && s.config?.tiktokUser) {
+      $('#globalTiktokInput').value = s.config.tiktokUser;
+    }
+    $('#topRealDiamonds').textContent = (tot.realDiamonds ?? 0).toLocaleString('vi-VN') + ' 💎';
+    $('#topAllDiamonds').textContent = ((tot.realDiamonds ?? 0) + (tot.mockDiamonds ?? 0)).toLocaleString('vi-VN') + ' 💎';
+    $('#topGiftCount').textContent = (tot.totalGiftRecords ?? 0).toLocaleString('vi-VN');
+    $('#topChuaDiamonds').textContent = (tot.chuaDiamonds ?? 0).toLocaleString('vi-VN') + '💎';
+    $('#topDuaDiamonds').textContent = (tot.duaDiamonds ?? 0).toLocaleString('vi-VN') + '💎';
+
+    const m = db.mongo || {};
+    if (m.connected) {
+      $('#topDbBadge').innerHTML = `<span class="badge ok">Đã kết nối MongoDB (${m.dbName})</span>`;
+      $('#topDbSub').textContent = `Đồng bộ lúc: ${m.lastSyncAt ? new Date(m.lastSyncAt).toLocaleTimeString('vi-VN') : 'vừa xong'}`;
+    } else {
+      $('#topDbBadge').innerHTML = `<span class="badge warn">Lưu JSON Cục Bộ (logs/master-db.json)</span>`;
+      $('#topDbSub').textContent = m.error ? `Lỗi: ${m.error}` : 'Chờ điền MONGODB_URI trong .env hoặc tab MongoDB';
+    }
+
+    $('#mongoStatusBox').textContent = m.connected
+      ? `✅ Đã kết nối MongoDB (${m.maskedUri} · DB: ${m.dbName}). Đang lưu tự động ${tot.totalGiftRecords} bản ghi quà, ${tot.catalogCount} cấu hình quà, ${tot.workLogsCount} mục lịch sử công việc.`
+      : `ℹ️ Hiện đang lưu trữ an toàn tại logs/master-db.json (${tot.totalGiftRecords} bản ghi quà, ${tot.workLogsCount} mục lịch sử). Khi bạn về và dán MONGODB_URI vào trên, toàn bộ dữ liệu này sẽ tự động đẩy lên MongoDB.`;
+
+    // Game 1 state
+    const g1 = s.games?.['cung-chua-online'];
+    if (g1?.online) {
+      $('#chuaOnlineBadge').className = 'badge ok';
+      $('#chuaOnlineBadge').textContent = 'Đang chạy (:8787 / :8788)';
+      $('#chuaActors').textContent = (g1.data?.actors?.length ?? 0);
+      $('#chuaNamo').textContent = (g1.data?.stats?.namo ?? 0).toLocaleString('vi-VN');
+      $('#chuaMeta').textContent = `Demo: ${g1.data?.demo?.on ? 'Đang bật' : 'Đang tắt'} · Bối cảnh: ${g1.data?.scene?.theme || 'night'}`;
+    } else {
+      $('#chuaOnlineBadge').className = 'badge warn';
+      $('#chuaOnlineBadge').textContent = 'Đang khởi động...';
+    }
+
+    // Game 2 state
+    const g2 = s.games?.['cuoc-dua-ky-thu'];
+    if (g2?.online) {
+      $('#duaOnlineBadge').className = 'badge ok';
+      $('#duaOnlineBadge').textContent = 'Đang chạy (:8789 / :8790)';
+      $('#duaRunners').textContent = g2.data?.stats?.activeRunners ?? 0;
+      const dist = g2.data?.stats?.worldDistanceM ?? 0;
+      $('#duaDist').textContent = dist >= 1000 ? (dist / 1000).toFixed(2) + ' km' : dist + ' m';
+      $('#duaMeta').textContent = `Địa điểm: ${g2.data?.stats?.currentBiome?.name || ''} · Demo: ${g2.data?.demo?.on ? 'Đang bật' : 'Đang tắt'}`;
+    } else {
+      $('#duaOnlineBadge').className = 'badge warn';
+      $('#duaOnlineBadge').textContent = 'Đang khởi động...';
+    }
+
+    renderGiftsTable();
+
+    $('#globalDonorBody').replaceChildren(...(db.topDonors || []).map((d, i) => {
+      const tr = document.createElement('tr');
+      for (const v of [i + 1, d.name, d.giftCount, d.lastGift, `💎${d.totalDiamonds.toLocaleString('vi-VN')}`]) {
+        const td = document.createElement('td');
+        td.textContent = v;
+        tr.append(td);
+      }
+      return tr;
+    }));
+
+    $('#catalogBody').replaceChildren(...(db.giftCatalog || []).map(c => {
+      const tr = document.createElement('tr');
+      for (const v of [c.giftId, c.giftName, c.giftVi, `💎${c.diamonds}`, c.chuaReward, c.duaReward]) {
+        const td = document.createElement('td');
+        td.textContent = v;
+        tr.append(td);
+      }
+      const tdAct = document.createElement('td');
+      const editBtn = document.createElement('button');
+      editBtn.textContent = 'Sửa';
+      editBtn.onclick = () => {
+        $('#catId').value = c.giftId;
+        $('#catName').value = c.giftName;
+        $('#catVi').value = c.giftVi;
+        $('#catDiamonds').value = c.diamonds;
+        $('#catChua').value = c.chuaReward;
+        $('#catDua').value = c.duaReward;
+      };
+      tdAct.append(editBtn);
+      tr.append(tdAct);
+      return tr;
+    }));
+
+    $('#workCount').textContent = (db.workLogs || []).length;
+    $('#workBody').replaceChildren(...(db.workLogs || []).map(w => {
+      const tr = document.createElement('tr');
+      for (const v of [w.time, w.category, w.game, w.title, w.detail]) {
+        const td = document.createElement('td');
+        td.textContent = v;
+        tr.append(td);
+      }
+      return tr;
+    }));
+  } catch {}
+}
+
+$('#saveGlobalTiktokBtn').onclick = async () => {
+  const user = $('#globalTiktokInput').value.trim().replace(/^@/, '');
+  if (!user) return;
+  await api('POST', '/api/tiktok-user', { user });
+  flash(`Đã chuyển toàn bộ hệ thống sang kênh @${user}`);
+  refresh();
+};
+
+$('#saveCatBtn').onclick = async () => {
+  await api('POST', '/api/gift-catalog', {
+    giftId: Number($('#catId').value) || undefined,
+    giftName: $('#catName').value,
+    giftVi: $('#catVi').value,
+    diamonds: Number($('#catDiamonds').value) || 1,
+    chuaReward: $('#catChua').value,
+    duaReward: $('#catDua').value,
+  });
+  flash('Đã lưu cấu hình quà tặng TikTok!');
+  refresh();
+};
+
+$('#addWorkBtn').onclick = async () => {
+  const title = $('#workTitle').value.trim();
+  if (!title) return;
+  await api('POST', '/api/work-log', {
+    category: $('#workCat').value,
+    game: $('#workGame').value,
+    title,
+    detail: $('#workDetail').value.trim(),
+  });
+  $('#workTitle').value = '';
+  $('#workDetail').value = '';
+  flash('Đã lưu mục lịch sử công việc!');
+  refresh();
+};
+
+$('#saveMongoBtn').onclick = async () => {
+  const uri = $('#mongoUriInput').value.trim();
+  const dbName = $('#mongoDbInput').value.trim() || 'live_tiktok';
+  const r = await api('POST', '/api/mongodb', { uri, dbName });
+  flash(r.mongo?.connected ? 'Kết nối MongoDB thành công!' : 'Đã lưu cấu hình MongoDB!');
+  refresh();
+};
+
+refresh();
+setInterval(refresh, 2500);
+</script>
+</body>
+</html>

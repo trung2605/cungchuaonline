@@ -1,4 +1,4 @@
-import { giftTier } from './bowRules.js';
+import { giftTier, giftOffering } from './bowRules.js';
 
 const GIFT_FX = [['flower'], ['lamp'], ['bell', 'halo']];
 
@@ -11,7 +11,13 @@ export function createEffects({ now = Date.now, smokeMs = 500, lotusEvery = 1000
     handle(e) {
       if (e.kind === 'gift') {
         const power = Math.min(e.repeat, 10);
-        return GIFT_FX[giftTier(e.diamonds * e.repeat)].map(kind => ({ t: 'fx', kind, at: e.uid, power }));
+        const totalDiamonds = e.diamonds * e.repeat;
+        const tier = giftTier(totalDiamonds);
+        if (tier === 0) {
+          const kind = giftOffering(e.giftName, totalDiamonds) === 'dâng hương' ? 'smoke' : 'flower';
+          return [{ t: 'fx', kind, at: e.uid, power }];
+        }
+        return GIFT_FX[tier].map(kind => ({ t: 'fx', kind, at: e.uid, power }));
       }
       if (e.kind !== 'like') return [];
 

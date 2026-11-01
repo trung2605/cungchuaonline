@@ -71,3 +71,18 @@ test('recent: newest first, raw kept, capped', () => {
   for (const uid of ['a', 'b', 'c']) small.handle({ kind: 'join', uid, name: uid });
   assert.deepEqual(small.recent().map(x => x.uid), ['c', 'b']);
 });
+
+test('exportHistory, importHistory, clearLogs, and demoStats', () => {
+  const { stats } = run();
+  const exported = stats.exportHistory();
+  assert.equal(exported.diamonds, 1003);
+  assert.ok(exported.giftLog.length > 0);
+  const fresh = createStats({ lists: loadLists() });
+  fresh.importHistory(exported);
+  const st = fresh.state();
+  assert.equal(st.diamonds, 1003);
+  assert.equal(st.uniqueBowers, 4);
+  fresh.clearLogs();
+  assert.equal(fresh.state().giftLog.length, 0);
+  assert.equal(fresh.state().eventLog.length, 0);
+});

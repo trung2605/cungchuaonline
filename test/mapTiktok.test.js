@@ -43,3 +43,10 @@ test('TC-02.6 member, roomUser, streamEnd, like', () => {
 test('TC-02.7 unknown event -> null', () => {
   assert.equal(mapTiktok('emote', {}, 1), null);
 });
+
+test('TC-02.7b flat gift fields fallback (giftName, diamondCount, giftType)', () => {
+  const flatCombo = { user, giftId: 5655, giftName: 'Rose', diamondCount: 1, giftType: 1, repeatCount: 4, repeatEnd: 1, groupId: '99' };
+  assert.deepEqual(mapTiktok('gift', flatCombo, 2), {
+    kind: 'gift', src: 'tiktok', uid: 'u1', name: 'Lan', giftId: 5655, giftName: 'Rose', diamonds: 1, repeat: 4, group: '99', ts: 2,
+  });
+});

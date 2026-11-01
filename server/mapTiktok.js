@@ -19,14 +19,15 @@ export function mapTiktok(name, data, now = Date.now()) {
       return { kind: 'end', ...base, ts: now };
     case 'gift': {
       // Combo gifts (type 1) stream one message per tick; only the last one counts.
-      const combo = data.gift?.type === 1;
+      const giftType = data.gift?.type ?? data.giftType ?? data.giftDetails?.giftType;
+      const combo = giftType === 1;
       if (combo && !data.repeatEnd) return null;
       return {
         kind: 'gift', ...base, ...who(),
-        giftId: Number(data.giftId || data.gift?.id),
-        giftName: data.gift?.name ?? data.extendedGiftInfo?.name ?? '',
-        diamonds: data.gift?.diamondCount ?? data.extendedGiftInfo?.diamond_count ?? 0,
-        repeat: combo ? data.repeatCount : data.repeatCount || 1,
+        giftId: Number(data.giftId || data.gift?.id || data.giftDetails?.giftId || 0),
+        giftName: data.gift?.name ?? data.giftName ?? data.giftDetails?.giftName ?? data.extendedGiftInfo?.name ?? '',
+        diamonds: Number(data.gift?.diamondCount ?? data.diamondCount ?? data.giftDetails?.diamondCount ?? data.extendedGiftInfo?.diamond_count ?? 0),
+        repeat: Number(combo ? data.repeatCount : data.repeatCount || 1),
         // One id per send (a whole combo streak shares it); '0' means unknown.
         group: data.groupId && data.groupId !== '0' ? String(data.groupId) : '',
         ts: now,

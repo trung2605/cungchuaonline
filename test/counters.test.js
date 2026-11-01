@@ -37,7 +37,7 @@ test('TC-06.3 join banner throttled', () => {
 
 test('TC-06.4 big gift banner has priority', () => {
   const { clock, c } = setup();
-  assert.deepEqual(banners(c.handle(gift('g', 1000, 1, 'Galaxy'))), [{ t: 'banner', text: 'g dâng Galaxy 🙏', ms: 5000 }]);
+  assert.deepEqual(banners(c.handle(gift('g', 1000, 1, 'Galaxy'))), [{ t: 'banner', text: 'Cảm ơn g đã phát tâm công đức (Galaxy) 🙏', ms: 5000 }]);
   clock.t = 2500;
   assert.deepEqual(c.handle(join('a')), []);
   clock.t = 5100;
@@ -69,7 +69,7 @@ test('TC-06.8 banner name cleaned', () => {
 
 test('TC-06.9 donor card', () => {
   const [d] = setup().c.handle(gift('a', 1, 3));
-  assert.deepEqual(d, { t: 'donor', uid: 'a', name: 'a', giftName: 'Rose', repeat: 3, diamonds: 3 });
+  assert.deepEqual(d, { t: 'donor', uid: 'a', name: 'a', giftName: 'Rose', repeat: 3, diamonds: 3, offering: 'dâng hương' });
 });
 
 test('TC-06.10 board throttled to 2 s, flushed on tick', () => {

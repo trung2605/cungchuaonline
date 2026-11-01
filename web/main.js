@@ -18,9 +18,16 @@ const params = new URLSearchParams(location.search);
 const low = params.get('quality') === 'low';
 const RECONNECT_MS = 2000;
 
-// Fit the fixed 1080x1920 stage into the window.
+// Fit the fixed 1080x1920 stage into the window and center it horizontally/vertically.
 const stage = document.getElementById('stage');
-const fit = () => { stage.style.transform = `scale(${Math.min(innerWidth / W, innerHeight / H)})`; };
+let rot = Number(params.get('rot') || 0);
+const fit = () => {
+  const swapped = Math.abs(rot) === 90;
+  const scale = swapped
+    ? Math.min(innerWidth / H, innerHeight / W)
+    : Math.min(innerWidth / W, innerHeight / H);
+  stage.style.transform = `translate(-50%, -50%) rotate(${rot}deg) scale(${scale})`;
+};
 addEventListener('resize', fit);
 fit();
 
@@ -54,12 +61,26 @@ composer.addPass(new OutputPass());
 const hall = buildHall(scene, { low, renderer });
 const actors = await createActors(scene);
 const fx = createFx(scene, { low, smokeOrigin: hall.smokeOrigin });
-const audio = createAudio();
 const hud = createHud();
+const audio = createAudio({ onSpeak: (text, on) => hud.showVoice(text, on) });
 const world = createWorld();
 
 const soundBtn = document.getElementById('sound');
-soundBtn.onclick = () => { audio.unlock(); soundBtn.style.display = 'none'; };
+const goFullscreenIfMobile = () => {
+  if (innerWidth < 1024 && !document.fullscreenElement) {
+    document.documentElement.requestFullscreen?.().catch(() => {});
+  }
+};
+soundBtn.onclick = () => {
+  audio.unlock();
+  soundBtn.style.display = 'none';
+  goFullscreenIfMobile();
+};
+document.body.addEventListener('click', () => {
+  audio.unlock();
+  soundBtn.style.display = 'none';
+  goFullscreenIfMobile();
+});
 // LIVE Studio autoplays; a plain Chrome tab needs one click.
 setTimeout(() => { if (audio.suspended) soundBtn.style.display = 'block'; }, 1500);
 
@@ -67,7 +88,11 @@ function run(cmds, now) {
   for (const c of cmds) {
     switch (c.op) {
       case 'reset': actors.clear(); break;
-      case 'add': actors.add(c.actor); break;
+      case 'add':
+        actors.add(c.actor);
+        hud.notePrayer(c.actor);
+        if (c.actor && !c.idle) audio.thankPrayer(c.actor);
+        break;
       case 'remove': actors.remove(c.id); break;
       case 'say': actors.say(c.id, c.text, c.ms); break;
       case 'unsay': actors.unsay(c.id); break;
@@ -76,11 +101,15 @@ function run(cmds, now) {
         hall.setTheme(c.scene.theme, now);
         audio.setEnabled(c.scene.sound);
         break;
-      case 'hud': hud.handle(c.msg); break;
+      case 'hud':
+        hud.handle(c.msg);
+        if (c.msg.t === 'donor') audio.thankDonor(c.msg);
+        break;
       case 'fx':
         if (c.kind === 'halo' && c.id) actors.halo(c.id, now);
         else fx.spawn(c.kind, c.pos, c.power, now);
-        if (c.kind === 'bell') audio.bell();
+        // Standalone bell trigger (e.g. from admin panel when no donor message is present)
+        if (c.kind === 'bell' && !c.id) audio.bell();
         break;
     }
   }
@@ -108,6 +137,7 @@ renderer.setAnimationLoop(() => {
 
   const { poses, removed } = stepWorld(world, now);
   for (const id of removed) actors.remove(id);
+  hud.setHallCount(poses.length);
   const altar = [null, null, null];
   for (const [id, p] of poses) if (p.phase === 'altar') altar[p.spot] = actors.actor(id);
   altar.forEach((a, i) => hud.altar(i, a));

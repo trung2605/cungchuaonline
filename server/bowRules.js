@@ -2,15 +2,63 @@ import { isTrigger, detectIntent, cleanBubble, cleanName } from './filter.js';
 
 export const giftTier = total => (total >= 1000 ? 2 : total >= 10 ? 1 : 0);
 
+const INCENSE_RE = /\b(rose|hoa hong|tiktok|gg|nhang|huong|incense|tram)\b/i;
+const LAMP_RE = /\b(lamp|light|candle|lantern|heart|tim|nen|den|star|sao)\b/i;
+
+export const TIKTOK_GIFT_VI = {
+  rose: 'Hoa Hồng',
+  tiktok: 'TikTok',
+  gg: 'GG',
+  'heart me': 'Trái Tim',
+  'ice cream cone': 'Kem Ốc Quế',
+  lotus: 'Hoa Sen',
+  'finger heart': 'Tim Tay',
+  rosa: 'Hoa Rosa',
+  'friendship necklace': 'Vòng Hữu Nghị',
+  perfume: 'Nước Hoa',
+  doughnut: 'Bánh Vòng',
+  'paper crane': 'Hạc Giấy',
+  'little crown': 'Vương Miện Nhỏ',
+  'hand hearts': 'Tim Đôi',
+  confetti: 'Pháo Hoa',
+  hearts: 'Mưa Tim',
+  garland: 'Vòng Hoa',
+  'money gun': 'Pháo Lộc Vàng',
+  swan: 'Thiên Nga',
+  galaxy: 'Dải Ngân Hà',
+  'whale diving': 'Cá Voi',
+  lion: 'Sư Tử Vàng',
+  'tiktok universe': 'Vũ Trụ TikTok',
+};
+
+export function translateGiftName(giftName = '') {
+  const raw = String(giftName || '').trim();
+  if (!raw) return 'Lễ vật';
+  const k = raw.toLowerCase();
+  return TIKTOK_GIFT_VI[k] || raw;
+}
+
+export function giftOffering(giftName = '', total = 0) {
+  const tier = giftTier(total);
+  if (tier === 2) return 'phát tâm công đức';
+  const s = String(giftName).normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[đĐ]/g, 'd').toLowerCase();
+  if (tier === 1 || LAMP_RE.test(s)) return 'dâng đèn hoa đăng';
+  if (INCENSE_RE.test(s)) return 'dâng hương';
+  return 'dâng hoa';
+}
+
 export function createBowRules({ stage, lists, stats = null, now = Date.now, cooldownMs = 600_000 }) {
   const lastFree = new Map(); // uid -> ts of last free bow; gifts never touch it
 
   return {
     handle(e) {
-      // Mock events never reach session stats (BR-09.9, test.md scenario).
+      // Mock events never reach real session stats (BR-09.9, test.md scenario), but feed demoStats.
       const st = e.src === 'mock' ? null : stats;
       const granted = (n, msgs) => {
-        if (msgs.length) st?.noteBow(e.uid, n);
+        if (msgs.length) {
+          if (e.src === 'mock') stats?.noteMockBow?.(e.uid, n);
+          else st?.noteBow(e.uid, n);
+        }
         return msgs;
       };
       if (e.kind === 'gift') {

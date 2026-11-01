@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cuộc Đua Kỳ Thú 3D · Quản Trị</title>
+<style>
+  :root {
+    --bg: #080d1a; --panel: #10192d; --elev: #15223b;
+    --ink: #eef6ff; --mute: #8fa6c9; --gold: #ffd166; --cyan: #00f5d4;
+    --line: rgba(143, 166, 201, .2); --ok: #2ec4b6; --red: #ef476f;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--ink); font-size: 14px; }
+  .hub-bar {
+    background: #050912; border-bottom: 1px solid rgba(0, 245, 212, .25);
+    padding: 7px 24px; display: flex; align-items: center; justify-content: space-between; font-size: 12.5px;
+  }
+  .hub-bar a { text-decoration: none; padding: 3px 10px; border-radius: 99px; font-weight: 600; }
+  header {
+    background: var(--panel); border-bottom: 1px solid var(--line);
+    padding: 12px 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+  }
+  h1 { margin: 0; font-size: 18px; color: var(--gold); }
+  main { max-width: 1360px; margin: 0 auto; padding: 20px 24px 60px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 16px; }
+  .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 16px; }
+  @media (max-width: 960px) { .grid-4, .grid-2 { grid-template-columns: 1fr; } }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; }
+  .card h2 { margin: 0 0 8px; font-size: 13px; color: var(--mute); font-weight: 600; }
+  .big { font-size: 26px; font-weight: 700; color: var(--gold); font-variant-numeric: tabular-nums; }
+  .sub { font-size: 12px; color: var(--mute); margin-top: 4px; }
+  button, .btn {
+    background: var(--elev); color: var(--ink); border: 1px solid var(--line);
+    padding: 7px 12px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13px;
+  }
+  button:hover { border-color: var(--cyan); }
+  button.primary { background: linear-gradient(180deg, #ffd166, #e09f24); color: #081224; border: none; font-weight: 700; }
+  button.cyan { background: rgba(0, 245, 212, .15); border-color: var(--cyan); color: var(--cyan); }
+  input, select {
+    background: var(--bg); color: var(--ink); border: 1px solid var(--line);
+    padding: 7px 10px; border-radius: 6px; font-size: 13.5px; width: 100%;
+  }
+  .btn-group { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { padding: 8px 10px; border-bottom: 1px solid var(--line); text-align: left; }
+  th { color: var(--mute); font-weight: 600; background: rgba(0, 0, 0, .2); }
+  .scroll { max-height: 320px; overflow-y: auto; border: 1px solid var(--line); border-radius: 8px; background: var(--elev); }
+  #msg { color: var(--cyan); font-weight: 600; font-size: 13px; }
+</style>
+</head>
+<body>
+<div class="hub-bar">
+  <div style="display:flex;align-items:center;gap:10px">
+    <span style="color:var(--gold);font-weight:700">🎮 LIVE TIKTOK STUDIO HUB:</span>
+    <a href="http://127.0.0.1:8791" target="_blank" style="color:var(--gold);border:1px solid var(--gold)">👑 Admin Tổng (:8791) ↗</a>
+    <a href="http://127.0.0.1:8788" target="_blank" style="color:var(--mute);border:1px solid var(--line)">🏮 Cúng Chùa Online (Admin :8788) ↗</a>
+    <a href="http://127.0.0.1:8790" style="color:#061224;background:var(--cyan);font-weight:700">🏁 Cuộc Đua Kỳ Thú 3D (Đang mở)</a>
+  </div>
+  <div style="display:flex;align-items:center;gap:12px">
+    <a href="http://127.0.0.1:8787" target="_blank" style="color:var(--gold)">Render Chùa (:8787) ↗</a>
+    <a href="http://127.0.0.1:8789" target="_blank" style="color:var(--cyan)">Render Đua Xe (:8789) ↗</a>
+  </div>
+</div>
+
+<header>
+  <h1>🏁 Cuộc Đua Kỳ Thú 3D · Quản Trị Hành Trình Khám Phá Thế Giới</h1>
+  <div style="display:flex;align-items:center;gap:12px">
+    <span id="msg"></span>
+    <a class="btn cyan" href="http://127.0.0.1:8789" target="_blank">Mở Màn Hình Đua 3D (:8789) ↗</a>
+  </div>
+</header>
+
+<main>
+  <div class="grid-4">
+    <div class="card">
+      <h2>🏃 Vận Động Viên Đang Đua</h2>
+      <div class="big" id="stActive">0</div>
+      <div class="sub">Tổng người đã tham gia: <b id="stUnique">0</b></div>
+    </div>
+    <div class="card">
+      <h2>🌍 Quãng Đường Khám Phá</h2>
+      <div class="big" id="stDist">0 m</div>
+      <div class="sub" id="stBiome">Vịnh Hạ Long 🇻🇳</div>
+    </div>
+    <div class="card">
+      <h2>💎 Tổng Kim Cương &amp; Tim</h2>
+      <div class="big" id="stDiamonds">0 💎</div>
+      <div class="sub">Lượt thả tim: <b id="stLikes">0 ❤️</b></div>
+    </div>
+    <div class="card">
+      <h2>📡 Kết Nối TikTok LIVE</h2>
+      <div class="big" id="stTiktok" style="font-size:18px">Đang kiểm tra...</div>
+      <div style="display:flex;gap:6px;margin-top:8px">
+        <input id="tiktokInput" placeholder="@username">
+        <button class="primary" id="saveTiktokBtn" style="white-space:nowrap">Đổi Kênh</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <h2>🧪 Phòng Thử Nghiệm Lời Chào &amp; Quà Tăng Tốc (Test Lab)</h2>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+        <input id="testName" value="Lê Trí Trung" placeholder="Tên người chơi thử">
+        <input id="testText" value="Tham gia cuộc đua khám phá thế giới!" placeholder="Câu bình luận">
+      </div>
+      <div class="btn-group">
+        <button class="primary" data-test="join">👋 Test Nhập Cuộc + Đọc: "Chào user [Tên]..."</button>
+        <button class="cyan" data-test="gift1">🌹 Tặng Hoa Hồng (1💎 · Đôi Cánh ×1.8)</button>
+        <button class="cyan" data-test="gift30">🛹 Tặng Bánh Vòng (30💎 · Ván Trượt Vàng ×2.8)</button>
+        <button class="cyan" data-test="gift300">🚀 Tặng Vòng Hoa (299💎 · Tên Lửa ×4.2)</button>
+        <button class="primary" data-test="gift1000">👑 Tặng Galaxy (1000💎 · Phi Thuyền ×6.5)</button>
+        <button data-test="turbo">⚡ Kích Hoạt Bão Cầu Vồng Toàn Đội</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>🗺️ Chọn Điểm Đến Thế Giới &amp; Chế Độ Demo Tự Động</h2>
+      <div class="sub">Điểm đến tự động chuyển mỗi 600m hoặc bấm để chuyển ngay lập tức:</div>
+      <div class="btn-group" id="biomeBtns">
+        <button data-biome="auto" class="cyan">🔄 Tự động xoay vòng</button>
+        <button data-biome="vietnam">🇻🇳 Việt Nam</button>
+        <button data-biome="japan">🇯🇵 Nhật Bản</button>
+        <button data-biome="egypt">🇪🇬 Ai Cập</button>
+        <button data-biome="france">🇫🇷 Pháp</button>
+        <button data-biome="usa">🇺🇸 Mỹ</button>
+        <button data-biome="cosmos">🌌 Ngân Hà</button>
+      </div>
+      <div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:10px">
+        <span>🤖 <b>Chế độ Demo mô phỏng đoàn đua:</b> <span id="demoStatus">Đang chạy</span></span>
+        <div style="display:flex;gap:6px">
+          <button class="primary" id="demoOnBtn">Bật Demo</button>
+          <button id="demoOffBtn">Tắt Demo</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <h2>🏆 Bảng Xếp Hạng Đường Đua (Top Tay Đua)</h2>
+      <div class="scroll">
+        <table>
+          <thead><tr><th>#</th><th>Tên Tay Đua</th><th>Quãng đường</th><th>💎</th><th>Hạng Xe</th></tr></thead>
+          <tbody id="boardBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>📜 Nhật Ký Tham Gia &amp; Tăng Tốc Gần Nhất</h2>
+      <div class="scroll">
+        <table>
+          <thead><tr><th>Lúc</th><th>Nguồn</th><th>Tên</th><th>Chi tiết</th></tr></thead>
+          <tbody id="recentBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+const $ = s => document.querySelector(s);
+const flash = t => { $('#msg').textContent = t; setTimeout(() => { $('#msg').textContent = ''; }, 3000); };
+
+async function api(method, path, body) {
+  const r = await fetch(path, {
+    method,
+    headers: body ? { 'content-type': 'application/json' } : {},
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  const data = await r.json();
+  if (!r.ok) throw new Error(data.error || r.statusText);
+  return data;
+}
+
+const TIER_NAMES = ['Chạy bộ', 'Đôi Cánh ×1.8', 'Ván Trượt Vàng ×2.8', 'Tên Lửa ×4.2', 'Phi Thuyền ×6.5'];
+
+async function refresh() {
+  try {
+    const s = await api('GET', '/api/state');
+    const st = s.stats || {};
+    $('#stActive').textContent = st.activeRunners ?? 0;
+    $('#stUnique').textContent = st.uniqueRacers ?? 0;
+    const d = st.worldDistanceM ?? 0;
+    $('#stDist').textContent = d >= 1000 ? (d / 1000).toFixed(2) + ' km' : d + ' m';
+    $('#stBiome').textContent = st.currentBiome?.name || '';
+    $('#stDiamonds').textContent = (st.totalGiftsDiamonds ?? 0).toLocaleString('vi-VN') + ' 💎';
+    $('#stLikes').textContent = (st.totalLikes ?? 0).toLocaleString('vi-VN') + ' ❤️';
+    const tkStatus = st.status?.tiktok || 'chờ kết nối';
+    $('#stTiktok').textContent = `@${s.config?.tiktokUser || ''} (${tkStatus})`;
+    if (document.activeElement !== $('#tiktokInput') && s.config?.tiktokUser) {
+      $('#tiktokInput').value = s.config.tiktokUser;
+    }
+    $('#demoStatus').textContent = s.demo?.on ? `Đang bật (${s.demo.rate} sự kiện/s)` : 'Đang tắt';
+
+    $('#boardBody').replaceChildren(...(st.topRacers || []).map((r, i) => {
+      const tr = document.createElement('tr');
+      const td1 = document.createElement('td'); td1.textContent = i + 1;
+      const td2 = document.createElement('td'); td2.textContent = r.name;
+      const td3 = document.createElement('td'); td3.textContent = r.distanceM + ' m';
+      const td4 = document.createElement('td'); td4.textContent = r.diamonds > 0 ? '💎' + r.diamonds : '-';
+      const td5 = document.createElement('td'); td5.textContent = TIER_NAMES[r.tier || 0];
+      tr.append(td1, td2, td3, td4, td5);
+      return tr;
+    }));
+
+    $('#recentBody').replaceChildren(...(s.recent || []).slice(0, 25).map(e => {
+      const tr = document.createElement('tr');
+      for (const v of [e.time, e.src, e.name, e.detail]) {
+        const td = document.createElement('td');
+        td.textContent = v || '';
+        tr.append(td);
+      }
+      return tr;
+    }));
+  } catch {}
+}
+
+document.querySelectorAll('[data-test]').forEach(btn => {
+  btn.onclick = async () => {
+    await api('POST', '/api/test-event', {
+      action: btn.dataset.test,
+      name: $('#testName').value,
+      text: $('#testText').value,
+    });
+    flash('Đã phát sự kiện thử nghiệm!');
+    refresh();
+  };
+});
+
+document.querySelectorAll('[data-biome]').forEach(btn => {
+  btn.onclick = async () => {
+    await api('POST', '/api/biome', { biome: btn.dataset.biome });
+    flash('Đã chuyển địa điểm khám phá!');
+    refresh();
+  };
+});
+
+$('#saveTiktokBtn').onclick = async () => {
+  const user = $('#tiktokInput').value.trim().replace(/^@/, '');
+  if (!user) return;
+  await api('POST', '/api/tiktok-user', { user });
+  flash(`Đã chuyển sang kênh @${user}`);
+  refresh();
+};
+
+$('#demoOnBtn').onclick = async () => { await api('POST', '/api/demo', { on: true, rate: 2.5 }); refresh(); };
+$('#demoOffBtn').onclick = async () => { await api('POST', '/api/demo', { on: false, rate: 2.5 }); refresh(); };
+
+refresh();
+setInterval(refresh, 2000);
+</script>
+</body>
+</html>

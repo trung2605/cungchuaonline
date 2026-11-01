@@ -1,0 +1,1135 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chùa Online · Quản Trị Chánh Điện</title>
+<style>
+  :root {
+    --bg: #140f0c;
+    --bg-elev: #1d1510;
+    --panel: #241a14;
+    --panel-hi: #2e2119;
+    --line: #3e2d21;
+    --line-gold: rgba(226, 184, 102, 0.38);
+    --fg: #f6ede0;
+    --mute: #b8a38e;
+    --gold: #e5b85c;
+    --gold-hi: #ffe094;
+    --red: #e06c55;
+    --ok: #68c77a;
+    --warn: #ebb450;
+  }
+  * { box-sizing: border-box; }
+  ::selection { background: rgba(229, 184, 92, 0.28); color: var(--fg); }
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--gold); }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font: 14px/1.5 "Be Vietnam Pro", system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-variant-numeric: tabular-nums;
+  }
+
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+    padding: 12px 24px;
+    background: rgba(20, 15, 12, 0.94);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--line);
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-right: 12px;
+  }
+  .brand h1 {
+    font-size: 18px;
+    font-weight: 700;
+    margin: 0;
+    color: var(--gold);
+    letter-spacing: 0.3px;
+  }
+  nav {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+  }
+  nav button {
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    color: var(--mute);
+    padding: 7px 13px;
+    font: 600 13.5px/1.2 inherit;
+    cursor: pointer;
+    transition: color 140ms ease, background 140ms ease, border-color 140ms ease;
+  }
+  nav button:hover {
+    color: var(--fg);
+    background: var(--bg-elev);
+  }
+  nav button[aria-selected="true"] {
+    color: var(--gold-hi);
+    background: var(--panel);
+    border-color: var(--line-gold);
+  }
+
+  .header-right {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  #msg {
+    font-size: 13px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: var(--bg-elev);
+    border: 1px solid var(--line);
+    color: var(--ok);
+  }
+  #msg:empty { display: none; }
+  #msg.err {
+    color: #ffb4a4;
+    background: rgba(224, 108, 85, 0.14);
+    border-color: rgba(224, 108, 85, 0.45);
+  }
+  .conn-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12.5px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    color: var(--mute);
+  }
+  .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--ok);
+  }
+  .dot.off { background: var(--red); }
+
+  main {
+    padding: 20px 24px 48px;
+    max-width: 1360px;
+    margin: 0 auto;
+  }
+  section[hidden] { display: none; }
+
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  @media (max-width: 1024px) {
+    .grid-4, .grid-3 { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 680px) {
+    .grid-4, .grid-3, .grid-2 { grid-template-columns: 1fr; }
+  }
+
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 14px 16px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.28);
+  }
+  .card.gold-border {
+    border-color: var(--line-gold);
+  }
+  .card h2 {
+    margin: 0 0 8px;
+    font-size: 13px;
+    color: var(--mute);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .section-title {
+    margin: 24px 0 10px;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--gold);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .big {
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--gold-hi);
+    line-height: 1.2;
+  }
+  .sub {
+    font-size: 12px;
+    color: var(--mute);
+    margin-top: 4px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+  }
+  th, td {
+    text-align: left;
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--line);
+    vertical-align: middle;
+  }
+  th {
+    color: var(--mute);
+    font-weight: 600;
+    font-size: 12.5px;
+    background: rgba(0, 0, 0, 0.18);
+  }
+  tbody tr:hover {
+    background: rgba(255, 255, 255, 0.025);
+  }
+  td.uid {
+    color: var(--mute);
+    font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+    font-size: 12px;
+  }
+  tr.blocked td { opacity: 0.48; }
+
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 11.5px;
+    font-weight: 600;
+    border: 1px solid var(--line);
+    background: var(--bg-elev);
+    color: var(--fg);
+  }
+  .badge.gold {
+    color: var(--gold-hi);
+    border-color: var(--line-gold);
+    background: rgba(229, 184, 92, 0.14);
+  }
+  .badge.ok {
+    color: #98ebb0;
+    border-color: rgba(104, 199, 122, 0.4);
+    background: rgba(104, 199, 122, 0.12);
+  }
+  .badge.demo {
+    color: #c9b8f5;
+    border-color: rgba(175, 145, 245, 0.35);
+    background: rgba(175, 145, 245, 0.12);
+  }
+
+  button.act, a.act {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--panel-hi);
+    color: var(--fg);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 7px 12px;
+    cursor: pointer;
+    font: 600 13px/1.2 inherit;
+    text-decoration: none;
+    transition: border-color 140ms ease, background 140ms ease, transform 80ms ease;
+  }
+  button.act:hover, a.act:hover {
+    border-color: var(--gold);
+    background: #38281e;
+  }
+  button.act:active { transform: translateY(1px); }
+  button.act.primary {
+    background: linear-gradient(180deg, #d8a444, #a87620);
+    color: #1c1008;
+    border-color: #f0c975;
+    font-weight: 700;
+  }
+  button.act.primary:hover {
+    background: linear-gradient(180deg, #e5b454, #b98428);
+  }
+  button.act.danger {
+    color: #ff9c8a;
+    border-color: rgba(224, 108, 85, 0.4);
+  }
+  button.act.danger:hover {
+    background: rgba(224, 108, 85, 0.16);
+    border-color: var(--red);
+  }
+  button.act.sm {
+    padding: 4px 9px;
+    font-size: 12px;
+  }
+
+  textarea, input[type=text], input[type=number], select {
+    width: 100%;
+    background: var(--bg);
+    color: var(--fg);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 8px 10px;
+    font: 13px/1.45 inherit;
+  }
+  textarea {
+    font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+    min-height: 240px;
+    resize: vertical;
+  }
+  textarea:focus, input:focus, select:focus {
+    outline: none;
+    border-color: var(--gold);
+    box-shadow: 0 0 0 2px rgba(229, 184, 92, 0.2);
+  }
+
+  label.row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin: 8px 0;
+    cursor: pointer;
+  }
+  .field {
+    margin: 10px 0;
+  }
+  .field label {
+    display: block;
+    font-size: 12.5px;
+    color: var(--mute);
+    margin-bottom: 4px;
+  }
+  .btn-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+  }
+  ol { margin: 0; padding-left: 20px; }
+  ol li { padding: 3px 0; }
+  .on { color: var(--ok); font-weight: 600; }
+  .off { color: var(--red); }
+  .scroll-box {
+    max-height: 360px;
+    overflow-y: auto;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: var(--bg-elev);
+  }
+  .empty {
+    color: var(--mute);
+    font-size: 13px;
+    padding: 16px;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+<div style="background:#0d0b09;border-bottom:1px solid rgba(226,184,102,.25);padding:6px 24px;display:flex;align-items:center;justify-content:space-between;font-size:12.5px">
+  <div style="display:flex;align-items:center;gap:10px">
+    <span style="color:var(--gold);font-weight:700;letter-spacing:.5px">🎮 LIVE TIKTOK STUDIO HUB:</span>
+    <a href="http://127.0.0.1:8791" target="_blank" style="color:var(--gold);background:rgba(245,194,66,.12);border:1px solid var(--gold);padding:3px 10px;border-radius:99px;text-decoration:none;font-weight:700">👑 Admin Tổng (:8791) ↗</a>
+    <a href="http://127.0.0.1:8788" style="color:#fff4dc;background:rgba(226,184,102,.22);border:1px solid var(--gold);padding:3px 10px;border-radius:99px;text-decoration:none;font-weight:700">🏮 Cúng Chùa Online (Đang mở)</a>
+    <a href="http://127.0.0.1:8790" target="_blank" style="color:var(--mute);background:rgba(255,255,255,.04);border:1px solid var(--line);padding:3px 10px;border-radius:99px;text-decoration:none;font-weight:600">🏁 Cuộc Đua Kỳ Thú 3D (Admin :8790) ↗</a>
+  </div>
+  <div style="display:flex;align-items:center;gap:12px">
+    <a href="http://127.0.0.1:8787" target="_blank" style="color:var(--gold);text-decoration:none">Render Chùa (:8787) ↗</a>
+    <a href="http://127.0.0.1:8789" target="_blank" style="color:#58d5ff;text-decoration:none">Render Đua Xe (:8789) ↗</a>
+  </div>
+</div>
+<header>
+  <div class="brand">
+    <h1>🏮 Cúng Chùa Online · Quản Trị</h1>
+  </div>
+  <nav role="tablist">
+    <button role="tab" data-tab="stats" aria-selected="true">📊 Thống kê &amp; Điện thờ</button>
+    <button role="tab" data-tab="history">📜 Lịch sử &amp; Nhật ký</button>
+    <button role="tab" data-tab="scene">🎬 Cảnh &amp; Demo</button>
+    <button role="tab" data-tab="users">👥 Người dùng</button>
+    <button role="tab" data-tab="lists">📝 Từ điển &amp; Lời cầu</button>
+  </nav>
+  <div class="header-right">
+    <span id="msg" role="status"></span>
+    <span class="conn-pill"><span id="connDot" class="dot"></span><span id="connText">Đang kết nối...</span></span>
+    <a class="act sm" href="http://127.0.0.1:8787" target="_blank" rel="noopener"> Mở màn hình Chùa 3D ↗</a>
+  </div>
+</header>
+
+<main>
+  <!-- TAB 1: THỐNG KÊ & ĐIỆN THỜ -->
+  <section id="stats">
+    <div class="grid-4" id="statCards"></div>
+
+    <div class="grid-3" style="margin-top:16px">
+      <div class="card">
+        <h2><span>🙏 Top lời nguyện cầu</span></h2>
+        <ol id="topPrayers"></ol>
+      </div>
+      <div class="card">
+        <h2><span>💎 Top thí chủ dâng lễ (TikTok thật)</span></h2>
+        <ol id="topDonors"></ol>
+      </div>
+      <div class="card">
+        <h2><span>🔌 Nguồn kết nối &amp; Cấu hình kênh LIVE</span></h2>
+        <div id="sources"></div>
+        <hr style="border:0; border-top:1px solid var(--line); margin:10px 0">
+        <div class="field" style="margin-bottom:0">
+          <label for="tiktokUserInput">Kênh TikTok đang bắt sóng (<code>TIKTOK_USER</code>):</label>
+          <div style="display:flex; gap:6px">
+            <input type="text" id="tiktokUserInput" placeholder="adidaphat20266" style="font-weight:700; color:var(--gold-hi)">
+            <button class="act primary sm" id="saveTiktokUserBtn" style="white-space:nowrap">🔄 Đổi &amp; Kết nối</button>
+          </div>
+          <div class="sub" style="margin-top:6px">
+            Đổi nhanh:
+            <button type="button" class="act sm ch-preset" data-user="adidaphat20266" style="padding:2px 6px; font-size:11px">@adidaphat20266</button>
+            <button type="button" class="act sm ch-preset" data-user="dichuaonline6" style="padding:2px 6px; font-size:11px">@dichuaonline6</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-title">
+      <span>🧘 Phật tử đang quỳ lễ trong Chánh Điện (<span id="actorCount">0</span> / 150)</span>
+      <span class="sub">Tự động cập nhật mỗi 2 giây · Bấm "Rời điện" nếu muốn giải phóng chỗ ngồi</span>
+    </div>
+    <div class="scroll-box">
+      <table>
+        <thead>
+          <tr>
+            <th>Tên Phật tử</th>
+            <th>Pháp phục / Hạng</th>
+            <th>Vị trí</th>
+            <th>Sớ cầu nguyện</th>
+            <th>Số lạy</th>
+            <th>Công đức</th>
+            <th>Còn lại</th>
+            <th>Thao tác</th>
+          </tr>
+        </thead>
+        <tbody id="activeActors"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- TAB 2: LỊCH SỬ & NHẬT KÝ -->
+  <section id="history" hidden>
+    <div class="card gold-border" style="margin-bottom:16px; display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:12px;">
+      <div>
+        <strong style="color:var(--gold-hi); font-size:15px;">📜 Lưu trữ Lịch sử &amp; Nhật ký Công Đức Tự Động</strong>
+        <div class="sub">Toàn bộ lịch sử dâng lễ, lời cầu nguyện và thống kê được tự động lưu vào <code>logs/history.json</code> mỗi 20 giây, giữ nguyên ngay cả khi khởi động lại máy chủ.</div>
+      </div>
+      <div class="btn-group" style="margin:0">
+        <button class="act primary" id="saveHistoryBtn">💾 Lưu chốt phiên thống kê ngay</button>
+        <button class="act danger" id="clearHistoryBtn">🗑️ Xóa nhật ký sự kiện tạm</button>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div>
+        <div class="section-title" style="margin-top:0">
+          <span>🎁 Nhật ký Dâng Lễ &amp; Quà Tặng (<span id="giftLogCount">0</span>)</span>
+          <select id="giftFilter" style="width:auto; padding:4px 8px; font-size:12.5px">
+            <option value="all">Tất cả nguồn (TikTok + Demo)</option>
+            <option value="tiktok">Chỉ quà TikTok thật</option>
+            <option value="mock">Chỉ quà mô phỏng Demo</option>
+          </select>
+        </div>
+        <div class="scroll-box">
+          <table>
+            <thead>
+              <tr><th>Lúc</th><th>Nguồn</th><th>Thí chủ</th><th>Lễ vật</th><th>Nghi thức</th><th>💎</th></tr>
+            </thead>
+            <tbody id="giftLogBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div>
+        <div class="section-title" style="margin-top:0">
+          <span>💬 Nhật ký Sự Kiện &amp; Lời Cầu (<span id="eventLogCount">0</span>)</span>
+          <select id="eventFilter" style="width:auto; padding:4px 8px; font-size:12.5px">
+            <option value="all">Mọi sự kiện</option>
+            <option value="prayer">Chỉ lời cầu nguyện</option>
+            <option value="gift">Chỉ quà tặng</option>
+            <option value="tiktok">Chỉ từ TikTok thật</option>
+          </select>
+        </div>
+        <div class="scroll-box">
+          <table>
+            <thead>
+              <tr><th>Lúc</th><th>Loại</th><th>Tên</th><th>Nội dung / Lời cầu</th></tr>
+            </thead>
+            <tbody id="eventLogBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-title">
+      <span>🗂️ Các phiên LIVE đã chốt lưu trên máy (<code>logs/stats-*.json</code>)</span>
+    </div>
+    <div class="scroll-box" style="max-height:260px">
+      <table>
+        <thead>
+          <tr>
+            <th>File lưu trữ</th>
+            <th>Bắt đầu lúc</th>
+            <th>Thời lượng</th>
+            <th>Người lạy</th>
+            <th>Tổng lượt lạy</th>
+            <th>Số lần niệm</th>
+            <th>Tổng Kim Cương</th>
+            <th>Đỉnh người xem</th>
+          </tr>
+        </thead>
+        <tbody id="pastSessionsBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- TAB 3: CẢNH & DEMO -->
+  <section id="scene" hidden>
+    <div class="grid-3">
+      <!-- Card 1: Cấu hình Cảnh & Âm thanh -->
+      <div class="card gold-border">
+        <h2><span>🏮 Không gian Chánh Điện &amp; Âm thanh</span><span class="badge gold">Lưu tự động</span></h2>
+        <div class="field">
+          <label>Bối cảnh ánh sáng trong điện:</label>
+          <label class="row"><input type="radio" name="theme" value="day"> ☀️ Ban ngày (Nắng ấm trang nghiêm)</label>
+          <label class="row"><input type="radio" name="theme" value="night"> 🏮 Ban đêm (Đèn lồng ấm áp)</label>
+          <label class="row"><input type="radio" name="theme" value="ram"> 🌕 Đêm Rằm (Trăng sáng &amp; Hoa đăng)</label>
+        </div>
+        <hr style="border:0; border-top:1px solid var(--line); margin:12px 0">
+        <div class="field">
+          <label>Âm thanh &amp; Pháp âm:</label>
+          <label class="row"><input type="checkbox" id="sound"> 🔊 Bật nhạc thiền, chuông &amp; giọng đọc AI</label>
+          <div class="sub">Giọng đọc AI tiếng Việt tự động đọc tên thí chủ dâng lễ kèm lời chúc phúc và hạ nhỏ nhạc nền khi đọc.</div>
+        </div>
+        <div class="btn-group">
+          <button class="act primary" id="saveSceneBtn">💾 Lưu cài đặt Cảnh &amp; Âm thanh</button>
+        </div>
+      </div>
+
+      <!-- Card 2: Cấu hình Chế độ Demo chi tiết + Nút Lưu thay đổi -->
+      <div class="card gold-border">
+        <h2>
+          <span>🎭 Cấu hình Chế độ Demo (Mô phỏng)</span>
+          <span id="demoStatusBadge" class="badge">Đang tắt</span>
+        </h2>
+        <label class="row" style="font-weight:700; color:var(--gold-hi)">
+          <input type="checkbox" id="demoOn"> Bật chạy Demo mô phỏng Phật tử vào lễ
+        </label>
+        <div class="sub" style="margin-bottom:10px">Sự kiện Demo giúp phòng LIVE luôn đông vui, không tính lẫn vào doanh thu kim cương thật.</div>
+
+        <div class="field">
+          <label for="demoRate">Tốc độ sinh sự kiện (1 – 50 event/giây):</label>
+          <div style="display:flex; gap:8px; align-items:center">
+            <input type="number" id="demoRate" min="1" max="50" value="3" style="width:90px">
+            <span class="sub">event/giây</span>
+          </div>
+          <div class="btn-group" style="margin-top:6px">
+            <button type="button" class="act sm demo-preset" data-rate="1">Thanh tịnh (1/s)</button>
+            <button type="button" class="act sm demo-preset" data-rate="3">Tự nhiên (3/s)</button>
+            <button type="button" class="act sm demo-preset" data-rate="6">Đông vui (6/s)</button>
+            <button type="button" class="act sm demo-preset" data-rate="12">Lễ hội (12/s)</button>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="demoGiftRatio">Tần suất tặng quà trong Demo:</label>
+          <select id="demoGiftRatio">
+            <option value="0.04">Ít quà tặng (4% sự kiện là quà)</option>
+            <option value="0.08" selected>Mặc định tự nhiên (8% sự kiện là quà)</option>
+            <option value="0.20">Nhiều quà dâng lễ (20% sự kiện là quà)</option>
+            <option value="0.45">Rất nhiều quà &amp; giọng đọc (45% là quà)</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="demoPrayerRatio">Tỷ lệ bình luận Niệm Phật / Cầu nguyện:</label>
+          <select id="demoPrayerRatio">
+            <option value="0.50">Vừa phải (50% câu niệm Phật)</option>
+            <option value="0.65" selected>Mặc định (65% câu niệm Phật)</option>
+            <option value="0.90">Rất sùng kính (90% câu niệm Phật &amp; cầu nguyện)</option>
+          </select>
+        </div>
+
+        <div id="demoLiveSummary" class="sub" style="padding:8px 10px; background:var(--bg); border-radius:6px; border:1px solid var(--line); margin:10px 0">
+          Đã phát: 0 sự kiện Demo · 0 người lạy · 0 món quà
+        </div>
+
+        <div class="btn-group">
+          <button class="act primary" id="saveDemoBtn">💾 Lưu thay đổi Cảnh Demo</button>
+          <button class="act" id="stopDemoBtn">⏹️ Dừng Demo ngay</button>
+        </div>
+      </div>
+
+      <!-- Card 3: Phòng thử nghiệm trực tiếp (Test Lab) -->
+      <div class="card gold-border">
+        <h2><span>⚡ Bắn thử Sự kiện, Quà &amp; Giọng đọc</span><span class="badge ok">Test trực tiếp</span></h2>
+        <div class="field">
+          <label for="testName">Tên Phật tử / Thí chủ thử nghiệm:</label>
+          <input type="text" id="testName" value="Lê Trí Trung" maxlength="24">
+        </div>
+        <div class="field">
+          <label for="testPrayer">Lời cầu nguyện thử nghiệm:</label>
+          <input type="text" id="testPrayer" value="Nam mô A Di Đà Phật cầu bình an tài lộc" maxlength="60">
+        </div>
+        <div class="field">
+          <label>Bấm để phát ngay lên màn hình Chùa 3D &amp; loa:</label>
+          <div class="btn-group" style="flex-direction:column; align-items:stretch">
+            <button class="act" data-test="prayer">🙏 1. Cho Phật tử bước vào lạy &amp; đọc lời cầu</button>
+            <button class="act" data-test="gift1">🌹 2. Thử Dâng Hương (Hoa hồng ×3 · Chuông + Đọc tên)</button>
+            <button class="act" data-test="gift10">🪷 3. Thử Hoa Đăng (30💎 · Áo tràng Vàng + Chuông chùa)</button>
+            <button class="act" data-test="gift1000">👑 4. Thử Đại Công Đức (Galaxy 1000💎 · Hào quang + Đại hồng chung)</button>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px">
+              <button class="act" data-test="lotus">🌸 Mưa Hoa Sen</button>
+              <button class="act" data-test="bell">🔔 Thỉnh Đại Hồng Chung</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-2" style="margin-top:16px">
+      <div class="card">
+        <h2><span>📢 Phát Banner thông báo giữa Chánh Điện (tối đa 60 ký tự)</span></h2>
+        <div class="sub" style="margin-bottom:8px">Lưu ý: Không dùng các câu vi phạm chính sách TikTok như "tặng quà để được phù hộ / giải hạn".</div>
+        <div style="display:flex; gap:8px">
+          <input type="text" id="bannerText" maxlength="60" placeholder="Ví dụ: Chúc đại chúng đêm nay tâm an vạn sự lành 🙏">
+          <button class="act primary" id="sendBanner" style="white-space:nowrap">📢 Phát banner</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2><span>📜 Câu đối liễn treo hai bên bàn thờ (vế trái | vế phải, mỗi vế ≤ 24 ký tự)</span></h2>
+        <textarea id="couplets" style="min-height:120px"></textarea>
+        <div class="btn-group">
+          <button class="act primary" id="saveCouplets">💾 Lưu câu đối</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TAB 4: NGƯỜI DÙNG & KIỂM DUYỆT -->
+  <section id="users" hidden>
+    <div style="display:flex; flex-wrap:wrap; gap:16px; align-items:center; justify-content:space-between; margin-bottom:12px">
+      <label class="row" style="margin:0"><input type="checkbox" id="raw"> Hiện lời bình luận gốc (chưa qua bộ lọc từ cấm)</label>
+      <input type="text" id="userSearch" placeholder="🔍 Tìm theo tên hoặc UID..." style="max-width:280px">
+    </div>
+    <div class="scroll-box" style="max-height:420px">
+      <table>
+        <thead>
+          <tr><th>Tên hiển thị</th><th>UID</th><th>Nguồn</th><th>Hoạt động / Lời gần nhất</th><th>Lúc</th><th>Thao tác</th></tr>
+        </thead>
+        <tbody id="recent"></tbody>
+      </table>
+    </div>
+
+    <div class="section-title">🚫 Danh sách UID đang bị chặn (<span id="blockedCount">0</span>)</div>
+    <div class="scroll-box" style="max-height:220px">
+      <table><tbody id="blocked"></tbody></table>
+    </div>
+  </section>
+
+  <!-- TAB 5: DANH SÁCH TỪ & LỜI CẦU -->
+  <section id="lists" hidden>
+    <div class="grid-3">
+      <div class="card">
+        <h2><span>🚫 Từ cấm (mỗi dòng 1 từ)</span><span id="badwordsCount" class="badge">0</span></h2>
+        <textarea id="badwords"></textarea>
+      </div>
+      <div class="card">
+        <h2><span>🙏 Câu kích hoạt vào lạy (mỗi dòng 1 câu)</span><span id="triggersCount" class="badge">0</span></h2>
+        <textarea id="triggers"></textarea>
+      </div>
+      <div class="card">
+        <h2><span>🪷 Lời cầu nguyện (cụm từ =&gt; Nhãn hiển thị)</span><span id="intentsCount" class="badge">0</span></h2>
+        <textarea id="intents"></textarea>
+      </div>
+    </div>
+    <div class="btn-group" style="margin-top:14px">
+      <button class="act primary" id="saveLists">💾 Lưu toàn bộ danh sách từ</button>
+      <button class="act" id="reloadLists">🔄 Tải lại từ máy chủ</button>
+    </div>
+  </section>
+</main>
+
+<script>
+// Everything from the server goes through textContent (TC-09.16): names and comments are user input.
+const $ = id => document.getElementById(id);
+const el = (tag, text, cls) => {
+  const e = document.createElement(tag);
+  if (text != null) e.textContent = text;
+  if (cls) e.className = cls;
+  return e;
+};
+const fmtTime = ts => ts ? new Date(ts).toLocaleTimeString('vi-VN', { hour12: false }) : '--:--:--';
+const fmtDateTime = ts => ts ? new Date(ts).toLocaleString('vi-VN', { hour12: false }) : '--';
+const fmtDur = ms => {
+  const s = Math.max(0, Math.floor((ms || 0) / 1000));
+  return `${Math.floor(s / 3600)}h ${String(Math.floor(s / 60) % 60).padStart(2, '0')}m ${String(s % 60).padStart(2, '0')}s`;
+};
+
+let state = null;
+let demoLoadedOnce = false;
+let msgTimer = null;
+
+function say(text, err = false) {
+  clearTimeout(msgTimer);
+  $('msg').textContent = text;
+  $('msg').className = err ? 'err' : '';
+  if (!err && text) {
+    msgTimer = setTimeout(() => {
+      if ($('msg').className !== 'err') $('msg').textContent = '';
+    }, 4000);
+  }
+}
+
+async function api(method, path, body) {
+  const r = await fetch(location.origin + path, {
+    method,
+    headers: body ? { 'content-type': 'application/json' } : {},
+    body: body && JSON.stringify(body),
+  });
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(data.error || `HTTP ${r.status}`);
+  return data;
+}
+
+const act = (fn, okText) => async () => {
+  try {
+    await fn();
+    if (okText) say(okText, false);
+    await refresh();
+  } catch (e) {
+    say(e.message, true);
+  }
+};
+
+for (const b of document.querySelectorAll('nav button')) {
+  b.onclick = () => {
+    for (const x of document.querySelectorAll('nav button')) x.setAttribute('aria-selected', x === b);
+    for (const s of document.querySelectorAll('main section')) s.hidden = s.id !== b.dataset.tab;
+  };
+}
+
+const unblockBtn = (uid, label) => {
+  const b = el('button', 'Bỏ chặn', 'act sm');
+  b.onclick = act(() => api('DELETE', `/api/block/${encodeURIComponent(uid)}`), `Đã bỏ chặn ${label}`);
+  return b;
+};
+
+function renderUsers() {
+  const raw = $('raw').checked;
+  const q = ($('userSearch').value || '').trim().toLowerCase();
+  const list = state.recent.filter(r => !q || (r.name || '').toLowerCase().includes(q) || (r.uid || '').toLowerCase().includes(q));
+
+  if (!list.length) {
+    const tr = el('tr');
+    const td = el('td', 'Chưa có người dùng nào trong danh sách.', 'empty');
+    td.colSpan = 6;
+    tr.append(td);
+    $('recent').replaceChildren(tr);
+  } else {
+    $('recent').replaceChildren(...list.map(r => {
+      const tr = el('tr', null, r.blocked ? 'blocked' : '');
+      let btn = unblockBtn(r.uid, r.name);
+      if (!r.blocked) {
+        btn = el('button', 'Chặn', 'act sm danger');
+        btn.onclick = act(() => api('POST', '/api/block', { uid: r.uid }), `Đã chặn ${r.name}`);
+      }
+      const text = raw
+        ? (r.raw ?? r.lastGift ?? '')
+        : (r.text ?? (r.raw ? '(bị lọc từ cấm)' : (r.lastGift ?? 'Vào chánh điện')));
+      const srcBadge = el('span', r.src === 'mock' ? 'Demo' : 'TikTok', r.src === 'mock' ? 'badge demo' : 'badge ok');
+      const srcCell = el('td');
+      srcCell.append(srcBadge);
+      const cell = el('td');
+      cell.append(btn);
+      tr.append(el('td', r.name), el('td', r.uid, 'uid'), srcCell, el('td', text), el('td', fmtTime(r.ts)), cell);
+      return tr;
+    }));
+  }
+
+  $('blockedCount').textContent = state.blocked.length;
+  const rows = state.blocked.map(uid => {
+    const tr = el('tr');
+    const cell = el('td');
+    cell.append(unblockBtn(uid, uid));
+    tr.append(el('td', uid, 'uid'), cell);
+    return tr;
+  });
+  if (!rows.length) {
+    const tr = el('tr');
+    tr.append(el('td', 'Chưa chặn UID nào.', 'empty'));
+    rows.push(tr);
+  }
+  $('blocked').replaceChildren(...rows);
+}
+
+function renderStats() {
+  const s = state.stats;
+  const dm = s.demoStats || { uniqueBowers: 0, bows: 0, gifts: 0, diamonds: 0, events: 0 };
+  const actors = state.actors || [];
+
+  const cards = [
+    ['Thời gian phiên LIVE', fmtDur(s.uptime), `Bắt đầu: ${fmtTime(s.startedAt)}`],
+    ['Đang quỳ trong điện', `${actors.length} / 150`, 'Phật tử đang hiện diện 3D'],
+    ['Phật tử đã lạy (Thật)', s.uniqueBowers.toLocaleString('vi-VN'), `Demo: +${dm.uniqueBowers} người`],
+    ['Tổng lượt lạy (Thật)', s.bows.toLocaleString('vi-VN'), `Demo: +${dm.bows} lạy`],
+    ['Số lần niệm Phật', s.namo.toLocaleString('vi-VN'), 'Tổng câu Nam mô A Di Đà Phật'],
+    ['Kim cương (TikTok thật)', `${s.diamonds.toLocaleString('vi-VN')} 💎`, `Tốc độ: ${s.diamondsPerHour.toLocaleString('vi-VN')} 💎/giờ`],
+    ['Quà tặng mô phỏng (Demo)', `${dm.gifts.toLocaleString('vi-VN')} phần`, `Tương đương ${dm.diamonds.toLocaleString('vi-VN')} 💎 thử`],
+    ['Người xem & Kiểm duyệt', `Đỉnh: ${s.viewersPeak}`, `Hiện tại: ${s.viewersCurrent || 0} · Đã lọc: ${s.filtered} câu`],
+  ];
+
+  $('statCards').replaceChildren(...cards.map(([k, v, subText]) => {
+    const c = el('div', null, 'card');
+    c.append(el('h2', k), el('div', String(v), 'big'), el('div', subText, 'sub'));
+    return c;
+  }));
+
+  if (!s.topPrayers.length) {
+    $('topPrayers').replaceChildren(el('div', 'Chưa có lời nguyện cầu nào.', 'empty'));
+  } else {
+    $('topPrayers').replaceChildren(...s.topPrayers.map(p => el('li', `${p.text} — ${p.count} lần`)));
+  }
+
+  if (!s.topDonors.length) {
+    $('topDonors').replaceChildren(el('div', 'Chưa có thí chủ tặng quà thật.', 'empty'));
+  } else {
+    $('topDonors').replaceChildren(...s.topDonors.map(d => el('li', `${d.name} (${d.uid}) — ${d.diamonds.toLocaleString('vi-VN')} 💎`)));
+  }
+
+  const srcItems = Object.entries(s.sources).map(([k, v]) => {
+    const label = k === 'tiktok' && state.config?.tiktokUser ? `TIKTOK (@${state.config.tiktokUser}): ` : `${k.toUpperCase()}: `;
+    const p = el('div', label, 'field');
+    p.append(el('span', v, v === 'connected' ? 'on' : 'off'));
+    return p;
+  });
+  const demoLine = el('div', 'CHẾ ĐỘ DEMO: ', 'field');
+  demoLine.append(el('span', state.demo.on ? `ĐANG BẬT (${state.demo.rate} event/giây)` : 'ĐANG TẮT', state.demo.on ? 'on' : 'off'));
+  srcItems.push(demoLine);
+  $('sources').replaceChildren(...srcItems);
+  if (document.activeElement !== $('tiktokUserInput') && state.config?.tiktokUser) {
+    $('tiktokUserInput').value = state.config.tiktokUser;
+  }
+
+  // Active actors in the 3D hall
+  $('actorCount').textContent = actors.length;
+  if (!actors.length) {
+    const tr = el('tr');
+    const td = el('td', 'Chánh điện đang thanh tịnh (chưa có Phật tử nào đang quỳ). Hãy bật Demo hoặc bấm thử sự kiện ở tab Cảnh & Demo!', 'empty');
+    td.colSpan = 8;
+    tr.append(td);
+    $('activeActors').replaceChildren(tr);
+  } else {
+    const now = Date.now();
+    $('activeActors').replaceChildren(...actors.map(a => {
+      const tr = el('tr');
+      const tierLabel = a.tier === 2 ? '👑 Hào quang Vàng' : a.tier === 1 ? '🪷 Áo tràng Vàng' : '🙏 Áo lam';
+      const tierCls = a.tier >= 1 ? 'badge gold' : 'badge';
+      const tierTd = el('td');
+      tierTd.append(el('span', tierLabel, tierCls));
+      const seatText = a.slot < 20 ? `Hàng đầu (#${a.slot + 1})` : `Chiếu #${a.slot + 1}`;
+      const remSec = Math.max(0, Math.round((a.expiresAt - now) / 1000));
+      const actTd = el('td');
+      const kickBtn = el('button', 'Rời điện', 'act sm');
+      kickBtn.onclick = act(() => api('POST', '/api/kick', { uid: a.id }), `Đã mời ${a.name} rời điện`);
+      actTd.append(kickBtn);
+      tr.append(
+        el('td', a.name),
+        tierTd,
+        el('td', seatText),
+        el('td', a.intent || 'Cầu Bình An'),
+        el('td', `${a.bows} lạy`),
+        el('td', a.diamonds ? `${a.diamonds} 💎` : '—'),
+        el('td', `${remSec}s`),
+        actTd
+      );
+      return tr;
+    }));
+  }
+}
+
+function renderHistory() {
+  const s = state.stats;
+  const gFilter = $('giftFilter').value;
+  const eFilter = $('eventFilter').value;
+
+  const gifts = (s.giftLog || []).filter(g => gFilter === 'all' || g.src === gFilter);
+  $('giftLogCount').textContent = gifts.length;
+  if (!gifts.length) {
+    const tr = el('tr');
+    const td = el('td', 'Chưa có lịch sử dâng lễ nào.', 'empty');
+    td.colSpan = 6;
+    tr.append(td);
+    $('giftLogBody').replaceChildren(tr);
+  } else {
+    $('giftLogBody').replaceChildren(...gifts.map(g => {
+      const tr = el('tr');
+      const srcTd = el('td');
+      srcTd.append(el('span', g.src === 'mock' ? 'Demo' : 'TikTok', g.src === 'mock' ? 'badge demo' : 'badge ok'));
+      tr.append(
+        el('td', fmtTime(g.ts)),
+        srcTd,
+        el('td', g.name),
+        el('td', `${g.giftName} ×${g.repeat}`),
+        el('td', `🙏 ${g.offering}`),
+        el('td', `${g.total} 💎`)
+      );
+      return tr;
+    }));
+  }
+
+  const events = (s.eventLog || []).filter(ev => {
+    if (eFilter === 'prayer') return ev.kind === 'prayer';
+    if (eFilter === 'gift') return ev.kind === 'gift';
+    if (eFilter === 'tiktok') return ev.src !== 'mock';
+    return true;
+  });
+  $('eventLogCount').textContent = events.length;
+  if (!events.length) {
+    const tr = el('tr');
+    const td = el('td', 'Chưa có sự kiện nào.', 'empty');
+    td.colSpan = 4;
+    tr.append(td);
+    $('eventLogBody').replaceChildren(tr);
+  } else {
+    $('eventLogBody').replaceChildren(...events.map(ev => {
+      const tr = el('tr');
+      const kindMap = { prayer: '🙏 Cầu nguyện', gift: '🎁 Dâng lễ', chat: '💬 Bình luận', join: '🚪 Vào điện' };
+      const kindTd = el('td');
+      kindTd.append(el('span', kindMap[ev.kind] || ev.kind, ev.kind === 'gift' ? 'badge gold' : 'badge'));
+      tr.append(
+        el('td', fmtTime(ev.ts)),
+        kindTd,
+        el('td', ev.name),
+        el('td', ev.intent ? `${ev.text} (${ev.intent})` : ev.text)
+      );
+      return tr;
+    }));
+  }
+
+  const sessions = state.pastSessions || [];
+  if (!sessions.length) {
+    const tr = el('tr');
+    const td = el('td', 'Chưa có file chốt phiên nào. Bạn có thể bấm "Lưu chốt phiên thống kê ngay" ở góc trên.', 'empty');
+    td.colSpan = 8;
+    tr.append(td);
+    $('pastSessionsBody').replaceChildren(tr);
+  } else {
+    $('pastSessionsBody').replaceChildren(...sessions.map(ps => {
+      const tr = el('tr');
+      tr.append(
+        el('td', ps.file, 'uid'),
+        el('td', fmtDateTime(ps.startedAt)),
+        el('td', fmtDur(ps.uptime)),
+        el('td', String(ps.uniqueBowers)),
+        el('td', String(ps.bows)),
+        el('td', String(ps.namo)),
+        el('td', `${ps.diamonds} 💎`),
+        el('td', String(ps.viewersPeak))
+      );
+      return tr;
+    }));
+  }
+}
+
+function renderScene() {
+  if (document.activeElement?.name !== 'theme') {
+    for (const r of document.querySelectorAll('input[name=theme]')) r.checked = r.value === state.scene.theme;
+  }
+  if (document.activeElement !== $('sound')) {
+    $('sound').checked = state.scene.sound;
+  }
+
+  const cfg = state.demoConfig || { on: state.demo.on, rate: state.demo.rate ?? 3, giftRatio: 0.08, prayerRatio: 0.65 };
+  const badge = $('demoStatusBadge');
+  badge.textContent = state.demo.on ? `ĐANG CHẠY (${state.demo.rate}/s)` : 'Đang tắt';
+  badge.className = state.demo.on ? 'badge ok' : 'badge';
+
+  if (!demoLoadedOnce) {
+    demoLoadedOnce = true;
+    $('demoOn').checked = Boolean(state.demo.on);
+    $('demoRate').value = cfg.rate ?? 3;
+    $('demoGiftRatio').value = String(cfg.giftRatio ?? 0.08);
+    $('demoPrayerRatio').value = String(cfg.prayerRatio ?? 0.65);
+  }
+
+  const dm = state.stats?.demoStats || { events: 0, uniqueBowers: 0, gifts: 0, diamonds: 0 };
+  $('demoLiveSummary').textContent = `Đã phát trong phiên: ${dm.events.toLocaleString('vi-VN')} sự kiện Demo · ${dm.uniqueBowers} Phật tử · ${dm.gifts} phần quà (${dm.diamonds} 💎 mô phỏng)`;
+}
+
+function fillLists() {
+  const l = state.lists;
+  $('badwords').value = l.badwords.join('\n');
+  $('triggers').value = l.triggers.join('\n');
+  $('intents').value = Object.entries(l.intents).map(([k, v]) => `${k} => ${v}`).join('\n');
+  $('couplets').value = l.couplets.map(p => p.join(' | ')).join('\n');
+  $('badwordsCount').textContent = `${l.badwords.length} từ`;
+  $('triggersCount').textContent = `${l.triggers.length} câu`;
+  $('intentsCount').textContent = `${Object.keys(l.intents).length} mục`;
+}
+
+async function refresh() {
+  try {
+    const first = !state;
+    state = await api('GET', '/api/state');
+    $('connDot').className = 'dot';
+    const tkStatus = state.stats?.sources?.tiktok || 'off';
+    const tkUser = state.config?.tiktokUser ? `@${state.config.tiktokUser}` : 'TikTok';
+    $('connText').textContent = `Server OK · ${tkUser}: ${tkStatus}`;
+    if ($('msg').className === 'err') {
+      $('msg').textContent = '';
+      $('msg').className = '';
+    }
+    renderStats();
+    renderHistory();
+    renderScene();
+    renderUsers();
+    if (first) fillLists();
+  } catch (e) {
+    $('connDot').className = 'dot off';
+    $('connText').textContent = 'Mất kết nối máy chủ';
+    say(`Mất kết nối admin: ${e.message}`, true);
+  }
+}
+
+const lines = id => $(id).value.split('\n').map(s => s.trim()).filter(Boolean);
+
+$('raw').onchange = () => state && renderUsers();
+$('userSearch').oninput = () => state && renderUsers();
+$('giftFilter').onchange = () => state && renderHistory();
+$('eventFilter').onchange = () => state && renderHistory();
+
+$('saveLists').onclick = act(async () => {
+  const intents = {};
+  for (const line of lines('intents')) {
+    const [k, v] = line.split('=>').map(s => s.trim());
+    if (!k || !v) throw new Error(`Dòng lời cầu sai dạng "cụm từ => nhãn": ${line}`);
+    intents[k] = v;
+  }
+  const r = await api('PUT', '/api/lists', { badwords: lines('badwords'), triggers: lines('triggers'), intents });
+  state.lists = r.lists;
+  fillLists();
+}, '✅ Đã lưu danh sách từ & lời cầu');
+
+$('reloadLists').onclick = () => {
+  if (state) {
+    fillLists();
+    say('🔄 Đã tải lại danh sách từ máy chủ');
+  }
+};
+
+$('saveCouplets').onclick = act(async () => {
+  const couplets = lines('couplets').map(line => {
+    const parts = line.split('|').map(s => s.trim());
+    if (parts.length !== 2 || !parts[0] || !parts[1]) throw new Error(`Dòng câu đối sai dạng "vế trái | vế phải": ${line}`);
+    return parts;
+  });
+  const r = await api('PUT', '/api/lists', { couplets });
+  state.lists = r.lists;
+  fillLists();
+}, '✅ Đã lưu và cập nhật câu đối lên Chánh Điện');
+
+const saveSceneNow = act(async () => {
+  const checked = document.querySelector('input[name=theme]:checked');
+  const theme = checked ? checked.value : 'night';
+  const sound = $('sound').checked;
+  await api('POST', '/api/scene', { theme, sound });
+}, '✅ Đã lưu cài đặt Cảnh & Âm thanh');
+
+for (const r of document.querySelectorAll('input[name=theme]')) r.onchange = saveSceneNow;
+$('sound').onchange = saveSceneNow;
+$('saveSceneBtn').onclick = saveSceneNow;
+
+$('sendBanner').onclick = act(async () => {
+  await api('POST', '/api/banner', { text: $('bannerText').value });
+  $('bannerText').value = '';
+}, '📢 Đã phát banner lên màn hình LIVE');
+
+const saveDemoNow = act(async () => {
+  const on = $('demoOn').checked;
+  const rate = Math.max(1, Math.min(50, Number($('demoRate').value) || 3));
+  $('demoRate').value = rate;
+  const giftRatio = Number($('demoGiftRatio').value) || 0.08;
+  const prayerRatio = Number($('demoPrayerRatio').value) || 0.65;
+  await api('POST', '/api/demo', { on, rate, giftRatio, prayerRatio });
+}, '✅ Đã lưu thay đổi cấu hình Cảnh Demo');
+
+$('saveDemoBtn').onclick = saveDemoNow;
+$('demoOn').onchange = saveDemoNow;
+$('stopDemoBtn').onclick = act(async () => {
+  $('demoOn').checked = false;
+  const rate = Math.max(1, Math.min(50, Number($('demoRate').value) || 3));
+  await api('POST', '/api/demo', {
+    on: false,
+    rate,
+    giftRatio: Number($('demoGiftRatio').value) || 0.08,
+    prayerRatio: Number($('demoPrayerRatio').value) || 0.65,
+  });
+}, '⏹️ Đã dừng chế độ Demo');
+
+for (const btn of document.querySelectorAll('.demo-preset')) {
+  btn.onclick = () => {
+    $('demoRate').value = btn.dataset.rate;
+    $('demoOn').checked = true;
+    saveDemoNow();
+  };
+}
+
+for (const btn of document.querySelectorAll('[data-test]')) {
+  btn.onclick = act(async () => {
+    await api('POST', '/api/test-event', {
+      action: btn.dataset.test,
+      name: $('testName').value,
+      text: $('testPrayer').value,
+    });
+  }, `⚡ Đã phát thử: ${btn.textContent.trim()}`);
+}
+
+$('saveHistoryBtn').onclick = act(async () => {
+  const r = await api('POST', '/api/history/save', {});
+  say(`💾 Đã lưu chốt phiên: ${r.file || 'logs/history.json'}`);
+}, null);
+
+$('clearHistoryBtn').onclick = act(async () => {
+  await api('POST', '/api/history/clear', {});
+}, '🗑️ Đã xóa nhật ký sự kiện tạm');
+
+const saveTiktokUser = act(async () => {
+  const user = ($('tiktokUserInput').value || '').trim().replace(/^@/, '');
+  if (!user) throw new Error('Vui lòng nhập @uniqueId kênh TikTok');
+  await api('POST', '/api/tiktok-user', { user });
+}, '🔄 Đã lưu TIKTOK_USER vào .env và kết nối lại kênh LIVE');
+
+$('saveTiktokUserBtn').onclick = saveTiktokUser;
+for (const btn of document.querySelectorAll('.ch-preset')) {
+  btn.onclick = () => {
+    $('tiktokUserInput').value = btn.dataset.user;
+    saveTiktokUser();
+  };
+}
+
+refresh();
+setInterval(refresh, 2000);
+</script>
+</body>
+</html>

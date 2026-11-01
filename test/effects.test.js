@@ -13,8 +13,10 @@ const setup = () => {
 const gift = (uid, diamonds, repeat) => ({ kind: 'gift', src: 'mock', uid, name: uid, giftId: 1, giftName: 'g', diamonds, repeat, ts: 0 });
 const like = (count = 1, uid = 'l') => ({ kind: 'like', src: 'mock', uid, name: uid, count, ts: 0 });
 
-test('TC-05.1 tier 0 gift -> flower', () => {
+test('TC-05.1 tier 0 gift -> flower or smoke (Rose/TikTok)', () => {
   assert.deepEqual(setup().fx.handle(gift('a', 1, 3)), [{ t: 'fx', kind: 'flower', at: 'a', power: 3 }]);
+  assert.deepEqual(setup().fx.handle({ ...gift('a', 1, 3), giftName: 'Rose' }), [{ t: 'fx', kind: 'smoke', at: 'a', power: 3 }]);
+  assert.deepEqual(setup().fx.handle({ ...gift('a', 1, 2), giftName: 'TikTok' }), [{ t: 'fx', kind: 'smoke', at: 'a', power: 2 }]);
 });
 
 test('TC-05.2 tier 1 gift -> lamp, power capped 10', () => {

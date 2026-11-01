@@ -107,7 +107,21 @@ export async function startAdmin({ port = 8788, host = '127.0.0.1', password, ct
       lists,
       scene: pipeline.snapshot().scene,
       demo: demo.state(),
+      demoConfig: demo.config?.() ?? { on: demo.state().on, rate: demo.state().rate ?? 3, giftRatio: 0.08, prayerRatio: 0.65 },
+      actors: stage.snapshot(),
+      pastSessions: ctx.listSessions?.() ?? [],
+      config: ctx.getConfig?.() ?? { tiktokUser: process.env.TIKTOK_USER || '' },
     }),
+
+    'POST /api/tiktok-user': async req => {
+      const { user } = await readJson(req);
+      const clean = typeof user === 'string' ? user.trim().replace(/^@/, '') : '';
+      if (!clean || clean.length > 64 || !/^[a-zA-Z0-9._]+$/.test(clean)) {
+        throw bad('tên kênh TikTok không hợp lệ (chỉ gồm chữ, số, dấu chấm hoặc gạch dưới)');
+      }
+      const res = await ctx.setTiktokUser?.(clean);
+      return { ok: true, ...(res || { user: clean }) };
+    },
 
     'POST /api/block': async req => {
       const { uid } = await readJson(req);
@@ -139,6 +153,7 @@ export async function startAdmin({ port = 8788, host = '127.0.0.1', password, ct
       if (sound !== undefined && typeof sound !== 'boolean') throw bad('sound phải là boolean');
       const msgs = pipeline.setScene({ ...(theme && { theme }), ...(sound !== undefined && { sound }) });
       broadcast(msgs);
+      await ctx.saveSceneConfig?.();
       return { scene: msgs[0].scene };
     },
 
@@ -154,12 +169,62 @@ export async function startAdmin({ port = 8788, host = '127.0.0.1', password, ct
     },
 
     'POST /api/demo': async req => {
-      const { on, rate = 3 } = await readJson(req);
+      const { on, rate = 3, giftRatio, prayerRatio } = await readJson(req);
       if (typeof on !== 'boolean') throw bad('on phải là boolean');
       if (!(Number.isFinite(rate) && rate >= 1 && rate <= 50)) throw bad('rate phải từ 1 đến 50');
-      if (on) demo.start(rate);
+      if (demo.configure) demo.configure({ rate, giftRatio, prayerRatio });
+      if (on) demo.start(rate, { giftRatio, prayerRatio });
       else demo.stop();
-      return { demo: demo.state() };
+      await ctx.saveSceneConfig?.();
+      return { demo: demo.state(), demoConfig: demo.config?.() };
+    },
+
+    'POST /api/test-event': async req => {
+      const body = await readJson(req);
+      const action = body.action || 'prayer';
+      const rawName = (typeof body.name === 'string' && body.name.trim()) ? body.name.trim().slice(0, 24) : 'Phật Tử Thiện Tâm';
+      const uid = `admin_test_${Date.now().toString(36)}`;
+      const ts = Date.now();
+      if (action === 'bell') {
+        broadcast([{ t: 'fx', kind: 'bell', power: 5 }, { t: 'banner', text: '🔔 Đại Hồng Chung Ngân Vang Cầu Quốc Thái Dân An 🙏', ms: 5000 }]);
+        return { ok: true };
+      }
+      if (action === 'lotus') {
+        broadcast([{ t: 'fx', kind: 'lotus', power: 10 }, { t: 'banner', text: '🌸 Mưa Hoa Sen Cát Tường Rơi Toàn Chánh Điện 🙏', ms: 5000 }]);
+        return { ok: true };
+      }
+      const ingest = ctx.ingest || (e => broadcast(pipeline.handle(e)));
+      if (action === 'gift1') {
+        ingest({ kind: 'gift', src: 'tiktok', uid, name: rawName, giftId: 5655, giftName: 'Rose', diamonds: 1, repeat: Number(body.repeat) || 3, ts });
+      } else if (action === 'gift10') {
+        ingest({ kind: 'gift', src: 'tiktok', uid, name: rawName, giftId: 5879, giftName: 'Hoa Đăng', diamonds: 30, repeat: Number(body.repeat) || 1, ts });
+      } else if (action === 'gift1000') {
+        ingest({ kind: 'gift', src: 'tiktok', uid, name: rawName, giftId: 11046, giftName: 'Galaxy', diamonds: 1000, repeat: 1, ts });
+      } else {
+        const prayerText = typeof body.text === 'string' && body.text.trim() ? body.text.trim() : 'Nam mô A Di Đà Phật cầu bình an tài lộc';
+        ingest({ kind: 'chat', src: 'tiktok', uid, name: rawName, text: prayerText, ts });
+      }
+      await ctx.saveHistory?.();
+      return { ok: true };
+    },
+
+    'POST /api/history/save': async () => {
+      const file = await ctx.saveSessionSnapshot?.();
+      await ctx.saveHistory?.();
+      return { ok: true, file };
+    },
+
+    'POST /api/history/clear': async () => {
+      stats.clearLogs?.();
+      await ctx.saveHistory?.();
+      return { ok: true };
+    },
+
+    'POST /api/kick': async req => {
+      const { uid } = await readJson(req);
+      if (typeof uid !== 'string' || !uid) throw bad('uid không hợp lệ');
+      broadcast(stage.remove(uid));
+      return { ok: true };
     },
   };
 

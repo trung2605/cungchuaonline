@@ -138,3 +138,14 @@ test('foreign Host header 403 (DNS rebinding)', async () => {
     }).on('error', reject));
   assert.equal(code, 403);
 });
+
+test('POST /api/test-event, /api/kick, /api/history/clear, /api/tiktok-user', async () => {
+  assert.equal((await call('POST', '/api/test-event', { action: 'prayer', name: 'TestUser', text: 'Nam mô A Di Đà Phật' })).status, 200);
+  const st1 = await (await call('GET', '/api/state')).json();
+  assert.ok(st1.actors.length > 0);
+  const uid = st1.actors[0].id;
+  assert.equal((await call('POST', '/api/kick', { uid })).status, 200);
+  assert.equal((await call('POST', '/api/history/clear', {})).status, 200);
+  assert.equal((await call('POST', '/api/tiktok-user', { user: '@adidaphat20266' })).status, 200);
+  assert.equal((await call('POST', '/api/tiktok-user', { user: 'bad user!' })).status, 400);
+});

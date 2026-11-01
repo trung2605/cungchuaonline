@@ -40,6 +40,11 @@ Nguồn nghiên cứu: [`research/`](../../research/README.md). Riêng file [`do
 | D-06 | Admin UI (V1) có đủ: chặn/bỏ chặn user, sửa từ cấm và câu kích hoạt, thống kê phiên, điều khiển cảnh. |
 | D-07 | Nguồn dự phòng (V1): **chạy song song** connector và TikFinity, gộp qua bộ chống trùng. |
 | D-08 | Tài liệu viết tiếng Việt. Code, tên hàm và tên file viết tiếng Anh. |
+| D-09 | *(v2, sau khi xem live mẫu, research/09)* **Lời cầu chọn qua comment, miễn phí.** Có **7 lời cầu**: Bình An, Tài Lộc, Sức Khỏe, Tình Duyên, Gia Đạo, Học Hành, Công Danh. Mặc định là **Cầu Bình An**. **Quà không gắn với lời cầu nào.** |
+| D-10 | *(v2)* Nhân vật là **Phật tử mặc áo tràng lam, có nam và nữ, tỉ lệ người thật**, thay cho chú tiểu chibi của D-05. Không dùng hình tăng ni. |
+| D-11 | *(v2)* Thêm 4 thứ lên màn hình: **câu đối hai bên đổi liên tục** (sửa được trong admin), **bảng tri ân** top 8 người tặng, **thẻ người tặng gần nhất** (mọi quà), và luồng **đi lên bàn thờ lạy rồi về bồ đoàn** trên bố cục thảm đỏ ở giữa, bồ đoàn hai bên. |
+| D-13 | *(v2.1)* Model nhân vật dùng **VRoid Studio (VRM)**, tải bằng `@pixiv/three-vrm`. Nhạc Phật lấy từ nguồn **royalty-free có license thương mại** (Pixabay Music hoặc Freesound CC0), ghi trong CREDITS. Bảng xếp hạng đặt tên **"TRI ÂN"**. Bộ đếm niệm **tính theo phiên**. Mưa hoa sen ở mốc **1.000 like**. Admin **chỉ chạy trên localhost**. Từ cấm lấy từ **nguồn mở, bạn bổ sung thêm**. |
+| D-12 | *(v2)* Thêm **nhạc Phật không lời** làm nền. File phải có license dùng thương mại hoặc do chủ kênh cung cấp, và **không dùng nhạc có bản quyền thương mại**, vì TikTok sẽ tắt tiếng. Vẫn **bắt buộc có người dẫn** (BR-08.4). |
 
 > Rủi ro chấp nhận ở D-01: quà cho lạy ngay vẫn gần với mẫu "tặng X thì được Y" của guideline TikTok 24/9/2026. Cách giảm rủi ro: lượt miễn phí luôn có, không câu chữ nào trên màn hình mời tặng quà, và người dẫn không nói "tặng để được lạy". Xem research/05.
 
@@ -61,29 +66,37 @@ type Source = 'tiktok' | 'tikfinity' | 'mock';
 type NormEvent =
   | { kind: 'chat';    src: Source; uid: string; name: string; text: string; ts: number }
   | { kind: 'like';    src: Source; uid: string; name: string; count: number; ts: number }
-  | { kind: 'gift';    src: Source; uid: string; name: string; giftId: number; giftName: string; diamonds: number; repeat: number; ts: number }
+  | { kind: 'gift';    src: Source; uid: string; name: string; giftId: number; giftName: string; diamonds: number; repeat: number; group: string; ts: number }   // group: id lần tặng (groupId), '' nếu không có
   | { kind: 'join';    src: Source; uid: string; name: string; ts: number }
   | { kind: 'viewers'; src: Source; count: number; ts: number }
   | { kind: 'end';     src: Source; ts: number };
 
 type Tier = 0 | 1 | 2;
-type Actor = { id: string; name: string; tier: Tier; slot: number; skin: number; bows: number; joinedAt: number; expiresAt: number };
+type Actor = { id: string; name: string; tier: Tier; slot: number; skin: number; bows: number; joinedAt: number; expiresAt: number;
+  intent: string;      // v2: 'Cầu Bình An' | 'Cầu Tài Lộc' | 'Cầu Sức Khỏe' | 'Cầu Tình Duyên' | 'Cầu Gia Đạo'
+  diamonds: number };  // v2: tổng kim cương uid này đã tặng trong phiên (huy hiệu 💎)
 
 type StageMsg =
-  | { t: 'snapshot'; actors: Actor[]; counters: Counters; scene: Scene }
+  | { t: 'snapshot'; actors: Actor[]; counters: Counters; scene: Scene; board: { name: string; diamonds: number }[]; couplets: [string, string][] }
   | { t: 'spawn';   actor: Actor }
-  | { t: 'bow';     id: string; times: number }
+  | { t: 'bow';     id: string; times: number; visit?: boolean }   // v2: visit=true thì nhân vật lên bàn thờ lạy rồi về chỗ
   | { t: 'say';     id: string; text: string; ms: number }
   | { t: 'fx';      kind: 'flower' | 'lamp' | 'bell' | 'halo' | 'smoke' | 'lotus'; at?: string; power: number }
   | { t: 'leave';   id: string }
   | { t: 'move';    id: string; slot: number }          // lên hàng đầu khi tier tăng lên 2 (FR-04)
   | { t: 'counter'; key: 'namo' | 'viewers'; value: number }
   | { t: 'banner';  text: string; ms: number }
-  | { t: 'scene';   scene: Scene };
+  | { t: 'scene';   scene: Scene }
+  | { t: 'donor';   uid: string; name: string; giftName: string; repeat: number; diamonds: number }   // v2: thẻ người tặng gần nhất
+  | { t: 'board';   top: { name: string; diamonds: number }[] }                                       // v2: bảng tri ân, tối đa 8
+  | { t: 'couplets'; pairs: [string, string][] }                                                      // v2: câu đối
+  | { t: 'badge';   id: string; diamonds: number };                                                   // v2: huy hiệu 💎
 
 type Counters = { namo: number; viewers: number };
 type Scene = { theme: 'day' | 'night' | 'ram'; sound: boolean };
-type Lists = { badwords: string[]; triggers: string[] };   // admin sửa được lúc runtime (FR-09)
+type Lists = { badwords: string[]; triggers: string[];
+  intents: Record<string, string>;   // v2: cụm từ đã fold -> nhãn, gồm 7 mục: binh an, tai loc, suc khoe, tinh duyen, gia dao, hoc hanh, cong danh
+  couplets: [string, string][] };    // v2: các cặp câu đối   // admin sửa được lúc runtime (FR-09)
 ```
 
 Module nào sở hữu type nào: `NormEvent` thuộc FR-02, `Actor` thuộc FR-04, `StageMsg` thuộc FR-01 (chỉ phần transport), `Lists` thuộc FR-03, `Scene` thuộc FR-09 (MVP luôn dùng mặc định `{theme:'night', sound:true}`).

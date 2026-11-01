@@ -10,6 +10,7 @@ function harness(map = () => null) {
       super();
       this.user = user;
       this.opts = opts;
+      this.isConnected = true;
       conns.push(this);
     }
     connect() { return Promise.resolve(); }
@@ -52,6 +53,15 @@ test('TC-01.12 no reconnect after end', () => {
   h.last().emit('disconnected', { code: 1000 });
   assert.deepEqual(h.delays, []);
   assert.deepEqual(h.ingested, [{ kind: 'end', src: 'tiktok', ts: 1 }]);
+});
+
+test('ignores premature streamEnd before connected so offline room keeps retrying', () => {
+  const h = harness((name, data) => (name === 'streamEnd' ? { kind: 'end', src: 'tiktok', ts: 1 } : null));
+  h.last().isConnected = false;
+  h.last().emit('streamEnd', { action: 3 });
+  h.drop();
+  assert.deepEqual(h.ingested, []);
+  assert.deepEqual(h.delays, [2000]);
 });
 
 test('maps events and ignores null; stop() cancels reconnect', () => {

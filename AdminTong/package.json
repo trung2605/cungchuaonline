@@ -1,0 +1,10 @@
+{
+  "name": "admin-tong-live-tiktok",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Admin Tổng (Master Admin & MongoDB Hub) quản lý toàn bộ trò chơi và quà tặng livestream (Port 8791)",
+  "scripts": {
+    "start": "node server/index.js"
+  }
+}

@@ -20,6 +20,7 @@ const MIME = {
   '.svg': 'image/svg+xml',
   '.mp3': 'audio/mpeg',
   '.ogg': 'audio/ogg',
+  '.wav': 'audio/wav',
 };
 
 const notFound = res => res.writeHead(404, { 'content-type': 'text/plain' }).end('Not found');
@@ -45,7 +46,7 @@ function resolveFile(url, roots) {
 
 export async function startServer({
   port = 8787,
-  host = '127.0.0.1',
+  host = '0.0.0.0',
   webRoot = 'web',
   mounts = {
     '/vendor/three/': 'node_modules/three/',
@@ -59,8 +60,35 @@ export async function startServer({
     .map(([prefix, dir]) => [prefix, path.resolve(dir)])
     .sort((a, b) => b[0].length - a[0].length);
 
-  const server = http.createServer((req, res) => {
+  const ttsCache = new Map();
+
+  const server = http.createServer(async (req, res) => {
     if (req.method !== 'GET' && req.method !== 'HEAD') return notFound(res);
+    if (req.url.startsWith('/tts?')) {
+      try {
+        const u = new URL(req.url, 'http://localhost');
+        const q = (u.searchParams.get('q') || '').trim().slice(0, 200);
+        if (!q) return notFound(res);
+        let buf = ttsCache.get(q);
+        if (!buf) {
+          const r = await fetch(`https://translate.googleapis.com/translate_tts?ie=UTF-8&tl=vi&client=tw-ob&q=${encodeURIComponent(q)}`, {
+            headers: { 'User-Agent': 'Mozilla/5.0' },
+          });
+          if (!r.ok) return notFound(res);
+          buf = Buffer.from(await r.arrayBuffer());
+          if (ttsCache.size >= 120) ttsCache.delete(ttsCache.keys().next().value);
+          ttsCache.set(q, buf);
+        }
+        res.writeHead(200, {
+          'content-type': 'audio/mpeg',
+          'content-length': buf.length,
+          'cache-control': 'public, max-age=3600',
+        });
+        return req.method === 'HEAD' ? res.end() : res.end(buf);
+      } catch {
+        return notFound(res);
+      }
+    }
     const file = resolveFile(req.url, roots);
     if (!file) return notFound(res);
     fs.stat(file, (err, st) => {
@@ -68,7 +96,7 @@ export async function startServer({
       res.writeHead(200, {
         'content-type': MIME[path.extname(file).toLowerCase()] ?? 'application/octet-stream',
         'content-length': st.size,
-        'cache-control': 'no-cache',
+        'cache-control': 'no-store, no-cache, must-revalidate',
       });
       if (req.method === 'HEAD') return res.end();
       fs.createReadStream(file).on('error', () => res.destroy()).pipe(res);

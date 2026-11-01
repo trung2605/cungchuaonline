@@ -1,8 +1,9 @@
 // DOM overlay: counter, banner, couplets, donor card, TRI ÂN board, altar cards (BR-07.8, BR-07.18..21).
 // Viewer-supplied text always goes through textContent.
+import { formatTtsThanks } from './scene/audio.js';
 const $ = s => document.querySelector(s);
 const COUPLET_MS = 10_000, COUPLET_FADE_MS = 800, DONOR_MS = 6000, DONOR_QUEUE = 5;
-const ALTAR_CARD_X = [210, 540, 870]; // px centers for altar spots left, middle, right
+const ALTAR_CARD_X = [240, 540, 840]; // px centers for altar spots left, middle, right
 
 const initial = name => [...(name.trim() || '?')][0].toUpperCase();
 
@@ -24,6 +25,7 @@ function card(name, line) {
 
 export function createHud() {
   let pairs = [], ci = -1, donors = [], donorTimer = null, bannerTimer = null;
+  const recentPrayers = [];
   const altarIds = [null, null, null];
   const altarEls = ALTAR_CARD_X.map(x => {
     const el = document.createElement('div');
@@ -33,7 +35,7 @@ export function createHud() {
   });
 
   const couplets = [$('#couplet-l'), $('#couplet-r')];
-  for (const el of couplets) Object.assign(el.style, { whiteSpace: 'pre-line', opacity: 0 });
+  for (const el of couplets) Object.assign(el.style, { whiteSpace: 'pre', opacity: 0 });
   function nextCouplet() {
     for (const el of couplets) el.style.opacity = 0;
     if (!pairs.length) return;
@@ -45,10 +47,22 @@ export function createHud() {
   }
   setInterval(nextCouplet, COUPLET_MS);
 
+const GIFT_VI = {
+  rose: 'Hoa Hồng', tiktok: 'TikTok', gg: 'GG', lotus: 'Hoa Sen',
+  'finger heart': 'Tim Tay', rosa: 'Hoa Rosa', perfume: 'Nước Hoa',
+  doughnut: 'Bánh Vòng', 'paper crane': 'Hạc Giấy', garland: 'Vòng Hoa',
+  'money gun': 'Pháo Lộc', swan: 'Thiên Nga', galaxy: 'Ngân Hà',
+  lion: 'Sư Tử', 'tiktok universe': 'Vũ Trụ',
+};
+const giftVi = g => GIFT_VI[String(g || '').trim().toLowerCase()] || g || 'Lễ vật';
+
   function nextDonor() {
     if (donorTimer) return;
     const d = donors.shift();
-    $('#donor').replaceChildren(...(d ? [card(d.name, `${d.giftName} ×${d.repeat}`)] : []));
+    const gName = d ? giftVi(d.giftName) : '';
+    const dCount = d?.diamonds ? ` · 💎${d.diamonds}` : '';
+    const text = d ? `🙏 ${d.offering || 'dâng hương'} (${gName} ×${d.repeat}${dCount})` : '';
+    $('#donor').replaceChildren(...(d ? [card(d.name, text)] : []));
     if (d) donorTimer = setTimeout(() => { donorTimer = null; nextDonor(); }, DONOR_MS);
   }
 
@@ -78,18 +92,53 @@ export function createHud() {
           donors.push(msg);
           nextDonor();
           break;
-        case 'board':
+        case 'board': {
+          const empty = $('#board-empty');
+          if (empty) empty.style.display = msg.top.length ? 'none' : 'block';
           $('#board ol').replaceChildren(...msg.top.map(r => {
             const li = document.createElement('li');
             li.textContent = `${r.name} · 💎${r.diamonds.toLocaleString('vi-VN')}`;
             return li;
           }));
           break;
+        }
         case 'couplets':
           pairs = msg.pairs;
           ci = -1;
           nextCouplet();
           break;
+      }
+    },
+    notePrayer(actor) {
+      if (!actor?.name) return;
+      const list = $('#prayer-list');
+      if (!list) return;
+      const item = { id: actor.id, name: actor.name, intent: actor.intent || 'Cầu Bình An' };
+      const idx = recentPrayers.findIndex(x => x.id === actor.id);
+      if (idx !== -1) recentPrayers.splice(idx, 1);
+      recentPrayers.unshift(item);
+      if (recentPrayers.length > 4) recentPrayers.length = 4;
+      list.replaceChildren(...recentPrayers.map(p => {
+        const li = document.createElement('li');
+        const b = document.createElement('b');
+        b.textContent = `🙏 ${p.name}: `;
+        li.append(b, document.createTextNode(p.intent));
+        return li;
+      }));
+    },
+    setHallCount(n) {
+      const el = $('#hall-count');
+      if (el) el.textContent = `Đang lễ: ${n} Phật tử`;
+    },
+    showVoice(text, on) {
+      const toast = $('#voice-toast');
+      const span = $('#voice-text');
+      if (!toast || !span) return;
+      if (on && text) {
+        span.textContent = text;
+        toast.classList.add('on');
+      } else {
+        toast.classList.remove('on');
       }
     },
     // Big altar card per spot: initial, name, intent. Fixed positions, so they never overlap.

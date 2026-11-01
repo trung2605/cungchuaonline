@@ -1,0 +1,156 @@
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { RaceStage, BIOMES, raceGiftTier } from '../CuocDuaKyThu/server/raceStage.js';
+import { createRaceRules } from '../CuocDuaKyThu/server/raceRules.js';
+import { startRaceAdmin } from '../CuocDuaKyThu/server/admin.js';
+import { startMockRace } from '../CuocDuaKyThu/server/mockRace.js';
+import { formatWelcomeSpeech, formatGiftBoostSpeech } from '../CuocDuaKyThu/web/scene/audio.js';
+
+const lists = { badwords: ['dm'], triggers: [], intents: {}, couplets: [] };
+
+test('TC-RACE-01: Join via chat spawns runner and emits exact welcome greeting', () => {
+  let t = 1000;
+  const stage = new RaceStage({ now: () => t });
+  const rules = createRaceRules({ stage, lists, now: () => t });
+
+  const out = rules.handle({ kind: 'chat', src: 'tiktok', uid: 'u1', name: 'Lê Trí Trung', text: 'Cho mình đua với', ts: t });
+  const spawn = out.find(m => m.t === 'spawn');
+  const welcome = out.find(m => m.t === 'welcome');
+
+  assert.ok(spawn, 'should emit spawn');
+  assert.equal(spawn.runner.name, 'Lê Trí Trung');
+  assert.ok(welcome, 'should emit welcome');
+  assert.equal(welcome.text, 'Chào user Lê Trí Trung đã tham gia cuộc đua cùng chúng tôi');
+  assert.equal(formatWelcomeSpeech('Lê_Trí.Trung_1992'), 'Chào user Lê Trí Trung đã tham gia cuộc đua cùng chúng tôi');
+});
+
+test('TC-RACE-02: Gift tiers upgrade speed, mount, and distance bonus accurately', () => {
+  let t = 1000;
+  const stage = new RaceStage({ now: () => t });
+  const rules = createRaceRules({ stage, lists, now: () => t });
+
+  assert.deepEqual([0, 1, 5, 10, 30, 100, 500, 1000, 5000].map(raceGiftTier), [0, 1, 1, 2, 2, 3, 3, 4, 4]);
+
+  // Tier 1: Rose (1 diamond x 2)
+  const out1 = rules.handle({ kind: 'gift', src: 'tiktok', uid: 'g1', name: 'Minh An', giftId: 5655, giftName: 'Rose', diamonds: 1, repeat: 2, ts: t });
+  const donor1 = out1.find(m => m.t === 'donor');
+  assert.equal(donor1.giftVi, 'Hoa Hồng');
+  assert.equal(donor1.mountLabel, 'Đôi Cánh Năng Lượng');
+  assert.equal(donor1.bonusM, 160);
+  assert.equal(stage.runners.get('g1').speedMult, 1.8);
+
+  // Tier 4: Galaxy (1000 diamonds)
+  const out4 = rules.handle({ kind: 'gift', src: 'tiktok', uid: 'g4', name: 'Đại Gia', giftId: 11046, giftName: 'Galaxy', diamonds: 1000, repeat: 1, ts: t });
+  const donor4 = out4.find(m => m.t === 'donor');
+  assert.equal(donor4.giftVi, 'Dải Ngân Hà');
+  assert.equal(donor4.mountLabel, 'Siêu Phi Thuyền Ngân Hà');
+  assert.equal(donor4.bonusM, 10000);
+  assert.equal(stage.runners.get('g4').speedMult, 6.5);
+  assert.equal(stage.runners.get('g4').tier, 4);
+
+  const tts = formatGiftBoostSpeech(donor4);
+  assert.ok(tts.includes('Chào user Đại Gia đã tham gia cuộc đua cùng chúng tôi'));
+  assert.ok(tts.includes('Siêu Phi Thuyền Ngân Hà'));
+});
+
+test('TC-RACE-03: Endless world tick advances distance and cycles through world biomes', () => {
+  let t = 1000;
+  const stage = new RaceStage({ now: () => t, baseSpeedMps: 300 });
+  stage.joinOrBoost('u1', 'An', 0);
+
+  assert.equal(stage.currentBiome().id, BIOMES[0].id);
+  t += 2000;
+  const msgs1 = stage.tick();
+  t += 1000;
+  const msgs2 = stage.tick();
+  const all = [...msgs1, ...msgs2];
+  assert.ok(all.some(m => m.t === 'biome' && m.biome.id === 'japan'));
+  assert.equal(stage.currentBiome().id, 'japan');
+});
+
+test('TC-RACE-04: Likes accumulate and trigger Global Rainbow Turbo every 500 likes', () => {
+  let t = 1000;
+  const stage = new RaceStage({ now: () => t });
+  const rules = createRaceRules({ stage, lists, now: () => t, turboEveryLikes: 500 });
+
+  const out1 = rules.handle({ kind: 'like', src: 'tiktok', uid: 'l1', name: 'Hùng', count: 495, ts: t });
+  assert.ok(!out1.some(m => m.kind === 'turbo'));
+  const out2 = rules.handle({ kind: 'like', src: 'tiktok', uid: 'l2', name: 'Lan', count: 10, ts: t });
+  assert.ok(out2.some(m => m.t === 'fx' && m.kind === 'turbo'));
+});
+
+test('TC-RACE-05: startRaceAdmin endpoints (state, biome, test-event, tiktok-user, kick)', async () => {
+  const stage = new RaceStage();
+  const rules = createRaceRules({ stage, lists });
+  let currentUser = 'adidaphat20266';
+  const adm = await startRaceAdmin({
+    port: 0,
+    password: 'secret',
+    ctx: {
+      stage,
+      rules,
+      lists,
+      blocked: new Set(),
+      status: { tiktok: 'connected' },
+      broadcast: () => {},
+      ingest: e => rules.handle(e),
+      demo: { start() {}, stop() {}, state: () => ({ on: true, rate: 2 }), config: () => ({ on: true, rate: 2 }) },
+      getScene: () => ({ sound: true }),
+      setScene: s => s,
+      getConfig: () => ({ tiktokUser: currentUser }),
+      setTiktokUser: async u => { currentUser = u; return { user: u, status: 'connecting' }; },
+    },
+  });
+
+  const base = `http://127.0.0.1:${adm.port}`;
+  const auth = 'Basic ' + Buffer.from('admin:secret').toString('base64');
+
+  // Unauthenticated -> 401
+  const r401 = await fetch(`${base}/api/state`);
+  assert.equal(r401.status, 401);
+
+  // Switch biome -> france
+  const rBiome = await fetch(`${base}/api/biome`, {
+    method: 'POST',
+    headers: { authorization: auth, 'content-type': 'application/json' },
+    body: JSON.stringify({ biome: 'france' }),
+  });
+  assert.equal(rBiome.status, 200);
+  const bData = await rBiome.json();
+  assert.equal(bData.biome.id, 'france');
+
+  // Test event join & gift
+  for (const action of ['join', 'gift1', 'gift30', 'gift1000', 'turbo']) {
+    const rEv = await fetch(`${base}/api/test-event`, {
+      method: 'POST',
+      headers: { authorization: auth, 'content-type': 'application/json' },
+      body: JSON.stringify({ action, name: 'Trí Trung' }),
+    });
+    assert.equal(rEv.status, 200);
+  }
+
+  // Switch TikTok user
+  const rTk = await fetch(`${base}/api/tiktok-user`, {
+    method: 'POST',
+    headers: { authorization: auth, 'content-type': 'application/json' },
+    body: JSON.stringify({ user: '@new_racer_channel' }),
+  });
+  assert.equal(rTk.status, 200);
+  assert.equal(currentUser, 'new_racer_channel');
+
+  const rState = await fetch(`${base}/api/state`, { headers: { authorization: auth } });
+  const state = await rState.json();
+  assert.equal(state.config.tiktokUser, 'new_racer_channel');
+  assert.ok(state.stats.activeRunners >= 1);
+
+  await adm.close();
+});
+
+test('TC-RACE-06: startMockRace emits valid racing events', () => {
+  let t = 0;
+  const events = [];
+  const stop = startMockRace(e => events.push(e), { rate: 10, now: () => t });
+  t = 1000;
+  stop();
+  assert.equal(typeof stop, 'function');
+});

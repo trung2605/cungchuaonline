@@ -20,6 +20,7 @@ Nội dung gồm: trend đang chạy ở đâu, người xem tương tác ra sao
 | [06-chua-xac-minh.md](06-chua-xac-minh.md) | Những điểm chưa xác minh được |
 | [07-ba-phan-tich-nghiep-vu.md](07-ba-phan-tich-nghiep-vu.md) | **BA:** stakeholder, persona, mô hình doanh thu, KPI, user story, quy tắc nghiệp vụ, phạm vi MVP |
 | [08-ky-thuat-chi-tiet.md](08-ky-thuat-chi-tiet.md) | **Kỹ thuật chi tiết:** kiến trúc, schema event, máy trạng thái nhân vật, bộ lọc, render, độ ổn định, kiểm thử |
+| [09-quan-sat-live-traigalongson92.md](09-quan-sat-live-traigalongson92.md) | Quan sát live mẫu: bố cục, lời cầu, bảng tri ân, câu đối, vòng đời nhân vật |
 | [nguon.md](nguon.md) | Tài liệu tham khảo |
 
 ## Tóm tắt

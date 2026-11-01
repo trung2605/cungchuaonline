@@ -12,6 +12,14 @@ const lotusTex = canvasTex(64, 64, g => {
   g.fillStyle = r;
   g.beginPath(); g.moveTo(32, 4); g.quadraticCurveTo(60, 40, 32, 60); g.quadraticCurveTo(4, 40, 32, 4); g.fill();
 });
+const goldSparkTex = canvasTex(64, 64, g => {
+  const r = g.createRadialGradient(32, 32, 0, 32, 32, 30);
+  r.addColorStop(0, 'rgba(255, 250, 210, 1)');
+  r.addColorStop(0.35, 'rgba(255, 205, 95, 0.85)');
+  r.addColorStop(1, 'rgba(255, 160, 30, 0)');
+  g.fillStyle = r;
+  g.fillRect(0, 0, 64, 64);
+});
 // Lumpy puff: several offset soft blobs, so overlapping particles read as a wisp, not as dots.
 const smokeTex = canvasTex(128, 128, (g, w) => {
   for (let i = 0; i < 9; i++) {
@@ -33,14 +41,14 @@ function smokeSystem(scene, max) {
   geo.setAttribute('age', new THREE.BufferAttribute(age, 1));
   geo.setAttribute('seed', new THREE.BufferAttribute(seed, 1));
   const mat = new THREE.ShaderMaterial({
-    uniforms: { map: { value: smokeTex }, tint: { value: new THREE.Color(0x8c7a68) }, alpha: { value: 0.11 } },
+    uniforms: { map: { value: smokeTex }, tint: { value: new THREE.Color(0xc8b49c) }, alpha: { value: 0.24 } },
     vertexShader: `
       attribute float age; attribute float seed;
       varying float vAge; varying float vRot;
       void main() {
-        vAge = age; vRot = seed * 6.28 + age * (seed - 0.5) * 3.0;
+        vAge = age; vRot = seed * 6.28 + age * (seed - 0.5) * 3.5;
         vec4 mv = modelViewMatrix * vec4(position, 1.0);
-        gl_PointSize = mix(0.25, 1.9, sqrt(age)) * 1100.0 / -mv.z;
+        gl_PointSize = mix(0.32, 2.35, sqrt(age)) * 1150.0 / -mv.z;
         gl_Position = projectionMatrix * mv;
       }`,
     fragmentShader: `
@@ -51,7 +59,7 @@ function smokeSystem(scene, max) {
         vec2 p = gl_PointCoord - 0.5;
         float c = cos(vRot), s = sin(vRot);
         vec4 t = texture2D(map, vec2(c * p.x - s * p.y, s * p.x + c * p.y) + 0.5);
-        float a = t.a * alpha * smoothstep(0.0, 0.12, vAge) * pow(1.0 - vAge, 1.6);
+        float a = t.a * alpha * smoothstep(0.0, 0.14, vAge) * pow(1.0 - vAge, 1.35);
         gl_FragColor = vec4(tint, a);
       }`,
     transparent: true, depthWrite: false,
@@ -135,12 +143,13 @@ export function createFx(scene, { low = false, smokeOrigin }) {
   const P = {
     petal: pool(scene, { tex: petalTex, max: 1200, size: 0.22, floor: true, gravity: -0.15, sway: 0.5 }),
     lotus: pool(scene, { tex: lotusTex, max: 1000, size: 0.4, floor: true, gravity: -0.1, sway: 0.7 }),
-    smoke: smokeSystem(scene, 260),
-    lamp: pool(scene, { tex: glowTex, max: 60, size: 0.9, additive: true, sway: 0.2 }),
-    glow: pool(scene, { tex: glowTex, max: 8, size: 6, additive: true }),
+    smoke: smokeSystem(scene, 520),
+    lamp: pool(scene, { tex: glowTex, max: 90, size: 0.95, additive: true, sway: 0.25 }),
+    glow: pool(scene, { tex: glowTex, max: 12, size: 6, additive: true }),
+    spark: pool(scene, { tex: goldSparkTex, max: 450, size: 0.28, additive: true, sway: 0.45 }),
   };
-  const rings = Array.from({ length: 3 }, () => {
-    const m = new THREE.Mesh(new THREE.RingGeometry(0.9, 1, 64), new THREE.MeshBasicMaterial({
+  const rings = Array.from({ length: 5 }, () => {
+    const m = new THREE.Mesh(new THREE.RingGeometry(0.88, 1, 64), new THREE.MeshBasicMaterial({
       color: 0xffd66b, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide,
     }));
     m.rotation.x = -Math.PI / 2;
@@ -149,42 +158,93 @@ export function createFx(scene, { low = false, smokeOrigin }) {
     scene.add(m);
     return Object.assign(m, { t0: -Infinity });
   });
-  let ring = 0, smokeUntil = 0, smokePower = 0, lotusUntil = 0, smokeAcc = 0, lotusAcc = 0;
+  let ring = 0, smokeUntil = 0, smokePower = 0, lotusUntil = 0, smokeAcc = 0, lotusAcc = 0, sparkAcc = 0;
   const rnd = (a, b) => a + Math.random() * (b - a);
 
   return {
     spawn(kind, pos, power, now) {
       const { x, z } = pos;
       if (kind === 'flower') {
-        for (let i = 0; i < 6 * power * q; i++) P.petal.emit(x + rnd(-0.7, 0.7), rnd(2.2, 3), z + rnd(-0.7, 0.7), 0, rnd(-0.6, -0.2), 0, 6);
+        for (let i = 0; i < 8 * power * q; i++) {
+          P.petal.emit(x + rnd(-0.8, 0.8), rnd(2.2, 3.2), z + rnd(-0.8, 0.8), 0, rnd(-0.6, -0.2), 0, 6);
+        }
+        for (let i = 0; i < 6 * power * q; i++) {
+          P.spark.emit(x + rnd(-0.6, 0.6), rnd(0.5, 2.0), z + rnd(-0.6, 0.6), rnd(-0.08, 0.08), rnd(0.25, 0.55), rnd(-0.08, 0.08), 3.5);
+        }
       } else if (kind === 'lamp') {
-        P.lamp.emit(x, 1.4, z, rnd(-0.1, 0.1), 0.7, rnd(-0.1, 0.1), 9);
+        const count = Math.min(8, Math.max(2, power));
+        for (let i = 0; i < count; i++) {
+          P.lamp.emit(x + rnd(-0.45, 0.45), 1.2 + i * 0.15, z + rnd(-0.45, 0.45), rnd(-0.12, 0.12), rnd(0.6, 0.9), rnd(-0.12, 0.12), 9);
+        }
+        for (let i = 0; i < 14 * q; i++) {
+          P.spark.emit(x + rnd(-0.8, 0.8), rnd(0.4, 2.2), z + rnd(-0.8, 0.8), rnd(-0.1, 0.1), rnd(0.35, 0.75), rnd(-0.1, 0.1), 4.2);
+        }
       } else if (kind === 'bell') {
         const r = rings[ring++ % rings.length];
         r.t0 = now;
+        const r2 = rings[ring++ % rings.length];
+        r2.t0 = now + 380;
+        lotusUntil = Math.max(lotusUntil, now + 3500);
+        for (let i = 0; i < 30 * q; i++) {
+          P.spark.emit(ALTAR.x + rnd(-2.5, 2.5), rnd(1.0, 5.2), ALTAR.z + rnd(-1.5, 1.5), rnd(-0.15, 0.15), rnd(0.3, 0.85), rnd(-0.15, 0.15), 5.0);
+        }
       } else if (kind === 'halo') {
-        P.glow.emit(x, 4.6, z - 0.6, 0, 0, 0, 5); // no actor: glow at the statue
+        P.glow.emit(x, 4.6, z - 0.6, 0, 0, 0, 5.5); // no actor: glow at the statue
+        for (let i = 0; i < 20 * q; i++) {
+          P.spark.emit(x + rnd(-1.1, 1.1), rnd(0.2, 2.6), z + rnd(-1.1, 1.1), rnd(-0.08, 0.08), rnd(0.35, 0.8), rnd(-0.08, 0.08), 4.5);
+        }
       } else if (kind === 'smoke') {
-        smokeUntil = now + 3000;
+        smokeUntil = now + 4500;
         smokePower = Math.max(smokePower, power);
+        // Immediate billowing puff at the censer and around the worshipper offering incense + golden sparks
+        for (let i = 0; i < Math.min(28, 8 + power * 3) * q; i++) {
+          P.smoke.emit(
+            smokeOrigin.x + rnd(-0.14, 0.14), smokeOrigin.y + rnd(0, 0.15), smokeOrigin.z + rnd(-0.1, 0.1),
+            rnd(-0.08, 0.08), rnd(0.65, 0.95), rnd(-0.04, 0.08), rnd(4.0, 5.4)
+          );
+          if (Math.hypot(x - smokeOrigin.x, z - smokeOrigin.z) > 0.5) {
+            P.smoke.emit(x + rnd(-0.15, 0.15), 1.1, z + rnd(-0.15, 0.15), rnd(-0.06, 0.06), rnd(0.45, 0.7), rnd(-0.04, 0.06), rnd(2.8, 3.8));
+          }
+        }
+        for (let i = 0; i < Math.min(18, 4 + power * 2) * q; i++) {
+          P.spark.emit(smokeOrigin.x + rnd(-0.5, 0.5), smokeOrigin.y + rnd(0.1, 0.8), smokeOrigin.z + rnd(-0.4, 0.4), rnd(-0.08, 0.08), rnd(0.35, 0.7), rnd(-0.05, 0.08), 3.6);
+        }
       } else if (kind === 'lotus') {
-        lotusUntil = now + 6000;
+        lotusUntil = now + 6500;
       }
     },
     update(now, dt) {
-      // Incense always smokes a little; 'smoke' thickens it for 3 s, scaled by power.
+      // Incense always smokes from the main censer and two side sandalwood burners; 'smoke' thickens it.
       if (now > smokeUntil) smokePower = 0;
-      smokeAcc += dt * (9 + smokePower * 6) * q;
-      // Fades out around 1.8 m above the censer, below the statue's face.
-      for (; smokeAcc >= 1; smokeAcc--) P.smoke.emit(smokeOrigin.x + rnd(-0.08, 0.08), smokeOrigin.y, smokeOrigin.z, rnd(-0.04, 0.04), rnd(0.55, 0.75), rnd(0, 0.06), rnd(3.2, 4.2));
+      smokeAcc += dt * (18 + smokePower * 9) * q;
+      for (; smokeAcc >= 1; smokeAcc--) {
+        // Main censer plume rising gracefully in front of the altar
+        P.smoke.emit(smokeOrigin.x + rnd(-0.09, 0.09), smokeOrigin.y, smokeOrigin.z, rnd(-0.05, 0.05), rnd(0.58, 0.82), rnd(0, 0.06), rnd(3.8, 5.0));
+        // Subtle side incense wisps near the altar pillars for temple atmosphere
+        if (Math.random() < 0.45) {
+          const sx = Math.random() < 0.5 ? -2.6 : 2.6;
+          P.smoke.emit(sx + rnd(-0.1, 0.1), smokeOrigin.y - 0.35, smokeOrigin.z - 0.3, rnd(-0.06, 0.06), rnd(0.45, 0.68), rnd(-0.03, 0.05), rnd(3.5, 4.6));
+        }
+      }
+      // Ambient golden Dharma light motes drifting around the altar & kneeling hall
+      sparkAcc += dt * 9 * q;
+      for (; sparkAcc >= 1; sparkAcc--) {
+        if (Math.random() < 0.55) {
+          // Near Buddha & altar
+          P.spark.emit(ALTAR.x + rnd(-2.8, 2.8), rnd(0.8, 5.0), ALTAR.z + rnd(-1.5, 2.0), rnd(-0.04, 0.04), rnd(0.18, 0.38), rnd(-0.04, 0.04), rnd(3.8, 5.8));
+        } else {
+          // Along the red carpet and kneeling hall
+          P.spark.emit(rnd(-4.8, 4.8), rnd(0.3, 2.8), rnd(-2.0, 12.0), rnd(-0.03, 0.03), rnd(0.15, 0.32), rnd(-0.03, 0.03), rnd(3.5, 5.2));
+        }
+      }
       if (now < lotusUntil) {
-        lotusAcc += dt * 50 * q;
+        lotusAcc += dt * 55 * q;
         for (; lotusAcc >= 1; lotusAcc--) P.lotus.emit(rnd(-7, 7), rnd(9, 11), rnd(-8, 9), 0, rnd(-1.4, -0.8), 0, 12);
       }
       for (const r of rings) {
         const u = (now - r.t0) / 2500;
-        r.visible = u < 1;
-        if (u < 1) { r.scale.setScalar(0.5 + u * 14); r.material.opacity = 1 - u; }
+        r.visible = u >= 0 && u < 1;
+        if (u >= 0 && u < 1) { r.scale.setScalar(0.5 + u * 14); r.material.opacity = 1 - u; }
       }
       const t = now / 1000;
       for (const p of Object.values(P)) p.update(dt, t);

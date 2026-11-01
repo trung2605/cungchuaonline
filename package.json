@@ -1,20 +1,28 @@
 {
-  "name": "cungchuaonline",
-  "version": "0.1.0",
+  "name": "live-tiktok",
+  "version": "1.0.0",
   "private": true,
   "type": "module",
+  "description": "Live TikTok Interactive 3D Games Monorepo (Cúng Chùa Online & Cuộc Đua Kỳ Thú)",
   "engines": {
     "node": ">=20"
   },
   "scripts": {
-    "start": "node server/index.js",
-    "demo": "node server/index.js --mock",
+    "start": "node scripts/start-all.mjs",
+    "start:admin-tong": "node AdminTong/server/index.js",
+    "start:chua": "node server/index.js",
+    "start:dua": "node CuocDuaKyThu/server/index.js",
+    "demo": "node scripts/start-all.mjs --mock",
+    "demo:chua": "node server/index.js --mock",
+    "demo:dua": "node CuocDuaKyThu/server/index.js --mock",
+    "check-live": "node scripts/check-live.mjs",
     "test": "node --test"
   },
   "dependencies": {
     "@fontsource/be-vietnam-pro": "5.3.0",
     "@pixiv/three-vrm": "3.5.5",
     "dotenv": "16.6.1",
+    "mongodb": "7.8.0",
     "three": "0.170.0",
     "tiktok-live-connector": "2.5.0",
     "ws": "8.22.1"

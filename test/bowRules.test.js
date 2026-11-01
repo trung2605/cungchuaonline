@@ -1,7 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Stage } from '../server/stage.js';
-import { giftTier, createBowRules } from '../server/bowRules.js';
+import { giftTier, giftOffering, createBowRules } from '../server/bowRules.js';
+import { cleanTtsName, formatTtsThanks } from '../web/scene/audio.js';
 
 const lists = {
   badwords: ['dm'],
@@ -93,4 +94,22 @@ test('TC-04.24 gift to seated actor: bow visit then badge', () => {
     { t: 'bow', id: 'a', times: 1, visit: true },
     { t: 'badge', id: 'a', diamonds: 1 },
   ]);
+});
+
+test('TC-04.25 giftOffering & TTS formatting with combo count and name cleaning', () => {
+  assert.equal(giftOffering('Rose', 1), 'dâng hương');
+  assert.equal(giftOffering('TikTok', 5), 'dâng hương');
+  assert.equal(giftOffering('Hoa hồng', 3), 'dâng hương');
+  assert.equal(giftOffering('Lotus', 2), 'dâng hoa');
+  assert.equal(giftOffering('Finger Heart', 5), 'dâng đèn hoa đăng');
+  assert.equal(giftOffering('Doughnut', 30), 'dâng đèn hoa đăng');
+  assert.equal(giftOffering('Galaxy', 1000), 'phát tâm công đức');
+
+  assert.equal(cleanTtsName('user839201928'), 'Phật tử');
+  assert.equal(cleanTtsName('Lê_Trí.Trung_1992'), 'Lê Trí Trung');
+  assert.equal(formatTtsThanks({ name: 'Lê Trí Trung', offering: 'dâng hương', repeat: 1 }), 'Cảm ơn Lê Trí Trung đã dâng hương');
+  assert.equal(formatTtsThanks({ name: 'Lê Trí Trung', offering: 'dâng hương', repeat: 5 }), 'Cảm ơn Lê Trí Trung đã dâng 5 nén hương');
+  assert.equal(formatTtsThanks({ name: 'Lan_9999', offering: 'dâng hoa', repeat: 3 }), 'Cảm ơn Lan đã dâng 3 đóa hoa sen');
+  assert.equal(formatTtsThanks({ name: 'Minh', offering: 'dâng đèn hoa đăng', repeat: 2 }), 'Cảm ơn Minh đã dâng 2 ngọn đèn hoa đăng');
+  assert.equal(formatTtsThanks({ name: 'user1234567', offering: 'phát tâm công đức', repeat: 1 }), 'Cảm ơn Phật tử đã phát tâm công đức');
 });

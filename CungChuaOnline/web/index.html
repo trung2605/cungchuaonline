@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Chùa Online</title>
+<link rel="stylesheet" href="/vendor/font/400.css">
+<link rel="stylesheet" href="/vendor/font/700.css">
+<script type="importmap">
+{ "imports": {
+  "three": "/vendor/three/build/three.module.js",
+  "three/addons/": "/vendor/three/examples/jsm/",
+  "@pixiv/three-vrm": "/vendor/three-vrm/lib/three-vrm.module.js"
+} }
+</script>
+<style>
+  html, body { margin: 0; height: 100%; background: #000; overflow: hidden; }
+  body { font-family: 'Be Vietnam Pro', 'Segoe UI', sans-serif; color: #fff3d6; }
+  /* Fixed 1080x1920 stage, centered and scaled to fit the window (scale is 1 inside LIVE Studio). */
+  #stage { position: absolute; left: 50%; top: 50%; width: 1080px; height: 1920px; transform-origin: center center; overflow: hidden; }
+  #stage > * { position: absolute; }
+  #c, #labels { inset: 0; }
+  /* CSS2DRenderer sets z-index on each label; contain them below the HUD. */
+  #labels { pointer-events: none; z-index: 0; }
+  #stage > :not(#c):not(#labels) { z-index: 1; }
+  /* TikTok LIVE 9:16 Safe Zone Layout:
+     - Top 0..170px: TikTok host header / viewers / close button
+     - Upper zone 175..760px: Altar, Buddha, Couplets, Donor card & TRI ÂN board (on upper right wall, never blocking seated actors)
+     - Middle zone 760..1360px: 100% clear for 3D kneeling worshippers & red carpet!
+     - Bottom zone >1360px: Left side overlaid by TikTok LIVE chat; bottom bar overlaid by TikTok comment input & gift buttons. */
+  :root {
+    --gilt: #e8c068; --gilt-bright: #ffe59e; --gilt-line: rgba(232, 192, 104, .58); --ink: #fff4e0;
+    --lacquer-top: rgba(48, 12, 5, .90); --lacquer-bot: rgba(18, 4, 2, .92);
+    --ease-out: cubic-bezier(.22, 1, .36, 1); --in: 520ms; --out: 260ms;
+  }
+  .pill {
+    background: linear-gradient(180deg, var(--lacquer-top), var(--lacquer-bot));
+    border: 1px solid var(--gilt-line); border-radius: 12px;
+    box-shadow: inset 0 1px 0 rgba(255, 228, 165, .24), inset 0 0 0 1px rgba(232, 192, 104, .12), 0 8px 22px rgba(0, 0, 0, .62);
+    box-sizing: border-box;
+    backdrop-filter: blur(6px);
+  }
+  #namo { right: 14px; top: 170px; width: 174px; padding: 8px 12px; font-size: 19px; font-weight: 700; color: var(--gilt);
+    font-variant-numeric: tabular-nums; white-space: nowrap; text-align: center; line-height: 1.25; }
+  #namo span { display: inline-block; color: #fff8de; font-size: 21px; }
+  #namo small { display: block; font-size: 12px; font-weight: 400; color: #e8cfa0; margin-top: 2px; font-variant-numeric: tabular-nums; }
+  #namo.bump span { animation: bump 600ms var(--ease-out); }
+  @keyframes bump { 30% { transform: scale(1.14); color: #fff2c4; } }
+  #banner { left: 50%; top: 168px; translate: -50% 0; max-width: 450px; padding: 8px 20px; font-size: 21px; font-weight: 700; color: var(--ink);
+    text-align: center; opacity: 0; transform: translateY(-10px) scale(.98);
+    transition: opacity var(--out) ease-in, transform var(--out) ease-in; pointer-events: none; }
+  #banner.on { opacity: 1; transform: none; transition: opacity var(--in) var(--ease-out), transform var(--in) var(--ease-out); }
+  /* Voice blessing toast right under the banner, above the altar arch */
+  #voice-toast { left: 50%; top: 226px; translate: -50% 0; max-width: 520px; padding: 7px 18px; font-size: 16px;
+    color: #fff6dc; text-align: center; opacity: 0; transform: translateY(-8px) scale(.97);
+    background: linear-gradient(180deg, rgba(68, 22, 8, .94), rgba(28, 7, 3, .94));
+    border: 1px solid rgba(255, 214, 110, .82); border-radius: 999px;
+    box-shadow: 0 0 22px rgba(226, 184, 102, .35), 0 8px 20px rgba(0, 0, 0, .6);
+    transition: opacity 320ms var(--ease-out), transform 320ms var(--ease-out); pointer-events: none;
+    display: flex; align-items: center; gap: 10px; white-space: normal; line-height: 1.3; }
+  #voice-toast.on { opacity: 1; transform: none; }
+  .wave { display: inline-flex; align-items: center; gap: 3px; height: 16px; flex: none; }
+  .wave i { display: block; width: 3px; height: 6px; border-radius: 2px; background: #ffd875; animation: wave-bar 700ms ease-in-out infinite alternate; }
+  .wave i:nth-child(2) { animation-delay: 180ms; height: 12px; }
+  .wave i:nth-child(3) { animation-delay: 340ms; height: 8px; }
+  @keyframes wave-bar { to { height: 16px; background: #fff6cc; } }
+  /* Hanging couplet boards: red lacquer, gilt double frame, engraved gilt letters. */
+  .couplet { top: 295px; min-width: 90px; padding: 16px 12px; border-radius: 4px; box-sizing: border-box;
+    background: linear-gradient(90deg, #5c0d08, #8c160e 45%, #6e100a);
+    outline: 2px solid #b8893a; outline-offset: -6px; border: 2px solid #3a0704;
+    box-shadow: 0 12px 24px rgba(0, 0, 0, .55);
+    color: var(--gilt); font-size: 21px; font-weight: 700; line-height: 1.42; text-align: center;
+    white-space: pre;
+    text-shadow: 0 1px 0 rgba(0, 0, 0, .7), 0 -1px 0 rgba(255, 230, 170, .25);
+    transition: opacity .8s ease; pointer-events: none; }
+  .couplet::before, .couplet::after { content: ''; position: absolute; left: -5px; right: -5px; height: 7px; border-radius: 3px;
+    background: linear-gradient(#e8c278, #8a6424); }
+  .couplet::before { top: -5px; } .couplet::after { bottom: -5px; }
+  #couplet-l { left: 196px; } #couplet-r { right: 196px; }
+  /* Upper-right stack: Donor card + TRI ÂN leaderboard sit cleanly at the right edge next to the right couplet, above the kneeling rows. */
+  #donor { right: 14px; top: 242px; width: 174px; pointer-events: none; }
+  #donor .card { position: static; width: 100%; translate: none; animation-name: donor-in; white-space: normal; padding: 6px 8px; gap: 6px;
+    border-color: rgba(255, 215, 115, .85); box-shadow: 0 0 16px rgba(226, 184, 102, .28), 0 6px 16px rgba(0, 0, 0, .6); }
+  #donor .avatar { width: 30px; height: 30px; font-size: 15px; }
+  #donor .card b { max-width: 118px; font-size: 14px; }
+  #donor .card span { display: block; font-size: 11.5px; line-height: 1.25; font-variant-numeric: tabular-nums; }
+  @keyframes donor-in { from { opacity: 0; transform: translateX(28px); } }
+  #board { right: 14px; top: 334px; width: 174px; padding: 8px 10px; font-size: 13px; pointer-events: none; }
+  #board h3 { margin: 0 0 5px; padding-bottom: 4px; text-align: center; color: var(--gilt); letter-spacing: 1.8px; font-size: 13.5px;
+    border-bottom: 1px solid var(--gilt-line); }
+  #board ol { margin: 0; padding-left: 18px; font-variant-numeric: tabular-nums; }
+  #board li { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.48; color: var(--ink); }
+  #board li::marker { color: var(--gilt); font-weight: 700; }
+  #board .empty-board { font-size: 12px; color: #d8be92; text-align: center; line-height: 1.35; padding: 4px 2px; }
+  /* Upper-left stack: positioned at top: 238px so TikTok LIVE Studio's Avatar + Daily Ranking badge (0..228px) never overlaps it! */
+  #guide { left: 14px; top: 238px; width: 174px; padding: 8px 10px; font-size: 11.8px; pointer-events: none; }
+  #guide h3 { margin: 0 0 6px; padding-bottom: 4px; text-align: center; color: var(--gilt); letter-spacing: 1.5px; font-size: 13px;
+    border-bottom: 1px solid var(--gilt-line); }
+  #guide .tier { margin-bottom: 5px; padding-bottom: 5px; border-bottom: 1px dashed rgba(226, 184, 102, .22); line-height: 1.28; color: var(--ink); font-variant-numeric: tabular-nums; }
+  #guide .tier:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
+  #guide .tier b { display: block; color: var(--gilt-bright); font-size: 12.2px; margin-bottom: 1px; }
+  #prayers { left: 14px; top: 538px; width: 174px; padding: 7px 10px; font-size: 11.8px; pointer-events: none; }
+  #prayers h3 { margin: 0 0 5px; padding-bottom: 3px; text-align: center; color: var(--gilt); letter-spacing: 1.2px; font-size: 12.5px;
+    border-bottom: 1px solid var(--gilt-line); }
+  #prayers ul { margin: 0; padding: 0; list-style: none; }
+  #prayers li { padding: 3px 0; border-bottom: 1px dashed rgba(226, 184, 102, .16); line-height: 1.3; color: var(--ink);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #prayers li:last-child { border-bottom: none; }
+  #prayers li b { color: var(--gilt); }
+  /* 3 Altar cards right in front of the altar table. */
+  #altar-cards { left: 0; right: 0; top: 750px; height: 0; pointer-events: none; }
+  .card { position: absolute; display: flex; align-items: center; gap: 8px; padding: 6px 12px 6px 6px; translate: -50% 0;
+    white-space: nowrap; animation: card-in var(--in) var(--ease-out); }
+  @keyframes card-in { from { opacity: 0; transform: translateY(14px); } }
+  .avatar { flex: none; width: 38px; height: 38px; border-radius: 50%; color: #3a1800; font-weight: 700; font-size: 20px;
+    display: grid; place-items: center; background: radial-gradient(circle at 35% 30%, #f6d68a, #b8862e 70%);
+    box-shadow: inset 0 -2px 3px rgba(0, 0, 0, .3), 0 0 0 2px rgba(226, 184, 102, .35); }
+  .card b { display: block; font-size: 18px; max-width: 170px; overflow: hidden; text-overflow: ellipsis; color: var(--ink); }
+  .card span { font-size: 15px; color: var(--gilt); }
+  /* Compact call-to-action bar at the bottom center (positioned cleanly above TikTok LIVE bottom bar). */
+  #footer { left: 50%; bottom: 126px; translate: -50% 0; width: 960px; padding: 9px 20px; font-size: 15px; line-height: 1.36;
+    text-align: center; color: #f3dcc0; pointer-events: none; border-radius: 20px; font-variant-numeric: tabular-nums; }
+  #footer div:first-child { font-size: 19.5px; font-weight: 700; color: var(--gilt-bright); margin-bottom: 2px; }
+  #footer .footer-tiers { margin-top: 4px; padding-top: 4px; border-top: 1px solid rgba(226, 184, 102, .32);
+    font-size: 14.5px; font-weight: 700; color: #ffe5a3; }
+  #credit { left: 24px; bottom: 95px; font-size: 12px; opacity: .7; pointer-events: none; }
+  #fps { right: 8px; bottom: 8px; font: 20px monospace; display: none; }
+  .label { font-size: 14px; color: #fff4e4; text-shadow: 0 1px 2px #000, 0 0 6px rgba(0, 0, 0, .9); white-space: nowrap; text-align: center; font-variant-numeric: tabular-nums; }
+  .label.tier1 { color: #ffe08a; padding: 1px 6px; border: 1px solid rgba(232, 192, 104, .45); border-radius: 8px; background: rgba(48, 22, 4, .72); }
+  .label.gold { color: #fff2b2; font-weight: 700; padding: 2px 8px; border: 1px solid #ffd269; border-radius: 8px; background: linear-gradient(180deg, rgba(82, 34, 6, .88), rgba(40, 12, 3, .88)); box-shadow: 0 0 10px rgba(255, 210, 105, .35); }
+  .bubble { margin-bottom: 4px; padding: 4px 9px; max-width: 200px; white-space: normal; background: rgba(255, 246, 228, .94);
+    color: #4a2a00; border-radius: 12px 12px 12px 4px; font-size: 14px; text-shadow: none;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, .4); transition: opacity .6s; }
+  #sound { right: 24px; bottom: 24px; padding: 12px 20px; font-size: 20px; display: none; color: var(--gilt); font-family: inherit; cursor: pointer; }
+  @media (prefers-reduced-motion: reduce) {
+    #banner, #banner.on { transform: none; transition: opacity .2s; }
+    .card, #donor .card, #namo.bump span { animation: none; }
+  }
+</style>
+</head>
+<body>
+<div id="stage">
+  <canvas id="c" width="1080" height="1920"></canvas>
+  <div id="labels"></div>
+  <div id="couplet-l" class="couplet"></div>
+  <div id="couplet-r" class="couplet"></div>
+  <div id="altar-cards"></div>
+  <div id="namo" class="pill">Đã niệm: <span>0</span><small id="hall-count">Đang lễ: 0 Phật tử</small></div>
+  <div id="banner" class="pill"></div>
+  <div id="voice-toast"><span class="wave"><i></i><i></i><i></i></span><span id="voice-text"></span></div>
+  <div id="guide" class="pill">
+    <h3>NGHI LỄ DÂNG LỄ</h3>
+    <div class="tier"><b>💬 Gõ "Nam mô A Di Đà Phật"</b>Vào điện quỳ lễ &amp; gửi sớ cầu nguyện</div>
+    <div class="tier"><b>❤️ Thả Tim Liên Tục</b>Dâng khói trầm · 1.000 ❤️ mưa hoa sen</div>
+    <div class="tier"><b>🌹 Quà 1–9 💎 (Hoa hồng, TikTok)</b>Dâng hương hoa · Tiếng khánh &amp; Đọc tên</div>
+    <div class="tier"><b>🪷 Quà 10–999 💎 (Hoa đăng, Hạc)</b>Áo tràng Vàng · Đèn hoa đăng &amp; Chuông</div>
+    <div class="tier"><b>👑 Quà 1000+ 💎 (Galaxy, Sư tử)</b>Quỳ hàng đầu · Hào quang &amp; Đại hồng chung</div>
+  </div>
+  <div id="prayers" class="pill">
+    <h3>SỚ CẦU NGUYỆN</h3>
+    <ul id="prayer-list">
+      <li>🙏 Thành tâm lễ Phật cầu bình an</li>
+    </ul>
+  </div>
+  <div id="donor"></div>
+  <div id="board" class="pill">
+    <h3>BẢNG VÀNG TRI ÂN</h3>
+    <ol></ol>
+    <div id="board-empty" class="empty-board">Thành tâm dâng hương hoa để ghi danh công đức 🙏</div>
+  </div>
+  <div id="footer" class="pill">
+    <div>🙏 Gõ "Nam mô A Di Đà Phật" để vào lễ Phật · Thả ❤️ dâng khói trầm</div>
+    <div id="footer-sub">Thêm "cầu bình an · tài lộc · sức khỏe · tình duyên · gia đạo · học hành · công danh" để gửi lời cầu</div>
+    <div class="footer-tiers">🌹 1–9💎 Dâng hương &amp; Đọc tên · 🪷 10–999💎 Áo tràng Vàng &amp; Hoa đăng · 👑 1000+💎 Quỳ hàng đầu, Hào quang &amp; Đại hồng chung</div>
+  </div>
+  <div id="credit"></div>
+  <div id="fps"></div>
+  <button id="sound" class="pill">Bật âm thanh</button>
+</div>
+<script type="module" src="main.js"></script>
+</body>
+</html>

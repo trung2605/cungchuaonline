@@ -1,5 +1,12 @@
 node_modules/
 .env
+.env.*
+!.env.example
 logs/
+*.log
 *.mp4
 .codegraph/
+.DS_Store
+Thumbs.db
+server/data/scene.json
+CungChuaOnline/server/data/scene.json

@@ -30,12 +30,20 @@ export function startTiktok(user, ingest, {
   const open = () => {
     if (stopped || ended) return;
     // A fresh instance per attempt: the library doesn't promise connect() works twice.
-    const c = (conn = new Connection(user, { signApiKey, enableExtendedGiftInfo: true }));
+    // Disable fetchRoomInfoOnConnect & enableExtendedGiftInfo so free-tier Euler signing works without a Business plan.
+    const c = (conn = new Connection(user, {
+      signApiKey,
+      enableExtendedGiftInfo: false,
+      fetchRoomInfoOnConnect: false,
+    }));
     const live = () => c === conn && !stopped;
 
     for (const name of EVENTS) {
       c.on(name, data => {
         if (!live()) return;
+        // If streamEnd fires before WebSocket handshake completes (e.g. cached stale room end),
+        // ignore it so retry() keeps polling until the streamer goes live.
+        if (name === 'streamEnd' && !c.isConnected) return;
         const e = map(name, data);
         if (!e) return;
         if (e.kind === 'end' && !ended) {

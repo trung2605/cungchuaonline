@@ -69,3 +69,17 @@ test('TC-02.13 same gift twice with different groupId is kept', () => {
   assert.equal(d.seen({ ...g, group: 'g2' }), false);
   assert.equal(d.seen({ ...g, group: 'g2' }), true);
 });
+
+test('TC-02.14 gift window is 10s and soft-matches when one source omits groupId', () => {
+  const c = clock();
+  const d = createDedupe({ now: c.now });
+  const gWithGroup = { kind: 'gift', src: 'tiktok', uid: 'u1', name: 'Lan', giftId: 5655, giftName: 'Rose', diamonds: 1, repeat: 5, group: '7391', ts: 0 };
+  const gNoGroup = { kind: 'gift', src: 'tikfinity', uid: 'u1', name: 'Lan', giftId: 5655, giftName: 'Rose', diamonds: 1, repeat: 5, group: '', ts: 0 };
+  assert.equal(d.seen(gWithGroup), false);
+  c.set(8000); // 8s later (inside 10s gift window, even with empty group from secondary source)
+  assert.equal(d.seen(gNoGroup), true);
+  c.set(10_500); // past 10s window
+  assert.equal(d.seen(gNoGroup), false);
+  c.set(12_000); // now group-having event arrives 1.5s after group-less event -> also deduplicated
+  assert.equal(d.seen({ ...gWithGroup, group: '7392' }), true);
+});

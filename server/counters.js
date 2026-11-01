@@ -1,5 +1,5 @@
 import { isTrigger, cleanName } from './filter.js';
-import { giftTier } from './bowRules.js';
+import { giftTier, giftOffering } from './bowRules.js';
 
 export function createCounters({
   lists, now = Date.now, joinGapMs = 2000, priorityMs = 5000, namoEvery = 1000, boardMs = 2000, boardSize = 8,
@@ -54,10 +54,11 @@ export function createCounters({
         case 'gift': {
           const name = cleanName(e.name, lists);
           const total = e.diamonds * e.repeat;
-          const out = [{ t: 'donor', uid: e.uid, name, giftName: e.giftName, repeat: e.repeat, diamonds: total }];
+          const offering = giftOffering(e.giftName, total);
+          const out = [{ t: 'donor', uid: e.uid, name, giftName: e.giftName, repeat: e.repeat, diamonds: total, offering }];
           if (giftTier(total) === 2) {
             priorityUntil = t + priorityMs;
-            out.push({ t: 'banner', text: `${name} dâng ${e.giftName} 🙏`, ms: 5000 });
+            out.push({ t: 'banner', text: `Cảm ơn ${name} đã ${offering} (${e.giftName}) 🙏`, ms: 5000 });
           }
           const d = donors.get(e.uid);
           donors.set(e.uid, { name, diamonds: (d?.diamonds ?? 0) + total, reachedAt: t });

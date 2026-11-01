@@ -227,7 +227,52 @@ export function buildHall(scene, { low = false, renderer } = {}) {
   const buddha = placeholderBuddha(statueGold, petal);
   buddha.position.set(0, 0.7, STATUE_Z);
   scene.add(buddha);
+
+  // Load AI-generated sacred Buddha centerpiece texture if present; overridden if a 3D buddha.glb is provided.
+  let hasGlb = false;
+  new THREE.TextureLoader().loadAsync('assets/textures/buddha.png').then(tex => {
+    if (hasGlb) return;
+    tex.colorSpace = THREE.SRGBColorSpace;
+    tex.anisotropy = 4;
+    const mat = new THREE.ShaderMaterial({
+      uniforms: { map: { value: tex } },
+      vertexShader: `
+        varying vec2 vUv;
+        void main() {
+          vUv = uv;
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }`,
+      fragmentShader: `
+        uniform sampler2D map;
+        varying vec2 vUv;
+        void main() {
+          vec4 c = texture2D(map, vUv);
+          float lum = max(c.r, max(c.g, c.b));
+          // Smoothly key out the pitch-black background and feather the edges of the lotus throne & halo
+          float edge = smoothstep(0.0, 0.08, vUv.x) * smoothstep(1.0, 0.92, vUv.x)
+                     * smoothstep(0.0, 0.05, vUv.y) * smoothstep(1.0, 0.94, vUv.y);
+          float a = c.a * smoothstep(0.03, 0.14, lum) * edge;
+          if (a < 0.01) discard;
+          gl_FragColor = vec4(c.rgb * 1.12, a);
+        }`,
+      transparent: true,
+      depthWrite: true,
+    });
+    const g = new THREE.Group();
+    const plane = new THREE.Mesh(new THREE.PlaneGeometry(6.8, 6.8), mat);
+    plane.position.set(0, 3.25, 0);
+    g.add(plane);
+    const halo = new THREE.Mesh(new THREE.CircleGeometry(2.7, 48), new THREE.MeshBasicMaterial({
+      map: glowTex, color: 0xffb860, transparent: true, opacity: 0.36, depthWrite: false, blending: THREE.AdditiveBlending,
+    }));
+    halo.position.set(0, 4.65, -0.3);
+    g.add(halo);
+    buddha.clear();
+    buddha.add(g);
+  }).catch(() => {});
+
   new GLTFLoader().loadAsync('assets/models/buddha.glb').then(gltf => {
+    hasGlb = true;
     // Fit the real statue to the placeholder's height, then swap.
     const box = new THREE.Box3().setFromObject(gltf.scene);
     gltf.scene.scale.setScalar(5.8 / (box.max.y - box.min.y));
