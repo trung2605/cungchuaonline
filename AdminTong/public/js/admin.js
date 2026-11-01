@@ -492,6 +492,29 @@ function renderAll(state) {
     $('chuaSoundCheck').checked = chua.scene.sound !== false;
   }
 
+  // Update Auto-Demo status badges across all 3 tabs
+  const chuaDemoOn = Boolean(chua.demo?.on);
+  const duaDemoOn = Boolean(dua.demo?.on);
+  const anyDemoOn = chuaDemoOn || duaDemoOn;
+  const demoText = anyDemoOn
+    ? `ĐANG CHẠY (${chua.demo?.rate || dua.demo?.rate || 2}/s)`
+    : 'Đang tắt';
+  for (const id of ['quickDemoStatusBadge', 'masterDemoStatusBadge']) {
+    const el = $(id);
+    if (el) {
+      el.className = `badge ${anyDemoOn ? 'brand' : ''}`;
+      el.textContent = demoText;
+    }
+  }
+  if ($('chuaDemoBadge')) {
+    $('chuaDemoBadge').className = `badge ${chuaDemoOn ? 'brand' : ''}`;
+    $('chuaDemoBadge').textContent = chuaDemoOn ? `ĐANG CHẠY (${chua.demo?.rate || 2}/s)` : 'Đang tắt';
+  }
+  if ($('duaDemoBadge')) {
+    $('duaDemoBadge').className = `badge ${duaDemoOn ? 'brand' : ''}`;
+    $('duaDemoBadge').textContent = duaDemoOn ? `ĐANG CHẠY (${dua.demo?.rate || 2}/s)` : 'Đang tắt';
+  }
+
   // Hydrate Chua Lists once so we don't overwrite user edits while typing
   if (!chuaListsHydrated && chua.lists) {
     chuaListsHydrated = true;
@@ -755,6 +778,48 @@ window.addEventListener('DOMContentLoaded', () => {
       await pollState();
     });
   });
+
+  // Auto-Demo Character Spawner Controls (Quick Bar, Master Tab, Chua Tab, Dua Tab)
+  const triggerAutoDemo = async (game, on, rate, giftPct, prayerPct = 70) => {
+    const cleanRate = Math.max(1, Math.min(50, Number(rate) || 2));
+    const giftRatio = Math.max(0, Math.min(0.85, (Number(giftPct) || 15) / 100));
+    const prayerRatio = Math.max(0.1, Math.min(0.95, (Number(prayerPct) || 70) / 100));
+    await gameAction(game, '/api/demo', { on, rate: cleanRate, giftRatio, prayerRatio });
+    showToast(
+      on
+        ? `Đã BẬT chạy nhân vật mẫu tự động (${cleanRate} sự kiện/giây · ${Math.round(giftRatio * 100)}% quà)!`
+        : 'Đã TẮT chạy nhân vật mẫu tự động!'
+    );
+    await pollState();
+  };
+
+  $('btnQuickDemoStart')?.addEventListener('click', () =>
+    triggerAutoDemo('all', true, $('quickDemoRate')?.value, $('quickDemoGiftPct')?.value, 70)
+  );
+  $('btnQuickDemoStop')?.addEventListener('click', () =>
+    triggerAutoDemo('all', false, $('quickDemoRate')?.value, $('quickDemoGiftPct')?.value, 70)
+  );
+
+  $('btnMasterDemoStart')?.addEventListener('click', () =>
+    triggerAutoDemo('all', true, $('masterDemoRate')?.value, $('masterDemoGiftPct')?.value, $('masterDemoPrayerPct')?.value)
+  );
+  $('btnMasterDemoStop')?.addEventListener('click', () =>
+    triggerAutoDemo('all', false, $('masterDemoRate')?.value, $('masterDemoGiftPct')?.value, $('masterDemoPrayerPct')?.value)
+  );
+
+  $('btnChuaDemoStart')?.addEventListener('click', () =>
+    triggerAutoDemo('cung-chua-online', true, $('chuaDemoRate')?.value, $('chuaDemoGiftPct')?.value, $('chuaDemoPrayerPct')?.value)
+  );
+  $('btnChuaDemoStop')?.addEventListener('click', () =>
+    triggerAutoDemo('cung-chua-online', false, $('chuaDemoRate')?.value, $('chuaDemoGiftPct')?.value, $('chuaDemoPrayerPct')?.value)
+  );
+
+  $('duaDemoStartBtn')?.addEventListener('click', () =>
+    triggerAutoDemo('cuoc-dua-ky-thu', true, $('duaDemoRate')?.value, $('duaDemoGiftPct')?.value, 70)
+  );
+  $('duaDemoStopBtn')?.addEventListener('click', () =>
+    triggerAutoDemo('cuoc-dua-ky-thu', false, $('duaDemoRate')?.value, $('duaDemoGiftPct')?.value, 70)
+  );
 
   // 4. Game 1: Cúng Chùa Online Controls
   $('btnChuaSaveScene').addEventListener('click', async () => {

@@ -13,13 +13,17 @@ const CHEERS = [
 ];
 
 const GIFTS = [
-  [0.45, { giftId: 5655, giftName: 'Rose', diamonds: 1 }],
-  [0.65, { giftId: 5269, giftName: 'TikTok', diamonds: 1 }],
+  [0.25, { giftId: 5655, giftName: 'Rose', diamonds: 1 }],
+  [0.42, { giftId: 5269, giftName: 'TikTok', diamonds: 1 }],
+  [0.52, { giftId: 6064, giftName: 'GG', diamonds: 1 }],
+  [0.60, { giftId: 5827, giftName: 'Ice Cream Cone', diamonds: 1 }],
+  [0.70, { giftId: 5994, giftName: 'Lotus', diamonds: 2 }],
   [0.80, { giftId: 5487, giftName: 'Finger Heart', diamonds: 5 }],
-  [0.90, { giftId: 5879, giftName: 'Doughnut', diamonds: 30 }],
-  [0.95, { giftId: 5659, giftName: 'Paper Crane', diamonds: 99 }],
-  [0.985, { giftId: 6012, giftName: 'Garland', diamonds: 299 }],
-  [1.00, { giftId: 11046, giftName: 'Galaxy', diamonds: 1000 }],
+  [0.86, { giftId: 5652, giftName: 'Little Yellow Duck', diamonds: 5 }],
+  [0.91, { giftId: 5901, giftName: 'Rosa', diamonds: 10 }],
+  [0.95, { giftId: 5660, giftName: 'Hand Hearts', diamonds: 10 }],
+  [0.98, { giftId: 5658, giftName: 'Perfume', diamonds: 20 }],
+  [1.00, { giftId: 5879, giftName: 'Doughnut', diamonds: 30 }],
 ];
 
 export function startMockRace(ingest, { rate = 3, giftRatio = 0.14, rng = Math.random, now = Date.now } = {}) {

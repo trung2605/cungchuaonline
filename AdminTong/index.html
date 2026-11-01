@@ -110,26 +110,38 @@
     <main class="content-area">
       <!-- SUB-TAB 1.1: TỔNG QUAN & BIỂU ĐỒ -->
       <section class="sub-tab-panel active" id="sub-master-overview">
-        <!-- Quick TikTok Switcher & Reset Strip -->
-        <div class="quick-command-strip">
+        <!-- Quick TikTok Switcher & Auto-Demo Character Spawner Strip -->
+        <div class="quick-command-strip" style="flex-wrap:wrap;gap:12px">
           <div class="row-inline">
             <span style="font-weight:800;font-size:13px;display:inline-flex;align-items:center;gap:6px">
-              <i data-lucide="radio" style="width:16px;height:16px;color:var(--brand)"></i> Kênh TikTok LIVE Toàn Hệ Thống:
+              <i data-lucide="radio" style="width:16px;height:16px;color:var(--brand)"></i> Kênh TikTok:
             </span>
-            <input type="text" id="topTiktokInput" placeholder="username_tiktok" style="width:210px;font-family:var(--font-mono);font-weight:700" />
-            <button type="button" class="btn primary" id="btnSaveTiktokGlobal">
-              <i data-lucide="refresh-cw"></i> Đổi Kênh Đồng Loạt
+            <input type="text" id="topTiktokInput" placeholder="username_tiktok" style="width:175px;font-family:var(--font-mono);font-weight:700" />
+            <button type="button" class="btn sm primary" id="btnSaveTiktokGlobal">
+              <i data-lucide="refresh-cw"></i> Đổi Kênh
             </button>
           </div>
+
+          <div class="row-inline" style="background:var(--brand-soft);padding:6px 12px;border-radius:10px;border:1px solid var(--border-strong)">
+            <span style="font-weight:800;font-size:13px;color:var(--brand-dark);display:inline-flex;align-items:center;gap:5px">
+              <i data-lucide="bot" style="width:16px;height:16px"></i> Chạy Nhân Vật Mẫu 3D:
+            </span>
+            <label style="font-size:12px;font-weight:700;color:var(--text-secondary)">Tần suất/giây:</label>
+            <input type="number" id="quickDemoRate" min="1" max="50" value="2" style="width:62px;padding:5px 8px;font-weight:700" title="Số sự kiện ngẫu nhiên mỗi giây (1-50)" />
+            <label style="font-size:12px;font-weight:700;color:var(--text-secondary)">% Quà:</label>
+            <input type="number" id="quickDemoGiftPct" min="0" max="85" value="15" style="width:62px;padding:5px 8px;font-weight:700" title="Tỷ lệ tặng quà ngẫu nhiên (0-85%)" />
+            <button type="button" class="btn sm primary" id="btnQuickDemoStart">
+              <i data-lucide="play"></i> Bật Chạy Mẫu
+            </button>
+            <button type="button" class="btn sm danger" id="btnQuickDemoStop">
+              <i data-lucide="square"></i> Tắt Mẫu
+            </button>
+            <span class="badge" id="quickDemoStatusBadge">Đang tắt</span>
+          </div>
+
           <div class="row-inline">
             <button type="button" class="btn sm" data-toggle-mock>
-              <i data-lucide="user-check"></i> <span class="mock-toggle-label">Dữ Liệu Mẫu: ĐANG TẮT (Chỉ Người Thật)</span>
-            </button>
-            <button type="button" class="btn gold" onclick="window.switchMainTab('chua')">
-              <i data-lucide="flame"></i> Sang Tab Cúng Chùa
-            </button>
-            <button type="button" class="btn teal" onclick="window.switchMainTab('dua')">
-              <i data-lucide="flag"></i> Sang Tab Cuộc Đua Kỳ Thú
+              <i data-lucide="user-check"></i> <span class="mock-toggle-label">Thống Kê Mẫu: TẮT (Chỉ Người Thật)</span>
             </button>
           </div>
         </div>
@@ -393,14 +405,39 @@
           <div class="card">
             <div class="card-header">
               <div>
-                <h2 class="card-title"><i data-lucide="flask-conical"></i> Kiểm Thử Hiệu Ứng Trên Màn Hình 3D (Dữ Liệu Mẫu)</h2>
-                <div class="card-subtitle">Các thao tác thử nghiệm dưới đây được gắn nhãn Dữ Liệu Mẫu (Fake) — không tính vào thống kê người thật khi tắt Dữ Liệu Mẫu</div>
+                <h2 class="card-title"><i data-lucide="bot"></i> Chạy Nhân Vật Mẫu Tự Động &amp; Thả Thủ Công</h2>
+                <div class="card-subtitle">Tự động sinh nhân vật ngẫu nhiên (tên người dùng, lời cầu, quà 1–30💎) theo tần suất để Live thêm sinh động</div>
+              </div>
+              <span class="badge" id="masterDemoStatusBadge">Đang tắt</span>
+            </div>
+
+            <div class="grid-3" style="margin-bottom:10px">
+              <div class="form-group" style="margin-bottom:0">
+                <label class="form-label" for="masterDemoRate">Tần suất (sự kiện/giây: 1–50)</label>
+                <input type="number" id="masterDemoRate" min="1" max="50" step="1" value="2" />
+              </div>
+              <div class="form-group" style="margin-bottom:0">
+                <label class="form-label" for="masterDemoGiftPct">Tỷ lệ tặng quà (%)</label>
+                <input type="number" id="masterDemoGiftPct" min="0" max="85" step="1" value="15" />
+              </div>
+              <div class="form-group" style="margin-bottom:0">
+                <label class="form-label" for="masterDemoPrayerPct">Tỷ lệ niệm Nam Mô (%)</label>
+                <input type="number" id="masterDemoPrayerPct" min="10" max="95" step="5" value="70" />
               </div>
             </div>
 
+            <div class="row-inline" style="margin-bottom:14px">
+              <button type="button" class="btn primary" id="btnMasterDemoStart">
+                <i data-lucide="play"></i> Bật Chạy Nhân Vật Mẫu Tự Động (Cả 2 Game)
+              </button>
+              <button type="button" class="btn danger" id="btnMasterDemoStop">
+                <i data-lucide="square"></i> Tắt Chạy Mẫu
+              </button>
+            </div>
+
             <div class="form-group">
-              <label class="form-label" for="simActorName">Tên nhân vật thử nghiệm (Mẫu)</label>
-              <input type="text" id="simActorName" value="Khách Thử Nghiệm" placeholder="Nhập tên hiển thị..." />
+              <label class="form-label" for="simActorName">Hoặc thả thủ công 1 nhân vật vào màn hình 3D</label>
+              <input type="text" id="simActorName" value="Phật Tử Thiện Tâm" placeholder="Nhập tên hiển thị..." />
             </div>
 
             <div class="form-label" style="margin-bottom:6px">Cúng Chùa Online 3D (:8787)</div>
@@ -739,11 +776,36 @@
               </div>
             </div>
 
-            <div class="form-group" style="margin-top:14px;margin-bottom:0">
+            <div class="form-group" style="margin-top:14px;margin-bottom:14px">
               <label class="form-label" for="chuaBannerInput">Phát thông báo chữ vàng trên màn hình Chùa 3D</label>
               <div class="row-inline">
                 <input type="text" id="chuaBannerInput" placeholder="VD: Chúc đại chúng thân tâm thường an lạc..." style="flex:1" />
                 <button type="button" class="btn gold" id="btnChuaBanner"><i data-lucide="send"></i> Phát</button>
+              </div>
+            </div>
+
+            <div style="border-top:1px solid var(--border);padding-top:14px">
+              <div class="row-inline" style="justify-content:space-between;margin-bottom:8px">
+                <label class="form-label" style="margin-bottom:0">Chạy Nhân Vật Mẫu Tự Động (Random Phật tử &amp; Quà 1–30💎)</label>
+                <span class="badge" id="chuaDemoBadge">Đang tắt</span>
+              </div>
+              <div class="grid-3" style="margin-bottom:10px">
+                <div>
+                  <label class="form-label" for="chuaDemoRate">Tần suất (/giây)</label>
+                  <input type="number" id="chuaDemoRate" min="1" max="50" value="2" />
+                </div>
+                <div>
+                  <label class="form-label" for="chuaDemoGiftPct">% Tặng quà</label>
+                  <input type="number" id="chuaDemoGiftPct" min="0" max="85" value="12" />
+                </div>
+                <div>
+                  <label class="form-label" for="chuaDemoPrayerPct">% Niệm Phật</label>
+                  <input type="number" id="chuaDemoPrayerPct" min="10" max="95" value="70" />
+                </div>
+              </div>
+              <div class="row-inline">
+                <button type="button" class="btn sm primary" id="btnChuaDemoStart"><i data-lucide="play"></i> Bật Chạy Mẫu Chùa 3D</button>
+                <button type="button" class="btn sm danger" id="btnChuaDemoStop"><i data-lucide="square"></i> Tắt Chạy Mẫu</button>
               </div>
             </div>
           </div>
@@ -958,11 +1020,32 @@
               </label>
             </div>
 
-            <div class="form-group" style="margin-bottom:0">
+            <div class="form-group" style="margin-bottom:14px">
               <label class="form-label" for="duaBannerInput">Phát thông báo Banner trên màn hình Cuộc Đua Kỳ Thú</label>
               <div class="row-inline">
                 <input type="text" id="duaBannerInput" placeholder="VD: Ai sẽ là nhà vô địch chặng Vịnh Hạ Long hôm nay?" style="flex:1" />
                 <button type="button" class="btn teal" id="btnDuaBanner"><i data-lucide="send"></i> Phát</button>
+              </div>
+            </div>
+
+            <div style="border-top:1px solid var(--border);padding-top:14px">
+              <div class="row-inline" style="justify-content:space-between;margin-bottom:8px">
+                <label class="form-label" style="margin-bottom:0">Chạy Vận Động Viên Mẫu Tự Động (Random Tay đua &amp; Quà 1–30💎)</label>
+                <span class="badge" id="duaDemoBadge">Đang tắt</span>
+              </div>
+              <div class="grid-2" style="margin-bottom:10px">
+                <div>
+                  <label class="form-label" for="duaDemoRate">Tần suất (sự kiện/giây)</label>
+                  <input type="number" id="duaDemoRate" min="1" max="50" value="2" />
+                </div>
+                <div>
+                  <label class="form-label" for="duaDemoGiftPct">Tỷ lệ tặng quà (%)</label>
+                  <input type="number" id="duaDemoGiftPct" min="0" max="85" value="15" />
+                </div>
+              </div>
+              <div class="row-inline">
+                <button type="button" class="btn sm primary" id="duaDemoStartBtn"><i data-lucide="play"></i> Bật Chạy Mẫu Đua 3D</button>
+                <button type="button" class="btn sm danger" id="duaDemoStopBtn"><i data-lucide="square"></i> Tắt Chạy Mẫu</button>
               </div>
             </div>
           </div>
