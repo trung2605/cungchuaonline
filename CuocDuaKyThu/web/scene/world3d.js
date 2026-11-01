@@ -21,51 +21,51 @@ export const glowTex = canvasTex(64, 64, (g, w) => {
 
 const BIOME_PALETTES = {
   vietnam: {
-    skyTop: 0x0a2c3d,
-    fog: 0x124554,
-    ground: 0x0b424d,
-    lane: 0xffd166,
-    sun: 0xffe299,
+    skyTop: 0x162b33,
+    fog: 0x243b40,
+    ground: 0x1d3633,
+    lane: 0xbfa06a,
+    sun: 0xf4dca8,
     skyImg: '/assets/sky_vietnam.jpg',
   },
   japan: {
-    skyTop: 0x1e1336,
-    fog: 0x3b1f40,
-    ground: 0x26162c,
-    lane: 0xff9ebb,
-    sun: 0xffb8d1,
+    skyTop: 0x241d2e,
+    fog: 0x382b3a,
+    ground: 0x29222b,
+    lane: 0xc9a39b,
+    sun: 0xf5d6cb,
     skyImg: '/assets/sky_japan.jpg',
   },
   egypt: {
-    skyTop: 0x331807,
-    fog: 0x5c310e,
-    ground: 0x734718,
-    lane: 0xffc857,
-    sun: 0xffaa33,
+    skyTop: 0x332214,
+    fog: 0x523821,
+    ground: 0x694b2a,
+    lane: 0xcfa763,
+    sun: 0xf2c278,
     skyImg: '/assets/sky_egypt.jpg',
   },
   france: {
-    skyTop: 0x0b1636,
-    fog: 0x1c2852,
-    ground: 0x142038,
-    lane: 0x7bdff2,
-    sun: 0xffe6a3,
+    skyTop: 0x172030,
+    fog: 0x253247,
+    ground: 0x1d2636,
+    lane: 0xb8a98a,
+    sun: 0xf2DFB6,
     skyImg: '/assets/sky_europe.jpg',
   },
   usa: {
-    skyTop: 0x071d36,
-    fog: 0x113557,
-    ground: 0x0d2840,
-    lane: 0x48cae4,
-    sun: 0x90e0ef,
+    skyTop: 0x162436,
+    fog: 0x24384d,
+    ground: 0x1b2a38,
+    lane: 0xb0a48c,
+    sun: 0xe8d8b8,
     skyImg: '/assets/sky_europe.jpg',
   },
   cosmos: {
-    skyTop: 0x060217,
-    fog: 0x13062e,
-    ground: 0x09031c,
-    lane: 0x00f5d4,
-    sun: 0xf15bb5,
+    skyTop: 0x141624,
+    fog: 0x212438,
+    ground: 0x181a29,
+    lane: 0xc4b082,
+    sun: 0xe8d5b5,
     skyImg: '/assets/sky_world.jpg',
   },
 };
@@ -176,12 +176,11 @@ const bldgWinTex = createWindowGridTexture('#122844', '#ffd97d');
 // Builds a lush roadside cluster of 3D grass bushes, wildflowers, and stepping stones along the trail border
 function buildTrailsideFoliage(side, variant) {
   const g = new THREE.Group();
-  const bushMat = new THREE.MeshStandardMaterial({ color: 0x2d6a4f, roughness: 0.8 });
-  const flowerColors = [0xffd166, 0xff758f, 0xfff3b0, 0xff9ebb];
+  const bushMat = new THREE.MeshStandardMaterial({ color: 0x36593e, roughness: 0.88 });
+  const flowerColors = [0xe8d59e, 0xdba89a, 0xf2ead8, 0xd4b483];
   const fMat = new THREE.MeshStandardMaterial({
     color: flowerColors[variant % flowerColors.length],
-    emissive: flowerColors[variant % flowerColors.length],
-    emissiveIntensity: 0.35,
+    roughness: 0.75,
   });
 
   for (let i = 0; i < 3; i++) {
@@ -401,31 +400,25 @@ function buildRoadsideScene(biomeId, side, variant, animList) {
     pole.position.set(side * 0.3, 1.8, 0);
     g.add(pole);
     const bulb = new THREE.Mesh(
-      new THREE.SphereGeometry(0.28, 12, 12),
-      new THREE.MeshBasicMaterial({ color: biomeId === 'france' ? 0xffe89e : 0x00f5d4 })
+      new THREE.SphereGeometry(0.26, 12, 12),
+      new THREE.MeshBasicMaterial({ color: 0xf5deb3 })
     );
     bulb.position.set(side * 0.3, 3.7, 0);
     g.add(bulb);
   } else {
-    // Cosmos: Levitating Spinning Crystal + Orbital Ring
-    const crystal = new THREE.Mesh(
-      new THREE.OctahedronGeometry(1.15, 0),
-      new THREE.MeshStandardMaterial({ color: 0x00f5d4, emissive: 0x7209b7, emissiveIntensity: 1.1, metalness: 0.8, roughness: 0.2 })
+    // Ancient Stone Milestone Obelisk + Warm Lantern
+    const obelisk = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.28, 0.45, 3.8, 6),
+      new THREE.MeshStandardMaterial({ color: 0x8c7d6b, roughness: 0.85 })
     );
-    crystal.position.set(side * 2.0, 2.6, 0);
-    g.add(crystal);
-    const ring = new THREE.Mesh(
-      new THREE.TorusGeometry(1.6, 0.06, 8, 28),
-      new THREE.MeshBasicMaterial({ color: 0xffd166 })
+    obelisk.position.set(side * 2.2, 1.9, 0);
+    g.add(obelisk);
+    const lantern = new THREE.Mesh(
+      new THREE.SphereGeometry(0.28, 12, 10),
+      new THREE.MeshStandardMaterial({ color: 0xf2d08a, emissive: 0x8c6220, emissiveIntensity: 0.6 })
     );
-    ring.position.set(side * 2.0, 2.6, 0);
-    g.add(ring);
-    animList.push(t => {
-      crystal.rotation.y = t * 1.2 + phaseOffset;
-      crystal.position.y = 2.6 + Math.sin(t * 1.8 + phaseOffset) * 0.26;
-      ring.rotation.x = t * 0.9 + phaseOffset;
-      ring.rotation.y = t * 0.7;
-    });
+    lantern.position.set(side * 2.2, 4.1, 0);
+    g.add(lantern);
   }
   return g;
 }
@@ -434,11 +427,11 @@ function buildRoadsideScene(biomeId, side, variant, animList) {
 function buildHighwayGateway(biomeId) {
   const g = new THREE.Group();
   const isEast = biomeId === 'vietnam' || biomeId === 'japan';
-  const pillarCol = isEast ? 0xc92418 : biomeId === 'egypt' ? 0xdba142 : 0x2b4c7e;
-  const roofCol = isEast ? 0xf5c242 : biomeId === 'cosmos' ? 0x00f5d4 : 0xffd166;
+  const pillarCol = isEast ? 0x7a2e22 : biomeId === 'egypt' ? 0xb5894c : 0x4a5568;
+  const roofCol = isEast ? 0xc2964b : 0xb89962;
 
-  const pillarMat = new THREE.MeshStandardMaterial({ color: pillarCol, emissive: 0x240402, roughness: 0.5 });
-  const roofMat = new THREE.MeshStandardMaterial({ color: roofCol, emissive: 0x3d2804, metalness: 0.55, roughness: 0.3 });
+  const pillarMat = new THREE.MeshStandardMaterial({ color: pillarCol, roughness: 0.72 });
+  const roofMat = new THREE.MeshStandardMaterial({ color: roofCol, metalness: 0.25, roughness: 0.55 });
 
   for (const x of [-5.1, 5.1]) {
     const p = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.4, 7.6, 12), pillarMat);
@@ -453,8 +446,8 @@ function buildHighwayGateway(biomeId) {
   beam2.position.set(0, 8.2, 0);
   g.add(beam2);
 
-  // 4 hanging glowing lanterns under the gateway arch
-  const lanternMat = new THREE.MeshStandardMaterial({ color: 0xff3b1f, emissive: 0xff2200, emissiveIntensity: 1.4 });
+  // 4 hanging warm silk lanterns under the gateway arch
+  const lanternMat = new THREE.MeshStandardMaterial({ color: 0xe6a145, emissive: 0x995510, emissiveIntensity: 0.75 });
   for (const x of [-3.6, -1.3, 1.3, 3.6]) {
     const l = new THREE.Mesh(new THREE.SphereGeometry(0.26, 10, 10), lanternMat);
     l.scale.set(1, 1.25, 1);
@@ -464,28 +457,28 @@ function buildHighwayGateway(biomeId) {
   return g;
 }
 
-// Builds a 3D Hot-Air Balloon / Giant Sky Lantern floating in the sky
+// Builds a 3D Hot-Air Balloon / Heritage Sky Lantern floating in the sky (warm earthy canvas tones)
 function buildSkyBalloon(colorHex, accentHex) {
   const g = new THREE.Group();
   const balloon = new THREE.Mesh(
-    new THREE.SphereGeometry(1.9, 16, 14),
-    new THREE.MeshStandardMaterial({ color: colorHex, emissive: accentHex, emissiveIntensity: 0.45, roughness: 0.5 })
+    new THREE.SphereGeometry(1.75, 16, 14),
+    new THREE.MeshStandardMaterial({ color: colorHex, emissive: accentHex, emissiveIntensity: 0.22, roughness: 0.7 })
   );
   balloon.scale.set(1, 1.28, 1);
   g.add(balloon);
 
   const band = new THREE.Mesh(
-    new THREE.TorusGeometry(1.88, 0.12, 8, 24),
-    new THREE.MeshBasicMaterial({ color: 0xffd166 })
+    new THREE.TorusGeometry(1.72, 0.09, 8, 24),
+    new THREE.MeshStandardMaterial({ color: 0xc9a76a, roughness: 0.6 })
   );
   band.rotation.x = Math.PI / 2;
   g.add(band);
 
   const basket = new THREE.Mesh(
-    new THREE.BoxGeometry(0.75, 0.6, 0.75),
-    new THREE.MeshStandardMaterial({ color: 0x8c5220 })
+    new THREE.BoxGeometry(0.7, 0.55, 0.7),
+    new THREE.MeshStandardMaterial({ color: 0x6e4726, roughness: 0.8 })
   );
-  basket.position.y = -2.8;
+  basket.position.y = -2.6;
   g.add(basket);
   return g;
 }
@@ -749,10 +742,10 @@ export function buildRaceWorld(scene) {
   scene.add(cranes.group);
 
   const balloons = [
-    { mesh: buildSkyBalloon(0xff3b2f, 0xffaa00), baseX: -14, baseY: 11.5, baseZ: -26, speed: 0.6, phase: 0.2 },
-    { mesh: buildSkyBalloon(0x00b4d8, 0x00f5d4), baseX: 15, baseY: 13.0, baseZ: -32, speed: 0.5, phase: 1.8 },
-    { mesh: buildSkyBalloon(0xffbe0b, 0xff5400), baseX: -9, baseY: 15.2, baseZ: -38, speed: 0.55, phase: 3.4 },
-    { mesh: buildSkyBalloon(0x9b5de5, 0xf15bb5), baseX: 11, baseY: 10.2, baseZ: -20, speed: 0.68, phase: 4.7 },
+    { mesh: buildSkyBalloon(0xc46d46, 0x8c4220), baseX: -14, baseY: 11.5, baseZ: -26, speed: 0.6, phase: 0.2 },
+    { mesh: buildSkyBalloon(0x52796f, 0x2f4f4f), baseX: 15, baseY: 13.0, baseZ: -32, speed: 0.5, phase: 1.8 },
+    { mesh: buildSkyBalloon(0xd4a359, 0x8c6220), baseX: -9, baseY: 15.2, baseZ: -38, speed: 0.55, phase: 3.4 },
+    { mesh: buildSkyBalloon(0xa8584c, 0x6e3228), baseX: 11, baseY: 10.2, baseZ: -20, speed: 0.68, phase: 4.7 },
   ];
   for (const b of balloons) {
     b.mesh.position.set(b.baseX, b.baseY, b.baseZ);
@@ -786,7 +779,7 @@ export function buildRaceWorld(scene) {
     // Update top header card background image to match the current destination's Nano Banana painting
     const worldCard = document.getElementById('world-card');
     if (worldCard && pal.skyImg) {
-      worldCard.style.backgroundImage = `linear-gradient(180deg, rgba(8, 22, 42, .76), rgba(4, 12, 24, .88)), url('${pal.skyImg}')`;
+      worldCard.style.backgroundImage = `linear-gradient(180deg, rgba(26, 22, 18, .74), rgba(14, 12, 10, .86)), url('${pal.skyImg}')`;
     }
 
     while (propsGroup.children.length) propsGroup.remove(propsGroup.children[0]);

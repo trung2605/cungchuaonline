@@ -46,7 +46,7 @@ const audio = createRaceAudio({
 
 const composer = new EffectComposer(renderer);
 composer.addPass(new RenderPass(scene, camera));
-composer.addPass(new UnrealBloomPass(new THREE.Vector2(W / 2, H / 2), 0.45, 0.35, 0.82));
+composer.addPass(new UnrealBloomPass(new THREE.Vector2(W / 2, H / 2), 0.16, 0.25, 0.92));
 composer.addPass(new OutputPass());
 
 const soundBtn = document.getElementById('sound');

@@ -14,8 +14,8 @@
 } }
 </script>
 <style>
-  html, body { margin: 0; height: 100%; background: #040814; overflow: hidden; }
-  body { font-family: 'Be Vietnam Pro', 'Segoe UI', sans-serif; color: #f0f7ff; }
+  html, body { margin: 0; height: 100%; background: #0c1014; overflow: hidden; }
+  body { font-family: 'Be Vietnam Pro', 'Segoe UI', sans-serif; color: #f4EFE6; }
   #stage { position: absolute; left: 50%; top: 50%; width: 1080px; height: 1920px; transform-origin: center center; overflow: hidden; }
   #stage > * { position: absolute; }
   #c, #labels { inset: 0; }
@@ -23,14 +23,14 @@
   #stage > :not(#c):not(#labels) { z-index: 1; }
 
   :root {
-    --gold: #ffd166; --cyan: #00f5d4; --line: rgba(0, 245, 212, .45); --gold-line: rgba(255, 209, 102, .65);
-    --panel-top: rgba(10, 24, 48, .88); --panel-bot: rgba(5, 12, 26, .92);
+    --gold: #e6c280; --cyan: #d8cdb8; --line: rgba(214, 190, 146, .34); --gold-line: rgba(226, 192, 128, .52);
+    --panel-top: rgba(28, 25, 22, .84); --panel-bot: rgba(16, 14, 12, .9);
     --ease-out: cubic-bezier(.22, 1, .36, 1);
   }
   .pill {
     background: linear-gradient(180deg, var(--panel-top), var(--panel-bot));
     border: 1px solid var(--line); border-radius: 14px;
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .18), 0 8px 24px rgba(0, 0, 0, .6);
+    box-shadow: inset 0 1px 0 rgba(255, 248, 230, .12), 0 8px 24px rgba(0, 0, 0, .55);
     box-sizing: border-box;
     backdrop-filter: blur(8px);
   }
@@ -39,24 +39,24 @@
   #world-card {
     left: 50%; top: 158px; translate: -50% 0; width: 472px; padding: 13px 18px;
     text-align: center; border: 1.5px solid var(--gold-line);
-    background-image: linear-gradient(180deg, rgba(8, 22, 42, .78), rgba(4, 12, 24, .9)), url('/assets/sky_vietnam.jpg');
+    background-image: linear-gradient(180deg, rgba(26, 22, 18, .76), rgba(14, 12, 10, .88)), url('/assets/sky_vietnam.jpg');
     background-size: cover; background-position: center;
-    box-shadow: 0 0 24px rgba(255, 209, 102, .28), 0 8px 22px rgba(0, 0, 0, .65);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, .65);
     pointer-events: none;
   }
-  #world-card .eyebrow { font-size: 15.5px; font-weight: 800; letter-spacing: 1.6px; color: var(--cyan); text-transform: uppercase; text-shadow: 0 2px 4px #000; }
-  #biome-name { font-size: 23.5px; font-weight: 800; color: var(--gold); margin: 4px 0; text-shadow: 0 2px 6px rgba(0, 0, 0, .95); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  #biome-sub { font-size: 17.5px; font-weight: 700; color: #e2f1ff; margin-bottom: 8px; text-shadow: 0 1px 4px #000; }
-  .biome-bar { height: 8px; background: rgba(255, 255, 255, .2); border-radius: 99px; overflow: hidden; }
-  #biome-bar-fill { height: 100%; width: 25%; background: linear-gradient(90deg, var(--cyan), var(--gold)); transition: width .4s ease; }
+  #world-card .eyebrow { font-size: 15px; font-weight: 800; letter-spacing: 1.5px; color: #e2d5be; text-transform: uppercase; text-shadow: 0 2px 4px #000; }
+  #biome-name { font-size: 23.5px; font-weight: 800; color: #f6e3ba; margin: 4px 0; text-shadow: 0 2px 6px rgba(0, 0, 0, .95); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #biome-sub { font-size: 17.5px; font-weight: 700; color: #dcd3c4; margin-bottom: 8px; text-shadow: 0 1px 4px #000; }
+  .biome-bar { height: 7px; background: rgba(255, 255, 255, .18); border-radius: 99px; overflow: hidden; }
+  #biome-bar-fill { height: 100%; width: 25%; background: linear-gradient(90deg, #b88b4a, #e8c682); transition: width .4s ease; }
 
   /* Welcome Greeting Card & Toast (Clean lower-center zone, never stacking) */
   #welcome-card {
     left: 50%; top: 760px; translate: -50% 0; max-width: 520px; padding: 11px 22px;
-    background: linear-gradient(90deg, rgba(16, 48, 82, .96), rgba(28, 78, 118, .96), rgba(16, 48, 82, .96));
-    border: 2px solid var(--gold); border-radius: 999px;
-    box-shadow: 0 0 24px rgba(255, 209, 102, .4), 0 8px 20px rgba(0, 0, 0, .65);
-    color: var(--gold); font-size: 22px; font-weight: 800; text-align: center;
+    background: linear-gradient(180deg, rgba(34, 29, 24, .95), rgba(20, 17, 14, .96));
+    border: 1.5px solid var(--gold-line); border-radius: 999px;
+    box-shadow: 0 8px 22px rgba(0, 0, 0, .65);
+    color: #f4e2bc; font-size: 21.5px; font-weight: 800; text-align: center;
     opacity: 0; transform: translateY(8px) scale(.97);
     transition: opacity 320ms var(--ease-out), transform 320ms var(--ease-out);
     pointer-events: none; white-space: nowrap;
@@ -65,7 +65,7 @@
 
   #banner {
     left: 50%; top: 825px; translate: -50% 0; max-width: 480px; padding: 11px 22px;
-    font-size: 22.5px; font-weight: 800; color: var(--gold); text-align: center;
+    font-size: 22px; font-weight: 800; color: #f4e2bc; text-align: center;
     opacity: 0; transform: translateY(8px); transition: opacity 280ms ease, transform 260ms ease;
     pointer-events: none; border-color: var(--gold-line);
   }
@@ -73,19 +73,19 @@
 
   #voice-toast {
     left: 50%; top: 825px; translate: -50% 0; width: 480px; max-width: 480px; padding: 12px 20px;
-    font-size: 21.5px; font-weight: 700; color: var(--gold); text-align: center;
-    background: rgba(8, 22, 44, .96); border: 1.5px solid var(--cyan); border-radius: 22px;
-    box-shadow: 0 0 22px rgba(0, 245, 212, .4);
+    font-size: 21px; font-weight: 700; color: #f5e6c8; text-align: center;
+    background: rgba(24, 21, 18, .95); border: 1.5px solid var(--gold-line); border-radius: 22px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, .65);
     opacity: 0; transform: translateY(6px); transition: opacity 260ms ease, transform 260ms ease;
     pointer-events: none; display: flex; align-items: center; justify-content: center; gap: 11px; line-height: 1.35;
     box-sizing: border-box;
   }
   #voice-toast.on { opacity: 1; transform: none; }
   .wave { display: inline-flex; align-items: center; gap: 4px; height: 20px; flex: none; }
-  .wave i { display: block; width: 4px; height: 8px; border-radius: 2px; background: var(--cyan); animation: wave-bar 600ms ease-in-out infinite alternate; }
+  .wave i { display: block; width: 4px; height: 8px; border-radius: 2px; background: #c8a262; animation: wave-bar 600ms ease-in-out infinite alternate; }
   .wave i:nth-child(2) { animation-delay: 160ms; height: 15px; }
   .wave i:nth-child(3) { animation-delay: 320ms; height: 10px; }
-  @keyframes wave-bar { to { height: 20px; background: var(--gold); } }
+  @keyframes wave-bar { to { height: 20px; background: #f2d59b; } }
 
   /* Left Safe-Zone Flex Column: Single Unified Boost Guide (/impeccable Distill) */
   #left-col {
@@ -93,9 +93,9 @@
     display: flex; flex-direction: column; gap: 14px;
     pointer-events: none;
   }
-  #guide { width: 100%; padding: 14px 14px; font-size: 22px; pointer-events: none; }
-  #guide h3 { margin: 0 0 10px; padding-bottom: 7px; text-align: center; color: var(--gold); letter-spacing: 0.8px; font-size: 24px; font-weight: 800; border-bottom: 2px solid var(--gold-line); }
-  #guide .tier { margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1.5px dashed rgba(255, 255, 255, .22); line-height: 1.3; font-size: 22px; font-weight: 800; font-variant-numeric: tabular-nums; color: var(--cyan); }
+  #guide { width: 100%; padding: 14px 14px; font-size: 21px; pointer-events: none; }
+  #guide h3 { margin: 0 0 10px; padding-bottom: 7px; text-align: center; color: var(--gold); letter-spacing: 0.8px; font-size: 23px; font-weight: 800; border-bottom: 1.5px solid var(--gold-line); }
+  #guide .tier { margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px dashed rgba(255, 245, 225, .16); line-height: 1.32; font-size: 21px; font-weight: 700; font-variant-numeric: tabular-nums; color: #e8dfd1; }
   #guide .tier:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
 
   #joins { display: none; }
@@ -110,40 +110,40 @@
     width: 100%; padding: 12px 14px; text-align: center;
     font-variant-numeric: tabular-nums; border-color: var(--gold-line); pointer-events: none;
   }
-  #odometer b { display: block; font-size: 21px; font-weight: 800; color: var(--gold); letter-spacing: 0.8px; }
-  #world-dist { display: block; font-size: 34px; font-weight: 800; color: #fff; margin: 4px 0; }
-  #runner-count { display: block; font-size: 20.5px; font-weight: 700; color: var(--cyan); }
+  #odometer b { display: block; font-size: 20px; font-weight: 800; color: var(--gold); letter-spacing: 0.8px; }
+  #world-dist { display: block; font-size: 33px; font-weight: 800; color: #faf4e8; margin: 4px 0; }
+  #runner-count { display: block; font-size: 20px; font-weight: 700; color: #d8cdb8; }
 
-  #board { width: 100%; padding: 13px 14px; font-size: 21.5px; pointer-events: none; }
-  #board h3 { margin: 0 0 8px; padding-bottom: 7px; text-align: center; color: var(--gold); letter-spacing: 0.8px; font-size: 23.5px; font-weight: 800; border-bottom: 2px solid var(--gold-line); }
+  #board { width: 100%; padding: 13px 14px; font-size: 21px; pointer-events: none; }
+  #board h3 { margin: 0 0 8px; padding-bottom: 7px; text-align: center; color: var(--gold); letter-spacing: 0.8px; font-size: 22.5px; font-weight: 800; border-bottom: 1.5px solid var(--gold-line); }
   #board ol { margin: 0; padding-left: 25px; font-variant-numeric: tabular-nums; }
-  #board li { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.46; color: var(--gold); font-size: 21.5px; font-weight: 800; margin-bottom: 3px; }
+  #board li { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.46; color: #f0e4cc; font-size: 21px; font-weight: 700; margin-bottom: 3px; }
   #board li::marker { color: var(--gold); font-weight: 800; }
-  #board .empty-board { font-size: 20.5px; font-weight: 700; color: var(--gold); text-align: center; padding: 6px 2px; line-height: 1.34; }
+  #board .empty-board { font-size: 20px; font-weight: 700; color: #d8cdb8; text-align: center; padding: 6px 2px; line-height: 1.34; }
 
   #donor { width: 100%; pointer-events: none; }
-  #donor .card { display: flex; align-items: center; gap: 10px; padding: 11px 13px; border-color: var(--gold); box-shadow: 0 0 18px rgba(255, 209, 102, .35); }
-  #donor .avatar { flex: none; width: 44px; height: 44px; font-size: 22px; border-radius: 50%; background: linear-gradient(135deg, var(--gold), #ff7b00); color: #051020; font-weight: 800; display: grid; place-items: center; }
-  #donor .card b { display: block; font-size: 22px; font-weight: 800; color: var(--gold); max-width: 195px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  #donor .card span { display: block; font-size: 20px; font-weight: 700; color: var(--cyan); line-height: 1.3; }
+  #donor .card { display: flex; align-items: center; gap: 10px; padding: 11px 13px; border-color: var(--gold-line); box-shadow: 0 6px 18px rgba(0, 0, 0, .5); }
+  #donor .avatar { flex: none; width: 44px; height: 44px; font-size: 21px; border-radius: 50%; background: linear-gradient(135deg, #d8b26e, #9c7234); color: #181410; font-weight: 800; display: grid; place-items: center; }
+  #donor .card b { display: block; font-size: 21.5px; font-weight: 800; color: #f4e2bc; max-width: 195px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #donor .card span { display: block; font-size: 19.5px; font-weight: 700; color: #dcd2c0; line-height: 1.3; }
 
   #footer { display: none; }
 
-  /* 3D Runner Overhead Labels */
+  /* 3D Runner Overhead Labels (Warm Natural Slate & Gold, no flashy neon) */
   .label {
-    font-size: 25px; font-weight: 800; color: #fff;
+    font-size: 24px; font-weight: 700; color: #f7f2e7;
     padding: 5px 15px; border-radius: 999px;
-    background: rgba(6, 16, 34, .92); border: 2px solid rgba(255, 255, 255, .5);
+    background: rgba(24, 21, 18, .9); border: 1.5px solid rgba(218, 196, 156, .48);
     text-shadow: 0 2px 4px #000; white-space: nowrap; font-variant-numeric: tabular-nums;
   }
-  .label.tier1 { font-size: 26px; font-weight: 800; border-color: #38bdf8; color: #e0f2fe; background: rgba(7, 42, 74, .94); }
-  .label.tier2 { font-size: 26.5px; font-weight: 800; border-color: #f59e0b; color: #fef3c7; background: rgba(68, 36, 6, .95); }
-  .label.tier3 { font-size: 27px; font-weight: 800; border-color: #fb7185; color: #ffe4e6; background: rgba(76, 12, 30, .96); box-shadow: 0 0 12px rgba(244, 63, 94, .45); }
-  .label.tier4 { font-size: 28px; font-weight: 800; border-color: #ffd700; color: #fffbeb; padding: 6px 18px; background: linear-gradient(180deg, rgba(92, 54, 4, .96), rgba(44, 22, 2, .96)); box-shadow: 0 0 16px rgba(255, 215, 0, .6); }
+  .label.tier1 { font-size: 24.5px; font-weight: 700; border-color: #9cb8a8; color: #eef5f0; background: rgba(26, 36, 31, .92); }
+  .label.tier2 { font-size: 25px; font-weight: 800; border-color: #d4ae6a; color: #f9eed8; background: rgba(44, 34, 20, .94); }
+  .label.tier3 { font-size: 25.5px; font-weight: 800; border-color: #c9886b; color: #fbece6; background: rgba(48, 26, 20, .95); }
+  .label.tier4 { font-size: 26.5px; font-weight: 800; border-color: #e5c172; color: #fff8e6; padding: 6px 18px; background: linear-gradient(180deg, rgba(58, 44, 22, .96), rgba(32, 24, 12, .96)); box-shadow: 0 4px 14px rgba(0, 0, 0, .6); }
   .bubble {
     margin-bottom: 8px; padding: 10px 18px; max-width: 330px; white-space: normal;
-    background: rgba(255, 252, 240, .98); color: #0a192f; border: 2.5px solid #ffd166; border-radius: 18px 18px 18px 4px;
-    font-size: 25px; font-weight: 800; line-height: 1.34; text-shadow: none; box-shadow: 0 6px 16px rgba(0, 0, 0, .6);
+    background: rgba(250, 245, 235, .96); color: #221d17; border: 2px solid #c9a66b; border-radius: 18px 18px 18px 4px;
+    font-size: 24px; font-weight: 700; line-height: 1.34; text-shadow: none; box-shadow: 0 6px 16px rgba(0, 0, 0, .55);
     transition: opacity .5s;
   }
   #sound { right: 24px; bottom: 24px; padding: 14px 22px; font-size: 20px; font-weight: 800; display: none; color: var(--gold); cursor: pointer; }

@@ -12,52 +12,52 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { VRMLoaderPlugin, VRMUtils, VRMHumanoid } from '@pixiv/three-vrm';
 import { glowTex } from './world3d.js';
 
-const OUTFIT_COLORS = [0x1f8a70, 0xd94e34, 0x2b6cb0, 0xd97706, 0x7c3aed, 0x0d9488];
+const OUTFIT_COLORS = [0x4a6b5b, 0x8c5a3c, 0x3d5a73, 0xa87c4f, 0x6b5b4d, 0x526856];
 const TIER_SUITS = {
-  1: 0x0ea5e9, // Tier 1 (1-9💎): Sky Explorer Jacket + Energy Wings
-  2: 0xf59e0b, // Tier 2 (10-99💎): Golden Silk Trekker + Cloud Hoverboard
-  3: 0xe11d48, // Tier 3 (100-999💎): Royal Crimson Adventurer + Twin Boosters
-  4: 0xffd700, // Tier 4 (1000+💎): Imperial Golden Legend + Cosmic Halo
+  1: 0x3b6e8c, // Tier 1 (1-9💎): Slate Blue Explorer Jacket + Feathered Wings
+  2: 0xc29347, // Tier 2 (10-99💎): Antique Gold Silk Trekker + Heritage Platform
+  3: 0x993838, // Tier 3 (100-999💎): Burgundy Royal Adventurer + Twin Boosters
+  4: 0xd9b15f, // Tier 4 (1000+💎): Imperial Champagne Gold + Halo
 };
 
-const std = (color, o = {}) => new THREE.MeshStandardMaterial({ color, roughness: 0.6, ...o });
-const skinMat = std(0xf1c6a0, { roughness: 0.55 });
-const blushMat = std(0xe8998d, { roughness: 0.6 });
+const std = (color, o = {}) => new THREE.MeshStandardMaterial({ color, roughness: 0.72, ...o });
+const skinMat = std(0xe5bc98, { roughness: 0.65 });
+const blushMat = std(0xd49284, { roughness: 0.7 });
 const eyeMat = new THREE.MeshBasicMaterial({ color: 0x161210 });
 const eyeHighlightMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
 const hairMats = [
-  std(0x1b1410, { roughness: 0.75 }),
-  std(0x2c1b12, { roughness: 0.72 }),
-  std(0x3a2314, { roughness: 0.7 }),
-  std(0x16161d, { roughness: 0.75 }),
+  std(0x1b1410, { roughness: 0.8 }),
+  std(0x281911, { roughness: 0.78 }),
+  std(0x332014, { roughness: 0.75 }),
+  std(0x18181c, { roughness: 0.8 }),
 ];
 const pantsMats = [
-  std(0x253244, { roughness: 0.78 }),
-  std(0x3d352a, { roughness: 0.8 }),
-  std(0x1e293b, { roughness: 0.75 }),
-  std(0x2d3748, { roughness: 0.78 }),
+  std(0x2b3440, { roughness: 0.82 }),
+  std(0x3d352a, { roughness: 0.85 }),
+  std(0x232b36, { roughness: 0.82 }),
+  std(0x343a42, { roughness: 0.82 }),
 ];
-const bootMat = std(0x4a2c18, { roughness: 0.65, metalness: 0.1 });
-const soleMat = std(0x1c1917, { roughness: 0.9 });
-const packMat = std(0x8c5828, { roughness: 0.68 });
-const packPocketMat = std(0x633b18, { roughness: 0.72 });
-const sleepRollMat = std(0x2a9d8f, { roughness: 0.65 });
-const nonLaMat = std(0xe9c987, { roughness: 0.65, side: THREE.DoubleSide });
-const hatBandMat = std(0xc92a2a, { roughness: 0.5 });
-const staffWoodMat = std(0x5c3418, { roughness: 0.75 });
-const lanternGoldMat = new THREE.MeshBasicMaterial({ color: 0xffdd66 });
+const bootMat = std(0x452c1b, { roughness: 0.72, metalness: 0.08 });
+const soleMat = std(0x1c1917, { roughness: 0.92 });
+const packMat = std(0x784e28, { roughness: 0.75 });
+const packPocketMat = std(0x573619, { roughness: 0.78 });
+const sleepRollMat = std(0x4a6b5d, { roughness: 0.75 });
+const nonLaMat = std(0xdfc188, { roughness: 0.72, side: THREE.DoubleSide });
+const hatBandMat = std(0x8c352b, { roughness: 0.65 });
+const staffWoodMat = std(0x54321a, { roughness: 0.8 });
+const lanternGoldMat = new THREE.MeshBasicMaterial({ color: 0xf4d38a });
 const wingMat = new THREE.MeshStandardMaterial({
-  color: 0x67e8f9,
-  emissive: 0x0284c7,
-  emissiveIntensity: 0.65,
+  color: 0xf4eee1,
+  emissive: 0x4a3e28,
+  emissiveIntensity: 0.35,
   transparent: true,
-  opacity: 0.86,
+  opacity: 0.85,
   side: THREE.DoubleSide,
 });
-const hoverMat = std(0xf5c242, { metalness: 0.72, roughness: 0.25, emissive: 0x4a3006 });
-const jetMat = std(0xe11d48, { metalness: 0.65, roughness: 0.3, emissive: 0x4c0519 });
-const flameMat = new THREE.MeshBasicMaterial({ color: 0xffaa2b });
-const crownMat = std(0xffdd44, { metalness: 0.88, roughness: 0.2, emissive: 0x664800 });
+const hoverMat = std(0xc99c4e, { metalness: 0.55, roughness: 0.35, emissive: 0x261804 });
+const jetMat = std(0x8c2d2d, { metalness: 0.5, roughness: 0.4, emissive: 0x240808 });
+const flameMat = new THREE.MeshBasicMaterial({ color: 0xf2a950 });
+const crownMat = std(0xd9b362, { metalness: 0.75, roughness: 0.28, emissive: 0x3b2a08 });
 
 // Optional VRM template cache (if user drops .vrm models into assets/models/)
 let vrmTemplates = [null, null, null, null];

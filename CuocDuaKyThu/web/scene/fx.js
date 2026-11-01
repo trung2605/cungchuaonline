@@ -11,10 +11,10 @@ export function createRaceFx(scene) {
 
   const mat = new THREE.PointsMaterial({
     map: glowTex,
-    size: 0.22,
-    color: 0xffe28a,
+    size: 0.14,
+    color: 0xf4dec0,
     transparent: true,
-    opacity: 0.78,
+    opacity: 0.48,
     depthWrite: false,
     blending: THREE.AdditiveBlending,
   });
@@ -49,10 +49,10 @@ export function createRaceFx(scene) {
       }
     },
     update(dt) {
-      // Gentle fireflies floating outside the highway lanes so the road stays crystal clear
-      if (Math.random() < 0.18) {
+      // Subtle atmospheric dust motes floating softly outside the trail
+      if (Math.random() < 0.08) {
         const side = Math.random() < 0.5 ? -1 : 1;
-        emit(side * rnd(4.8, 11.5), rnd(0.6, 6.5), rnd(-32, 6), rnd(-0.25, 0.25), rnd(0.18, 0.55), rnd(1.8, 3.6), 2.8);
+        emit(side * rnd(5.2, 11.5), rnd(0.8, 5.5), rnd(-30, 4), rnd(-0.18, 0.18), rnd(0.12, 0.35), rnd(1.2, 2.4), 2.4);
       }
       for (let i = 0; i < max; i++) {
         if (life[i] <= 0) continue;
