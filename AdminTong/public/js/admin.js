@@ -90,7 +90,7 @@ function initApexCharts() {
   // 1. Global Real-Time Diamond Timeline (Area Spline)
   charts.globalTimeline = new ApexCharts($('chartGlobalTimeline'), {
     chart: { type: 'area', height: 280, fontFamily: baseFont, toolbar: { show: false }, animations: { enabled: true, easing: 'easeinout', speed: 400 } },
-    colors: ['#d97706', '#0d9488'],
+    colors: ['#2563eb', '#60a5fa'],
     dataLabels: { enabled: false },
     stroke: { curve: 'smooth', width: 2.5 },
     fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.35, opacityTo: 0.03, stops: [0, 95, 100] } },
@@ -108,7 +108,7 @@ function initApexCharts() {
   // 2. Global Game Share (Donut)
   charts.globalShare = new ApexCharts($('chartGlobalShare'), {
     chart: { type: 'donut', height: 280, fontFamily: baseFont },
-    colors: ['#d97706', '#0d9488'],
+    colors: ['#2563eb', '#93c5fd'],
     labels: ['Cúng Chùa Online 3D', 'Cuộc Đua Kỳ Thú 3D'],
     series: [0, 0],
     plotOptions: {
@@ -130,7 +130,7 @@ function initApexCharts() {
   // 3. Global Top Donors (Horizontal Bar)
   charts.globalTopDonors = new ApexCharts($('chartGlobalTopDonors'), {
     chart: { type: 'bar', height: 260, fontFamily: baseFont, toolbar: { show: false } },
-    colors: ['#4f46e5'],
+    colors: ['#2563eb'],
     plotOptions: { bar: { horizontal: true, borderRadius: 6, barHeight: '62%' } },
     dataLabels: { enabled: true, formatter: v => fmtNum(v) + ' 💎', style: { fontSize: '11px', fontWeight: 700 } },
     series: [{ name: 'Kim cương', data: [] }],
@@ -142,7 +142,7 @@ function initApexCharts() {
   // 4. Cúng Chùa Online: Niệm Phật & Phật tử Timeline
   charts.chuaTimeline = new ApexCharts($('chartChuaTimeline'), {
     chart: { type: 'area', height: 260, fontFamily: baseFont, toolbar: { show: false } },
-    colors: ['#d97706', '#4f46e5'],
+    colors: ['#2563eb', '#60a5fa'],
     dataLabels: { enabled: false },
     stroke: { curve: 'smooth', width: 2.5 },
     fill: { type: 'gradient', gradient: { opacityFrom: 0.3, opacityTo: 0.02 } },
@@ -160,7 +160,7 @@ function initApexCharts() {
   // 5. Cúng Chùa Online: Phân Bố Lời Cầu Nguyện
   charts.chuaPrayers = new ApexCharts($('chartChuaPrayers'), {
     chart: { type: 'donut', height: 260, fontFamily: baseFont },
-    colors: ['#d97706', '#4f46e5', '#0d9488', '#7c3aed', '#e11d48', '#2563eb'],
+    colors: ['#1d4ed8', '#2563eb', '#3b82f6', '#60a5fa', '#93c5fd', '#bfdbfe'],
     labels: ['Chưa có dữ liệu'],
     series: [1],
     plotOptions: { pie: { donut: { size: '64%' } } },
@@ -172,7 +172,7 @@ function initApexCharts() {
   // 6. Cuộc Đua Kỳ Thú: Phân Bố Trang Bị / Phương Tiện
   charts.duaTiers = new ApexCharts($('chartDuaTiers'), {
     chart: { type: 'donut', height: 260, fontFamily: baseFont },
-    colors: ['#64748b', '#0d9488', '#d97706', '#e11d48', '#4f46e5'],
+    colors: ['#bfdbfe', '#93c5fd', '#60a5fa', '#3b82f6', '#1d4ed8'],
     labels: ['Chạy bộ (x1.0)', 'Đôi Cánh (x1.8)', 'Ván Trượt Vàng (x2.8)', 'Tên Lửa (x4.2)', 'Phi Thuyền (x6.5)'],
     series: [0, 0, 0, 0, 0],
     plotOptions: { pie: { donut: { size: '64%' } } },
@@ -184,7 +184,7 @@ function initApexCharts() {
   // 7. Cuộc Đua Kỳ Thú: Top Tay Đua Dẫn Đầu (m)
   charts.duaTopRacers = new ApexCharts($('chartDuaTopRacers'), {
     chart: { type: 'bar', height: 260, fontFamily: baseFont, toolbar: { show: false } },
-    colors: ['#0d9488'],
+    colors: ['#2563eb'],
     plotOptions: { bar: { horizontal: true, borderRadius: 6, barHeight: '62%' } },
     dataLabels: { enabled: true, formatter: v => fmtNum(v) + ' m', style: { fontSize: '11px', fontWeight: 700 } },
     series: [{ name: 'Quãng đường (m)', data: [] }],
