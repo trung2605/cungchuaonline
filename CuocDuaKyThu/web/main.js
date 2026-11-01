@@ -52,7 +52,21 @@ composer.addPass(new OutputPass());
 const soundBtn = document.getElementById('sound');
 if (soundBtn) soundBtn.style.display = 'none';
 const commentTtsBtn = document.getElementById('toggle-comment-tts');
+const bgmBtn = document.getElementById('toggle-bgm');
 let liveWs = null;
+
+function syncBgmBtn() {
+  if (!bgmBtn || !audio.getBgmLabel) return;
+  const label = audio.getBgmLabel();
+  bgmBtn.textContent = label;
+  bgmBtn.classList.toggle('off', label.includes('TẮT'));
+}
+
+bgmBtn?.addEventListener('click', () => {
+  audio.nextBgmTrack?.();
+  syncBgmBtn();
+});
+setInterval(syncBgmBtn, 2000);
 
 function syncCommentTtsBtn(on) {
   audio.setReadComments(on);

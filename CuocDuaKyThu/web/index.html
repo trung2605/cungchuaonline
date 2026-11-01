@@ -148,15 +148,17 @@
     transition: opacity .5s;
   }
   #sound { right: 24px; bottom: 24px; padding: 14px 22px; font-size: 20px; font-weight: 800; display: none; color: var(--gold); cursor: pointer; }
-  #toggle-comment-tts {
-    position: absolute; right: 26px; bottom: 26px; padding: 12px 20px; font-size: 19px; font-weight: 800;
+  #toggle-comment-tts, #toggle-bgm {
+    position: absolute; bottom: 26px; padding: 11px 18px; font-size: 18.5px; font-weight: 800;
     color: var(--gold); font-family: inherit; cursor: pointer; z-index: 30;
     background: linear-gradient(180deg, rgba(28, 22, 16, .92), rgba(14, 11, 8, .94));
     border: 1.5px solid rgba(226, 189, 118, .75); border-radius: 999px;
     box-shadow: 0 6px 18px rgba(0, 0, 0, .65); transition: transform .15s, border-color .2s, opacity .2s;
   }
-  #toggle-comment-tts:hover { transform: scale(1.03); border-color: #ffe082; }
-  #toggle-comment-tts.off { opacity: 0.82; border-color: rgba(226, 189, 118, .4); color: #cbbfa3; }
+  #toggle-comment-tts { right: 26px; }
+  #toggle-bgm { left: 26px; }
+  #toggle-comment-tts:hover, #toggle-bgm:hover { transform: scale(1.03); border-color: #ffe082; }
+  #toggle-comment-tts.off, #toggle-bgm.off { opacity: 0.82; border-color: rgba(226, 189, 118, .4); color: #cbbfa3; }
 </style>
 </head>
 <body>
@@ -217,6 +219,7 @@
   </div>
 
   <button id="sound" class="pill">🔊 Bật Âm Thanh &amp; Giọng Đọc AI</button>
+  <button id="toggle-bgm" class="pill" type="button" title="Bấm để chuyển bài hát Dân ca Việt Nam không bản quyền hoặc Tắt nhạc nền">🎵 Nhạc Việt: Trống Cơm (Dân Ca Lofi)</button>
   <button id="toggle-comment-tts" class="pill off" type="button" title="Bật / Tắt giọng đọc nội dung bình luận">🔇 Đọc bình luận: TẮT</button>
 </div>
 <script type="module" src="main.js"></script>

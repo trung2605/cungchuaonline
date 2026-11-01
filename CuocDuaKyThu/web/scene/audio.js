@@ -127,21 +127,263 @@ export function createRaceAudio({ onSpeak = null } = {}) {
     o.stop(start + dur);
   }
 
-  // Gentle, serene pentatonic ambient pulse (copyright-free)
+  // ============================================================================
+  // VIETNAMESE ROYALTY-FREE FOLK & LOFI CHILL BGM JUKEBOX (100% TikTok Safe)
+  // 5 Public-Domain Vietnamese Folk Songs arranged for Đàn Tranh, Sáo Trúc,
+  // Warm Lofi Pad & Trống Cơm Beat:
+  //   1. Trống Cơm (Dân ca Bắc Bộ - Lofi Chill Hành Hương)
+  //   2. Bèo Dạt Mây Trôi (Dân ca Quan Họ - Đàn Tranh & Sáo Trúc)
+  //   3. Lý Cây Bông (Dân ca Nam Bộ - Vãn Cảnh Vui Tươi)
+  //   4. Cò Lả (Dân ca Đồng Bằng Bắc Bộ - Sáo Trúc Thanh Bình)
+  //   5. Hoa Thơm Bướm Lượn (Quan Họ Bắc Ninh - Ngũ Cung Trong Trẻo)
+  // ============================================================================
+  const bgmGain = ctx.createGain();
+  bgmGain.gain.value = 0.34;
+  bgmGain.connect(master);
+
+  // Pitch table (Hz) across 3 octaves for Vietnamese pentatonic arrangements
+  const N = {
+    C3: 130.81, D3: 146.83, E3: 164.81, G3: 196.00, A3: 220.00, B3: 246.94,
+    C4: 261.63, D4: 293.66, E4: 329.63, F4: 349.23, G4: 392.00, A4: 440.00, B4: 493.88,
+    C5: 523.25, D5: 587.33, E5: 659.25, F5: 698.46, G5: 783.99, A5: 880.00,
+    R: 0, // Rest
+  };
+
+  // Each step is [noteFreq, durationInBeats, instrument ('zither' | 'flute' | 'both')]
+  const VN_SONGS = [
+    {
+      id: 'trong_com',
+      title: 'Trống Cơm (Dân Ca Lofi)',
+      stepMs: 280,
+      bassRoots: [N.C3, N.G3, N.A3, N.G3],
+      drumPattern: [1, 0, 0.5, 0, 0.8, 0, 0.4, 0.5],
+      notes: [
+        // "Tình bằng có cái trống cơm, khen ai khéo vỗ..."
+        [N.G4, 1, 'zither'], [N.A4, 1, 'zither'], [N.C5, 1, 'both'], [N.C5, 1, 'zither'],
+        [N.D5, 1, 'both'], [N.C5, 1, 'zither'], [N.A4, 1, 'zither'], [N.G4, 1, 'both'],
+        // "...ố mấy bông mà nên bông, ố mấy bông mà nên bông"
+        [N.E4, 1, 'zither'], [N.G4, 1, 'zither'], [N.A4, 1, 'both'], [N.C5, 1, 'zither'],
+        [N.A4, 1, 'zither'], [N.G4, 1, 'both'], [N.E4, 1, 'zither'], [N.D4, 1, 'zither'],
+        // "Một bầy tang tình con nhện, một bầy tang tình con nhện..."
+        [N.G4, 1, 'zither'], [N.G4, 1, 'zither'], [N.A4, 1, 'both'], [N.C5, 1, 'zither'],
+        [N.D5, 1, 'both'], [N.E5, 1, 'flute'], [N.D5, 1, 'zither'], [N.C5, 1, 'both'],
+        // "...giăng tơ, giăng tơ đi tìm, ơi mấy duyên..."
+        [N.A4, 1, 'zither'], [N.C5, 1, 'zither'], [N.A4, 1, 'both'], [N.G4, 1, 'zither'],
+        [N.E4, 1, 'zither'], [N.G4, 1, 'both'], [N.C4, 2, 'both'], [N.R, 1, 'zither'],
+      ],
+    },
+    {
+      id: 'beo_dat',
+      title: 'Bèo Dạt Mây Trôi (Đàn Tranh)',
+      stepMs: 360,
+      bassRoots: [N.C3, N.A3, N.D3, N.G3],
+      drumPattern: [0.7, 0, 0, 0.4, 0.6, 0, 0.3, 0],
+      notes: [
+        // "Bèo dạt mây trôi, chốn xa xôi..."
+        [N.C4, 2, 'both'], [N.E4, 1, 'zither'], [N.G4, 2, 'flute'], [N.G4, 1, 'zither'],
+        [N.A4, 1, 'both'], [N.C5, 2, 'flute'], [N.A4, 1, 'zither'], [N.G4, 2, 'both'],
+        // "...Em ơi, anh vẫn đợi bèo dạt..."
+        [N.E5, 2, 'flute'], [N.D5, 1, 'zither'], [N.C5, 1, 'both'], [N.A4, 1, 'zither'],
+        [N.G4, 1, 'zither'], [N.E4, 1, 'both'], [N.G4, 1, 'zither'], [N.D4, 2, 'flute'],
+        // "...Mây trôi, chim sa tang tình tính tang..."
+        [N.E4, 1, 'zither'], [N.G4, 1, 'both'], [N.A4, 2, 'flute'], [N.C5, 1, 'zither'],
+        [N.D5, 1, 'zither'], [N.C5, 1, 'both'], [N.A4, 1, 'zither'], [N.G4, 2, 'flute'],
+        [N.E4, 1, 'zither'], [N.D4, 1, 'zither'], [N.C4, 2, 'both'], [N.R, 1, 'zither'],
+      ],
+    },
+    {
+      id: 'ly_cay_bong',
+      title: 'Lý Cây Bông (Dân Ca Nam Bộ)',
+      stepMs: 295,
+      bassRoots: [N.C3, N.E3, N.G3, N.C3],
+      drumPattern: [0.9, 0, 0.4, 0.5, 0.8, 0, 0.5, 0],
+      notes: [
+        // "Bông xanh bông trắng rồi lại vàng bông, ơi bạn ơi..."
+        [N.E4, 1, 'zither'], [N.G4, 1, 'zither'], [N.A4, 1, 'both'], [N.A4, 1, 'zither'],
+        [N.G4, 1, 'zither'], [N.A4, 1, 'both'], [N.C5, 1, 'flute'], [N.A4, 1, 'zither'],
+        [N.G4, 2, 'both'], [N.E4, 1, 'zither'], [N.G4, 1, 'zither'],
+        // "...Bông lê cho bằng bông lựu, ơi bạn ơi..."
+        [N.A4, 1, 'zither'], [N.C5, 1, 'both'], [N.D5, 1, 'flute'], [N.E5, 1, 'flute'],
+        [N.D5, 1, 'zither'], [N.C5, 1, 'both'], [N.A4, 1, 'zither'], [N.G4, 1, 'zither'],
+        [N.E4, 1, 'zither'], [N.G4, 1, 'both'], [N.D4, 1, 'zither'], [N.C4, 2, 'both'],
+      ],
+    },
+    {
+      id: 'co_la',
+      title: 'Cò Lả (Sáo Trúc Đồng Quê)',
+      stepMs: 325,
+      bassRoots: [N.G3, N.D3, N.E3, N.C3],
+      drumPattern: [0.8, 0, 0.3, 0, 0.6, 0.3, 0, 0],
+      notes: [
+        // "Con cò cò bay lả lả bay la..."
+        [N.G4, 1, 'both'], [N.A4, 1, 'zither'], [N.C5, 2, 'flute'], [N.D5, 1, 'zither'],
+        [N.E5, 1, 'flute'], [N.D5, 1, 'zither'], [N.C5, 1, 'both'], [N.A4, 2, 'flute'],
+        // "...Bay từ từ cửa phủ, bay ra ra cánh đồng..."
+        [N.C5, 1, 'zither'], [N.A4, 1, 'zither'], [N.G4, 1, 'both'], [N.E4, 1, 'zither'],
+        [N.G4, 1, 'both'], [N.A4, 1, 'flute'], [N.G4, 1, 'zither'], [N.E4, 1, 'zither'],
+        [N.D4, 2, 'both'], [N.E4, 1, 'zither'], [N.G4, 2, 'both'], [N.R, 1, 'zither'],
+      ],
+    },
+    {
+      id: 'hoa_thom',
+      title: 'Hoa Thơm Bướm Lượn (Quan Họ)',
+      stepMs: 310,
+      bassRoots: [N.G3, N.E3, N.C3, N.D3],
+      drumPattern: [0.8, 0, 0.4, 0, 0.7, 0, 0.4, 0],
+      notes: [
+        // "Hoa thơm bướm lượn trên cành..."
+        [N.D4, 1, 'zither'], [N.G4, 1, 'both'], [N.A4, 1, 'zither'], [N.B4, 2, 'flute'],
+        [N.A4, 1, 'zither'], [N.G4, 2, 'both'],
+        [N.A4, 1, 'zither'], [N.B4, 1, 'zither'], [N.D5, 2, 'flute'], [N.B4, 1, 'zither'],
+        [N.A4, 1, 'both'], [N.G4, 1, 'zither'], [N.E4, 1, 'zither'], [N.D4, 2, 'both'],
+        [N.E4, 1, 'zither'], [N.G4, 1, 'both'], [N.A4, 1, 'flute'], [N.G4, 2, 'both'],
+      ],
+    },
+  ];
+
+  // Plucked Đàn Tranh (16-string Vietnamese zither)
+  function playDanTranh(freq, start, dur, vol = 0.14) {
+    if (!enabled || bgmMuted || ctx.state !== 'running' || freq <= 0) return;
+    for (const [mult, peak, d, type] of [
+      [1, vol, dur * 1.45, 'triangle'],
+      [2, vol * 0.38, dur * 0.85, 'sine'],
+      [3, vol * 0.14, dur * 0.45, 'sine'],
+    ]) {
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.type = type;
+      // Subtle Vietnamese zither pitch grace (nhấn đàn tranh)
+      o.frequency.setValueAtTime(freq * mult * 1.012, start);
+      o.frequency.exponentialRampToValueAtTime(freq * mult, start + 0.045);
+      g.gain.setValueAtTime(0.0001, start);
+      g.gain.linearRampToValueAtTime(peak, start + 0.018);
+      g.gain.exponentialRampToValueAtTime(0.0001, start + Math.max(0.18, d));
+      o.connect(g).connect(bgmGain);
+      o.start(start);
+      o.stop(start + Math.max(0.18, d) + 0.03);
+    }
+  }
+
+  // Breathy Sáo Trúc (Vietnamese bamboo flute with gentle 5.5Hz vibrato)
+  function playSaoTruc(freq, start, dur, vol = 0.095) {
+    if (!enabled || bgmMuted || ctx.state !== 'running' || freq <= 0) return;
+    const o = ctx.createOscillator();
+    const lfo = ctx.createOscillator();
+    const lfoGain = ctx.createGain();
+    const g = ctx.createGain();
+    o.type = 'sine';
+    o.frequency.setValueAtTime(freq, start);
+    lfo.frequency.setValueAtTime(5.4, start);
+    lfoGain.gain.setValueAtTime(freq * 0.008, start);
+    lfo.connect(lfoGain).connect(o.frequency);
+
+    const totalDur = Math.max(0.28, dur * 1.15);
+    g.gain.setValueAtTime(0.0001, start);
+    g.gain.linearRampToValueAtTime(vol, start + 0.065);
+    g.gain.exponentialRampToValueAtTime(0.0001, start + totalDur);
+    o.connect(g).connect(bgmGain);
+    o.start(start);
+    lfo.start(start);
+    o.stop(start + totalDur + 0.03);
+    lfo.stop(start + totalDur + 0.03);
+  }
+
+  // Warm Lofi Pentatonic Pad & Bass
+  function playWarmPad(rootFreq, start, dur, vol = 0.075) {
+    if (!enabled || bgmMuted || ctx.state !== 'running' || rootFreq <= 0) return;
+    for (const ratio of [1, 1.5, 2]) {
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.type = 'sine';
+      o.frequency.setValueAtTime(rootFreq * ratio, start);
+      g.gain.setValueAtTime(0.0001, start);
+      g.gain.linearRampToValueAtTime(ratio === 1 ? vol : vol * 0.55, start + dur * 0.25);
+      g.gain.exponentialRampToValueAtTime(0.0001, start + dur);
+      o.connect(g).connect(bgmGain);
+      o.start(start);
+      o.stop(start + dur + 0.04);
+    }
+  }
+
+  // Soft woody Trống Cơm / Lofi pulse
+  function playTrongComBeat(start, accent = 1) {
+    if (!enabled || bgmMuted || ctx.state !== 'running' || accent <= 0) return;
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.type = 'sine';
+    const startFreq = accent >= 0.8 ? 135 : 185;
+    const endFreq = accent >= 0.8 ? 58 : 92;
+    o.frequency.setValueAtTime(startFreq, start);
+    o.frequency.exponentialRampToValueAtTime(endFreq, start + 0.11);
+    g.gain.setValueAtTime(0.085 * accent, start);
+    g.gain.exponentialRampToValueAtTime(0.0001, start + 0.13);
+    o.connect(g).connect(bgmGain);
+    o.start(start);
+    o.stop(start + 0.14);
+  }
+
   let bgRunning = false;
   let bgTimer = null;
-  let stepIdx = 0;
-  const CHORD_NOTES = [261.63, 293.66, 329.63, 392.00, 440.00, 523.25];
+  let bgmMuted = false;
+  let autoCycleSongs = true;
+  let currentSongIdx = 0;
+  let noteCursor = 0;
+  let tickCount = 0;
+
+  function duckBgm(duck) {
+    if (ctx.state === 'running') {
+      const target = bgmMuted ? 0 : duck ? 0.09 : 0.34;
+      bgmGain.gain.setTargetAtTime(target, ctx.currentTime, 0.15);
+    }
+  }
 
   function tickBg() {
     if (!bgRunning) return;
-    if (enabled && ctx.state === 'running' && !speaking) {
+    const song = VN_SONGS[currentSongIdx % VN_SONGS.length];
+    let waitMs = song.stepMs;
+
+    if (enabled && !bgmMuted && ctx.state === 'running') {
       const t = ctx.currentTime;
-      const n1 = CHORD_NOTES[stepIdx % CHORD_NOTES.length];
-      tone(n1 * 0.5, t, 0.9, 0.03, 'sine');
-      stepIdx++;
+      const [freq, beats, inst] = song.notes[noteCursor % song.notes.length];
+      waitMs = song.stepMs * Math.max(1, beats);
+      const durSec = (waitMs / 1000) * 0.95;
+
+      // Play warm bass + pad every 8 steps
+      if (tickCount % 8 === 0) {
+        const bassRoot = song.bassRoots[Math.floor(tickCount / 8) % song.bassRoots.length];
+        playWarmPad(bassRoot, t, (song.stepMs * 8) / 1000, 0.08);
+      }
+
+      // Play gentle Trống Cơm rhythm
+      const drumAccent = song.drumPattern[tickCount % song.drumPattern.length] || 0;
+      if (drumAccent > 0) {
+        playTrongComBeat(t, drumAccent);
+      }
+
+      // Play Vietnamese melody note (Đàn Tranh + Sáo Trúc)
+      if (freq > 0) {
+        if (inst === 'zither' || inst === 'both') {
+          playDanTranh(freq, t, durSec, 0.145);
+          // Occasional octave harmony pluck
+          if (beats >= 2) playDanTranh(freq * 0.5, t + 0.03, durSec, 0.065);
+        }
+        if (inst === 'flute' || inst === 'both') {
+          playSaoTruc(freq, t + 0.01, durSec, inst === 'flute' ? 0.105 : 0.075);
+        }
+      }
+
+      noteCursor++;
+      tickCount++;
+
+      // After playing a song twice through (~45-60s), smoothly advance to the next Vietnamese song if in auto mode
+      if (noteCursor >= song.notes.length * 2) {
+        noteCursor = 0;
+        if (autoCycleSongs) {
+          currentSongIdx = (currentSongIdx + 1) % VN_SONGS.length;
+        }
+      }
     }
-    bgTimer = setTimeout(tickBg, 1400);
+    bgTimer = setTimeout(tickBg, waitMs);
   }
 
   function startBg() {
@@ -259,6 +501,7 @@ export function createRaceAudio({ onSpeak = null } = {}) {
     const item = speechQueue.shift();
     currentItem = item;
     speaking = true;
+    duckBgm(true);
     onSpeak?.(item.text, true);
 
     let finished = false;
@@ -269,6 +512,7 @@ export function createRaceAudio({ onSpeak = null } = {}) {
       currentVoiceSrc = null;
       currentItem = null;
       speaking = false;
+      duckBgm(false);
       onSpeak?.('', false);
       setTimeout(flushSpeech, 380);
     };
@@ -315,12 +559,46 @@ export function createRaceAudio({ onSpeak = null } = {}) {
     }
   }
 
+  // Auto-start background music immediately on creation
+  ctx.resume().then(() => { startBg(); }).catch(() => { startBg(); });
+
   return {
     get suspended() {
       return ctx.state !== 'running';
     },
     get readComments() {
       return readComments;
+    },
+    getBgmLabel() {
+      if (bgmMuted) return '🔇 Nhạc nền: TẮT';
+      const song = VN_SONGS[currentSongIdx % VN_SONGS.length];
+      return autoCycleSongs ? `🎵 Nhạc Việt: ${song.title}` : `🎵 Đang lặp: ${song.title}`;
+    },
+    nextBgmTrack() {
+      if (ctx.state !== 'running') ctx.resume().catch(() => {});
+      startBg();
+      if (bgmMuted) {
+        bgmMuted = false;
+        autoCycleSongs = true;
+        currentSongIdx = 0;
+        noteCursor = 0;
+        duckBgm(speaking);
+        return this.getBgmLabel();
+      }
+      if (autoCycleSongs) {
+        autoCycleSongs = false;
+        currentSongIdx = 0;
+        noteCursor = 0;
+        return this.getBgmLabel();
+      }
+      if (currentSongIdx < VN_SONGS.length - 1) {
+        currentSongIdx++;
+        noteCursor = 0;
+        return this.getBgmLabel();
+      }
+      bgmMuted = true;
+      duckBgm(false);
+      return this.getBgmLabel();
     },
     unlock() {
       if (!enabled) return;
