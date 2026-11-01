@@ -112,12 +112,33 @@ export function createRaceAudio({ onSpeak = null } = {}) {
   }
 
   function cleanCommentForTts(raw = '') {
-    return String(raw)
-      .normalize('NFC')
+    let s = String(raw || '').normalize('NFC').trim();
+    if (!s) return '';
+    const deobfuscated = s.replace(/(?<=\p{L})[.*_-]+(?=\p{L})/gu, '');
+    if (
+      /\b(dm|đm|dcm|đcm|dkm|đkm|dmm|đmm|vcl|vkl|vl|clgt|cc|địt|dit|djt|đjt|đéo|deo|cặc|lồn|loz|buồi|cứt|đụ|đĩ|phò|cave|chịch|xoạc|nứng|fuck|bitch|sex|porn|jav|hentai|xnxx|xvideos|vlxx|onlyfans|pornhub|đồ\s*ngu|thằng\s*ngu|óc\s*chó|chó\s*điên|tài\s*xỉu|tai\s*xiu|cá\s*độ|nhà\s*cái|nổ\s*hũ|xóc\s*đĩa|lô\s*đề|cờ\s*bạc|kubet|f8bet|shbet|hi88|go88|sunwin|lừa\s*đảo|lua\s*dao|chùa\s*lừa\s*đảo|sư\s*giả|sư\s*hổ\s*mang|phản\s*động|ba\s*que|3\s*que|tự\s*tử|ma\s*túy|đập\s*đá)\b/iu.test(deobfuscated)
+    ) {
+      return '';
+    }
+    s = s
       .replace(/[\p{Extended_Pictographic}\uFE0F\u200D]+/gu, ' ')
+      .replace(/[^\p{L}\p{N}\s,.!?'"-]/gu, ' ')
+      .replace(/(\p{L})\1{2,}/gu, '$1')
       .replace(/\s+/g, ' ')
-      .trim()
-      .slice(0, 60);
+      .trim();
+    if (!s || s.length < 2 || !/[aăâeêioôơuưyáàảãạắằẳẵặấầẩẫậéèẻẽẹếềểễệíìỉĩịóòỏõọốồổỗộớờởỡợúùủũụứừửữựýỳỷỹỵ]/i.test(s)) return '';
+    s = s
+      .replace(/\bnam\s+mo\s+a\s+di\s+da\s+phat\b/giu, 'Nam mô A Di Đà Phật')
+      .replace(/\ba\s*di\s*da\s*phat\b|\badidaphat\b|\badida\b/giu, 'A Di Đà Phật')
+      .replace(/\bnam\s+mo\b|\bnamo\b/giu, 'Nam mô')
+      .replace(/\bcau\s+binh\s+an\b/giu, 'cầu bình an')
+      .replace(/\bcau\s+tai\s+loc\b/giu, 'cầu tài lộc')
+      .replace(/\bcau\s+suc\s+khoe\b/giu, 'cầu sức khỏe')
+      .replace(/\bm\.n\b|\bmn\b/giu, 'mọi người')
+      .replace(/\bko\b|\bkhum\b/giu, 'không')
+      .replace(/\bđc\b|\bdc\b/giu, 'được')
+      .replace(/\bgđ\b|\bgd\b/giu, 'gia đình');
+    return s.slice(0, 65);
   }
 
   function interruptSpeechIfLowerPriority(newPriority = 2) {

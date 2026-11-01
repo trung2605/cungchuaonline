@@ -1,7 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { fold, matchesAny, isTrigger, cleanBubble, cleanName, detectIntent } from '../server/filter.js';
+import { fold, matchesAny, isTrigger, cleanBubble, cleanName, detectIntent, normalizeVietnameseCommentForTts } from '../server/filter.js';
 import { loadLists } from '../server/lists.js';
+import { cleanCommentForTts } from '../web/scene/audio.js';
 
 const lists = () => ({
   badwords: ['dm', 'vcl', 'đồ ngu'],
@@ -107,8 +108,24 @@ test('TC-03.20 real badwords list does not block common phrases', () => {
   const l = loadLists();
   for (const s of ['Nam mô, cầu cho bố mẹ bình an', 'chuc cac ban buoi sang binh an', 'con đi ngủ đây', 'tuổi lớn rồi', 'sửa đi ad', 'Duy ơi', 'phở ngon'])
     assert.equal(cleanBubble(s, l), s.normalize('NFC'), s);
-  for (const s of ['đồ cặc', 'dm', 'v.c.l', 'địt mẹ', 'clgt'])
+  for (const s of ['đồ cặc', 'dm', 'v.c.l', 'địt mẹ', 'clgt', 'mày điên à, đm!', 'v*c*l', 'đị.t mẹ', 'chơi tài xỉu không?', 'kubet uy tín', 'chùa lừa đảo', 'sư hổ mang'])
     assert.equal(cleanBubble(s, l), null, s);
+});
+
+test('TC-03.21 Vietnamese comment normalizer for TTS expands teencode & blocks sensitive words', () => {
+  const l = loadLists();
+  assert.equal(
+    normalizeVietnameseCommentForTts('nam mo a di da phat cau binh an cho gd 🙏🙏', l),
+    'Nam mô A Di Đà Phật cầu bình an cho gia đình'
+  );
+  assert.equal(
+    cleanCommentForTts('Nam môôôô A Di Đà Phậttttt, chúc mn sk và hp ❤️'),
+    'Nam mô A Di Đà Phật, chúc mọi người sức khỏe và hạnh phúc'
+  );
+  assert.equal(cleanCommentForTts('mày ngu vcl'), '');
+  assert.equal(cleanCommentForTts('vào chơi tài xỉu kubet'), '');
+  assert.equal(cleanCommentForTts('12345678'), '');
+  assert.equal(cleanCommentForTts('🙏🙏🙏'), '');
 });
 
 test('cleanBubble max param (admin banner 60)', () => {

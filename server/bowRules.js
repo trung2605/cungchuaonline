@@ -55,7 +55,7 @@ export function giftOffering(giftName = '', total = 0) {
   return 'dâng hoa';
 }
 
-export function createBowRules({ stage, lists, stats = null, now = Date.now, cooldownMs = 600_000 }) {
+export function createBowRules({ stage, lists, stats = null, now = Date.now, cooldownMs = 600_000, allowAllRealChat = false }) {
   const lastFree = new Map(); // uid -> ts of last free bow; gifts never touch it
 
   return {
@@ -94,8 +94,8 @@ export function createBowRules({ stage, lists, stats = null, now = Date.now, coo
       const last = lastFree.get(e.uid);
       const isReal = Boolean(e.src && e.src !== 'mock');
       const bubble = cleanBubble(e.text, lists);
-      // Real viewers who write ANY non-sensitive comment (or anyone matching trigger words) enter the hall
-      if ((isTrigger(e.text, lists) || (isReal && bubble)) && (last === undefined || t - last >= cooldownMs)) {
+      // Real viewers who write ANY non-sensitive comment (when allowAllRealChat is enabled) or anyone matching trigger words enter the hall
+      if ((isTrigger(e.text, lists) || (allowAllRealChat && isReal && bubble)) && (last === undefined || t - last >= cooldownMs)) {
         lastFree.set(e.uid, t);
         out.push(...granted(1, stage.enter(e.uid, cleanName(e.name, lists), 0, 1, {
           intent: detectIntent(e.text, lists) ?? undefined,

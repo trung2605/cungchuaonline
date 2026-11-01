@@ -4,10 +4,95 @@
 const MAX_BLOCKS_PER_S = 4;
 const MAX_SPEECH_QUEUE = 3;
 
+const CLIENT_SENSITIVE_RE = new RegExp(
+  [
+    '\\b(dm|đm|dcm|đcm|dkm|đkm|dmm|đmm|vcl|vkl|vl|clgt|cc|địt|dit|djt|đjt|đéo|deo|cặc|lồn|loz|buồi|cứt|đụ|đĩ|phò|cave|chịch|xoạc|nứng|fuck|bitch|sex|porn|jav|hentai|xnxx|xvideos|vlxx|onlyfans|pornhub)\\b',
+    '\\b(đồ\\s*ngu|thằng\\s*ngu|con\\s*ngu|ngu\\s*ngốc|óc\\s*chó|chó\\s*điên|thằng\\s*chó|con\\s*chó|con\\s*đĩ|con\\s*phò|mất\\s*dạy|khốn\\s*nạn|súc\\s*vật|bố\\s*láo|hiếp\\s*dâm|ấu\\s*dâm|loạn\\s*luân|thủ\\s*dâm|sục\\s*cặc|bú\\s*cu|bú\\s*lồn)\\b',
+    '\\b(tài\\s*xỉu|tai\\s*xiu|cá\\s*độ|ca\\s*do|cá\\s*cược|nhà\\s*cái|nha\\s*cai|nổ\\s*hũ|no\\s*hu|xóc\\s*đĩa|lô\\s*đề|cờ\\s*bạc|đánh\\s*bạc|kubet|f8bet|shbet|hi88|jun88|789bet|new88|go88|sunwin|rikvip|hitclub|baccarat|bốc\\s*bát\\s*họ|vay\\s*nóng|lừa\\s*đảo|lua\\s*dao)\\b',
+    '\\b(chùa\\s*lừa\\s*đảo|chùa\\s*bịp|sư\\s*giả|sư\\s*hổ\\s*mang|phật\\s*giả|buôn\\s*thần\\s*bán\\s*thánh|cúng\\s*tiền\\s*cho\\s*ma|phản\\s*động|phan\\s*dong|ba\\s*que|3\\s*que|khủng\\s*bố|tự\\s*tử|tự\\s*sát|giết\\s*người|ma\\s*túy|đập\\s*đá|thuốc\\s*lắc|kẹo\\s*ke|cần\\s*sa)\\b',
+    'https?:\\/\\/|www\\.|(?<!\\d)(?:\\d[\\s.\\-_*]?){8,}',
+  ].join('|'),
+  'iu'
+);
+
+const VN_VOWEL_RE = /[aăâeêioôơuưyáàảãạắằẳẵặấầẩẫậéèẻẽẹếềểễệíìỉĩịóòỏõọốồổỗộớờởỡợúùủũụứừửữựýỳỷỹỵ]/i;
+
+const VN_TTS_PHRASES = [
+  [/\bnam\s+mo\s+a\s+di\s+da\s+phat\b/giu, 'Nam mô A Di Đà Phật'],
+  [/\ba\s*di\s*da\s*phat\b/giu, 'A Di Đà Phật'],
+  [/\badidaphat\b/giu, 'A Di Đà Phật'],
+  [/\badida\b/giu, 'A Di Đà Phật'],
+  [/\bnam\s+mo\b/giu, 'Nam mô'],
+  [/\bnamo\b/giu, 'Nam mô'],
+  [/\bmo\s+phat\b/giu, 'Mô Phật'],
+  [/\bquan\s+the\s+am(\s+bo\s+tat)?\b/giu, 'Quan Thế Âm Bồ Tát'],
+  [/\bquan\s+am(\s+bo\s+tat)?\b/giu, 'Quan Âm Bồ Tát'],
+  [/\bcau\s+binh\s+an\b/giu, 'cầu bình an'],
+  [/\bcau\s+tai\s+loc\b/giu, 'cầu tài lộc'],
+  [/\bcau\s+suc\s+khoe\b/giu, 'cầu sức khỏe'],
+  [/\bcau\s+gia\s+dao\b/giu, 'cầu gia đạo'],
+  [/\bcau\s+duyen\b/giu, 'cầu duyên'],
+  [/\bcau\s+con\b/giu, 'cầu con'],
+  [/\bvan\s+su\s+nhu\s+y\b/giu, 'vạn sự như ý'],
+  [/\bvan\s+su\s+cat\s+tuong\b/giu, 'vạn sự cát tường'],
+  [/\bcong\s+duc\s+vo\s+luong\b/giu, 'công đức vô lượng'],
+  [/\bthanh\s+tam\b/giu, 'thành tâm'],
+  [/\bhoan\s+hy\b/giu, 'hoan hỷ'],
+  [/\bbinh\s+an\b/giu, 'bình an'],
+  [/\btai\s+loc\b/giu, 'tài lộc'],
+  [/\bsuc\s+khoe\b/giu, 'sức khỏe'],
+  [/\bgia\s+dinh\b/giu, 'gia đình'],
+  [/\bmay\s+man\b/giu, 'may mắn'],
+  [/\bhanh\s+phuc\b/giu, 'hạnh phúc'],
+  [/\bxin\s+via\b/giu, 'xin vía'],
+  [/\bxin\s+loc\b/giu, 'xin lộc'],
+  [/\bcam\s+on\b/giu, 'cảm ơn'],
+  [/\bm\.n\b|\bmn\b/giu, 'mọi người'],
+  [/\bko\b|\bkhum\b|\bhông\b/giu, 'không'],
+  [/\bđc\b|\bdc\b/giu, 'được'],
+  [/\bgđ\b|\bgd\b/giu, 'gia đình'],
+  [/\bsk\b/giu, 'sức khỏe'],
+  [/\bhp\b/giu, 'hạnh phúc'],
+  [/\bvk\b/giu, 'vợ'],
+  [/\bck\b/giu, 'chồng'],
+  [/\bny\b/giu, 'người yêu'],
+  [/\bvs\b/giu, 'với'],
+  [/\bntn\b/giu, 'như thế nào'],
+  [/\btrc\b/giu, 'trước'],
+  [/\bđag\b|\bdag\b/giu, 'đang'],
+  [/\btks\b|\bthanks\b|\bthank\b/giu, 'cảm ơn'],
+];
+
+export function cleanCommentForTts(raw = '') {
+  let s = String(raw || '').normalize('NFC').trim();
+  if (!s) return '';
+  // Collapse dot/asterisk obfuscation before checking sensitive words
+  const deobfuscated = s.replace(/(?<=\p{L})[.*_-]+(?=\p{L})/gu, '');
+  if (CLIENT_SENSITIVE_RE.test(s) || CLIENT_SENSITIVE_RE.test(deobfuscated)) return '';
+
+  s = s
+    .replace(/[\p{Extended_Pictographic}\uFE0F\u200D]+/gu, ' ')
+    .replace(/[^\p{L}\p{N}\s,.!?'"-]/gu, ' ')
+    .replace(/(\p{L})\1{2,}/gu, '$1')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  if (!s || s.length < 2 || !VN_VOWEL_RE.test(s)) return '';
+  if (/^(?:ha|hi|he|ho|ka|ki|hu|hư|ờ|ừ|a|ơ|ư)+$/iu.test(s.replace(/\s+/g, ''))) return '';
+
+  for (const [re, rep] of VN_TTS_PHRASES) {
+    s = s.replace(re, rep);
+  }
+  if (CLIENT_SENSITIVE_RE.test(s)) return '';
+
+  return s.replace(/\s+/g, ' ').trim().slice(0, 65);
+}
+
 // Cleans TikTok handles/nicknames so Vietnamese TTS pronounces them naturally.
 export function cleanTtsName(raw = '') {
   let s = String(raw).trim();
   if (!s) return 'Phật tử';
+  if (CLIENT_SENSITIVE_RE.test(s)) return 'Phật tử';
   // Generic auto-generated TikTok handles like user123456789
   if (/^user\d{4,}$/i.test(s)) return 'Phật tử';
   // Replace underscores, dots, dashes with spaces
@@ -232,15 +317,6 @@ export function createAudio({ onSpeak = null } = {}) {
   const recentRealGreet = new Map(); // uid -> ts to avoid double-greeting the same real user on join within 15s
   const recentNameGreet = new Map(); // normalizedName -> ts to avoid repeating join greeting within 15s
   const recentCommentSpeech = new Map(); // uid+text -> ts to avoid duplicate spam within 5s
-
-  function cleanCommentForTts(raw = '') {
-    return String(raw)
-      .normalize('NFC')
-      .replace(/[\p{Extended_Pictographic}\uFE0F\u200D]+/gu, ' ')
-      .replace(/\s+/g, ' ')
-      .trim()
-      .slice(0, 60);
-  }
 
   function interruptSpeechIfLowerPriority(newPriority = 2) {
     if (!speaking || !currentItem) return;
