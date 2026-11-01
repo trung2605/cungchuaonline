@@ -37,20 +37,38 @@ async function gameAction(game, endpoint, payload = {}, method = 'POST') {
   return api('POST', '/api/game-action', { game, method, endpoint, payload });
 }
 
-// Navigation / View Switcher (supports URL hash #overview, #fx-studio, #chua, #dua, #gifts, #system)
-function switchView(viewId) {
-  const cleanId = viewId.replace(/^#/, '') || 'overview';
-  document.querySelectorAll('.nav-btn').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.view === cleanId);
+// ============================================================================
+// 2-LEVEL IN-PLACE TAB NAVIGATION (3 Main Tabs + Sub-Tabs, No New Browser Tabs)
+// ============================================================================
+function switchMainTab(mainTab) {
+  const clean = (mainTab || 'master').replace(/^#/, '');
+  const target = ['master', 'chua', 'dua'].includes(clean) ? clean : 'master';
+
+  document.querySelectorAll('.main-tab-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.mainTab === target);
   });
-  document.querySelectorAll('.view-panel').forEach(panel => {
-    panel.classList.toggle('active', panel.id === `view-${cleanId}`);
+  document.querySelectorAll('.main-tab-view').forEach(view => {
+    view.classList.toggle('active', view.id === `main-view-${target}`);
   });
-  if ( history.replaceState ) {
-    history.replaceState(null, '', `#${cleanId}`);
+  if (history.replaceState) {
+    history.replaceState(null, '', `#${target}`);
   }
-  window.dispatchEvent(new Event('resize'));
+  setTimeout(() => window.dispatchEvent(new Event('resize')), 40);
 }
+window.switchMainTab = switchMainTab;
+
+function switchSubTab(parentTab, subTabId) {
+  const container = $(`main-view-${parentTab}`);
+  if (!container) return;
+  container.querySelectorAll('.sub-tab-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.sub === subTabId);
+  });
+  container.querySelectorAll('.sub-tab-panel').forEach(panel => {
+    panel.classList.toggle('active', panel.id === `sub-${subTabId}`);
+  });
+  setTimeout(() => window.dispatchEvent(new Event('resize')), 40);
+}
+window.switchSubTab = switchSubTab;
 
 // ============================================================================
 // APEXCHARTS ENGINE (7 Interactive Charts)
@@ -467,12 +485,29 @@ window.addEventListener('DOMContentLoaded', () => {
   if (window.lucide) window.lucide.createIcons();
   initApexCharts();
 
-  // Initial route from hash
-  if (window.location.hash) switchView(window.location.hash);
+  // Initial route from hash (#master, #chua, #dua)
+  if (window.location.hash) switchMainTab(window.location.hash);
 
-  // Sidebar navigation
-  document.querySelectorAll('.nav-btn').forEach(btn => {
-    btn.addEventListener('click', () => switchView(btn.dataset.view));
+  // Level 1: Top 3 Main Tabs (Admin Tổng / Admin Cúng Chùa / Admin Cuộc Đua Kỳ Thú)
+  document.querySelectorAll('.main-tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => switchMainTab(btn.dataset.mainTab));
+  });
+
+  // Level 2: Sub-tabs inside each Main Tab
+  document.querySelectorAll('.sub-tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => switchSubTab(btn.dataset.parent, btn.dataset.sub));
+  });
+
+  // In-Page 3D Live Preview Drawer (No new browser tabs needed!)
+  let previewLoaded = false;
+  $('btnToggle3DPreview')?.addEventListener('click', () => {
+    const drawer = $('previewDrawer');
+    const isOpen = drawer.classList.toggle('open');
+    if (isOpen && !previewLoaded) {
+      previewLoaded = true;
+      $('iframeChua3D').src = 'http://127.0.0.1:8787';
+      $('iframeDua3D').src = 'http://127.0.0.1:8789';
+    }
   });
 
   // 1. Global TikTok Account Switcher

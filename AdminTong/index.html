@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Live TikTok Studio — Hệ Thống Quản Trị Hợp Nhất (Unified Admin Portal)</title>
+  <title>Live TikTok Studio — Hệ Thống Quản Trị 3 Tab Hợp Nhất</title>
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -15,884 +15,912 @@
   <link rel="stylesheet" href="/assets/css/admin.css" />
 </head>
 <body>
-  <div class="app-layout">
-    <!-- Left Sidebar Navigation -->
-    <aside class="sidebar">
-      <div class="sidebar-brand">
-        <div class="brand-logo"><i data-lucide="layers"></i></div>
-        <div class="brand-text">
-          <h1>Live TikTok Studio</h1>
-          <p>Unified Admin &amp; MongoDB Hub</p>
-        </div>
-      </div>
-
-      <nav class="sidebar-nav" aria-label="Điều hướng quản trị">
-        <div class="nav-section-label">Điều Hành Chung</div>
-        <button type="button" class="nav-btn active" data-view="overview">
-          <i data-lucide="bar-chart-3"></i>
-          <span>Tổng Quan &amp; Biểu Đồ</span>
+  <!-- ==================================================================== -->
+  <!-- LEVEL 1: TOP ECOSYSTEM 3-TAB BAR (Chuyển Tab Tại Chỗ, Không Mở Tab Mới) -->
+  <!-- ==================================================================== -->
+  <header class="eco-bar">
+    <div class="eco-left">
+      <span class="eco-label"><i data-lucide="layers"></i> HỆ SINH THÁI LIVE TIKTOK:</span>
+      <nav class="main-tabs" aria-label="Chọn phân hệ quản trị">
+        <button type="button" class="main-tab-btn active" data-main-tab="master">
+          <i data-lucide="shield-check"></i>
+          <span>Admin Tổng (:8791)</span>
+          <span class="tab-pill-count" id="navBadgeGifts">0 quà</span>
         </button>
-        <button type="button" class="nav-btn" data-view="fx-studio">
-          <i data-lucide="wand-2"></i>
-          <span>Studio Hiệu Ứng &amp; Emotion</span>
-          <span class="nav-badge">LIVE</span>
+        <button type="button" class="main-tab-btn" data-main-tab="chua">
+          <i data-lucide="flame"></i>
+          <span>Admin Cúng Chùa (:8788)</span>
+          <span class="tab-pill-count" id="navBadgeChua">0 lễ</span>
         </button>
-
-        <div class="nav-section-label">Quản Trị Từng Trò Chơi</div>
-        <button type="button" class="nav-btn" data-view="chua">
-          <i data-lucide="landmark"></i>
-          <span>Cúng Chùa Online 3D</span>
-          <span class="nav-badge" id="navBadgeChua">0 lễ</span>
-        </button>
-        <button type="button" class="nav-btn" data-view="dua">
-          <i data-lucide="trophy"></i>
-          <span>Cuộc Đua Kỳ Thú 3D</span>
-          <span class="nav-badge" id="navBadgeDua">0 đua</span>
-        </button>
-
-        <div class="nav-section-label">Dữ Liệu &amp; Cấu Hình</div>
-        <button type="button" class="nav-btn" data-view="gifts">
-          <i data-lucide="gift"></i>
-          <span>Quà Tặng &amp; Danh Mục</span>
-          <span class="nav-badge" id="navBadgeGifts">0</span>
-        </button>
-        <button type="button" class="nav-btn" data-view="system">
-          <i data-lucide="database"></i>
-          <span>MongoDB &amp; Lịch Sử</span>
+        <button type="button" class="main-tab-btn" data-main-tab="dua">
+          <i data-lucide="flag"></i>
+          <span>Admin Cuộc Đua Kỳ Thú (:8790)</span>
+          <span class="tab-pill-count" id="navBadgeDua">0 đua</span>
         </button>
       </nav>
+    </div>
 
-      <div class="sidebar-footer">
-        <div style="font-size:11px;font-weight:700;color:var(--text-muted)">MỞ MÀN HÌNH 3D LIVESTREAM</div>
-        <div class="quick-render-links">
-          <a class="render-link" href="http://127.0.0.1:8787" target="_blank" rel="noopener">
-            <i data-lucide="external-link" style="width:13px;height:13px"></i> Chùa 3D
-          </a>
-          <a class="render-link" href="http://127.0.0.1:8789" target="_blank" rel="noopener">
-            <i data-lucide="external-link" style="width:13px;height:13px"></i> Đua 3D
-          </a>
-        </div>
+    <div class="eco-right">
+      <div class="status-chip ok" id="chipMongo">
+        <span class="dot-pulse"></span> MongoDB: Đang kiểm tra...
       </div>
-    </aside>
+      <div class="status-chip warn" id="chipTiktok">
+        <span class="dot-pulse"></span> TikTok: Đang đồng bộ...
+      </div>
+      <button type="button" class="btn sm" id="btnToggle3DPreview" title="Xem trực tiếp 2 màn hình 3D ngay trong trang này mà không cần mở tab mới">
+        <i data-lucide="monitor-play"></i> Xem 3D Tại Trang
+      </button>
+      <button type="button" class="btn sm danger" id="btnCleanAllTop" title="Reset toàn bộ dữ liệu hệ thống & MongoDB về 0 để bắt đầu phiên Live mới">
+        <i data-lucide="rotate-ccw"></i> Reset Dữ Liệu Về 0
+      </button>
+    </div>
+  </header>
 
-    <!-- Main Content Area -->
-    <div class="main-workspace">
-      <!-- Sticky Command Header -->
-      <header class="topbar">
-        <div class="topbar-left">
-          <div class="status-chip ok" id="chipMongo">
-            <span class="dot-pulse"></span> MongoDB: Đang kiểm tra...
-          </div>
-          <div class="status-chip warn" id="chipTiktok">
-            <span class="dot-pulse"></span> TikTok LIVE: Đang đồng bộ...
-          </div>
+  <!-- Collapsible In-Page 3D Live Preview Drawer (Không cần mở tab mới) -->
+  <section class="preview-drawer" id="previewDrawer">
+    <div class="preview-grid">
+      <div class="preview-frame-card">
+        <div class="preview-frame-head">
+          <span><i data-lucide="landmark" style="width:14px;height:14px;vertical-align:-2px;color:var(--gold)"></i> Màn Hình 3D Cúng Chùa Online (:8787)</span>
+          <span style="font-size:11px;color:var(--text-muted)">http://127.0.0.1:8787</span>
         </div>
+        <iframe id="iframeChua3D" title="Màn hình 3D Cúng Chùa Online"></iframe>
+      </div>
+      <div class="preview-frame-card">
+        <div class="preview-frame-head">
+          <span><i data-lucide="trophy" style="width:14px;height:14px;vertical-align:-2px;color:var(--teal)"></i> Màn Hình 3D Cuộc Đua Kỳ Thú (:8789)</span>
+          <span style="font-size:11px;color:var(--text-muted)">http://127.0.0.1:8789</span>
+        </div>
+        <iframe id="iframeDua3D" title="Màn hình 3D Cuộc Đua Kỳ Thú"></iframe>
+      </div>
+    </div>
+  </section>
 
-        <div class="topbar-right">
-          <div class="tiktok-quick-box">
-            <i data-lucide="at-sign" style="width:15px;height:15px;color:var(--text-muted)"></i>
-            <input type="text" id="topTiktokInput" placeholder="username_tiktok" aria-label="Tài khoản TikTok LIVE" />
-            <button type="button" class="btn sm primary" id="btnSaveTiktokGlobal">
-              <i data-lucide="refresh-cw"></i> Đổi Kênh
+  <!-- ==================================================================== -->
+  <!-- MAIN TAB 1: ADMIN TỔNG — TRUNG TÂM ĐIỀU HÀNH ĐA TRÒ CHƠI & QUÀ LIVE   -->
+  <!-- ==================================================================== -->
+  <div class="main-tab-view active" id="main-view-master">
+    <div class="sub-bar">
+      <div class="sub-bar-title">
+        <div class="sub-bar-icon"><i data-lucide="layout-grid"></i></div>
+        <h1>Admin Tổng · Trung Tâm Điều Hành Đa Trò Chơi &amp; Quà Livestream</h1>
+      </div>
+      <div class="sub-tabs" role="tablist">
+        <button type="button" class="sub-tab-btn active" data-parent="master" data-sub="master-overview">
+          <i data-lucide="bar-chart-3"></i> Tổng Quan &amp; Biểu Đồ
+        </button>
+        <button type="button" class="sub-tab-btn" data-parent="master" data-sub="master-fx">
+          <i data-lucide="wand-2"></i> Hiệu Ứng &amp; Emotion Live
+        </button>
+        <button type="button" class="sub-tab-btn" data-parent="master" data-sub="master-gifts">
+          <i data-lucide="gift"></i> Quà Livestream &amp; Danh Mục
+        </button>
+        <button type="button" class="sub-tab-btn" data-parent="master" data-sub="master-worklogs">
+          <i data-lucide="clipboard-list"></i> Lịch Sử Công Việc
+        </button>
+        <button type="button" class="sub-tab-btn" data-parent="master" data-sub="master-mongodb">
+          <i data-lucide="database"></i> Kết Nối MongoDB
+        </button>
+      </div>
+    </div>
+
+    <main class="content-area">
+      <!-- SUB-TAB 1.1: TỔNG QUAN & BIỂU ĐỒ -->
+      <section class="sub-tab-panel active" id="sub-master-overview">
+        <!-- Quick TikTok Switcher & Reset Strip -->
+        <div class="quick-command-strip">
+          <div class="row-inline">
+            <span style="font-weight:800;font-size:13px;display:inline-flex;align-items:center;gap:6px">
+              <i data-lucide="radio" style="width:16px;height:16px;color:var(--brand)"></i> Kênh TikTok LIVE Toàn Hệ Thống:
+            </span>
+            <input type="text" id="topTiktokInput" placeholder="username_tiktok" style="width:210px;font-family:var(--font-mono);font-weight:700" />
+            <button type="button" class="btn primary" id="btnSaveTiktokGlobal">
+              <i data-lucide="refresh-cw"></i> Đổi Kênh Đồng Loạt
             </button>
           </div>
-          <button type="button" class="btn danger" id="btnCleanAllTop" title="Xóa sạch dữ liệu cũ về 0 trên MongoDB và cả 2 game để bắt đầu phiên Live mới">
-            <i data-lucide="rotate-ccw"></i> Reset Dữ Liệu Về 0 (Clean DB)
-          </button>
+          <div class="row-inline">
+            <button type="button" class="btn gold" onclick="window.switchMainTab('chua')">
+              <i data-lucide="flame"></i> Sang Tab Cúng Chùa
+            </button>
+            <button type="button" class="btn teal" onclick="window.switchMainTab('dua')">
+              <i data-lucide="flag"></i> Sang Tab Cuộc Đua Kỳ Thú
+            </button>
+          </div>
         </div>
-      </header>
 
-      <!-- Views Container -->
-      <main class="content-area">
-        <!-- ================================================================ -->
-        <!-- VIEW 1: TỔNG QUAN & BIỂU ĐỒ (SYSTEM ANALYTICS)                   -->
-        <!-- ================================================================ -->
-        <section class="view-panel active" id="view-overview">
-          <div class="kpi-grid">
-            <div class="kpi-card">
-              <div class="kpi-top">
-                <span>Kim Cương Thực Tế</span>
-                <div class="kpi-icon gold"><i data-lucide="gem"></i></div>
-              </div>
-              <div class="kpi-value" id="kpiRealDiamonds">0</div>
-              <div class="kpi-sub" id="kpiRealGifts">0 phần quà thật</div>
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-top">
+              <span>Kim Cương Thực Tế</span>
+              <div class="kpi-icon gold"><i data-lucide="gem"></i></div>
             </div>
-
-            <div class="kpi-card">
-              <div class="kpi-top">
-                <span>Cúng Chùa Online</span>
-                <div class="kpi-icon brand"><i data-lucide="landmark"></i></div>
-              </div>
-              <div class="kpi-value" id="kpiChuaNamo">0</div>
-              <div class="kpi-sub" id="kpiChuaSub">0 đang quỳ · 0 lạy</div>
-            </div>
-
-            <div class="kpi-card">
-              <div class="kpi-top">
-                <span>Cuộc Đua Kỳ Thú</span>
-                <div class="kpi-icon teal"><i data-lucide="compass"></i></div>
-              </div>
-              <div class="kpi-value" id="kpiDuaDist">0 m</div>
-              <div class="kpi-sub" id="kpiDuaSub">0 đang chạy · 0 tim</div>
-            </div>
-
-            <div class="kpi-card">
-              <div class="kpi-top">
-                <span>Người Xem Trực Tuyến</span>
-                <div class="kpi-icon emerald"><i data-lucide="users"></i></div>
-              </div>
-              <div class="kpi-value" id="kpiViewers">0</div>
-              <div class="kpi-sub" id="kpiViewersPeak">Đỉnh phiên: 0</div>
-            </div>
-
-            <div class="kpi-card">
-              <div class="kpi-top">
-                <span>Kim Cương Theo Game</span>
-                <div class="kpi-icon purple"><i data-lucide="pie-chart"></i></div>
-              </div>
-              <div class="kpi-value"><span id="kpiChuaDiamonds">0</span> / <span id="kpiDuaDiamonds">0</span></div>
-              <div class="kpi-sub">Chùa 3D vs Đua 3D (💎)</div>
-            </div>
-
-            <div class="kpi-card">
-              <div class="kpi-top">
-                <span>Đồng Bộ MongoDB</span>
-                <div class="kpi-icon emerald"><i data-lucide="cloud-check"></i></div>
-              </div>
-              <div class="kpi-value" id="kpiMongoSync">Cloud</div>
-              <div class="kpi-sub" id="kpiMongoSub">Đã kết nối Atlas</div>
-            </div>
+            <div class="kpi-value" id="kpiRealDiamonds">0</div>
+            <div class="kpi-sub" id="kpiRealGifts">0 phần quà thật</div>
           </div>
 
-          <!-- Row 1 Charts: Spline Timeline + Donut Share -->
-          <div class="grid-charts-main">
-            <div class="card">
-              <div class="card-header">
-                <div>
-                  <h2 class="card-title"><i data-lucide="trending-up"></i> Biểu Đồ Luồng Kim Cương Thời Gian Thực (ApexCharts)</h2>
-                  <div class="card-subtitle">Theo dõi trực tiếp sản lượng kim cương của Cúng Chùa Online &amp; Cuộc Đua Kỳ Thú</div>
-                </div>
-                <button type="button" class="btn sm gold" onclick="document.querySelector('[data-view=fx-studio]').click()">
-                  <i data-lucide="wand-2"></i> Mở Studio Hiệu Ứng Live
-                </button>
-              </div>
-              <div id="chartGlobalTimeline"></div>
+          <div class="kpi-card">
+            <div class="kpi-top">
+              <span>Cúng Chùa Online</span>
+              <div class="kpi-icon brand"><i data-lucide="landmark"></i></div>
             </div>
-
-            <div class="card">
-              <div class="card-header">
-                <div>
-                  <h2 class="card-title"><i data-lucide="pie-chart"></i> Tỷ Trọng Đóng Góp Giữa Các Trò Chơi</h2>
-                  <div class="card-subtitle">Phân bổ kim cương tích lũy theo từng game</div>
-                </div>
-              </div>
-              <div id="chartGlobalShare"></div>
-            </div>
+            <div class="kpi-value" id="kpiChuaNamo">0</div>
+            <div class="kpi-sub" id="kpiChuaSub">0 đang quỳ · 0 lạy</div>
           </div>
 
-          <!-- Row 2: Top Donors Chart + Live Gift Stream -->
-          <div class="grid-2">
-            <div class="card">
-              <div class="card-header">
-                <div>
-                  <h2 class="card-title"><i data-lucide="award"></i> Bảng Vàng Top Đại Thí Chủ &amp; Tay Đua</h2>
-                  <div class="card-subtitle">Xếp hạng người dùng tặng nhiều kim cương nhất toàn hệ thống</div>
-                </div>
-              </div>
-              <div id="chartGlobalTopDonors"></div>
+          <div class="kpi-card">
+            <div class="kpi-top">
+              <span>Cuộc Đua Kỳ Thú</span>
+              <div class="kpi-icon teal"><i data-lucide="compass"></i></div>
             </div>
-
-            <div class="card">
-              <div class="card-header">
-                <div>
-                  <h2 class="card-title"><i data-lucide="sparkles"></i> Nhật Ký Quà Tặng Livestream Mới Nhất</h2>
-                  <div class="card-subtitle">Tự động cập nhật từ cả 2 trò chơi và lưu vào MongoDB Atlas</div>
-                </div>
-              </div>
-              <div class="table-wrap" style="max-height:260px">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Giờ</th>
-                      <th>Trò chơi</th>
-                      <th>Người tặng</th>
-                      <th>Quà tặng</th>
-                      <th>Kim cương</th>
-                      <th>Phần thưởng</th>
-                    </tr>
-                  </thead>
-                  <tbody id="overviewGiftsBody"></tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <!-- ================================================================ -->
-        <!-- VIEW 2: STUDIO HIỆU ỨNG & EMOTION LIVESTREAM                     -->
-        <!-- ================================================================ -->
-        <section class="view-panel" id="view-fx-studio">
-          <div class="card" style="margin-bottom:18px">
-            <div class="card-header">
-              <div>
-                <h2 class="card-title"><i data-lucide="wand-2"></i> Studio Hiệu Ứng &amp; Cảm Xúc Nhân Vật 3D — Cúng Chùa Online</h2>
-                <div class="card-subtitle">Bấm 1 chạm để kích hoạt hiệu ứng ánh sáng, âm thanh đại hồng chung và bong bóng cảm xúc cho toàn bộ Phật tử trong điện</div>
-              </div>
-              <a class="btn sm gold" href="http://127.0.0.1:8787" target="_blank" rel="noopener">
-                <i data-lucide="external-link"></i> Xem Màn Hình Chùa 3D (:8787)
-              </a>
-            </div>
-
-            <div class="fx-grid">
-              <button type="button" class="fx-tile" data-fx-game="cung-chua-online" data-fx-preset="bell_halo">
-                <div class="fx-tile-top">
-                  <span class="badge gold">Âm thanh + Ánh sáng</span>
-                  <i data-lucide="bell-ring" style="color:var(--gold)"></i>
-                </div>
-                <div class="fx-tile-title">Thỉnh Đại Hồng Chung &amp; Hào Quang</div>
-                <div class="fx-tile-desc">Ngân vang tiếng chuông chùa, bừng sáng hào quang Phật và toàn thể Phật tử lễ lạy.</div>
-              </button>
-
-              <button type="button" class="fx-tile" data-fx-game="cung-chua-online" data-fx-preset="lotus_rain">
-                <div class="fx-tile-top">
-                  <span class="badge brand">Hiệu ứng 3D</span>
-                  <i data-lucide="flower-2" style="color:var(--brand)"></i>
-                </div>
-                <div class="fx-tile-title">Mưa Hoa Sen Từ Bi Toàn Điện</div>
-                <div class="fx-tile-desc">Rơi mưa cánh hoa sen hồng rực rỡ khắp chánh điện cùng lời chúc phước báu.</div>
-              </button>
-
-              <button type="button" class="fx-tile" data-fx-game="cung-chua-online" data-fx-preset="sacred_lamps">
-                <div class="fx-tile-top">
-                  <span class="badge gold">Hiệu ứng Đèn</span>
-                  <i data-lucide="flame" style="color:var(--gold)"></i>
-                </div>
-                <div class="fx-tile-title">Thắp Đại Hoa Đăng Hoàng Kim</div>
-                <div class="fx-tile-desc">Thắp sáng loạt đèn hoa đăng lung linh bay lên bầu trời đêm chánh điện.</div>
-              </button>
-
-              <button type="button" class="fx-tile" data-fx-game="cung-chua-online" data-fx-preset="incense_cloud">
-                <div class="fx-tile-top">
-                  <span class="badge teal">Hiệu ứng Khói</span>
-                  <i data-lucide="cloud" style="color:var(--teal)"></i>
-                </div>
-                <div class="fx-tile-title">Khói Trầm Hương Quyện Tỏa</div>
-                <div class="fx-tile-desc">Tạo làn khói trầm hương nghi ngút tại lư đồng và toàn thể Phật tử dâng hương.</div>
-              </button>
-
-              <button type="button" class="fx-tile" data-fx-game="cung-chua-online" data-fx-preset="emotion_namo">
-                <div class="fx-tile-top">
-                  <span class="badge emerald">Emotion Tập Thể</span>
-                  <i data-lucide="message-circle-heart" style="color:var(--emerald)"></i>
-                </div>
-                <div class="fx-tile-title">Đồng Thanh Niệm Nam Mô 🙏</div>
-                <div class="fx-tile-desc">Tất cả Phật tử đồng loạt hiện bong bóng "Nam Mô A Di Đà Phật 🙏" và lạy 3 lạy.</div>
-              </button>
-
-              <button type="button" class="fx-tile" data-fx-game="cung-chua-online" data-fx-preset="emotion_peace">
-                <div class="fx-tile-top">
-                  <span class="badge emerald">Emotion Tập Thể</span>
-                  <i data-lucide="heart-handshake" style="color:var(--emerald)"></i>
-                </div>
-                <div class="fx-tile-title">Đồng Thanh Cầu Bình An 🪷</div>
-                <div class="fx-tile-desc">Toàn bộ nhân vật hiện cảm xúc "Cầu Gia Đạo Bình An · Sức Khỏe Dồi Dào 🪷".</div>
-              </button>
-
-              <button type="button" class="fx-tile" data-fx-game="cung-chua-online" data-fx-preset="emotion_wealth">
-                <div class="fx-tile-top">
-                  <span class="badge gold">Emotion Tập Thể</span>
-                  <i data-lucide="sparkles" style="color:var(--gold)"></i>
-                </div>
-                <div class="fx-tile-title">Đồng Thanh Cầu Tài Lộc ✨</div>
-                <div class="fx-tile-desc">Toàn bộ nhân vật hiện cảm xúc "Cầu Tài Lộc Hanh Thông · Vạn Sự Như Ý ✨".</div>
-              </button>
-
-              <button type="button" class="fx-tile" data-fx-game="cung-chua-online" data-fx-preset="emotion_joy">
-                <div class="fx-tile-top">
-                  <span class="badge brand">Emotion Tập Thể</span>
-                  <i data-lucide="smile-plus" style="color:var(--brand)"></i>
-                </div>
-                <div class="fx-tile-title">Hoan Hỷ Công Đức 🌸</div>
-                <div class="fx-tile-desc">Hiệu ứng hoa tươi kèm cảm xúc "Tâm An Vạn Sự An · Hoan Hỷ Công Đức 🌸".</div>
-              </button>
-            </div>
+            <div class="kpi-value" id="kpiDuaDist">0 m</div>
+            <div class="kpi-sub" id="kpiDuaSub">0 đang chạy · 0 tim</div>
           </div>
 
-          <div class="card" style="margin-bottom:18px">
-            <div class="card-header">
-              <div>
-                <h2 class="card-title"><i data-lucide="zap"></i> Studio Hiệu Ứng &amp; Cảm Xúc Đường Đua — Cuộc Đua Kỳ Thú 3D</h2>
-                <div class="card-subtitle">Kích hoạt Siêu Bão Cầu Vồng, Mưa Tên Lửa và cảm xúc hò reo đồng loạt cho tất cả vận động viên</div>
-              </div>
-              <a class="btn sm teal" href="http://127.0.0.1:8789" target="_blank" rel="noopener">
-                <i data-lucide="external-link"></i> Xem Màn Hình Đua 3D (:8789)
-              </a>
+          <div class="kpi-card">
+            <div class="kpi-top">
+              <span>Người Xem Trực Tuyến</span>
+              <div class="kpi-icon emerald"><i data-lucide="users"></i></div>
             </div>
-
-            <div class="fx-grid">
-              <button type="button" class="fx-tile" data-fx-game="cuoc-dua-ky-thu" data-fx-preset="rainbow_turbo">
-                <div class="fx-tile-top">
-                  <span class="badge teal">Turbo Toàn Server</span>
-                  <i data-lucide="zap" style="color:var(--teal)"></i>
-                </div>
-                <div class="fx-tile-title">Siêu Bão Cầu Vồng x2.2 ⚡🌈</div>
-                <div class="fx-tile-desc">Tăng tốc toàn bộ vận động viên lên x2.2 trong 10 giây kèm hiệu ứng cầu vồng rực rỡ.</div>
-              </button>
-
-              <button type="button" class="fx-tile" data-fx-game="cuoc-dua-ky-thu" data-fx-preset="mass_cheer">
-                <div class="fx-tile-top">
-                  <span class="badge emerald">Emotion Tập Thể</span>
-                  <i data-lucide="flame" style="color:var(--emerald)"></i>
-                </div>
-                <div class="fx-tile-title">Đoàn Đua Đồng Loạt Hò Reo 🔥</div>
-                <div class="fx-tile-desc">Tất cả tay đua bật bong bóng cảm xúc "Quyết tâm bứt phá về đích! 🏆🔥" + tia lửa.</div>
-              </button>
-
-              <button type="button" class="fx-tile" data-fx-game="cuoc-dua-ky-thu" data-fx-preset="rocket_storm">
-                <div class="fx-tile-top">
-                  <span class="badge rose">Hiệu ứng Tên Lửa</span>
-                  <i data-lucide="rocket" style="color:var(--rose)"></i>
-                </div>
-                <div class="fx-tile-title">Cơn Mưa Tên Lửa Tia Chớp 🚀</div>
-                <div class="fx-tile-desc">Kích hoạt luồng phụt tên lửa siêu thanh x3.2 tốc độ cho toàn bộ vận động viên.</div>
-              </button>
-
-              <button type="button" class="fx-tile" data-fx-game="cuoc-dua-ky-thu" data-fx-preset="cosmic_warp">
-                <div class="fx-tile-top">
-                  <span class="badge brand">Hiệu ứng Vũ Trụ</span>
-                  <i data-lucide="orbit" style="color:var(--brand)"></i>
-                </div>
-                <div class="fx-tile-title">Bước Nhảy Không Gian Ngân Hà 🌌</div>
-                <div class="fx-tile-desc">Hiệu ứng dịch chuyển siêu quang x4.5 tốc độ kèm thông báo đại lộ ngân hà.</div>
-              </button>
-            </div>
+            <div class="kpi-value" id="kpiViewers">0</div>
+            <div class="kpi-sub" id="kpiViewersPeak">Đỉnh phiên: 0</div>
           </div>
 
-          <div class="grid-2">
-            <!-- Custom Emotion & Banner Broadcaster -->
-            <div class="card">
-              <div class="card-header">
-                <div>
-                  <h2 class="card-title"><i data-lucide="megaphone"></i> Tạo Emotion Nhân Vật &amp; Hiệu Ứng Tùy Chỉnh</h2>
-                  <div class="card-subtitle">Nhập câu cảm xúc bất kỳ để hiển thị đồng loạt trên đầu các nhân vật 3D kèm hiệu ứng</div>
-                </div>
-              </div>
-
-              <div class="grid-2" style="margin-bottom:10px">
-                <div class="form-group">
-                  <label class="form-label" for="customFxGame">Áp dụng cho trò chơi</label>
-                  <select id="customFxGame">
-                    <option value="all">🌐 Cả 2 Trò Chơi Cùng Lúc</option>
-                    <option value="cung-chua-online">🏯 Cúng Chùa Online 3D (:8787)</option>
-                    <option value="cuoc-dua-ky-thu">🏁 Cuộc Đua Kỳ Thú 3D (:8789)</option>
-                  </select>
-                </div>
-                <div class="form-group">
-                  <label class="form-label" for="customFxKind">Loại Hiệu Ứng Hình Ảnh 3D</label>
-                  <select id="customFxKind">
-                    <option value="lotus">🌸 Mưa Hoa Sen / Tia Sáng (Lotus / Spark)</option>
-                    <option value="bell">🔔 Đại Hồng Chung &amp; Hào Quang (Bell)</option>
-                    <option value="lamp">🏮 Đại Hoa Đăng / Ván Trượt (Lamp / Hover)</option>
-                    <option value="turbo">⚡ Siêu Bão Cầu Vồng / Vũ Trụ (Turbo / Warp)</option>
-                    <option value="smoke">🕯️ Khói Trầm Hương (Smoke)</option>
-                  </select>
-                </div>
-              </div>
-
-              <div class="form-group">
-                <label class="form-label" for="customFxBubble">Câu cảm xúc trên bong bóng nhân vật 3D (Tối đa 40 ký tự)</label>
-                <input type="text" id="customFxBubble" placeholder="VD: Cảm ơn đại gia đình đã thả tim ủng hộ phiên Live! ❤️" />
-              </div>
-
-              <div class="form-group">
-                <label class="form-label" for="customFxBanner">Thông báo Banner chữ vàng giữa màn hình (Tùy chọn)</label>
-                <input type="text" id="customFxBanner" placeholder="VD: Chào mừng các bạn đến với phiên Live tương tác 3D trực tiếp!" />
-              </div>
-
-              <button type="button" class="btn primary" id="btnSendCustomEmotion" style="width:100%">
-                <i data-lucide="send"></i> Phát Cảm Xúc &amp; Hiệu Ứng Lên Livestream Ngay
-              </button>
+          <div class="kpi-card">
+            <div class="kpi-top">
+              <span>Kim Cương Theo Game</span>
+              <div class="kpi-icon purple"><i data-lucide="pie-chart"></i></div>
             </div>
-
-            <!-- Live Actor / Gift Simulator -->
-            <div class="card">
-              <div class="card-header">
-                <div>
-                  <h2 class="card-title"><i data-lucide="flask-conical"></i> Giả Lập Nhanh Người Chơi &amp; Quà Tặng</h2>
-                  <div class="card-subtitle">Kiểm tra lời chào AI và hiệu ứng quà tặng trên cả 2 trò chơi</div>
-                </div>
-              </div>
-
-              <div class="form-group">
-                <label class="form-label" for="simActorName">Tên người chơi thử nghiệm</label>
-                <input type="text" id="simActorName" value="Lê Trí Trung" placeholder="Nhập tên hiển thị..." />
-              </div>
-
-              <div class="form-label" style="margin-bottom:6px">Cúng Chùa Online 3D (:8787)</div>
-              <div class="row-inline" style="margin-bottom:14px">
-                <button type="button" class="btn sm" data-sim-game="cung-chua-online" data-sim-action="prayer"><i data-lucide="user-plus"></i> Vào Lễ Phật</button>
-                <button type="button" class="btn sm gold" data-sim-game="cung-chua-online" data-sim-action="gift1"><i data-lucide="flower-2"></i> Hoa Hồng (1💎)</button>
-                <button type="button" class="btn sm gold" data-sim-game="cung-chua-online" data-sim-action="gift10"><i data-lucide="flame"></i> Hoa Đăng (30💎)</button>
-                <button type="button" class="btn sm primary" data-sim-game="cung-chua-online" data-sim-action="gift1000"><i data-lucide="crown"></i> Galaxy (1000💎)</button>
-              </div>
-
-              <div class="form-label" style="margin-bottom:6px">Cuộc Đua Kỳ Thú 3D (:8789)</div>
-              <div class="row-inline">
-                <button type="button" class="btn sm" data-sim-game="cuoc-dua-ky-thu" data-sim-action="join"><i data-lucide="user-plus"></i> Tham Gia + Chào AI</button>
-                <button type="button" class="btn sm teal" data-sim-game="cuoc-dua-ky-thu" data-sim-action="gift1"><i data-lucide="feather"></i> Đôi Cánh (×1.8)</button>
-                <button type="button" class="btn sm gold" data-sim-game="cuoc-dua-ky-thu" data-sim-action="gift30"><i data-lucide="disc"></i> Ván Trượt (×2.8)</button>
-                <button type="button" class="btn sm danger" data-sim-game="cuoc-dua-ky-thu" data-sim-action="gift300"><i data-lucide="rocket"></i> Tên Lửa (×4.2)</button>
-                <button type="button" class="btn sm primary" data-sim-game="cuoc-dua-ky-thu" data-sim-action="gift1000"><i data-lucide="orbit"></i> Phi Thuyền (×6.5)</button>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <!-- ================================================================ -->
-        <!-- VIEW 3: QUẢN LÝ GAME 1 — CÚNG CHÙA ONLINE 3D                     -->
-        <!-- ================================================================ -->
-        <section class="view-panel" id="view-chua">
-          <div class="grid-2">
-            <div class="card">
-              <div class="card-header">
-                <div>
-                  <h2 class="card-title"><i data-lucide="activity"></i> Nhịp Độ Niệm Phật &amp; Phật Tử Hiện Diện</h2>
-                  <div class="card-subtitle">Biểu đồ thời gian thực của Chánh Điện 3D</div>
-                </div>
-                <span class="badge emerald" id="chuaStatusBadge">Đang kết nối...</span>
-              </div>
-              <div id="chartChuaTimeline"></div>
-            </div>
-
-            <div class="card">
-              <div class="card-header">
-                <div>
-                  <h2 class="card-title"><i data-lucide="pie-chart"></i> Phân Bố Ý Nguyện Cầu Phúc</h2>
-                  <div class="card-subtitle">Thống kê tỷ lệ lời cầu nguyện của Phật tử</div>
-                </div>
-              </div>
-              <div id="chartChuaPrayers"></div>
-            </div>
+            <div class="kpi-value"><span id="kpiChuaDiamonds">0</span> / <span id="kpiDuaDiamonds">0</span></div>
+            <div class="kpi-sub">Chùa 3D vs Đua 3D (💎)</div>
           </div>
 
-          <div class="grid-2">
-            <!-- Scene, Sound, Demo & Banner -->
-            <div class="card">
-              <div class="card-header">
-                <div>
-                  <h2 class="card-title"><i data-lucide="sliders"></i> Điều Khiển Không Gian Chánh Điện &amp; Chế Độ Demo</h2>
-                  <div class="card-subtitle">Tùy chỉnh bối cảnh 3D, âm thanh chuông mõ và thông báo</div>
-                </div>
-                <span class="badge brand" id="chuaDemoBadge">Demo Đang Tắt</span>
-              </div>
-
-              <div class="grid-2" style="margin-bottom:12px">
-                <div class="form-group">
-                  <label class="form-label" for="chuaThemeSelect">Không gian ánh sáng 3D</label>
-                  <select id="chuaThemeSelect">
-                    <option value="night">🌙 Đêm Trang Nghiêm (Mặc định)</option>
-                    <option value="ram">🌕 Đêm Rằm Lễ Lớn (Trăng Sáng)</option>
-                    <option value="day">☀️ Ban Ngày Thanh Tịnh</option>
-                  </select>
-                </div>
-                <div class="form-group" style="justify-content:flex-end">
-                  <label class="row-inline" style="cursor:pointer;font-weight:700;margin-bottom:6px">
-                    <input type="checkbox" id="chuaSoundCheck" checked style="width:18px;height:18px" />
-                    Bật âm thanh Chuông Mõ &amp; Giọng đọc lễ
-                  </label>
-                  <button type="button" class="btn primary" id="btnChuaSaveScene">
-                    <i data-lucide="check"></i> Áp Dụng Không Gian
-                  </button>
-                </div>
-              </div>
-
-              <div class="form-group">
-                <label class="form-label">Chế độ Demo Tự Động (Dùng khi thử nghiệm, tắt khi Live thật)</label>
-                <div class="row-inline">
-                  <input type="number" id="chuaDemoRate" value="3" min="1" max="50" style="width:90px" />
-                  <span style="font-size:12px;color:var(--text-muted)">sự kiện/giây</span>
-                  <button type="button" class="btn sm gold" id="btnChuaDemoOn"><i data-lucide="play"></i> Bật Demo</button>
-                  <button type="button" class="btn sm danger" id="btnChuaDemoOff"><i data-lucide="square"></i> Tắt Demo (Live Thật)</button>
-                </div>
-              </div>
-
-              <div class="form-group" style="margin-top:14px;margin-bottom:0">
-                <label class="form-label" for="chuaBannerInput">Phát thông báo chữ vàng trên màn hình Chùa 3D</label>
-                <div class="row-inline">
-                  <input type="text" id="chuaBannerInput" placeholder="VD: Chúc đại chúng thân tâm thường an lạc..." style="flex:1" />
-                  <button type="button" class="btn gold" id="btnChuaBanner"><i data-lucide="send"></i> Phát</button>
-                </div>
-              </div>
+          <div class="kpi-card">
+            <div class="kpi-top">
+              <span>Đồng Bộ MongoDB</span>
+              <div class="kpi-icon emerald"><i data-lucide="cloud-check"></i></div>
             </div>
-
-            <!-- Active Devotees Table -->
-            <div class="card">
-              <div class="card-header">
-                <div>
-                  <h2 class="card-title"><i data-lucide="users"></i> Phật Tử Đang Quỳ Lễ Trong Chánh Điện</h2>
-                  <div class="card-subtitle">Quản lý trực tiếp nhân vật đang hiển thị trên màn hình 3D</div>
-                </div>
-              </div>
-              <div class="table-wrap" style="max-height:310px">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Phật tử</th>
-                      <th>Pháp phục</th>
-                      <th>Ý nguyện</th>
-                      <th>Công đức</th>
-                      <th>Thao tác</th>
-                    </tr>
-                  </thead>
-                  <tbody id="chuaActorsBody"></tbody>
-                </table>
-              </div>
-            </div>
+            <div class="kpi-value" id="kpiMongoSync">Cloud</div>
+            <div class="kpi-sub" id="kpiMongoSub">Đã kết nối Atlas</div>
           </div>
+        </div>
 
-          <!-- Lists Editor: Couplets, Triggers, Intents, Badwords & Blocklist -->
+        <div class="grid-charts-main">
           <div class="card">
             <div class="card-header">
               <div>
-                <h2 class="card-title"><i data-lucide="book-open-check"></i> Cấu Hình Câu Đối, Từ Khóa Lễ Phật &amp; Bộ Lọc Nội Dung</h2>
-                <div class="card-subtitle">Áp dụng tức thì cho Cúng Chùa Online mà không cần khởi động lại</div>
-              </div>
-              <button type="button" class="btn primary" id="btnChuaSaveLists">
-                <i data-lucide="save"></i> Lưu Toàn Bộ Cấu Hình Chùa
-              </button>
-            </div>
-
-            <div class="grid-3">
-              <div class="form-group">
-                <label class="form-label" for="chuaCoupletsInput">Câu Đối Chánh Điện (Mỗi dòng: Vế Trái | Vế Phải)</label>
-                <textarea id="chuaCoupletsInput"></textarea>
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="chuaTriggersInput">Từ Khóa Vào Lễ Phật (Mỗi dòng 1 cụm từ)</label>
-                <textarea id="chuaTriggersInput"></textarea>
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="chuaIntentsInput">Ý Nguyện Cầu Phúc (từ_khóa = Nhãn hiển thị)</label>
-                <textarea id="chuaIntentsInput"></textarea>
+                <h2 class="card-title"><i data-lucide="trending-up"></i> Biểu Đồ Xu Hướng Kim Cương Thời Gian Thực (ApexCharts)</h2>
+                <div class="card-subtitle">Theo dõi trực tiếp luồng kim cương nhận được ở Cúng Chùa Online và Cuộc Đua Kỳ Thú</div>
               </div>
             </div>
-
-            <div class="grid-2" style="margin-bottom:0">
-              <div class="form-group" style="margin-bottom:0">
-                <label class="form-label" for="chuaBadwordsInput">Danh Sách Từ Cấm (Mỗi dòng 1 từ)</label>
-                <textarea id="chuaBadwordsInput" style="min-height:90px"></textarea>
-              </div>
-              <div>
-                <div class="form-label" style="margin-bottom:6px">Danh Sách Chặn UID Vi Phạm</div>
-                <div class="row-inline" style="margin-bottom:8px">
-                  <input type="text" id="chuaBlockUidInput" placeholder="Nhập UID cần chặn..." style="flex:1" />
-                  <button type="button" class="btn sm danger" id="btnChuaAddBlock"><i data-lucide="ban"></i> Chặn UID</button>
-                </div>
-                <div class="table-wrap" style="max-height:110px">
-                  <table>
-                    <tbody id="chuaBlockedBody"></tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <!-- ================================================================ -->
-        <!-- VIEW 4: QUẢN LÝ GAME 2 — CUỘC ĐUA KỲ THÚ 3D                      -->
-        <!-- ================================================================ -->
-        <section class="view-panel" id="view-dua">
-          <div class="grid-2">
-            <div class="card">
-              <div class="card-header">
-                <div>
-                  <h2 class="card-title"><i data-lucide="pie-chart"></i> Phân Bố Phương Tiện &amp; Trang Bị Đường Đua</h2>
-                  <div class="card-subtitle">Thống kê cấp trang bị của các vận động viên đang chạy</div>
-                </div>
-                <span class="badge emerald" id="duaStatusBadge">Đang kết nối...</span>
-              </div>
-              <div id="chartDuaTiers"></div>
-            </div>
-
-            <div class="card">
-              <div class="card-header">
-                <div>
-                  <h2 class="card-title"><i data-lucide="medal"></i> Bảng Xếp Hạng Top Tay Đua Dẫn Đầu (m)</h2>
-                  <div class="card-subtitle">So sánh quãng đường tích lũy của các vận động viên xuất sắc nhất</div>
-                </div>
-              </div>
-              <div id="chartDuaTopRacers"></div>
-            </div>
-          </div>
-
-          <!-- World Biome Switcher -->
-          <div class="card" style="margin-bottom:18px">
-            <div class="card-header">
-              <div>
-                <h2 class="card-title"><i data-lucide="globe-2"></i> Chọn Điểm Đến Kỳ Quan Thế Giới (Chuyển Cảnh 3D Tức Thì)</h2>
-                <div class="card-subtitle">Bấm vào bất kỳ kỳ quan nào để đưa toàn bộ đoàn đua dịch chuyển ngay lập tức trên Livestream</div>
-              </div>
-              <span class="badge teal" id="duaDemoBadge">Demo Đang Tắt</span>
-            </div>
-            <div class="biome-grid" id="duaBiomeGrid"></div>
-          </div>
-
-          <div class="grid-2">
-            <div class="card">
-              <div class="card-header">
-                <div>
-                  <h2 class="card-title"><i data-lucide="sliders"></i> Điều Khiển Đường Đua, Giọng Đọc AI &amp; Demo</h2>
-                  <div class="card-subtitle">Lời chào mặc định: "Chào user [tên] đã tham gia cuộc đua cùng chúng tôi"</div>
-                </div>
-              </div>
-
-              <div class="form-group">
-                <label class="row-inline" style="cursor:pointer;font-weight:700">
-                  <input type="checkbox" id="duaSoundCheck" checked style="width:18px;height:18px" />
-                  Bật Âm Thanh Động Cơ &amp; Giọng Đọc AI Chào Mừng Tay Đua Mới
-                </label>
-              </div>
-
-              <div class="form-group">
-                <label class="form-label">Chế độ Demo Đường Đua (Tắt khi chạy Live thật)</label>
-                <div class="row-inline">
-                  <input type="number" id="duaDemoRate" value="2.5" min="0.5" max="30" step="0.5" style="width:90px" />
-                  <span style="font-size:12px;color:var(--text-muted)">sự kiện/giây</span>
-                  <button type="button" class="btn sm teal" id="btnDuaDemoOn"><i data-lucide="play"></i> Bật Demo Đua</button>
-                  <button type="button" class="btn sm danger" id="btnDuaDemoOff"><i data-lucide="square"></i> Tắt Demo (Live Thật)</button>
-                </div>
-              </div>
-
-              <div class="form-group" style="margin-bottom:0">
-                <label class="form-label" for="duaBannerInput">Phát thông báo Banner trên màn hình Cuộc Đua Kỳ Thú</label>
-                <div class="row-inline">
-                  <input type="text" id="duaBannerInput" placeholder="VD: Ai sẽ là nhà vô địch chặng Vịnh Hạ Long hôm nay?" style="flex:1" />
-                  <button type="button" class="btn teal" id="btnDuaBanner"><i data-lucide="send"></i> Phát</button>
-                </div>
-              </div>
-            </div>
-
-            <div class="card">
-              <div class="card-header">
-                <div>
-                  <h2 class="card-title"><i data-lucide="footprints"></i> Danh Sách Vận Động Viên Đang Trên Đường Đua</h2>
-                  <div class="card-subtitle">Theo dõi tốc độ, quãng đường và quản lý từng nhân vật</div>
-                </div>
-              </div>
-              <div class="table-wrap" style="max-height:260px">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Vận động viên</th>
-                      <th>Trang bị</th>
-                      <th>Quãng đường</th>
-                      <th>Kim cương</th>
-                      <th>Khẩu hiệu</th>
-                      <th>Thao tác</th>
-                    </tr>
-                  </thead>
-                  <tbody id="duaRunnersBody"></tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <!-- ================================================================ -->
-        <!-- VIEW 5: QUÀ TẶNG TIKTOK & DANH MỤC PHẦN THƯỞNG                   -->
-        <!-- ================================================================ -->
-        <section class="view-panel" id="view-gifts">
-          <div class="card" style="margin-bottom:18px">
-            <div class="card-header">
-              <div>
-                <h2 class="card-title"><i data-lucide="plus-circle"></i> Thêm / Cập Nhật Quà Tặng TikTok &amp; Phần Thưởng 2 Game</h2>
-                <div class="card-subtitle">Đồng bộ hiệu ứng thưởng cho cả Cúng Chùa Online và Cuộc Đua Kỳ Thú</div>
-              </div>
-            </div>
-
-            <div class="grid-3" style="margin-bottom:10px">
-              <div class="form-group" style="margin-bottom:0">
-                <label class="form-label" for="catGiftId">Gift ID TikTok</label>
-                <input type="number" id="catGiftId" placeholder="VD: 5655" />
-              </div>
-              <div class="form-group" style="margin-bottom:0">
-                <label class="form-label" for="catGiftName">Tên Quà Quốc Tế (giftName)</label>
-                <input type="text" id="catGiftName" placeholder="VD: Rose, Galaxy..." />
-              </div>
-              <div class="form-group" style="margin-bottom:0">
-                <label class="form-label" for="catGiftVi">Tên Hiển Thị Tiếng Việt</label>
-                <input type="text" id="catGiftVi" placeholder="VD: Hoa Hồng, Dải Ngân Hà..." />
-              </div>
-            </div>
-
-            <div class="grid-3" style="margin-bottom:12px">
-              <div class="form-group" style="margin-bottom:0">
-                <label class="form-label" for="catDiamonds">Mệnh Giá Kim Cương (💎)</label>
-                <input type="number" id="catDiamonds" placeholder="VD: 1, 30, 1000..." />
-              </div>
-              <div class="form-group" style="margin-bottom:0">
-                <label class="form-label" for="catChuaReward">Phần Thưởng Cúng Chùa Online</label>
-                <input type="text" id="catChuaReward" placeholder="VD: Áo tràng Hoàng Kim · Đại hồng chung" />
-              </div>
-              <div class="form-group" style="margin-bottom:0">
-                <label class="form-label" for="catDuaReward">Phần Thưởng Cuộc Đua Kỳ Thú</label>
-                <input type="text" id="catDuaReward" placeholder="VD: Siêu Phi Thuyền Ngân Hà · Tốc độ ×6.5" />
-              </div>
-            </div>
-
-            <button type="button" class="btn primary" id="btnSaveGiftCatalog">
-              <i data-lucide="save"></i> Lưu Vào Danh Mục Quà Tặng &amp; Đồng Bộ MongoDB
-            </button>
-          </div>
-
-          <div class="card" style="margin-bottom:18px">
-            <div class="card-header">
-              <div>
-                <h2 class="card-title"><i data-lucide="package-check"></i> Bảng Danh Mục Quà Tặng TikTok Đang Áp Dụng</h2>
-              </div>
-            </div>
-            <div class="table-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th>ID</th>
-                    <th>Tên Quà TikTok</th>
-                    <th>Mệnh Giá</th>
-                    <th>Cấp</th>
-                    <th>Thưởng Cúng Chùa Online</th>
-                    <th>Thưởng Cuộc Đua Kỳ Thú</th>
-                    <th>Thao tác</th>
-                  </tr>
-                </thead>
-                <tbody id="catalogBody"></tbody>
-              </table>
-            </div>
+            <div id="chartGlobalTimeline"></div>
           </div>
 
           <div class="card">
             <div class="card-header">
               <div>
-                <h2 class="card-title"><i data-lucide="history"></i> Toàn Bộ Lịch Sử Quà Tặng Đã Nhận</h2>
+                <h2 class="card-title"><i data-lucide="pie-chart"></i> Tỷ Trọng Quà Tặng Giữa Các Trò Chơi</h2>
+                <div class="card-subtitle">Phân bổ kim cương tích lũy theo từng game</div>
               </div>
             </div>
-            <div class="table-wrap">
+            <div id="chartGlobalShare"></div>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h2 class="card-title"><i data-lucide="award"></i> Bảng Vàng Top Đại Thí Chủ &amp; Tay Đua</h2>
+                <div class="card-subtitle">Xếp hạng người dùng tặng nhiều kim cương nhất toàn hệ thống</div>
+              </div>
+            </div>
+            <div id="chartGlobalTopDonors"></div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h2 class="card-title"><i data-lucide="sparkles"></i> Nhật Ký Quà Tặng Livestream Mới Nhất</h2>
+                <div class="card-subtitle">Tự động cập nhật từ cả 2 trò chơi và lưu vào MongoDB Atlas</div>
+              </div>
+            </div>
+            <div class="table-wrap" style="max-height:260px">
               <table>
                 <thead>
                   <tr>
-                    <th>Thời gian</th>
+                    <th>Giờ</th>
                     <th>Trò chơi</th>
                     <th>Người tặng</th>
                     <th>Quà tặng</th>
-                    <th>Tổng Kim Cương</th>
-                    <th>Hiệu ứng kích hoạt</th>
+                    <th>Kim cương</th>
+                    <th>Phần thưởng</th>
                   </tr>
                 </thead>
-                <tbody id="fullGiftsBody"></tbody>
+                <tbody id="overviewGiftsBody"></tbody>
               </table>
             </div>
           </div>
-        </section>
+        </div>
+      </section>
 
-        <!-- ================================================================ -->
-        <!-- VIEW 6: MONGODB ATLAS & NHẬT KÝ LỊCH SỬ CÔNG VIỆC                -->
-        <!-- ================================================================ -->
-        <section class="view-panel" id="view-system">
+      <!-- SUB-TAB 1.2: HIỆU ỨNG & EMOTION LIVESTREAM -->
+      <section class="sub-tab-panel" id="sub-master-fx">
+        <div class="card" style="margin-bottom:18px">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title"><i data-lucide="wand-2"></i> Hiệu Ứng &amp; Emotion Tập Thể — Cúng Chùa Online 3D</h2>
+              <div class="card-subtitle">Bấm 1 chạm để phát hiệu ứng ánh sáng, đại hồng chung và bong bóng cảm xúc trên đầu toàn bộ Phật tử</div>
+            </div>
+          </div>
+
+          <div class="fx-grid">
+            <button type="button" class="fx-tile" data-fx-game="cung-chua-online" data-fx-preset="bell_halo">
+              <div class="fx-tile-top"><span class="badge gold">Âm thanh + Hào quang</span><i data-lucide="bell-ring" style="color:var(--gold)"></i></div>
+              <div class="fx-tile-title">Thỉnh Đại Hồng Chung &amp; Hào Quang</div>
+              <div class="fx-tile-desc">Ngân vang tiếng chuông chùa, bừng sáng hào quang Phật và toàn thể Phật tử lễ lạy.</div>
+            </button>
+
+            <button type="button" class="fx-tile" data-fx-game="cung-chua-online" data-fx-preset="lotus_rain">
+              <div class="fx-tile-top"><span class="badge brand">Hiệu ứng 3D</span><i data-lucide="flower-2" style="color:var(--brand)"></i></div>
+              <div class="fx-tile-title">Mưa Hoa Sen Từ Bi Toàn Điện</div>
+              <div class="fx-tile-desc">Rơi mưa cánh hoa sen hồng rực rỡ khắp chánh điện cùng lời chúc phước báu.</div>
+            </button>
+
+            <button type="button" class="fx-tile" data-fx-game="cung-chua-online" data-fx-preset="sacred_lamps">
+              <div class="fx-tile-top"><span class="badge gold">Hiệu ứng Đèn</span><i data-lucide="flame" style="color:var(--gold)"></i></div>
+              <div class="fx-tile-title">Thắp Đại Hoa Đăng Hoàng Kim</div>
+              <div class="fx-tile-desc">Thắp sáng loạt đèn hoa đăng lung linh bay lên bầu trời đêm chánh điện.</div>
+            </button>
+
+            <button type="button" class="fx-tile" data-fx-game="cung-chua-online" data-fx-preset="incense_cloud">
+              <div class="fx-tile-top"><span class="badge teal">Hiệu ứng Khói</span><i data-lucide="cloud" style="color:var(--teal)"></i></div>
+              <div class="fx-tile-title">Khói Trầm Hương Quyện Tỏa</div>
+              <div class="fx-tile-desc">Tạo làn khói trầm hương nghi ngút tại lư đồng và toàn thể Phật tử dâng hương.</div>
+            </button>
+
+            <button type="button" class="fx-tile" data-fx-game="cung-chua-online" data-fx-preset="emotion_namo">
+              <div class="fx-tile-top"><span class="badge emerald">Emotion Tập Thể</span><i data-lucide="message-circle-heart" style="color:var(--emerald)"></i></div>
+              <div class="fx-tile-title">Đồng Thanh Niệm Nam Mô 🙏</div>
+              <div class="fx-tile-desc">Tất cả Phật tử đồng loạt hiện bong bóng "Nam Mô A Di Đà Phật 🙏" và lạy 3 lạy.</div>
+            </button>
+
+            <button type="button" class="fx-tile" data-fx-game="cung-chua-online" data-fx-preset="emotion_peace">
+              <div class="fx-tile-top"><span class="badge emerald">Emotion Tập Thể</span><i data-lucide="heart-handshake" style="color:var(--emerald)"></i></div>
+              <div class="fx-tile-title">Đồng Thanh Cầu Bình An 🪷</div>
+              <div class="fx-tile-desc">Toàn bộ nhân vật hiện cảm xúc "Cầu Gia Đạo Bình An · Sức Khỏe Dồi Dào 🪷".</div>
+            </button>
+
+            <button type="button" class="fx-tile" data-fx-game="cung-chua-online" data-fx-preset="emotion_wealth">
+              <div class="fx-tile-top"><span class="badge gold">Emotion Tập Thể</span><i data-lucide="sparkles" style="color:var(--gold)"></i></div>
+              <div class="fx-tile-title">Đồng Thanh Cầu Tài Lộc ✨</div>
+              <div class="fx-tile-desc">Toàn bộ nhân vật hiện cảm xúc "Cầu Tài Lộc Hanh Thông · Vạn Sự Như Ý ✨".</div>
+            </button>
+
+            <button type="button" class="fx-tile" data-fx-game="cung-chua-online" data-fx-preset="emotion_joy">
+              <div class="fx-tile-top"><span class="badge brand">Emotion Tập Thể</span><i data-lucide="smile-plus" style="color:var(--brand)"></i></div>
+              <div class="fx-tile-title">Hoan Hỷ Công Đức 🌸</div>
+              <div class="fx-tile-desc">Hiệu ứng hoa tươi kèm cảm xúc "Tâm An Vạn Sự An · Hoan Hỷ Công Đức 🌸".</div>
+            </button>
+          </div>
+        </div>
+
+        <div class="card" style="margin-bottom:18px">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title"><i data-lucide="zap"></i> Hiệu Ứng &amp; Emotion Tập Thể — Cuộc Đua Kỳ Thú 3D</h2>
+              <div class="card-subtitle">Kích hoạt Siêu Bão Cầu Vồng, Mưa Tên Lửa và cảm xúc hò reo đồng loạt cho tất cả vận động viên</div>
+            </div>
+          </div>
+
+          <div class="fx-grid">
+            <button type="button" class="fx-tile" data-fx-game="cuoc-dua-ky-thu" data-fx-preset="rainbow_turbo">
+              <div class="fx-tile-top"><span class="badge teal">Turbo Toàn Server</span><i data-lucide="zap" style="color:var(--teal)"></i></div>
+              <div class="fx-tile-title">Siêu Bão Cầu Vồng x2.2 ⚡🌈</div>
+              <div class="fx-tile-desc">Tăng tốc toàn bộ vận động viên lên x2.2 trong 10 giây kèm hiệu ứng cầu vồng rực rỡ.</div>
+            </button>
+
+            <button type="button" class="fx-tile" data-fx-game="cuoc-dua-ky-thu" data-fx-preset="mass_cheer">
+              <div class="fx-tile-top"><span class="badge emerald">Emotion Tập Thể</span><i data-lucide="flame" style="color:var(--emerald)"></i></div>
+              <div class="fx-tile-title">Đoàn Đua Đồng Loạt Hò Reo 🔥</div>
+              <div class="fx-tile-desc">Tất cả tay đua bật bong bóng cảm xúc "Quyết tâm bứt phá về đích! 🏆🔥" + tia lửa.</div>
+            </button>
+
+            <button type="button" class="fx-tile" data-fx-game="cuoc-dua-ky-thu" data-fx-preset="rocket_storm">
+              <div class="fx-tile-top"><span class="badge rose">Hiệu ứng Tên Lửa</span><i data-lucide="rocket" style="color:var(--rose)"></i></div>
+              <div class="fx-tile-title">Cơn Mưa Tên Lửa Tia Chớp 🚀</div>
+              <div class="fx-tile-desc">Kích hoạt luồng phụt tên lửa siêu thanh x3.2 tốc độ cho toàn bộ vận động viên.</div>
+            </button>
+
+            <button type="button" class="fx-tile" data-fx-game="cuoc-dua-ky-thu" data-fx-preset="cosmic_warp">
+              <div class="fx-tile-top"><span class="badge brand">Hiệu ứng Vũ Trụ</span><i data-lucide="orbit" style="color:var(--brand)"></i></div>
+              <div class="fx-tile-title">Bước Nhảy Không Gian Ngân Hà 🌌</div>
+              <div class="fx-tile-desc">Hiệu ứng dịch chuyển siêu quang x4.5 tốc độ kèm thông báo đại lộ ngân hà.</div>
+            </button>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h2 class="card-title"><i data-lucide="megaphone"></i> Tạo Emotion Nhân Vật &amp; Hiệu Ứng Tùy Chỉnh</h2>
+                <div class="card-subtitle">Nhập câu cảm xúc bất kỳ để hiển thị đồng loạt trên đầu các nhân vật 3D kèm hiệu ứng</div>
+              </div>
+            </div>
+
+            <div class="grid-2" style="margin-bottom:10px">
+              <div class="form-group">
+                <label class="form-label" for="customFxGame">Áp dụng cho trò chơi</label>
+                <select id="customFxGame">
+                  <option value="all">🌐 Cả 2 Trò Chơi Cùng Lúc</option>
+                  <option value="cung-chua-online">🏯 Cúng Chùa Online 3D (:8787)</option>
+                  <option value="cuoc-dua-ky-thu">🏁 Cuộc Đua Kỳ Thú 3D (:8789)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="customFxKind">Loại Hiệu Ứng Hình Ảnh 3D</label>
+                <select id="customFxKind">
+                  <option value="lotus">🌸 Mưa Hoa Sen / Tia Sáng (Lotus / Spark)</option>
+                  <option value="bell">🔔 Đại Hồng Chung &amp; Hào Quang (Bell)</option>
+                  <option value="lamp">🏮 Đại Hoa Đăng / Ván Trượt (Lamp / Hover)</option>
+                  <option value="turbo">⚡ Siêu Bão Cầu Vồng / Vũ Trụ (Turbo / Warp)</option>
+                  <option value="smoke">🕯️ Khói Trầm Hương (Smoke)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="customFxBubble">Câu cảm xúc trên bong bóng nhân vật 3D (Tối đa 40 ký tự)</label>
+              <input type="text" id="customFxBubble" placeholder="VD: Cảm ơn đại gia đình đã thả tim ủng hộ phiên Live! ❤️" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="customFxBanner">Thông báo Banner chữ vàng giữa màn hình (Tùy chọn)</label>
+              <input type="text" id="customFxBanner" placeholder="VD: Chào mừng các bạn đến với phiên Live tương tác 3D trực tiếp!" />
+            </div>
+
+            <button type="button" class="btn primary" id="btnSendCustomEmotion" style="width:100%">
+              <i data-lucide="send"></i> Phát Cảm Xúc &amp; Hiệu Ứng Lên Livestream Ngay
+            </button>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h2 class="card-title"><i data-lucide="flask-conical"></i> Giả Lập Nhanh Người Chơi &amp; Quà Tặng</h2>
+                <div class="card-subtitle">Kiểm tra lời chào AI và hiệu ứng quà tặng trên cả 2 trò chơi</div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="simActorName">Tên người chơi thử nghiệm</label>
+              <input type="text" id="simActorName" value="Lê Trí Trung" placeholder="Nhập tên hiển thị..." />
+            </div>
+
+            <div class="form-label" style="margin-bottom:6px">Cúng Chùa Online 3D (:8787)</div>
+            <div class="row-inline" style="margin-bottom:14px">
+              <button type="button" class="btn sm" data-sim-game="cung-chua-online" data-sim-action="prayer"><i data-lucide="user-plus"></i> Vào Lễ Phật</button>
+              <button type="button" class="btn sm gold" data-sim-game="cung-chua-online" data-sim-action="gift1"><i data-lucide="flower-2"></i> Hoa Hồng (1💎)</button>
+              <button type="button" class="btn sm gold" data-sim-game="cung-chua-online" data-sim-action="gift10"><i data-lucide="flame"></i> Hoa Đăng (30💎)</button>
+              <button type="button" class="btn sm primary" data-sim-game="cung-chua-online" data-sim-action="gift1000"><i data-lucide="crown"></i> Galaxy (1000💎)</button>
+            </div>
+
+            <div class="form-label" style="margin-bottom:6px">Cuộc Đua Kỳ Thú 3D (:8789)</div>
+            <div class="row-inline">
+              <button type="button" class="btn sm" data-sim-game="cuoc-dua-ky-thu" data-sim-action="join"><i data-lucide="user-plus"></i> Tham Gia + Chào AI</button>
+              <button type="button" class="btn sm teal" data-sim-game="cuoc-dua-ky-thu" data-sim-action="gift1"><i data-lucide="feather"></i> Đôi Cánh (×1.8)</button>
+              <button type="button" class="btn sm gold" data-sim-game="cuoc-dua-ky-thu" data-sim-action="gift30"><i data-lucide="disc"></i> Ván Trượt (×2.8)</button>
+              <button type="button" class="btn sm danger" data-sim-game="cuoc-dua-ky-thu" data-sim-action="gift300"><i data-lucide="rocket"></i> Tên Lửa (×4.2)</button>
+              <button type="button" class="btn sm primary" data-sim-game="cuoc-dua-ky-thu" data-sim-action="gift1000"><i data-lucide="orbit"></i> Phi Thuyền (×6.5)</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SUB-TAB 1.3: QUÀ LIVESTREAM & DANH MỤC -->
+      <section class="sub-tab-panel" id="sub-master-gifts">
+        <div class="card" style="margin-bottom:18px">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title"><i data-lucide="plus-circle"></i> Thêm / Cập Nhật Quà Tặng TikTok &amp; Phần Thưởng 2 Game</h2>
+              <div class="card-subtitle">Đồng bộ hiệu ứng thưởng cho cả Cúng Chùa Online và Cuộc Đua Kỳ Thú</div>
+            </div>
+          </div>
+
+          <div class="grid-3" style="margin-bottom:10px">
+            <div class="form-group" style="margin-bottom:0">
+              <label class="form-label" for="catGiftId">Gift ID TikTok</label>
+              <input type="number" id="catGiftId" placeholder="VD: 5655" />
+            </div>
+            <div class="form-group" style="margin-bottom:0">
+              <label class="form-label" for="catGiftName">Tên Quà Quốc Tế (giftName)</label>
+              <input type="text" id="catGiftName" placeholder="VD: Rose, Galaxy..." />
+            </div>
+            <div class="form-group" style="margin-bottom:0">
+              <label class="form-label" for="catGiftVi">Tên Hiển Thị Tiếng Việt</label>
+              <input type="text" id="catGiftVi" placeholder="VD: Hoa Hồng, Dải Ngân Hà..." />
+            </div>
+          </div>
+
+          <div class="grid-3" style="margin-bottom:12px">
+            <div class="form-group" style="margin-bottom:0">
+              <label class="form-label" for="catDiamonds">Mệnh Giá Kim Cương (💎)</label>
+              <input type="number" id="catDiamonds" placeholder="VD: 1, 30, 1000..." />
+            </div>
+            <div class="form-group" style="margin-bottom:0">
+              <label class="form-label" for="catChuaReward">Phần Thưởng Cúng Chùa Online</label>
+              <input type="text" id="catChuaReward" placeholder="VD: Áo tràng Hoàng Kim · Đại hồng chung" />
+            </div>
+            <div class="form-group" style="margin-bottom:0">
+              <label class="form-label" for="catDuaReward">Phần Thưởng Cuộc Đua Kỳ Thú</label>
+              <input type="text" id="catDuaReward" placeholder="VD: Siêu Phi Thuyền Ngân Hà · Tốc độ ×6.5" />
+            </div>
+          </div>
+
+          <button type="button" class="btn primary" id="btnSaveGiftCatalog">
+            <i data-lucide="save"></i> Lưu Vào Danh Mục Quà Tặng &amp; Đồng Bộ MongoDB
+          </button>
+        </div>
+
+        <div class="card" style="margin-bottom:18px">
+          <div class="card-header">
+            <h2 class="card-title"><i data-lucide="package-check"></i> Bảng Danh Mục Quà Tặng TikTok Đang Áp Dụng</h2>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Tên Quà TikTok</th>
+                  <th>Mệnh Giá</th>
+                  <th>Cấp</th>
+                  <th>Thưởng Cúng Chùa Online</th>
+                  <th>Thưởng Cuộc Đua Kỳ Thú</th>
+                  <th>Thao tác</th>
+                </tr>
+              </thead>
+              <tbody id="catalogBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title"><i data-lucide="history"></i> Toàn Bộ Lịch Sử Quà Tặng Đã Nhận</h2>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Thời gian</th>
+                  <th>Trò chơi</th>
+                  <th>Người tặng</th>
+                  <th>Quà tặng</th>
+                  <th>Tổng Kim Cương</th>
+                  <th>Hiệu ứng kích hoạt</th>
+                </tr>
+              </thead>
+              <tbody id="fullGiftsBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- SUB-TAB 1.4: LỊCH SỬ CÔNG VIỆC -->
+      <section class="sub-tab-panel" id="sub-master-worklogs">
+        <div class="card" style="margin-bottom:18px">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title"><i data-lucide="clipboard-plus"></i> Ghi Chú Thêm Hạng Mục Công Việc / Phiên Live Mới</h2>
+              <div class="card-subtitle">Lưu trực tiếp vào bảng work_logs trên MongoDB Atlas</div>
+            </div>
+          </div>
+
+          <div class="row-inline">
+            <select id="workCatSelect" style="width:180px">
+              <option value="live_session">Phiên Livestream</option>
+              <option value="ui_ux">Nâng cấp UI/UX</option>
+              <option value="database">Cơ sở dữ liệu</option>
+              <option value="system">Hệ thống</option>
+            </select>
+            <select id="workGameSelect" style="width:200px">
+              <option value="all">Toàn hệ thống</option>
+              <option value="cung-chua-online">Cúng Chùa Online 3D</option>
+              <option value="cuoc-dua-ky-thu">Cuộc Đua Kỳ Thú 3D</option>
+            </select>
+            <input type="text" id="workTitleInput" placeholder="Tiêu đề phần việc / phiên Live..." style="flex:1;min-width:220px" />
+            <input type="text" id="workDetailInput" placeholder="Chi tiết nội dung, cấu hình hoặc ghi chú..." style="flex:1.4;min-width:260px" />
+            <button type="button" class="btn primary" id="btnAddWorkLog">
+              <i data-lucide="plus"></i> Lưu Lịch Sử
+            </button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title"><i data-lucide="scroll-text"></i> Nhật Ký Lịch Sử Các Phần Đã Thực Hiện (Work Logs)</h2>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Thời gian</th>
+                  <th>Danh mục</th>
+                  <th>Phạm vi</th>
+                  <th>Nội dung thực hiện</th>
+                </tr>
+              </thead>
+              <tbody id="workLogsBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- SUB-TAB 1.5: KẾT NỐI MONGODB -->
+      <section class="sub-tab-panel" id="sub-master-mongodb">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title"><i data-lucide="database"></i> Cấu Hình Kết Nối MongoDB Atlas &amp; Làm Sạch Dữ Liệu</h2>
+              <div class="card-subtitle" id="sysMongoDetail">Đang kiểm tra trạng thái...</div>
+            </div>
+          </div>
+
           <div class="grid-2">
-            <div class="card">
-              <div class="card-header">
-                <div>
-                  <h2 class="card-title"><i data-lucide="database"></i> Cấu Hình Kết Nối MongoDB Atlas &amp; Làm Sạch Dữ Liệu</h2>
-                  <div class="card-subtitle" id="sysMongoDetail">Đang kiểm tra trạng thái...</div>
-                </div>
-              </div>
+            <div class="form-group">
+              <label class="form-label" for="sysMongoUriInput">MongoDB Connection URI (Để trống nếu giữ nguyên URI hiện tại trong .env)</label>
+              <input type="password" id="sysMongoUriInput" placeholder="mongodb+srv://trung:****@cluster0.drlcxsy.mongodb.net/..." />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="sysMongoDbInput">Tên Database (MONGODB_DB)</label>
+              <input type="text" id="sysMongoDbInput" value="live_tiktok" />
+            </div>
+          </div>
 
+          <div class="row-inline" style="margin-top:8px">
+            <button type="button" class="btn primary" id="btnSaveMongo">
+              <i data-lucide="plug-zap"></i> Lưu &amp; Kết Nối MongoDB
+            </button>
+            <button type="button" class="btn danger" id="btnCleanAllSys">
+              <i data-lucide="trash-2"></i> Reset Toàn Bộ Dữ Liệu Về 0 (Clean Database)
+            </button>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- ==================================================================== -->
+  <!-- MAIN TAB 2: ADMIN CÚNG CHÙA ONLINE (:8788) — Chuyển Tab Tại Chỗ       -->
+  <!-- ==================================================================== -->
+  <div class="main-tab-view" id="main-view-chua">
+    <div class="sub-bar">
+      <div class="sub-bar-title">
+        <div class="sub-bar-icon gold"><i data-lucide="landmark"></i></div>
+        <h1>Admin Cúng Chùa Online 3D · Quản Trị Chánh Điện &amp; Nghi Lễ</h1>
+        <span class="badge emerald" id="chuaStatusBadge">Đang kết nối...</span>
+      </div>
+      <div class="sub-tabs" role="tablist">
+        <button type="button" class="sub-tab-btn active" data-parent="chua" data-sub="chua-analytics">
+          <i data-lucide="line-chart"></i> Thống Kê &amp; Phật Tử Đang Lễ
+        </button>
+        <button type="button" class="sub-tab-btn" data-parent="chua" data-sub="chua-controls">
+          <i data-lucide="sliders"></i> Không Gian 3D, Hiệu Ứng &amp; Test Lab
+        </button>
+        <button type="button" class="sub-tab-btn" data-parent="chua" data-sub="chua-lists">
+          <i data-lucide="book-open-check"></i> Câu Đối, Từ Khóa &amp; Bộ Lọc
+        </button>
+      </div>
+    </div>
+
+    <main class="content-area">
+      <!-- SUB-TAB 2.1: THỐNG KÊ & PHẬT TỬ -->
+      <section class="sub-tab-panel active" id="sub-chua-analytics">
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h2 class="card-title"><i data-lucide="activity"></i> Nhịp Độ Niệm Phật &amp; Phật Tử Hiện Diện</h2>
+                <div class="card-subtitle">Biểu đồ thời gian thực của Chánh Điện 3D</div>
+              </div>
+            </div>
+            <div id="chartChuaTimeline"></div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h2 class="card-title"><i data-lucide="pie-chart"></i> Phân Bố Ý Nguyện Cầu Phúc</h2>
+                <div class="card-subtitle">Thống kê tỷ lệ lời cầu nguyện của Phật tử</div>
+              </div>
+            </div>
+            <div id="chartChuaPrayers"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title"><i data-lucide="users"></i> Danh Sách Phật Tử Đang Quỳ Lễ Trong Chánh Điện</h2>
+              <div class="card-subtitle">Quản lý trực tiếp nhân vật đang hiển thị trên màn hình 3D (:8787)</div>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Phật tử</th>
+                  <th>Pháp phục</th>
+                  <th>Ý nguyện</th>
+                  <th>Công đức</th>
+                  <th>Thao tác</th>
+                </tr>
+              </thead>
+              <tbody id="chuaActorsBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- SUB-TAB 2.2: KHÔNG GIAN 3D, HIỆU ỨNG & TEST LAB -->
+      <section class="sub-tab-panel" id="sub-chua-controls">
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h2 class="card-title"><i data-lucide="sliders"></i> Điều Khiển Không Gian Chánh Điện &amp; Chế Độ Demo</h2>
+                <div class="card-subtitle">Tùy chỉnh bối cảnh 3D, âm thanh chuông mõ và thông báo</div>
+              </div>
+              <span class="badge brand" id="chuaDemoBadge">Demo Đang Tắt</span>
+            </div>
+
+            <div class="grid-2" style="margin-bottom:12px">
               <div class="form-group">
-                <label class="form-label" for="sysMongoUriInput">MongoDB Connection URI (Để trống nếu giữ nguyên URI hiện tại trong .env)</label>
-                <input type="password" id="sysMongoUriInput" placeholder="mongodb+srv://trung:****@cluster0.drlcxsy.mongodb.net/..." />
+                <label class="form-label" for="chuaThemeSelect">Không gian ánh sáng 3D</label>
+                <select id="chuaThemeSelect">
+                  <option value="night">🌙 Đêm Trang Nghiêm (Mặc định)</option>
+                  <option value="ram">🌕 Đêm Rằm Lễ Lớn (Trăng Sáng)</option>
+                  <option value="day">☀️ Ban Ngày Thanh Tịnh</option>
+                </select>
               </div>
-
-              <div class="form-group">
-                <label class="form-label" for="sysMongoDbInput">Tên Database (MONGODB_DB)</label>
-                <input type="text" id="sysMongoDbInput" value="live_tiktok" />
-              </div>
-
-              <div class="row-inline" style="margin-top:14px">
-                <button type="button" class="btn primary" id="btnSaveMongo">
-                  <i data-lucide="plug-zap"></i> Lưu &amp; Kết Nối MongoDB
-                </button>
-                <button type="button" class="btn danger" id="btnCleanAllSys">
-                  <i data-lucide="trash-2"></i> Reset Toàn Bộ Dữ Liệu Về 0 (Clean Database)
+              <div class="form-group" style="justify-content:flex-end">
+                <label class="row-inline" style="cursor:pointer;font-weight:700;margin-bottom:6px">
+                  <input type="checkbox" id="chuaSoundCheck" checked style="width:18px;height:18px" />
+                  Bật âm thanh Chuông Mõ &amp; Giọng đọc lễ
+                </label>
+                <button type="button" class="btn primary" id="btnChuaSaveScene">
+                  <i data-lucide="check"></i> Áp Dụng Không Gian
                 </button>
               </div>
             </div>
 
-            <div class="card">
-              <div class="card-header">
-                <div>
-                  <h2 class="card-title"><i data-lucide="clipboard-plus"></i> Ghi Chú Mốc Công Việc / Phiên Live Mới</h2>
-                  <div class="card-subtitle">Lưu trực tiếp vào bảng work_logs trên MongoDB Atlas</div>
-                </div>
+            <div class="form-group">
+              <label class="form-label">Chế độ Demo Tự Động (Dùng khi thử nghiệm, tắt khi Live thật)</label>
+              <div class="row-inline">
+                <input type="number" id="chuaDemoRate" value="3" min="1" max="50" style="width:90px" />
+                <span style="font-size:12px;color:var(--text-muted)">sự kiện/giây</span>
+                <button type="button" class="btn sm gold" id="btnChuaDemoOn"><i data-lucide="play"></i> Bật Demo</button>
+                <button type="button" class="btn sm danger" id="btnChuaDemoOff"><i data-lucide="square"></i> Tắt Demo (Live Thật)</button>
               </div>
+            </div>
 
-              <div class="grid-2" style="margin-bottom:10px">
-                <div class="form-group" style="margin-bottom:0">
-                  <label class="form-label" for="workCatSelect">Phân loại</label>
-                  <select id="workCatSelect">
-                    <option value="live_session">Phiên Livestream</option>
-                    <option value="ui_ux">Nâng cấp UI/UX</option>
-                    <option value="database">Cơ sở dữ liệu</option>
-                    <option value="system">Hệ thống</option>
-                  </select>
-                </div>
-                <div class="form-group" style="margin-bottom:0">
-                  <label class="form-label" for="workGameSelect">Trò chơi</label>
-                  <select id="workGameSelect">
-                    <option value="all">Toàn hệ thống</option>
-                    <option value="cung-chua-online">Cúng Chùa Online 3D</option>
-                    <option value="cuoc-dua-ky-thu">Cuộc Đua Kỳ Thú 3D</option>
-                  </select>
-                </div>
+            <div class="form-group" style="margin-top:14px;margin-bottom:0">
+              <label class="form-label" for="chuaBannerInput">Phát thông báo chữ vàng trên màn hình Chùa 3D</label>
+              <div class="row-inline">
+                <input type="text" id="chuaBannerInput" placeholder="VD: Chúc đại chúng thân tâm thường an lạc..." style="flex:1" />
+                <button type="button" class="btn gold" id="btnChuaBanner"><i data-lucide="send"></i> Phát</button>
               </div>
-
-              <div class="form-group">
-                <label class="form-label" for="workTitleInput">Tiêu đề công việc / phiên Live</label>
-                <input type="text" id="workTitleInput" placeholder="VD: Bắt đầu phiên Live tối 01/11..." />
-              </div>
-
-              <div class="form-group">
-                <label class="form-label" for="workDetailInput">Chi tiết</label>
-                <input type="text" id="workDetailInput" placeholder="Ghi chú chi tiết..." />
-              </div>
-
-              <button type="button" class="btn emerald" id="btnAddWorkLog">
-                <i data-lucide="plus"></i> Lưu Vào Lịch Sử Công Việc
-              </button>
             </div>
           </div>
 
           <div class="card">
             <div class="card-header">
               <div>
-                <h2 class="card-title"><i data-lucide="scroll-text"></i> Nhật Ký Lịch Sử Các Phần Đã Thực Hiện (Work Logs)</h2>
+                <h2 class="card-title"><i data-lucide="wand-2"></i> Kích Hoạt Nhanh Hiệu Ứng &amp; Emotion Chánh Điện</h2>
+                <div class="card-subtitle">Phát hiệu ứng 3D và bong bóng cảm xúc ngay lập tức lên màn hình Chùa</div>
               </div>
             </div>
-            <div class="table-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Thời gian</th>
-                    <th>Danh mục</th>
-                    <th>Phạm vi</th>
-                    <th>Nội dung thực hiện</th>
-                  </tr>
-                </thead>
-                <tbody id="workLogsBody"></tbody>
-              </table>
+            <div class="row-inline" style="margin-bottom:14px">
+              <button type="button" class="btn gold" data-fx-game="cung-chua-online" data-fx-preset="bell_halo"><i data-lucide="bell-ring"></i> Đại Hồng Chung</button>
+              <button type="button" class="btn primary" data-fx-game="cung-chua-online" data-fx-preset="lotus_rain"><i data-lucide="flower-2"></i> Mưa Hoa Sen</button>
+              <button type="button" class="btn gold" data-fx-game="cung-chua-online" data-fx-preset="sacred_lamps"><i data-lucide="flame"></i> Đại Hoa Đăng</button>
+              <button type="button" class="btn teal" data-fx-game="cung-chua-online" data-fx-preset="incense_cloud"><i data-lucide="cloud"></i> Khói Trầm Hương</button>
+            </div>
+            <div class="row-inline">
+              <button type="button" class="btn emerald" data-fx-game="cung-chua-online" data-fx-preset="emotion_namo"><i data-lucide="message-circle-heart"></i> Đồng Thanh Niệm Phật</button>
+              <button type="button" class="btn emerald" data-fx-game="cung-chua-online" data-fx-preset="emotion_peace"><i data-lucide="heart-handshake"></i> Đồng Thanh Cầu Bình An</button>
+              <button type="button" class="btn gold" data-fx-game="cung-chua-online" data-fx-preset="emotion_wealth"><i data-lucide="sparkles"></i> Đồng Thanh Cầu Tài Lộc</button>
             </div>
           </div>
-        </section>
-      </main>
+        </div>
+      </section>
+
+      <!-- SUB-TAB 2.3: CÂU ĐỐI, TỪ KHÓA & BỘ LỌC -->
+      <section class="sub-tab-panel" id="sub-chua-lists">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title"><i data-lucide="book-open-check"></i> Cấu Hình Câu Đối, Từ Khóa Lễ Phật &amp; Bộ Lọc Nội Dung</h2>
+              <div class="card-subtitle">Áp dụng tức thì cho Cúng Chùa Online mà không cần khởi động lại</div>
+            </div>
+            <button type="button" class="btn primary" id="btnChuaSaveLists">
+              <i data-lucide="save"></i> Lưu Toàn Bộ Cấu Hình Chùa
+            </button>
+          </div>
+
+          <div class="grid-3">
+            <div class="form-group">
+              <label class="form-label" for="chuaCoupletsInput">Câu Đối Chánh Điện (Mỗi dòng: Vế Trái | Vế Phải)</label>
+              <textarea id="chuaCoupletsInput"></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="chuaTriggersInput">Từ Khóa Vào Lễ Phật (Mỗi dòng 1 cụm từ)</label>
+              <textarea id="chuaTriggersInput"></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="chuaIntentsInput">Ý Nguyện Cầu Phúc (từ_khóa = Nhãn hiển thị)</label>
+              <textarea id="chuaIntentsInput"></textarea>
+            </div>
+          </div>
+
+          <div class="grid-2" style="margin-bottom:0">
+            <div class="form-group" style="margin-bottom:0">
+              <label class="form-label" for="chuaBadwordsInput">Danh Sách Từ Cấm (Mỗi dòng 1 từ)</label>
+              <textarea id="chuaBadwordsInput" style="min-height:90px"></textarea>
+            </div>
+            <div>
+              <div class="form-label" style="margin-bottom:6px">Danh Sách Chặn UID Vi Phạm</div>
+              <div class="row-inline" style="margin-bottom:8px">
+                <input type="text" id="chuaBlockUidInput" placeholder="Nhập UID cần chặn..." style="flex:1" />
+                <button type="button" class="btn sm danger" id="btnChuaAddBlock"><i data-lucide="ban"></i> Chặn UID</button>
+              </div>
+              <div class="table-wrap" style="max-height:110px">
+                <table>
+                  <tbody id="chuaBlockedBody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- ==================================================================== -->
+  <!-- MAIN TAB 3: ADMIN CUỘC ĐUA KỲ THÚ (:8790) — Chuyển Tab Tại Chỗ        -->
+  <!-- ==================================================================== -->
+  <div class="main-tab-view" id="main-view-dua">
+    <div class="sub-bar">
+      <div class="sub-bar-title">
+        <div class="sub-bar-icon teal"><i data-lucide="trophy"></i></div>
+        <h1>Admin Cuộc Đua Kỳ Thú 3D · Hành Trình Khám Phá Thế Giới</h1>
+        <span class="badge emerald" id="duaStatusBadge">Đang kết nối...</span>
+      </div>
+      <div class="sub-tabs" role="tablist">
+        <button type="button" class="sub-tab-btn active" data-parent="dua" data-sub="dua-analytics">
+          <i data-lucide="bar-chart-2"></i> Thống Kê &amp; Vận Động Viên Đang Chạy
+        </button>
+        <button type="button" class="sub-tab-btn" data-parent="dua" data-sub="dua-controls">
+          <i data-lucide="globe-2"></i> Kỳ Quan Thế Giới, Hiệu Ứng &amp; Điều Khiển
+        </button>
+      </div>
     </div>
+
+    <main class="content-area">
+      <!-- SUB-TAB 3.1: THỐNG KÊ & VẬN ĐỘNG VIÊN -->
+      <section class="sub-tab-panel active" id="sub-dua-analytics">
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h2 class="card-title"><i data-lucide="pie-chart"></i> Phân Bố Phương Tiện &amp; Trang Bị Đường Đua</h2>
+                <div class="card-subtitle">Thống kê cấp trang bị của các vận động viên đang chạy</div>
+              </div>
+            </div>
+            <div id="chartDuaTiers"></div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h2 class="card-title"><i data-lucide="medal"></i> Bảng Xếp Hạng Top Tay Đua Dẫn Đầu (m)</h2>
+                <div class="card-subtitle">So sánh quãng đường tích lũy của các vận động viên xuất sắc nhất</div>
+              </div>
+            </div>
+            <div id="chartDuaTopRacers"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title"><i data-lucide="footprints"></i> Danh Sách Vận Động Viên Đang Trên Đường Đua (:8789)</h2>
+              <div class="card-subtitle">Theo dõi tốc độ, quãng đường và quản lý từng nhân vật</div>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Vận động viên</th>
+                  <th>Trang bị</th>
+                  <th>Quãng đường</th>
+                  <th>Kim cương</th>
+                  <th>Khẩu hiệu</th>
+                  <th>Thao tác</th>
+                </tr>
+              </thead>
+              <tbody id="duaRunnersBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- SUB-TAB 3.2: KỲ QUAN THẾ GIỚI & ĐIỀU KHIỂN -->
+      <section class="sub-tab-panel" id="sub-dua-controls">
+        <div class="card" style="margin-bottom:18px">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title"><i data-lucide="globe-2"></i> Chọn Điểm Đến Kỳ Quan Thế Giới (Chuyển Cảnh 3D Tức Thì)</h2>
+              <div class="card-subtitle">Bấm vào bất kỳ kỳ quan nào để đưa toàn bộ đoàn đua dịch chuyển ngay lập tức trên Livestream</div>
+            </div>
+            <span class="badge teal" id="duaDemoBadge">Demo Đang Tắt</span>
+          </div>
+          <div class="biome-grid" id="duaBiomeGrid"></div>
+        </div>
+
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h2 class="card-title"><i data-lucide="sliders"></i> Điều Khiển Đường Đua, Giọng Đọc AI &amp; Demo</h2>
+                <div class="card-subtitle">Lời chào mặc định: "Chào user [tên] đã tham gia cuộc đua cùng chúng tôi"</div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="row-inline" style="cursor:pointer;font-weight:700">
+                <input type="checkbox" id="duaSoundCheck" checked style="width:18px;height:18px" />
+                Bật Âm Thanh Động Cơ &amp; Giọng Đọc AI Chào Mừng Tay Đua Mới
+              </label>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Chế độ Demo Đường Đua (Tắt khi chạy Live thật)</label>
+              <div class="row-inline">
+                <input type="number" id="duaDemoRate" value="2.5" min="0.5" max="30" step="0.5" style="width:90px" />
+                <span style="font-size:12px;color:var(--text-muted)">sự kiện/giây</span>
+                <button type="button" class="btn sm teal" id="btnDuaDemoOn"><i data-lucide="play"></i> Bật Demo Đua</button>
+                <button type="button" class="btn sm danger" id="btnDuaDemoOff"><i data-lucide="square"></i> Tắt Demo (Live Thật)</button>
+              </div>
+            </div>
+
+            <div class="form-group" style="margin-bottom:0">
+              <label class="form-label" for="duaBannerInput">Phát thông báo Banner trên màn hình Cuộc Đua Kỳ Thú</label>
+              <div class="row-inline">
+                <input type="text" id="duaBannerInput" placeholder="VD: Ai sẽ là nhà vô địch chặng Vịnh Hạ Long hôm nay?" style="flex:1" />
+                <button type="button" class="btn teal" id="btnDuaBanner"><i data-lucide="send"></i> Phát</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h2 class="card-title"><i data-lucide="zap"></i> Kích Hoạt Hiệu Ứng &amp; Emotion Đường Đua</h2>
+                <div class="card-subtitle">Tạo cao trào bứt tốc ngay trên màn hình Cuộc Đua Kỳ Thú</div>
+              </div>
+            </div>
+            <div class="row-inline" style="margin-bottom:14px">
+              <button type="button" class="btn teal" data-fx-game="cuoc-dua-ky-thu" data-fx-preset="rainbow_turbo"><i data-lucide="zap"></i> Bão Cầu Vồng x2.2</button>
+              <button type="button" class="btn emerald" data-fx-game="cuoc-dua-ky-thu" data-fx-preset="mass_cheer"><i data-lucide="flame"></i> Đồng Loạt Hò Reo</button>
+              <button type="button" class="btn danger" data-fx-game="cuoc-dua-ky-thu" data-fx-preset="rocket_storm"><i data-lucide="rocket"></i> Mưa Tên Lửa</button>
+              <button type="button" class="btn primary" data-fx-game="cuoc-dua-ky-thu" data-fx-preset="cosmic_warp"><i data-lucide="orbit"></i> Bước Nhảy Ngân Hà</button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
   </div>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
