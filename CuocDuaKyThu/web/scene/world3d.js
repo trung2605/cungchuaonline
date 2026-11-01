@@ -21,95 +21,139 @@ export const glowTex = canvasTex(64, 64, (g, w) => {
 
 const BIOME_PALETTES = {
   vietnam: {
-    skyTop: 0x06243a,
-    fog: 0x0d3b49,
-    ground: 0x093842,
+    skyTop: 0x0a2c3d,
+    fog: 0x124554,
+    ground: 0x0b424d,
     lane: 0xffd166,
     sun: 0xffe299,
     skyImg: '/assets/sky_vietnam.jpg',
   },
   japan: {
-    skyTop: 0x1a1033,
-    fog: 0x351b39,
-    ground: 0x241429,
+    skyTop: 0x1e1336,
+    fog: 0x3b1f40,
+    ground: 0x26162c,
     lane: 0xff9ebb,
     sun: 0xffb8d1,
-    skyImg: '/assets/sky_world.jpg',
+    skyImg: '/assets/sky_japan.jpg',
   },
   egypt: {
-    skyTop: 0x2e1505,
-    fog: 0x542c0b,
-    ground: 0x6e4316,
+    skyTop: 0x331807,
+    fog: 0x5c310e,
+    ground: 0x734718,
     lane: 0xffc857,
     sun: 0xffaa33,
-    skyImg: '/assets/sky_world.jpg',
+    skyImg: '/assets/sky_egypt.jpg',
   },
   france: {
-    skyTop: 0x09132e,
-    fog: 0x182347,
-    ground: 0x121c30,
+    skyTop: 0x0b1636,
+    fog: 0x1c2852,
+    ground: 0x142038,
     lane: 0x7bdff2,
     sun: 0xffe6a3,
-    skyImg: '/assets/sky_world.jpg',
+    skyImg: '/assets/sky_europe.jpg',
   },
   usa: {
-    skyTop: 0x05182e,
-    fog: 0x0d2d4a,
-    ground: 0x0a2236,
+    skyTop: 0x071d36,
+    fog: 0x113557,
+    ground: 0x0d2840,
     lane: 0x48cae4,
     sun: 0x90e0ef,
-    skyImg: '/assets/sky_world.jpg',
+    skyImg: '/assets/sky_europe.jpg',
   },
   cosmos: {
-    skyTop: 0x050214,
-    fog: 0x100526,
-    ground: 0x080217,
+    skyTop: 0x060217,
+    fog: 0x13062e,
+    ground: 0x09031c,
     lane: 0x00f5d4,
     sun: 0xf15bb5,
     skyImg: '/assets/sky_world.jpg',
   },
 };
 
-function createRoadTexture() {
+// Realistic Warm Heritage Stone-Paved Walking Trail Texture (`Con Đường Lát Đá Cổ & Cỏ Hoa Ven Đường`)
+// Replaces the dark car-highway asphalt & speed chevrons with natural cobblestone/flagstone tiles
+function createScenicTrailTexture() {
   const c = document.createElement('canvas');
   c.width = 512;
   c.height = 512;
   const g = c.getContext('2d');
-  g.fillStyle = '#151e2e';
+
+  // Lush mossy grass shoulders on left and right edges (0..38 and 474..512)
+  g.fillStyle = '#1f4d36';
   g.fillRect(0, 0, 512, 512);
 
-  // Golden outer kerbs + cyan inner glow lines
-  g.fillStyle = '#f4b942';
-  g.fillRect(6, 0, 10, 512);
-  g.fillRect(496, 0, 10, 512);
-  g.fillStyle = 'rgba(0, 245, 212, 0.5)';
-  g.fillRect(20, 0, 3, 512);
-  g.fillRect(489, 0, 3, 512);
+  // Warm sandstone / cobblestone base mortar in the center walking trail (38..474)
+  const mortarGrad = g.createLinearGradient(38, 0, 474, 0);
+  mortarGrad.addColorStop(0, '#4a3d31');
+  mortarGrad.addColorStop(0.12, '#695846');
+  mortarGrad.addColorStop(0.5, '#7a6752');
+  mortarGrad.addColorStop(0.88, '#695846');
+  mortarGrad.addColorStop(1, '#4a3d31');
+  g.fillStyle = mortarGrad;
+  g.fillRect(38, 0, 436, 512);
 
-  // Dashed lane dividers
-  g.fillStyle = 'rgba(255, 224, 130, 0.45)';
-  for (const x of [132, 256, 380]) {
-    for (let y = 24; y < 512; y += 80) {
-      g.fillRect(x - 2, y, 4, 32);
+  // Carved stone border kerbs along both sides of the walking trail
+  for (let y = 0; y < 512; y += 32) {
+    g.fillStyle = (y / 32) % 2 === 0 ? '#d9a75a' : '#c28e42';
+    g.fillRect(30, y + 2, 16, 28);
+    g.fillRect(466, y + 2, 16, 28);
+  }
+
+  // Natural flagstone / cobblestone pavers across the trail width
+  const stonePalette = ['#8c765c', '#998266', '#7d6850', '#a38b6d', '#857058', '#917a5f'];
+  const rows = 16;
+  const rowH = 512 / rows;
+  for (let r = 0; r < rows; r++) {
+    const y = r * rowH;
+    const xOffset = (r % 2) * 24;
+    let x = 50 - xOffset;
+    let colIdx = 0;
+    while (x < 460) {
+      const w = 44 + ((r * 13 + colIdx * 19) % 22);
+      const drawX = Math.max(50, x);
+      const drawW = Math.min(460, x + w - 4) - drawX;
+      if (drawW > 8) {
+        g.fillStyle = stonePalette[(r * 7 + colIdx * 5) % stonePalette.length];
+        g.beginPath();
+        g.roundRect(drawX, y + 2, drawW, rowH - 4, 6);
+        g.fill();
+        // Subtle warm top highlight on each stone slab
+        g.fillStyle = 'rgba(255, 244, 214, 0.14)';
+        g.fillRect(drawX + 3, y + 4, drawW - 6, 3);
+      }
+      x += w;
+      colIdx++;
     }
   }
 
-  // Subtle forward chevrons in the center lane
-  g.strokeStyle = 'rgba(0, 245, 212, 0.28)';
-  g.lineWidth = 5;
-  for (let y = 80; y < 512; y += 160) {
+  // Center heritage medallion mosaic inlay strip (subtle ornamental golden stone pattern)
+  g.strokeStyle = 'rgba(255, 218, 128, 0.35)';
+  g.lineWidth = 2.5;
+  for (let y = 32; y < 512; y += 64) {
     g.beginPath();
-    g.moveTo(226, y + 24);
-    g.lineTo(256, y);
-    g.moveTo(286, y + 24);
-    g.lineTo(256, y);
+    g.arc(256, y, 14, 0, Math.PI * 2);
     g.stroke();
+  }
+
+  // Wildflowers & grass tufts along the outer trail shoulders
+  const flowerCols = ['#ffd166', '#ff758f', '#ffffff', '#ffb703'];
+  for (let i = 0; i < 60; i++) {
+    const sideX = i % 2 === 0 ? 6 + ((i * 17) % 20) : 486 + ((i * 19) % 20);
+    const fy = (i * 29) % 512;
+    g.fillStyle = '#2d6a4f';
+    g.beginPath();
+    g.arc(sideX, fy, 5, 0, Math.PI * 2);
+    g.fill();
+    g.fillStyle = flowerCols[i % flowerCols.length];
+    g.beginPath();
+    g.arc(sideX, fy, 2.4, 0, Math.PI * 2);
+    g.fill();
   }
 
   const t = new THREE.CanvasTexture(c);
   t.wrapS = THREE.RepeatWrapping;
   t.wrapT = THREE.RepeatWrapping;
-  t.repeat.set(1, 11);
+  t.repeat.set(1, 10);
   t.colorSpace = THREE.SRGBColorSpace;
   return t;
 }
@@ -129,46 +173,75 @@ function createWindowGridTexture(bgHex = '#10243d', litHex = '#ffe28a') {
 
 const bldgWinTex = createWindowGridTexture('#122844', '#ffd97d');
 
+// Builds a lush roadside cluster of 3D grass bushes, wildflowers, and stepping stones along the trail border
+function buildTrailsideFoliage(side, variant) {
+  const g = new THREE.Group();
+  const bushMat = new THREE.MeshStandardMaterial({ color: 0x2d6a4f, roughness: 0.8 });
+  const flowerColors = [0xffd166, 0xff758f, 0xfff3b0, 0xff9ebb];
+  const fMat = new THREE.MeshStandardMaterial({
+    color: flowerColors[variant % flowerColors.length],
+    emissive: flowerColors[variant % flowerColors.length],
+    emissiveIntensity: 0.35,
+  });
+
+  for (let i = 0; i < 3; i++) {
+    const zOff = (i - 1) * 1.6;
+    const r = 0.38 + ((variant + i) % 3) * 0.12;
+    const bush = new THREE.Mesh(new THREE.SphereGeometry(r, 10, 8), bushMat);
+    bush.scale.set(1.2, 0.75, 1.1);
+    bush.position.set(side * (0.1 + (i % 2) * 0.35), r * 0.5, zOff);
+    g.add(bush);
+
+    const blossom = new THREE.Mesh(new THREE.SphereGeometry(0.09, 8, 6), fMat);
+    blossom.position.set(bush.position.x - side * 0.1, r * 0.85, zOff + 0.1);
+    g.add(blossom);
+  }
+  return g;
+}
+
 // Builds a rich multi-part 3D roadside scene with animated sub-parts (`anim` callback)
 function buildRoadsideScene(biomeId, side, variant, animList) {
   const g = new THREE.Group();
   const phaseOffset = variant * 1.7 + (side > 0 ? 0.9 : 0);
 
+  // Always add lush trailside bushes & flowers right along the stone border
+  g.add(buildTrailsideFoliage(side, variant));
+
   if (biomeId === 'vietnam') {
     if (variant % 3 === 0) {
-      // Scene A: Hoi An Ancient Yellow Shophouse + Swinging Silk Lantern Garland
+      // Scene A: Hoi An Ancient Yellow Heritage House + Swinging Silk Lantern Garland + Bamboo Grove
       const house = new THREE.Mesh(
         new THREE.BoxGeometry(2.8, 3.4, 2.6),
         new THREE.MeshStandardMaterial({ color: 0xe8a838, roughness: 0.7 })
       );
-      house.position.set(side * 2.8, 1.7, 0);
+      house.position.set(side * 2.9, 1.7, 0);
       g.add(house);
       const roof = new THREE.Mesh(
-        new THREE.ConeGeometry(2.4, 1.3, 4),
+        new THREE.ConeGeometry(2.45, 1.35, 4),
         new THREE.MeshStandardMaterial({ color: 0x9e2a1b, roughness: 0.6 })
       );
       roof.rotation.y = Math.PI / 4;
-      roof.position.set(side * 2.8, 3.95, 0);
+      roof.position.set(side * 2.9, 3.95, 0);
       g.add(roof);
       // Warm glowing doorway
       const door = new THREE.Mesh(
         new THREE.BoxGeometry(0.15, 1.5, 0.9),
         new THREE.MeshBasicMaterial({ color: 0xffe28a })
       );
-      door.position.set(side * 1.4, 0.85, 0);
+      door.position.set(side * 1.5, 0.85, 0);
       g.add(door);
-      // Lantern pole with 2 swinging lanterns near road edge
+      // Lantern pole with swinging silk lantern near trail edge
       const pole = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.06, 0.08, 3.6, 8),
+        new THREE.CylinderGeometry(0.06, 0.08, 3.5, 8),
         new THREE.MeshStandardMaterial({ color: 0x4a2210 })
       );
-      pole.position.set(side * 0.2, 1.8, 0);
+      pole.position.set(side * 0.25, 1.75, 0);
       g.add(pole);
       const lanternPivot = new THREE.Group();
-      lanternPivot.position.set(side * 0.2, 3.4, 0);
+      lanternPivot.position.set(side * 0.25, 3.35, 0);
       const lCol = variant % 2 === 0 ? 0xff2a1a : 0xffaa00;
       const lantern = new THREE.Mesh(
-        new THREE.SphereGeometry(0.34, 12, 10),
+        new THREE.SphereGeometry(0.32, 12, 10),
         new THREE.MeshStandardMaterial({ color: lCol, emissive: lCol, emissiveIntensity: 1.2 })
       );
       lantern.scale.set(1, 1.25, 1);
@@ -176,19 +249,19 @@ function buildRoadsideScene(biomeId, side, variant, animList) {
       lanternPivot.add(lantern);
       g.add(lanternPivot);
       animList.push(t => {
-        lanternPivot.rotation.z = Math.sin(t * 2.2 + phaseOffset) * 0.18;
+        lanternPivot.rotation.z = Math.sin(t * 2.0 + phaseOffset) * 0.16;
       });
     } else if (variant % 3 === 1) {
       // Scene B: Ha Long Wooden Junk Boat (Thuyền Buồm Đỏ) rocking gently in front of Karst Island
       const karst = new THREE.Mesh(
-        new THREE.ConeGeometry(2.6, 7.5, 7),
+        new THREE.ConeGeometry(2.8, 7.8, 7),
         new THREE.MeshStandardMaterial({ color: 0x1f665a, roughness: 0.85 })
       );
-      karst.position.set(side * 4.8, 3.4, -0.8);
+      karst.position.set(side * 4.8, 3.5, -0.8);
       g.add(karst);
 
       const boat = new THREE.Group();
-      boat.position.set(side * 2.1, 0.45, 0.4);
+      boat.position.set(side * 2.2, 0.45, 0.4);
       const hull = new THREE.Mesh(
         new THREE.BoxGeometry(0.95, 0.48, 2.5),
         new THREE.MeshStandardMaterial({ color: 0x6e3b1e, roughness: 0.7 })
@@ -208,12 +281,12 @@ function buildRoadsideScene(biomeId, side, variant, animList) {
       boat.add(sail);
       g.add(boat);
       animList.push(t => {
-        boat.position.y = 0.45 + Math.sin(t * 1.8 + phaseOffset) * 0.14;
-        boat.rotation.z = Math.sin(t * 1.5 + phaseOffset) * 0.09;
-        boat.rotation.x = Math.cos(t * 1.2 + phaseOffset) * 0.06;
+        boat.position.y = 0.45 + Math.sin(t * 1.6 + phaseOffset) * 0.14;
+        boat.rotation.z = Math.sin(t * 1.3 + phaseOffset) * 0.08;
+        boat.rotation.x = Math.cos(t * 1.1 + phaseOffset) * 0.05;
       });
     } else {
-      // Scene C: 3-Tier Vietnamese Pagoda Tower (Tháp Chùa) + Lotus Lantern
+      // Scene C: 3-Tier Vietnamese Pagoda Tower (Tháp Chùa Cổ) + Glowing Lotus Pond
       const tower = new THREE.Group();
       tower.position.set(side * 3.1, 0, 0);
       const bodyMat = new THREE.MeshStandardMaterial({ color: 0x8c2318, roughness: 0.6 });
@@ -233,7 +306,7 @@ function buildRoadsideScene(biomeId, side, variant, animList) {
     }
   } else if (biomeId === 'japan') {
     if (variant % 2 === 0) {
-      // Blooming Multi-Crown Sakura Tree + Stone Lantern
+      // Blooming Multi-Crown Sakura Tree + Traditional Stone Tōrō Lantern
       const trunk = new THREE.Mesh(
         new THREE.CylinderGeometry(0.22, 0.35, 2.8, 8),
         new THREE.MeshStandardMaterial({ color: 0x4a2818 })
@@ -250,7 +323,7 @@ function buildRoadsideScene(biomeId, side, variant, animList) {
       }
       g.add(blossomGroup);
       animList.push(t => {
-        blossomGroup.rotation.z = Math.sin(t * 1.6 + phaseOffset) * 0.06;
+        blossomGroup.rotation.z = Math.sin(t * 1.4 + phaseOffset) * 0.05;
       });
     } else {
       // 5-Tier Crimson Kyoto Pagoda
@@ -288,8 +361,8 @@ function buildRoadsideScene(biomeId, side, variant, animList) {
       cap.position.set(side * 4.2, 5.2, 0);
       g.add(cap);
       animList.push(t => {
-        cap.rotation.y = t * 1.8 + phaseOffset;
-        cap.position.y = 5.2 + Math.sin(t * 2.2 + phaseOffset) * 0.22;
+        cap.rotation.y = t * 1.5 + phaseOffset;
+        cap.position.y = 5.2 + Math.sin(t * 2.0 + phaseOffset) * 0.22;
       });
     } else {
       // Oasis Palm Tree + Glowing Obelisk
@@ -313,8 +386,8 @@ function buildRoadsideScene(biomeId, side, variant, animList) {
       g.add(crown);
     }
   } else if (biomeId === 'france' || biomeId === 'usa') {
-    // Illuminated City Skyscraper / Parisian Building + Glowing Streetlamp
-    const h = 5.5 + (variant % 3) * 1.8;
+    // Illuminated Parisian / New York Heritage Building + Warm Boulevard Streetlamp
+    const h = 5.2 + (variant % 3) * 1.6;
     const bldg = new THREE.Mesh(
       new THREE.BoxGeometry(2.5, h, 2.5),
       new THREE.MeshStandardMaterial({ map: bldgWinTex, roughness: 0.4, metalness: 0.3 })
@@ -348,16 +421,16 @@ function buildRoadsideScene(biomeId, side, variant, animList) {
     ring.position.set(side * 2.0, 2.6, 0);
     g.add(ring);
     animList.push(t => {
-      crystal.rotation.y = t * 1.4 + phaseOffset;
-      crystal.position.y = 2.6 + Math.sin(t * 2 + phaseOffset) * 0.28;
-      ring.rotation.x = t * 1.1 + phaseOffset;
-      ring.rotation.y = t * 0.8;
+      crystal.rotation.y = t * 1.2 + phaseOffset;
+      crystal.position.y = 2.6 + Math.sin(t * 1.8 + phaseOffset) * 0.26;
+      ring.rotation.x = t * 0.9 + phaseOffset;
+      ring.rotation.y = t * 0.7;
     });
   }
   return g;
 }
 
-// Builds an ornate overhead gateway spanning the highway that scrolls slowly toward the runners
+// Builds an ornate overhead gateway spanning the walking trail that scrolls gently toward the trekkers
 function buildHighwayGateway(biomeId) {
   const g = new THREE.Group();
   const isEast = biomeId === 'vietnam' || biomeId === 'japan';
@@ -417,6 +490,59 @@ function buildSkyBalloon(colorHex, accentHex) {
   return g;
 }
 
+// Builds an articulated 3D Flock of White Cranes / Birds (`Đàn Hạc Trắng Bay Lượn`) with flapping wings
+function buildFlockOfCranes() {
+  const group = new THREE.Group();
+  const birdMat = new THREE.MeshBasicMaterial({ color: 0xfff8eb, side: THREE.DoubleSide });
+  const wingGeo = new THREE.BoxGeometry(0.48, 0.03, 0.22);
+  const birds = [];
+
+  const offsets = [
+    [0, 0, 0],
+    [-1.6, 0.4, 1.1],
+    [1.6, 0.35, 1.0],
+    [-3.1, 0.75, 2.2],
+    [3.1, 0.7, 2.1],
+  ];
+
+  for (let i = 0; i < offsets.length; i++) {
+    const bGroup = new THREE.Group();
+    const [ox, oy, oz] = offsets[i];
+    bGroup.position.set(ox, oy, oz);
+
+    const body = new THREE.Mesh(new THREE.ConeGeometry(0.08, 0.45, 6), birdMat);
+    body.rotation.x = -Math.PI / 2;
+    bGroup.add(body);
+
+    const leftWing = new THREE.Mesh(wingGeo, birdMat);
+    leftWing.position.set(-0.22, 0, 0);
+    const rightWing = new THREE.Mesh(wingGeo, birdMat);
+    rightWing.position.set(0.22, 0, 0);
+    bGroup.add(leftWing, rightWing);
+
+    group.add(bGroup);
+    birds.push({ bGroup, leftWing, rightWing, phase: i * 0.7 });
+  }
+
+  return {
+    group,
+    update(t) {
+      // Gentle circular soaring across the upper sky
+      group.position.set(
+        Math.cos(t * 0.28) * 12,
+        10.5 + Math.sin(t * 0.55) * 1.4,
+        -22 + Math.sin(t * 0.28) * 6
+      );
+      group.rotation.y = -t * 0.28;
+      for (const b of birds) {
+        const flap = Math.sin(t * 5.2 + b.phase) * 0.55;
+        b.leftWing.rotation.z = flap;
+        b.rightWing.rotation.z = -flap;
+      }
+    },
+  };
+}
+
 // Builds an articulated 3D Golden Dragon that flies across the sky in a figure-8 wave
 function buildSkyDragon() {
   const g = new THREE.Group();
@@ -439,19 +565,15 @@ function buildSkyDragon() {
   return {
     group: g,
     update(t) {
-      const centerX = Math.sin(t * 0.42) * 14;
-      const centerY = 12.8 + Math.cos(t * 0.84) * 2.2;
-      const centerZ = -28 + Math.sin(t * 0.84) * 5;
       for (let i = 0; i < segments.length; i++) {
         const lag = t - i * 0.14;
         const s = segments[i];
         s.position.set(
-          Math.sin(lag * 0.42) * 14,
-          12.8 + Math.cos(lag * 0.84) * 2.2 + Math.sin(lag * 3.2) * 0.35,
-          -28 + Math.sin(lag * 0.84) * 5
+          Math.sin(lag * 0.36) * 14,
+          13.2 + Math.cos(lag * 0.72) * 2.0 + Math.sin(lag * 2.8) * 0.32,
+          -30 + Math.sin(lag * 0.72) * 5
         );
       }
-      void centerX; void centerY; void centerZ;
     },
   };
 }
@@ -463,27 +585,27 @@ function buildHorizonLandmark(biomeId, animList) {
 
   if (biomeId === 'vietnam') {
     const karstMat = new THREE.MeshStandardMaterial({ color: 0x1b5e55, roughness: 0.8 });
-    for (const [x, h, r] of [[-13, 16, 5.5], [14, 18, 6], [-23, 12, 4.5], [23, 14, 5]]) {
+    for (const [x, h, r] of [[-14, 15, 5.5], [15, 17, 6], [-23, 12, 4.5], [23, 14, 5]]) {
       const m = new THREE.Mesh(new THREE.ConeGeometry(r, h, 7), karstMat);
       m.position.set(x, h / 2 - 1, -6);
       g.add(m);
     }
   } else if (biomeId === 'japan') {
     const fuji = new THREE.Mesh(
-      new THREE.ConeGeometry(22, 19, 24),
+      new THREE.ConeGeometry(22, 18, 24),
       new THREE.MeshStandardMaterial({ color: 0x3b4d7a, roughness: 0.7 })
     );
-    fuji.position.set(0, 8.5, -14);
+    fuji.position.set(0, 8.0, -15);
     g.add(fuji);
     const snow = new THREE.Mesh(
-      new THREE.ConeGeometry(9.2, 7.8, 24),
+      new THREE.ConeGeometry(9.2, 7.5, 24),
       new THREE.MeshBasicMaterial({ color: 0xffffff })
     );
-    snow.position.set(0, 14.2, -13.9);
+    snow.position.set(0, 13.6, -14.9);
     g.add(snow);
   } else if (biomeId === 'egypt') {
     const pyrMat = new THREE.MeshStandardMaterial({ color: 0xe0a43b, emissive: 0x2e1a03, roughness: 0.6 });
-    for (const [x, s, z] of [[0, 16, -12], [-16, 12, -8], [16, 13, -9]]) {
+    for (const [x, s, z] of [[0, 15, -13], [-16, 12, -8], [16, 13, -9]]) {
       const p = new THREE.Mesh(new THREE.ConeGeometry(s * 0.85, s, 4), pyrMat);
       p.rotation.y = Math.PI / 4;
       p.position.set(x, s / 2 - 0.5, z);
@@ -511,7 +633,7 @@ function buildHorizonLandmark(biomeId, animList) {
     beamPivot.add(beam);
     g.add(beamPivot);
     animList.push(t => {
-      beamPivot.rotation.y = t * 0.85;
+      beamPivot.rotation.y = t * 0.75;
     });
   } else if (biomeId === 'usa') {
     const gateMat = new THREE.MeshStandardMaterial({ color: 0xc93b2b, emissive: 0x330a05 });
@@ -541,28 +663,34 @@ function buildHorizonLandmark(biomeId, animList) {
     ring.position.set(0, 13, -15);
     g.add(ring);
     animList.push(t => {
-      ring.rotation.z = t * 0.4;
+      ring.rotation.z = t * 0.35;
     });
   }
   return g;
 }
 
 export function buildRaceWorld(scene) {
-  scene.background = new THREE.Color(0x06243a);
-  scene.fog = new THREE.FogExp2(0x0d3b49, 0.012);
+  scene.background = new THREE.Color(0x0a2c3d);
+  scene.fog = new THREE.FogExp2(0x124554, 0.0095);
 
-  const hemi = new THREE.HemisphereLight(0xffeedd, 0x1a283b, 1.45);
+  const hemi = new THREE.HemisphereLight(0xfff4e0, 0x1d3244, 1.55);
   scene.add(hemi);
 
-  const dir = new THREE.DirectionalLight(0xfff0cc, 1.85);
+  const dir = new THREE.DirectionalLight(0xfff0cc, 1.9);
   dir.position.set(8, 18, 12);
   dir.castShadow = true;
   scene.add(dir);
 
-  // Nano Banana Panoramic Sky Backdrop Plane on the distant horizon (fog-exempt so it glows vividly)
+  // Nano Banana Panoramic Sky Backdrop Plane on the distant horizon (fog-exempt so every landmark painting shines)
   const texLoader = new THREE.TextureLoader();
   const skyTextures = {};
-  for (const url of ['/assets/sky_vietnam.jpg', '/assets/sky_world.jpg']) {
+  for (const url of [
+    '/assets/sky_vietnam.jpg',
+    '/assets/sky_japan.jpg',
+    '/assets/sky_egypt.jpg',
+    '/assets/sky_europe.jpg',
+    '/assets/sky_world.jpg',
+  ]) {
     const t = texLoader.load(url);
     t.colorSpace = THREE.SRGBColorSpace;
     skyTextures[url] = t;
@@ -571,33 +699,33 @@ export function buildRaceWorld(scene) {
     map: skyTextures['/assets/sky_vietnam.jpg'],
     fog: false,
     transparent: true,
-    opacity: 0.92,
+    opacity: 0.96,
   });
-  const skyBackdrop = new THREE.Mesh(new THREE.PlaneGeometry(96, 42), skyMat);
-  skyBackdrop.position.set(0, 15.5, -58);
+  const skyBackdrop = new THREE.Mesh(new THREE.PlaneGeometry(104, 46), skyMat);
+  skyBackdrop.position.set(0, 16.0, -56);
   scene.add(skyBackdrop);
 
   // Glowing sun/moon halo
   const sunOrb = new THREE.Sprite(
     new THREE.SpriteMaterial({ map: glowTex, color: 0xffe299, blending: THREE.AdditiveBlending, depthWrite: false })
   );
-  sunOrb.scale.setScalar(22);
+  sunOrb.scale.setScalar(20);
   sunOrb.position.set(0, 15, -52);
   scene.add(sunOrb);
 
-  // Ground / Water plane
-  const groundMat = new THREE.MeshStandardMaterial({ color: 0x093842, roughness: 0.75, metalness: 0.15 });
+  // Ground / Water plane flanking the walking trail
+  const groundMat = new THREE.MeshStandardMaterial({ color: 0x0b424d, roughness: 0.65, metalness: 0.22 });
   const ground = new THREE.Mesh(new THREE.PlaneGeometry(160, 160), groundMat);
   ground.rotation.x = -Math.PI / 2;
   ground.position.set(0, -0.05, -20);
   scene.add(ground);
 
-  // Endless 7-lane adventure highway (width 9.6m, length 95m)
-  const roadTex = createRoadTexture();
+  // Endless Scenic Stone-Paved Heritage Walking Trail (width 9.6m, length 95m)
+  const roadTex = createScenicTrailTexture();
   const roadMat = new THREE.MeshStandardMaterial({
     map: roadTex,
-    roughness: 0.55,
-    metalness: 0.15,
+    roughness: 0.78,
+    metalness: 0.06,
   });
   const road = new THREE.Mesh(new THREE.PlaneGeometry(9.6, 95), roadMat);
   road.rotation.x = -Math.PI / 2;
@@ -605,30 +733,33 @@ export function buildRaceWorld(scene) {
   road.receiveShadow = true;
   scene.add(road);
 
-  // Glowing side guardrails
-  const railMat = new THREE.MeshBasicMaterial({ color: 0xffd166 });
-  for (const x of [-4.9, 4.9]) {
-    const rail = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.18, 95), railMat);
-    rail.position.set(x, 0.1, -18);
+  // Warm carved stone border rails along the walking trail
+  const railMat = new THREE.MeshStandardMaterial({ color: 0xe0a952, roughness: 0.6, metalness: 0.15 });
+  for (const x of [-4.85, 4.85]) {
+    const rail = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.16, 95), railMat);
+    rail.position.set(x, 0.08, -18);
     scene.add(rail);
   }
 
-  // Persistent Animated 3D Sky Actors: Soaring Golden Dragon + 4 Floating Hot-Air Balloons
+  // Persistent Animated 3D Sky Actors: Soaring Golden Dragon + Flock of White Cranes + 4 Floating Hot-Air Balloons
   const dragon = buildSkyDragon();
   scene.add(dragon.group);
 
+  const cranes = buildFlockOfCranes();
+  scene.add(cranes.group);
+
   const balloons = [
-    { mesh: buildSkyBalloon(0xff3b2f, 0xffaa00), baseX: -14, baseY: 11.5, baseZ: -26, speed: 0.7, phase: 0.2 },
-    { mesh: buildSkyBalloon(0x00b4d8, 0x00f5d4), baseX: 15, baseY: 13.0, baseZ: -32, speed: 0.55, phase: 1.8 },
-    { mesh: buildSkyBalloon(0xffbe0b, 0xff5400), baseX: -9, baseY: 15.2, baseZ: -38, speed: 0.65, phase: 3.4 },
-    { mesh: buildSkyBalloon(0x9b5de5, 0xf15bb5), baseX: 11, baseY: 10.2, baseZ: -20, speed: 0.8, phase: 4.7 },
+    { mesh: buildSkyBalloon(0xff3b2f, 0xffaa00), baseX: -14, baseY: 11.5, baseZ: -26, speed: 0.6, phase: 0.2 },
+    { mesh: buildSkyBalloon(0x00b4d8, 0x00f5d4), baseX: 15, baseY: 13.0, baseZ: -32, speed: 0.5, phase: 1.8 },
+    { mesh: buildSkyBalloon(0xffbe0b, 0xff5400), baseX: -9, baseY: 15.2, baseZ: -38, speed: 0.55, phase: 3.4 },
+    { mesh: buildSkyBalloon(0x9b5de5, 0xf15bb5), baseX: 11, baseY: 10.2, baseZ: -20, speed: 0.68, phase: 4.7 },
   ];
   for (const b of balloons) {
     b.mesh.position.set(b.baseX, b.baseY, b.baseZ);
     scene.add(b.mesh);
   }
 
-  // Scrolling roadside props & overhead highway archways
+  // Scrolling roadside props & overhead archways
   const propsGroup = new THREE.Group();
   scene.add(propsGroup);
   let horizonGroup = null;
@@ -652,6 +783,12 @@ export function buildRaceWorld(scene) {
       skyMat.needsUpdate = true;
     }
 
+    // Update top header card background image to match the current destination's Nano Banana painting
+    const worldCard = document.getElementById('world-card');
+    if (worldCard && pal.skyImg) {
+      worldCard.style.backgroundImage = `linear-gradient(180deg, rgba(8, 22, 42, .76), rgba(4, 12, 24, .88)), url('${pal.skyImg}')`;
+    }
+
     while (propsGroup.children.length) propsGroup.remove(propsGroup.children[0]);
     propRows.length = 0;
     gateRows.length = 0;
@@ -662,15 +799,15 @@ export function buildRaceWorld(scene) {
       const row = new THREE.Group();
       row.position.z = 16 - i * 6.2;
       const leftProp = buildRoadsideScene(biomeId, -1, i, animCallbacks);
-      leftProp.position.x = -5.5;
+      leftProp.position.x = -5.4;
       const rightProp = buildRoadsideScene(biomeId, 1, i + 1, animCallbacks);
-      rightProp.position.x = 5.5;
+      rightProp.position.x = 5.4;
       row.add(leftProp, rightProp);
       propsGroup.add(row);
       propRows.push(row);
     }
 
-    // 2 grand overhead highway gateways scrolling slowly over the road
+    // 2 grand overhead heritage gateways scrolling gently over the trail
     for (let gIdx = 0; gIdx < 2; gIdx++) {
       const gate = buildHighwayGateway(biomeId);
       gate.position.z = -6 - gIdx * 36;
@@ -691,9 +828,9 @@ export function buildRaceWorld(scene) {
     },
     update(dt, speedMult = 1.0) {
       elapsed += dt;
-      // Slower, majestic journey scroll (~3.4x slower than before so 3D scenes can be admired!)
-      const scroll = dt * 3.2 * speedMult;
-      roadTex.offset.y -= scroll * 0.12;
+      // Gentle, realistic human cross-country walking speed (~1.75 m/s) so viewers can savor every landmark!
+      const scroll = dt * 1.75 * speedMult;
+      roadTex.offset.y -= scroll * 0.105;
 
       for (const row of propRows) {
         row.position.z += scroll;
@@ -708,12 +845,13 @@ export function buildRaceWorld(scene) {
         }
       }
 
-      // Update soaring 3D Golden Dragon, floating Hot-Air Balloons, and animated biome props
+      // Update soaring 3D Golden Dragon, Flock of White Cranes, Hot-Air Balloons, and animated biome props
       dragon.update(elapsed);
+      cranes.update(elapsed);
       for (const b of balloons) {
-        b.mesh.position.y = b.baseY + Math.sin(elapsed * b.speed + b.phase) * 0.9;
-        b.mesh.position.x = b.baseX + Math.cos(elapsed * b.speed * 0.6 + b.phase) * 1.4;
-        b.mesh.rotation.y = elapsed * 0.35 + b.phase;
+        b.mesh.position.y = b.baseY + Math.sin(elapsed * b.speed + b.phase) * 0.85;
+        b.mesh.position.x = b.baseX + Math.cos(elapsed * b.speed * 0.6 + b.phase) * 1.3;
+        b.mesh.rotation.y = elapsed * 0.3 + b.phase;
       }
       for (const fn of animCallbacks) fn(elapsed);
     },

@@ -36,7 +36,7 @@ const stamp = () => new Date().toLocaleTimeString('vi-VN', { hour12: false });
 const lists = loadLists();
 const blocked = new Set();
 const dedupe = createDedupe();
-const stage = new RaceStage({ max: Number(process.env.MAX_ACTORS || 120), baseSpeedMps: 1.6 });
+const stage = new RaceStage({ max: Number(process.env.MAX_ACTORS || 120), baseSpeedMps: 1.35 });
 const rules = createRaceRules({ stage, lists });
 
 let scene = { sound: true };

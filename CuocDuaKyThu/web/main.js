@@ -130,12 +130,12 @@ function frame(now) {
   prev = now;
 
   const packSpeed = runners.update(now, dt);
-  world3d.update(dt, Math.min(1.55, 0.72 + (packSpeed - 1) * 0.16));
+  world3d.update(dt, Math.min(1.38, 0.85 + (packSpeed - 1) * 0.1));
   fx.update(dt);
 
-  // Subtle dynamic camera sway for adventure feel
-  camera.position.x = Math.sin(now / 2800) * 0.35;
-  camera.position.y = 4.35 + Math.cos(now / 1900) * 0.12;
+  // Subtle dynamic camera sway for a cinematic walking trek feel
+  camera.position.x = Math.sin(now / 3600) * 0.28;
+  camera.position.y = 4.3 + Math.cos(now / 2400) * 0.08;
   camera.lookAt(0, 1.75, -12);
 
   composer.render();

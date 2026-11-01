@@ -1,28 +1,142 @@
+// Lifelike 3D Human Trekkers / Cross-Country Walkers (`Hành Trình Đi Bộ Đường Trường Khám Phá Kỳ Quan`).
+// Supports VRM humanoid models (`assets/models/layman_{0..3}.vrm` via `@pixiv/three-vrm`)
+// and falls back to an articulated 14-bone human walker rig with realistic proportions:
+// - Head with facial features (eyes, eyebrows, nose, warm smile), hair, and Vietnamese Nón Lá / Explorer Hat / Crown
+// - Articulated spine, chest, collar, travel jacket, and 3D Trekking Backpack (`balo đường trường`) with sleeping roll
+// - Articulated shoulders, elbows (UpperArm + LowerArm), hands holding a Wooden Trekking Staff + Glowing Lantern
+// - Articulated hips, knees (UpperLeg + LowerLeg), ankles, and hiking boots with natural heel-to-toe walking kinematics
 import * as THREE from 'three';
 import { CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
+import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { VRMLoaderPlugin, VRMUtils, VRMHumanoid } from '@pixiv/three-vrm';
 import { glowTex } from './world3d.js';
 
-const OUTFIT_COLORS = [0x2ec4b6, 0xff6b6b, 0x4cc9f0, 0xf77f00];
+const OUTFIT_COLORS = [0x1f8a70, 0xd94e34, 0x2b6cb0, 0xd97706, 0x7c3aed, 0x0d9488];
 const TIER_SUITS = {
-  1: 0x38bdf8, // Tier 1 (1-9💎): Energy Cyan-Gold
-  2: 0xf59e0b, // Tier 2 (10-99💎): Golden Hoverboard Suit
-  3: 0xf43f5e, // Tier 3 (100-999💎): Lightning Crimson Jet Suit
-  4: 0xffd700, // Tier 4 (1000+💎): Imperial Cosmic Gold
+  1: 0x0ea5e9, // Tier 1 (1-9💎): Sky Explorer Jacket + Energy Wings
+  2: 0xf59e0b, // Tier 2 (10-99💎): Golden Silk Trekker + Cloud Hoverboard
+  3: 0xe11d48, // Tier 3 (100-999💎): Royal Crimson Adventurer + Twin Boosters
+  4: 0xffd700, // Tier 4 (1000+💎): Imperial Golden Legend + Cosmic Halo
 };
 
-const std = (color, o = {}) => new THREE.MeshStandardMaterial({ color, roughness: 0.55, ...o });
-const skinMat = std(0xf2c9a6);
-const hairMat = std(0x1f1612);
-const shortsMat = std(0x1e293b);
-const wingMat = new THREE.MeshBasicMaterial({ color: 0x58f5ff, transparent: true, opacity: 0.82, side: THREE.DoubleSide });
-const hoverMat = std(0xf5c242, { metalness: 0.7, roughness: 0.25, emissive: 0x4a3006 });
+const std = (color, o = {}) => new THREE.MeshStandardMaterial({ color, roughness: 0.6, ...o });
+const skinMat = std(0xf1c6a0, { roughness: 0.55 });
+const blushMat = std(0xe8998d, { roughness: 0.6 });
+const eyeMat = new THREE.MeshBasicMaterial({ color: 0x161210 });
+const eyeHighlightMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+const hairMats = [
+  std(0x1b1410, { roughness: 0.75 }),
+  std(0x2c1b12, { roughness: 0.72 }),
+  std(0x3a2314, { roughness: 0.7 }),
+  std(0x16161d, { roughness: 0.75 }),
+];
+const pantsMats = [
+  std(0x253244, { roughness: 0.78 }),
+  std(0x3d352a, { roughness: 0.8 }),
+  std(0x1e293b, { roughness: 0.75 }),
+  std(0x2d3748, { roughness: 0.78 }),
+];
+const bootMat = std(0x4a2c18, { roughness: 0.65, metalness: 0.1 });
+const soleMat = std(0x1c1917, { roughness: 0.9 });
+const packMat = std(0x8c5828, { roughness: 0.68 });
+const packPocketMat = std(0x633b18, { roughness: 0.72 });
+const sleepRollMat = std(0x2a9d8f, { roughness: 0.65 });
+const nonLaMat = std(0xe9c987, { roughness: 0.65, side: THREE.DoubleSide });
+const hatBandMat = std(0xc92a2a, { roughness: 0.5 });
+const staffWoodMat = std(0x5c3418, { roughness: 0.75 });
+const lanternGoldMat = new THREE.MeshBasicMaterial({ color: 0xffdd66 });
+const wingMat = new THREE.MeshStandardMaterial({
+  color: 0x67e8f9,
+  emissive: 0x0284c7,
+  emissiveIntensity: 0.65,
+  transparent: true,
+  opacity: 0.86,
+  side: THREE.DoubleSide,
+});
+const hoverMat = std(0xf5c242, { metalness: 0.72, roughness: 0.25, emissive: 0x4a3006 });
 const jetMat = std(0xe11d48, { metalness: 0.65, roughness: 0.3, emissive: 0x4c0519 });
-const flameMat = new THREE.MeshBasicMaterial({ color: 0xff9f1c });
-const crownMat = std(0xffdd44, { metalness: 0.85, roughness: 0.2, emissive: 0x5c4200 });
+const flameMat = new THREE.MeshBasicMaterial({ color: 0xffaa2b });
+const crownMat = std(0xffdd44, { metalness: 0.88, roughness: 0.2, emissive: 0x664800 });
+
+// Optional VRM template cache (if user drops .vrm models into assets/models/)
+let vrmTemplates = [null, null, null, null];
+function loadVrmTemplates() {
+  const loader = new GLTFLoader();
+  loader.register(p => new VRMLoaderPlugin(p));
+  return Promise.all([0, 1, 2, 3].map(idx =>
+    loader.loadAsync(`assets/models/layman_${idx}.vrm`).then(g => {
+      const vrm = g.userData.vrm;
+      VRMUtils.rotateVRM0(vrm);
+      VRMUtils.removeUnnecessaryVertices(g.scene);
+      VRMUtils.combineSkeletons(g.scene);
+      return vrm;
+    }).catch(() => null)
+  ));
+}
+loadVrmTemplates().then(res => { vrmTemplates = res; });
+
+// Builds a detailed 3D Trekking Backpack (`Balo Đi Bộ Đường Trường`)
+function createTrekkingBackpack() {
+  const pack = new THREE.Group();
+  pack.position.set(0, 0.05, -0.17);
+
+  // Main rucksack body
+  const body = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.36, 0.16), packMat);
+  body.castShadow = true;
+  pack.add(body);
+
+  // Top flap & back pocket
+  const flap = new THREE.Mesh(new THREE.BoxGeometry(0.29, 0.09, 0.17), packPocketMat);
+  flap.position.set(0, 0.15, 0);
+  pack.add(flap);
+
+  const pocket = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.16, 0.06), packPocketMat);
+  pocket.position.set(0, -0.04, -0.1);
+  pack.add(pocket);
+
+  // Rolled sleeping mat strapped on top of backpack
+  const roll = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.055, 0.32, 12), sleepRollMat);
+  roll.rotation.z = Math.PI / 2;
+  roll.position.set(0, 0.24, -0.02);
+  pack.add(roll);
+
+  // Shoulder straps wrapping around torso
+  for (const sx of [-0.09, 0.09]) {
+    const strap = new THREE.Mesh(new THREE.BoxGeometry(0.035, 0.34, 0.18), packPocketMat);
+    strap.position.set(sx, 0.02, 0.11);
+    pack.add(strap);
+  }
+  return pack;
+}
+
+// Builds a Wooden Trekking Staff with a miniature hanging glowing lantern (`Gậy Trúc & Đèn Lồng Dẫn Đường`)
+function createTrekkingStaff() {
+  const g = new THREE.Group();
+  // Staff held in right hand: extends down to the ground and up above the hand
+  const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.016, 0.013, 1.18, 8), staffWoodMat);
+  pole.position.set(0, -0.12, 0.06);
+  pole.rotation.x = 0.15;
+  pole.castShadow = true;
+  g.add(pole);
+
+  // Curved top hook with warm miniature trail lantern
+  const lanternBulb = new THREE.Mesh(new THREE.SphereGeometry(0.042, 10, 8), lanternGoldMat);
+  lanternBulb.position.set(0, 0.42, 0.16);
+  g.add(lanternBulb);
+
+  const glow = new THREE.Sprite(new THREE.SpriteMaterial({
+    map: glowTex, color: 0xffd166, blending: THREE.AdditiveBlending, depthWrite: false, opacity: 0.75,
+  }));
+  glow.scale.setScalar(0.28);
+  glow.position.set(0, 0.42, 0.16);
+  g.add(glow);
+  return g;
+}
 
 function buildRunnerRig(skin = 0, tier = 0) {
   const root = new THREE.Group();
-  // Face -Z (into the horizon along the highway)
+  // Face -Z (walking forward along the scenic trail toward the horizon landmarks)
   root.rotation.y = Math.PI;
 
   const b = {};
@@ -35,98 +149,235 @@ function buildRunnerRig(skin = 0, tier = 0) {
 
   const baseColor = TIER_SUITS[tier] || OUTFIT_COLORS[skin % OUTFIT_COLORS.length];
   const suitMat = std(baseColor, {
-    metalness: tier >= 2 ? 0.45 : 0.1,
-    roughness: tier >= 2 ? 0.32 : 0.6,
-    emissive: tier >= 4 ? 0x4a3200 : tier >= 2 ? 0x261500 : 0x000000,
+    metalness: tier >= 2 ? 0.38 : 0.08,
+    roughness: tier >= 2 ? 0.35 : 0.65,
+    emissive: tier >= 4 ? 0x4a3200 : tier >= 2 ? 0x221200 : 0x000000,
   });
+  const collarMat = std(0xf8fafc, { roughness: 0.6 });
+  const hMat = hairMats[skin % hairMats.length];
+  const pMat = pantsMats[skin % pantsMats.length];
 
-  bone('hips', root, 0, 0.92, 0);
-  bone('torso', b.hips, 0, 0.25, 0);
-  bone('head', b.torso, 0, 0.38, 0);
+  // Full 14-bone Humanoid Hierarchy
+  bone('hips', root, 0, 0.94, 0);
+  bone('spine', b.hips, 0, 0.08, 0);
+  bone('chest', b.spine, 0, 0.2, 0);
+  bone('neck', b.chest, 0, 0.28, 0);
+  bone('head', b.neck, 0, 0.06, 0);
 
-  const torsoMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.14, 0.5, 12), suitMat);
+  // Pelvis / Hips mesh
+  const pelvisMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.145, 0.135, 0.16, 14), pMat);
+  pelvisMesh.position.y = 0.02;
+  pelvisMesh.castShadow = true;
+  b.hips.add(pelvisMesh);
+
+  // Lower & Upper Torso (Travel Jacket with Belt & Collar)
+  const torsoMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.165, 0.142, 0.48, 16), suitMat);
+  torsoMesh.position.y = 0.08;
   torsoMesh.castShadow = true;
-  b.torso.add(torsoMesh);
+  b.chest.add(torsoMesh);
 
-  const headMesh = new THREE.Mesh(new THREE.SphereGeometry(0.125, 14, 12), skinMat);
-  headMesh.position.y = 0.08;
+  const collarMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.135, 0.155, 0.08, 14), collarMat);
+  collarMesh.position.y = 0.29;
+  b.chest.add(collarMesh);
+
+  const neckMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.052, 0.058, 0.09, 10), skinMat);
+  neckMesh.position.y = 0.03;
+  b.neck.add(neckMesh);
+
+  // Lifelike Head with Facial Features (Eyes, Brows, Nose, Ears, Hair, and Hat)
+  const headMesh = new THREE.Mesh(new THREE.SphereGeometry(0.132, 18, 16), skinMat);
+  headMesh.scale.set(0.95, 1.06, 0.98);
+  headMesh.position.y = 0.11;
   headMesh.castShadow = true;
   b.head.add(headMesh);
 
-  const hairMesh = new THREE.Mesh(new THREE.SphereGeometry(0.13, 14, 10, 0, Math.PI * 2, 0, Math.PI * 0.55), hairMat);
-  hairMesh.position.y = 0.095;
-  b.head.add(hairMesh);
-
-  // Arms & Legs
-  for (const [side, sx] of [['left', 1], ['right', -1]]) {
-    const arm = bone(side + 'Arm', b.torso, 0.2 * sx, 0.16, 0);
-    const armMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.042, 0.44, 8), suitMat);
-    armMesh.position.y = -0.2;
-    arm.add(armMesh);
-
-    const leg = bone(side + 'Leg', b.hips, 0.09 * sx, -0.02, 0);
-    const thigh = new THREE.Mesh(new THREE.CylinderGeometry(0.065, 0.052, 0.45, 8), shortsMat);
-    thigh.position.y = -0.22;
-    leg.add(thigh);
-    const shin = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.042, 0.42, 8), skinMat);
-    shin.position.y = -0.62;
-    leg.add(shin);
-    const shoe = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.08, 0.2), suitMat);
-    shoe.position.set(0, -0.84, 0.04);
-    leg.add(shoe);
+  // Ears
+  for (const sx of [-1, 1]) {
+    const ear = new THREE.Mesh(new THREE.SphereGeometry(0.028, 8, 8), skinMat);
+    ear.scale.set(0.55, 1.1, 0.8);
+    ear.position.set(sx * 0.125, 0.105, 0);
+    b.head.add(ear);
   }
 
-  // Tier 1+: Energy Wings on back
-  const wingsGroup = new THREE.Group();
-  wingsGroup.position.set(0, 0.1, -0.15);
+  // Expressive Eyes + White Highlights + Eyebrows + Nose + Cheeks (on +Z side of head in local bone space)
   for (const sx of [-1, 1]) {
-    const w = new THREE.Mesh(new THREE.ConeGeometry(0.28, 0.85, 4), wingMat);
-    w.rotation.z = sx * 1.1;
-    w.position.set(sx * 0.36, 0.12, 0);
+    const eye = new THREE.Mesh(new THREE.SphereGeometry(0.017, 8, 8), eyeMat);
+    eye.position.set(sx * 0.044, 0.12, 0.118);
+    b.head.add(eye);
+
+    const glint = new THREE.Mesh(new THREE.SphereGeometry(0.006, 6, 6), eyeHighlightMat);
+    glint.position.set(sx * 0.048, 0.126, 0.131);
+    b.head.add(glint);
+
+    const cheek = new THREE.Mesh(new THREE.SphereGeometry(0.018, 8, 6), blushMat);
+    cheek.scale.set(1.2, 0.65, 0.5);
+    cheek.position.set(sx * 0.068, 0.092, 0.112);
+    b.head.add(cheek);
+  }
+  const nose = new THREE.Mesh(new THREE.ConeGeometry(0.016, 0.035, 6), skinMat);
+  nose.rotation.x = Math.PI / 2;
+  nose.position.set(0, 0.102, 0.135);
+  b.head.add(nose);
+
+  // Styled Hair Cap + Back Hair
+  const hairCap = new THREE.Mesh(
+    new THREE.SphereGeometry(0.138, 16, 12, 0, Math.PI * 2, 0, Math.PI * 0.58),
+    hMat
+  );
+  hairCap.position.y = 0.122;
+  hairCap.rotation.x = -0.15;
+  b.head.add(hairCap);
+
+  if (skin % 2 === 1) {
+    // Ponytail for female / long-haired trekkers that sways
+    const ponytail = new THREE.Mesh(new THREE.ConeGeometry(0.048, 0.18, 10), hMat);
+    ponytail.position.set(0, 0.08, -0.15);
+    ponytail.rotation.x = -0.55;
+    b.head.add(ponytail);
+  }
+
+  // Vietnamese Nón Lá (Conical Hat) or Explorer Sun Hat (hidden when Tier 4 Imperial Crown is worn)
+  const hatGroup = new THREE.Group();
+  hatGroup.position.set(0, 0.22, -0.01);
+  hatGroup.rotation.x = -0.12;
+  if (skin % 2 === 0) {
+    // Traditional Vietnamese Nón Lá
+    const cone = new THREE.Mesh(new THREE.ConeGeometry(0.27, 0.15, 20), nonLaMat);
+    cone.castShadow = true;
+    hatGroup.add(cone);
+  } else {
+    // Safari / Trekking Sun Hat
+    const brim = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.25, 0.02, 18), nonLaMat);
+    const dome = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.135, 0.09, 16), nonLaMat);
+    dome.position.y = 0.045;
+    const ribbon = new THREE.Mesh(new THREE.CylinderGeometry(0.136, 0.138, 0.022, 16), hatBandMat);
+    ribbon.position.y = 0.015;
+    hatGroup.add(brim, dome, ribbon);
+  }
+  hatGroup.visible = tier < 4;
+  b.head.add(hatGroup);
+
+  // Trekking Backpack on Chest/Back
+  const backpack = createTrekkingBackpack();
+  b.chest.add(backpack);
+
+  // Articulated Arms (UpperArm + Elbow + LowerArm + Hand) & Legs (UpperLeg + Knee + LowerLeg + Hiking Boot)
+  let trekkingStaff = null;
+  for (const [side, sx] of [['left', 1], ['right', -1]]) {
+    // Shoulder -> UpperArm
+    const upperArm = bone(side + 'UpperArm', b.chest, 0.195 * sx, 0.22, 0);
+    const shoulderCap = new THREE.Mesh(new THREE.SphereGeometry(0.056, 10, 10), suitMat);
+    upperArm.add(shoulderCap);
+
+    const uArmMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.044, 0.26, 10), suitMat);
+    uArmMesh.position.y = -0.13;
+    uArmMesh.castShadow = true;
+    upperArm.add(uArmMesh);
+
+    // Elbow -> LowerArm (Forearm + Hand)
+    const lowerArm = bone(side + 'LowerArm', upperArm, 0, -0.26, 0);
+    const elbowJoint = new THREE.Mesh(new THREE.SphereGeometry(0.042, 8, 8), skinMat);
+    lowerArm.add(elbowJoint);
+
+    const lArmMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.041, 0.035, 0.24, 10), skinMat);
+    lArmMesh.position.y = -0.12;
+    lArmMesh.castShadow = true;
+    lowerArm.add(lArmMesh);
+
+    const handMesh = new THREE.Mesh(new THREE.SphereGeometry(0.042, 10, 8), skinMat);
+    handMesh.scale.set(0.85, 1.15, 0.95);
+    handMesh.position.y = -0.25;
+    lowerArm.add(handMesh);
+
+    if (side === 'right') {
+      trekkingStaff = createTrekkingStaff();
+      trekkingStaff.position.set(0, -0.24, 0.02);
+      lowerArm.add(trekkingStaff);
+    }
+
+    // Hip -> UpperLeg (Thigh)
+    const upperLeg = bone(side + 'UpperLeg', b.hips, 0.092 * sx, -0.03, 0);
+    const hipJoint = new THREE.Mesh(new THREE.SphereGeometry(0.068, 10, 8), pMat);
+    upperLeg.add(hipJoint);
+
+    const thighMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.068, 0.054, 0.42, 12), pMat);
+    thighMesh.position.y = -0.21;
+    thighMesh.castShadow = true;
+    upperLeg.add(thighMesh);
+
+    // Knee -> LowerLeg (Calf + Ankle + Trekking Boot)
+    const lowerLeg = bone(side + 'LowerLeg', upperLeg, 0, -0.42, 0);
+    const kneeJoint = new THREE.Mesh(new THREE.SphereGeometry(0.052, 10, 8), pMat);
+    lowerLeg.add(kneeJoint);
+
+    const calfMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.052, 0.042, 0.4, 12), pMat);
+    calfMesh.position.y = -0.2;
+    calfMesh.castShadow = true;
+    lowerLeg.add(calfMesh);
+
+    // Detailed Trekking Boot
+    const bootGroup = new THREE.Group();
+    bootGroup.position.set(0, -0.42, 0.038);
+    const bootUpper = new THREE.Mesh(new THREE.BoxGeometry(0.105, 0.095, 0.21), bootMat);
+    bootUpper.castShadow = true;
+    const bootSole = new THREE.Mesh(new THREE.BoxGeometry(0.112, 0.032, 0.225), soleMat);
+    bootSole.position.y = -0.05;
+    bootGroup.add(bootUpper, bootSole);
+    lowerLeg.add(bootGroup);
+  }
+
+  // Tier 1+: Luminous Feathered / Spirit Wings on back
+  const wingsGroup = new THREE.Group();
+  wingsGroup.position.set(0, 0.14, -0.24);
+  for (const sx of [-1, 1]) {
+    const w = new THREE.Mesh(new THREE.ConeGeometry(0.28, 0.9, 5), wingMat);
+    w.rotation.z = sx * 1.12;
+    w.position.set(sx * 0.38, 0.12, 0);
     wingsGroup.add(w);
   }
   wingsGroup.visible = tier >= 1;
-  b.torso.add(wingsGroup);
+  b.chest.add(wingsGroup);
 
-  // Tier 2+: Golden Hoverboard under feet
+  // Tier 2+: Golden Cloud / Heritage Hover-Platform under feet
   const hoverGroup = new THREE.Group();
   hoverGroup.position.set(0, 0.08, 0);
-  const boardMesh = new THREE.Mesh(new THREE.BoxGeometry(0.56, 0.06, 1.15), hoverMat);
+  const boardMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.52, 0.07, 20), hoverMat);
+  boardMesh.scale.set(0.85, 1, 1.35);
   const glowUnder = new THREE.Sprite(new THREE.SpriteMaterial({
-    map: glowTex, color: 0x00f5d4, blending: THREE.AdditiveBlending, depthWrite: false,
+    map: glowTex, color: 0xffd166, blending: THREE.AdditiveBlending, depthWrite: false,
   }));
-  glowUnder.scale.set(1.2, 1.2, 1);
+  glowUnder.scale.set(1.3, 1.3, 1);
   glowUnder.position.y = -0.04;
   hoverGroup.add(boardMesh, glowUnder);
   hoverGroup.visible = tier >= 2;
   root.add(hoverGroup);
 
-  // Tier 3+: Twin Rocket Jetpack on back
+  // Tier 3+: Twin Golden-Crimson Boosters on back
   const jetGroup = new THREE.Group();
-  jetGroup.position.set(0, 0.05, -0.18);
-  for (const sx of [-0.11, 0.11]) {
-    const cyl = new THREE.Mesh(new THREE.CylinderGeometry(0.065, 0.075, 0.42, 10), jetMat);
+  jetGroup.position.set(0, 0.06, -0.26);
+  for (const sx of [-0.12, 0.12]) {
+    const cyl = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.07, 0.38, 10), jetMat);
     cyl.position.x = sx;
-    const flame = new THREE.Mesh(new THREE.ConeGeometry(0.06, 0.32, 8), flameMat);
+    const flame = new THREE.Mesh(new THREE.ConeGeometry(0.055, 0.28, 8), flameMat);
     flame.rotation.x = Math.PI;
-    flame.position.set(sx, -0.34, 0);
+    flame.position.set(sx, -0.3, 0);
     jetGroup.add(cyl, flame);
   }
   jetGroup.visible = tier >= 3;
-  b.torso.add(jetGroup);
+  b.chest.add(jetGroup);
 
-  // Tier 4: Champion Crown on head + Cosmic Aura Ring
-  const crown = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.085, 0.12, 8, 1, true), crownMat);
-  crown.position.y = 0.23;
+  // Tier 4: Champion Imperial Crown + Cosmic Golden Halo Ring
+  const crown = new THREE.Mesh(new THREE.CylinderGeometry(0.115, 0.09, 0.12, 10, 1, true), crownMat);
+  crown.position.y = 0.25;
   crown.visible = tier >= 4;
   b.head.add(crown);
 
   const cosmicRing = new THREE.Mesh(
-    new THREE.RingGeometry(0.65, 0.82, 32),
-    new THREE.MeshBasicMaterial({ color: 0xffd700, side: THREE.DoubleSide, transparent: true, opacity: 0.75 })
+    new THREE.RingGeometry(0.62, 0.78, 32),
+    new THREE.MeshBasicMaterial({ color: 0xffd700, side: THREE.DoubleSide, transparent: true, opacity: 0.72 })
   );
   cosmicRing.rotation.x = Math.PI / 2;
-  cosmicRing.position.y = 0.12;
+  cosmicRing.position.y = 0.1;
   cosmicRing.visible = tier >= 4;
   root.add(cosmicRing);
 
@@ -134,6 +385,9 @@ function buildRunnerRig(skin = 0, tier = 0) {
     root,
     bones: b,
     torsoMesh,
+    hatGroup,
+    backpack,
+    trekkingStaff,
     wingsGroup,
     hoverGroup,
     jetGroup,
@@ -143,6 +397,7 @@ function buildRunnerRig(skin = 0, tier = 0) {
       const activeTier = Math.max(newTier, boostTier);
       const col = TIER_SUITS[activeTier] || OUTFIT_COLORS[skin % OUTFIT_COLORS.length];
       suitMat.color.setHex(col);
+      hatGroup.visible = activeTier < 4;
       wingsGroup.visible = activeTier === 1 || activeTier === 4;
       hoverGroup.visible = activeTier >= 2;
       jetGroup.visible = activeTier >= 3;
@@ -194,12 +449,12 @@ export function createRunners(scene) {
 
         const label = new CSS2DObject(el);
         label.center.set(0.5, 1);
-        label.position.set(0, 2.25, 0);
+        label.position.set(0, 2.32, 0);
         holder.add(label);
 
-        const targetX = (runner.lane || 0) * 1.12;
-        const targetZ = 7.5 - Math.min(4.5, (runner.tier || 0) * 1.1);
-        holder.position.set(targetX, 0, targetZ + 4);
+        const targetX = (runner.lane || 0) * 1.08;
+        const targetZ = 7.2 - Math.min(4.5, (runner.tier || 0) * 1.1);
+        holder.position.set(targetX, 0, targetZ + 3.5);
         scene.add(holder);
 
         e = {
@@ -212,13 +467,16 @@ export function createRunners(scene) {
           targetX,
           targetZ,
           phase: Math.random() * Math.PI * 2,
+          lookSeed: Math.random() * 100,
           rank: null,
           activeUntil: performance.now() + 5000,
+          waveUntil: performance.now() + 3200,
         };
         live.set(runner.id, e);
       } else {
         if ((runner.diamonds || 0) > (e.runner.diamonds || 0) || (runner.boostTier || 0) > 0) {
           e.activeUntil = performance.now() + 6000;
+          e.waveUntil = performance.now() + 3500;
         }
         Object.assign(e.runner, runner);
         e.rig.setVisualTier(e.runner.tier || 0, e.runner.boostTier || 0);
@@ -240,6 +498,7 @@ export function createRunners(scene) {
       }
       clearTimeout(e.bubbleTimer);
       e.activeUntil = performance.now() + ms + 1500;
+      e.waveUntil = performance.now() + 2800;
       Object.assign(e.bubbleEl.style, { display: '', opacity: 1 });
       e.bubbleEl.textContent = text;
       e.bubbleTimer = setTimeout(() => {
@@ -257,10 +516,10 @@ export function createRunners(scene) {
         Object.assign(e.runner, item);
         e.rank = rankMap.get(item.id) || null;
         e.rig.setVisualTier(e.runner.tier || 0, e.runner.boostTier || 0);
-        // Position leaders closer to the front of the pack (-1.5 .. 9.5)
-        const rankBonus = e.rank ? Math.max(0, (9 - e.rank) * 0.65) : 0;
-        const boostBonus = (e.runner.boostTier || 0) * 0.9;
-        e.targetZ = Math.max(1.2, 9.2 - rankBonus - boostBonus);
+        // Position leaders closer to the front of the trekking group (1.0 .. 9.0)
+        const rankBonus = e.rank ? Math.max(0, (9 - e.rank) * 0.62) : 0;
+        const boostBonus = (e.runner.boostTier || 0) * 0.85;
+        e.targetZ = Math.max(1.2, 8.8 - rankBonus - boostBonus);
         updateLabelText(e);
       }
     },
@@ -268,6 +527,8 @@ export function createRunners(scene) {
     update(now, dt) {
       let maxSpeed = 1.0;
       let shownLabels = 0;
+      const tSec = now / 1000;
+
       for (const e of live.values()) {
         const spd = e.runner.speedMult || 1.0;
         if (spd > maxSpeed) maxSpeed = spd;
@@ -280,41 +541,95 @@ export function createRunners(scene) {
         if (shouldShow) shownLabels++;
         e.label.visible = Boolean(shouldShow);
 
-        e.phase += dt * (4.2 + spd * 1.8);
-        const s = Math.sin(e.phase);
-        const c = Math.cos(e.phase);
+        // Relaxed, natural human cross-country walking cadence (~2.6 rad/s = ~1.3 steps/sec)
+        const cadence = 2.55 + Math.min(1.4, (spd - 1.0) * 0.45);
+        e.phase += dt * cadence;
+        const p = e.phase;
+        const s = Math.sin(p);
+        const c = Math.cos(p);
 
-        // Smooth position interpolation on the highway
-        const swayX = Math.sin(now / 900 + e.phase * 0.1) * 0.14;
-        e.holder.position.x += (e.targetX + swayX - e.holder.position.x) * Math.min(1, dt * 4);
-        e.holder.position.z += (e.targetZ - e.holder.position.z) * Math.min(1, dt * 3);
+        // Gentle wandering along the scenic trail
+        const swayX = Math.sin(tSec * 0.75 + e.lookSeed) * 0.16;
+        e.holder.position.x += (e.targetX + swayX - e.holder.position.x) * Math.min(1, dt * 2.8);
+        e.holder.position.z += (e.targetZ - e.holder.position.z) * Math.min(1, dt * 2.2);
 
         const activeTier = Math.max(e.runner.tier || 0, e.runner.boostTier || 0);
         const b = e.rig.bones;
+
+        // Head gently looking around to admire roadside landmarks on left and right
+        const lookYaw = Math.sin(tSec * 0.85 + e.lookSeed) * 0.28;
+        const lookPitch = Math.cos(tSec * 0.65 + e.lookSeed) * 0.06;
+        b.head.rotation.y = lookYaw;
+        b.head.rotation.x = lookPitch;
+
         if (activeTier >= 2) {
-          // Surfing pose on Golden Hoverboard / Rocket Jet
-          b.hips.position.y = 1.06 + Math.sin(e.phase * 0.6) * 0.06;
-          b.torso.rotation.x = 0.24;
-          b.leftLeg.rotation.x = -0.25;
-          b.rightLeg.rotation.x = 0.25;
-          b.leftArm.rotation.x = -0.45 + s * 0.15;
-          b.rightArm.rotation.x = -0.45 - s * 0.15;
+          // Graceful gliding pose on Golden Cloud / Hover-Platform
+          b.hips.position.y = 1.04 + Math.sin(p * 0.7) * 0.04;
+          b.hips.rotation.z = Math.sin(p * 0.5) * 0.03;
+          b.chest.rotation.x = 0.06;
+          b.chest.rotation.y = Math.sin(p * 0.5) * 0.08;
+
+          b.leftUpperLeg.rotation.x = 0.12;
+          b.leftLowerLeg.rotation.x = 0.18;
+          b.rightUpperLeg.rotation.x = -0.14;
+          b.rightLowerLeg.rotation.x = 0.22;
+
+          b.leftUpperArm.rotation.x = -0.18 + s * 0.1;
+          b.leftLowerArm.rotation.x = -0.35;
+          b.rightUpperArm.rotation.x = -0.25 - s * 0.1;
+          b.rightLowerArm.rotation.x = -0.45;
         } else {
-          // Energetic running stride
-          b.hips.position.y = 0.92 + Math.abs(c) * 0.09;
-          b.torso.rotation.x = 0.18 + Math.abs(s) * 0.05;
-          b.leftLeg.rotation.x = s * 0.85;
-          b.rightLeg.rotation.x = -s * 0.85;
-          b.leftArm.rotation.x = -s * 0.75;
-          b.rightArm.rotation.x = s * 0.75;
+          // Natural Articulated Human Walking Gait (`Đi Bộ Đường Trường`)
+          // Note: root.rotation.y = Math.PI, so local +Z is backward and local -Z is forward:
+          // - Negative X rotation swings limb FORWARD (toward -Z horizon)
+          // - Positive X rotation bends knee BACKWARD (toward +Z camera)
+          const strideAmp = 0.44; // Comfortable walking stride angle (~25 degrees)
+
+          // Vertical hip bob (peaks twice per stride cycle during mid-stance) + subtle pelvic roll
+          b.hips.position.y = 0.93 + Math.abs(c) * 0.036;
+          b.hips.rotation.z = s * 0.035;
+          b.hips.rotation.y = -s * 0.06;
+
+          // Upright relaxed posture with natural counter-rotation of the chest/shoulders
+          b.chest.rotation.x = 0.045 + Math.abs(s) * 0.015;
+          b.chest.rotation.y = s * 0.085;
+
+          // Left & Right Upper Legs (Thighs swing opposite to each other)
+          b.leftUpperLeg.rotation.x = s * strideAmp;
+          b.rightUpperLeg.rotation.x = -s * strideAmp;
+
+          // Realistic Knee Flexion: Knee bends during the forward swing phase to clear the ground,
+          // and straightens during the stance/support phase!
+          const leftSwingBend = Math.max(0, c) * 0.58 + 0.06;
+          const rightSwingBend = Math.max(0, -c) * 0.58 + 0.06;
+          b.leftLowerLeg.rotation.x = leftSwingBend;
+          b.rightLowerLeg.rotation.x = rightSwingBend;
+
+          // Natural opposite Arm Swing + Elbow bend + Trekking Staff plant
+          const isWaving = now < (e.waveUntil || 0);
+          if (isWaving) {
+            // Friendly left-hand wave when newly joining or chatting!
+            b.leftUpperArm.rotation.x = -2.35;
+            b.leftUpperArm.rotation.z = 0.35 + Math.sin(tSec * 9) * 0.22;
+            b.leftLowerArm.rotation.x = -0.45;
+          } else {
+            b.leftUpperArm.rotation.x = -s * 0.36;
+            b.leftUpperArm.rotation.z = 0.06;
+            b.leftLowerArm.rotation.x = -0.28 - Math.max(0, s) * 0.22;
+          }
+
+          // Right arm holds the Wooden Trekking Staff + Glowing Lantern, planting gently each stride
+          b.rightUpperArm.rotation.x = -0.22 + s * 0.32;
+          b.rightUpperArm.rotation.z = -0.06;
+          b.rightLowerArm.rotation.x = -0.48 - Math.max(0, -s) * 0.18;
         }
 
         if (e.rig.wingsGroup.visible) {
-          e.rig.wingsGroup.children[0].rotation.y = Math.sin(e.phase * 1.5) * 0.35;
-          e.rig.wingsGroup.children[1].rotation.y = -Math.sin(e.phase * 1.5) * 0.35;
+          e.rig.wingsGroup.children[0].rotation.y = Math.sin(p * 1.4) * 0.28;
+          e.rig.wingsGroup.children[1].rotation.y = -Math.sin(p * 1.4) * 0.28;
         }
         if (e.rig.cosmicRing.visible) {
-          e.rig.cosmicRing.rotation.z += dt * 2.5;
+          e.rig.cosmicRing.rotation.z += dt * 1.8;
         }
       }
       return maxSpeed;
