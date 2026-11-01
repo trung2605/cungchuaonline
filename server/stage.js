@@ -60,12 +60,24 @@ export class Stage {
     let slot = tier === 2 ? this.#free(0, this.front) : -1;
     if (slot === -1) slot = this.#free(this.front, this.max);
     const out = [];
+    const isReal = Boolean(src && src !== 'mock');
     if (slot === -1) {
-      // ponytail: O(n) scan, n ≤ 150; dùng heap nếu nâng max lên vài nghìn
+      // Prioritize real users over mock bots:
+      // 1. Real users evict mock bots first (even higher-tier mock bots in non-front slots).
+      // 2. Mock bots can never evict real users.
       let victim = null;
-      for (const v of this.actors.values()) {
-        if (v.slot < from || v.tier > tier) continue;
-        if (!victim || v.tier < victim.tier || (v.tier === victim.tier && v.joinedAt < victim.joinedAt)) victim = v;
+      if (isReal) {
+        for (const v of this.actors.values()) {
+          if (v.slot < from || v.src !== 'mock') continue;
+          if (!victim || v.tier < victim.tier || (v.tier === victim.tier && v.joinedAt < victim.joinedAt)) victim = v;
+        }
+      }
+      if (!victim) {
+        for (const v of this.actors.values()) {
+          if (v.slot < from || v.tier > tier) continue;
+          if (!isReal && v.src && v.src !== 'mock') continue;
+          if (!victim || v.tier < victim.tier || (v.tier === victim.tier && v.joinedAt < victim.joinedAt)) victim = v;
+        }
       }
       if (!victim) return [];
       slot = victim.slot;

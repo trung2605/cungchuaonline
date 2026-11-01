@@ -99,9 +99,50 @@ export function createRaceAudio({ onSpeak = null } = {}) {
     }
   }
 
+  let currentItem = null;
+
+  function interruptBotIfSpeaking() {
+    if (speaking && currentItem && !currentItem.isReal) {
+      clearTimeout(watchdog);
+      try { currentVoiceSrc?.stop(); } catch {}
+      currentVoiceSrc = null;
+      if (typeof speechSynthesis !== 'undefined') {
+        try { speechSynthesis.cancel(); } catch {}
+      }
+      currentItem = null;
+      speaking = false;
+    }
+  }
+
+  function purgeQueuedBots() {
+    for (let i = speechQueue.length - 1; i >= 0; i--) {
+      if (!speechQueue[i].isReal) speechQueue.splice(i, 1);
+    }
+  }
+
+  function enqueueSpeech(item) {
+    if (item.isReal) {
+      purgeQueuedBots();
+      interruptBotIfSpeaking();
+      if (item.priority >= 2) {
+        const firstJoin = speechQueue.findIndex(x => x.priority < 2);
+        if (firstJoin === -1) speechQueue.push(item);
+        else speechQueue.splice(firstJoin, 0, item);
+      } else {
+        speechQueue.push(item);
+      }
+      if (speechQueue.length > 6) speechQueue.pop();
+    } else {
+      if (speaking || speechQueue.length > 0) return;
+      speechQueue.push(item);
+    }
+    flushSpeech();
+  }
+
   async function flushSpeech() {
     if (!enabled || speaking || !speechQueue.length) return;
     const item = speechQueue.shift();
+    currentItem = item;
     speaking = true;
     onSpeak?.(item.text, true);
 
@@ -111,6 +152,7 @@ export function createRaceAudio({ onSpeak = null } = {}) {
       finished = true;
       clearTimeout(watchdog);
       currentVoiceSrc = null;
+      currentItem = null;
       speaking = false;
       onSpeak?.('', false);
       setTimeout(flushSpeech, 320);
@@ -179,23 +221,21 @@ export function createRaceAudio({ onSpeak = null } = {}) {
     greetJoin(msg) {
       if (!enabled || !msg) return;
       joinChime();
+      const isReal = Boolean(msg.src && msg.src !== 'mock');
       const now = Date.now();
-      // Avoid queuing too many free join greetings if gift announcements are speaking
-      if (speechQueue.length >= 2 || (speaking && now - lastWelcomeSpeechAt < 5000)) return;
-      lastWelcomeSpeechAt = now;
+      if (!isReal) {
+        if (speaking || speechQueue.length > 0 || now - lastWelcomeSpeechAt < 10_000) return;
+        lastWelcomeSpeechAt = now;
+      }
       const text = msg.text || formatWelcomeSpeech(msg.name);
-      speechQueue.push({ text, priority: 1 });
-      flushSpeech();
+      enqueueSpeech({ text, priority: 1, isReal });
     },
     announceGift(d) {
       if (!enabled || !d) return;
+      const isReal = Boolean(d.src && d.src !== 'mock');
       boostSfx(d.tier || 1);
       const text = formatGiftBoostSpeech(d);
-      if (speechQueue.length >= MAX_SPEECH_QUEUE) {
-        speechQueue.shift();
-      }
-      speechQueue.push({ text, priority: 2 + (d.tier || 1) });
-      flushSpeech();
+      enqueueSpeech({ text, priority: 2 + (d.tier || 1), isReal });
     },
   };
 }

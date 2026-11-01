@@ -126,13 +126,25 @@ export class RaceStage {
       return { msgs: out, isNewJoin: false, runner: existing };
     }
 
-    // Evict oldest lowest-tier runner if full
+    // Evict oldest lowest-tier runner if full (prioritize evicting mock bots for real users)
+    const isReal = finalSrc !== 'mock';
     if (this.runners.size >= this.max) {
       let victim = null;
-      for (const r of this.runners.values()) {
-        if (r.tier > bestTier) continue;
-        if (!victim || r.tier < victim.tier || (r.tier === victim.tier && r.joinedAt < victim.joinedAt)) {
-          victim = r;
+      if (isReal) {
+        for (const r of this.runners.values()) {
+          if (r.src !== 'mock') continue;
+          if (!victim || r.tier < victim.tier || (r.tier === victim.tier && r.joinedAt < victim.joinedAt)) {
+            victim = r;
+          }
+        }
+      }
+      if (!victim) {
+        for (const r of this.runners.values()) {
+          if (r.tier > bestTier) continue;
+          if (!isReal && r.src !== 'mock') continue;
+          if (!victim || r.tier < victim.tier || (r.tier === victim.tier && r.joinedAt < victim.joinedAt)) {
+            victim = r;
+          }
         }
       }
       if (victim) {
@@ -167,7 +179,7 @@ export class RaceStage {
     const welcomeText = `Chào user ${name} đã tham gia cuộc đua cùng chúng tôi`;
     out.push(
       { t: 'spawn', runner: { ...runner } },
-      { t: 'welcome', id: uid, name, text: welcomeText, tier: bestTier },
+      { t: 'welcome', id: uid, name, text: welcomeText, tier: bestTier, src: finalSrc },
     );
 
     if (giftTierLevel > 0) {

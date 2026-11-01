@@ -39,7 +39,7 @@ export function createRaceRules({ stage, lists, now = Date.now, turboEveryLikes 
       }
 
       if (e.kind === 'join') {
-        if (!stage.has(e.uid) && stage.runners.size < 45) {
+        if (!stage.has(e.uid) && (real || stage.runners.size < 45)) {
           if (real) uniqueRacers.add(e.uid);
           else mockRacers.add(e.uid);
           const { msgs } = stage.joinOrBoost(e.uid, name, 0, { cheer: 'Hào hứng nhập cuộc!', src });
@@ -109,6 +109,7 @@ export function createRaceRules({ stage, lists, now = Date.now, turboEveryLikes 
             t: 'donor',
             uid: e.uid,
             name,
+            src,
             giftName: e.giftName,
             giftVi,
             repeat,

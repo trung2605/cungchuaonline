@@ -13,9 +13,9 @@ export function createCounters({
   let lastTop = '[]';
   let boardDirty = false;
 
-  // ponytail: full sort per call; n = donors per session (hundreds), fine.
+  // Prioritize real donors (src !== 'mock') above mock/demo bots on BẢNG VÀNG TRI ÂN
   const board = () => [...donors.values()]
-    .sort((a, b) => b.diamonds - a.diamonds || a.reachedAt - b.reachedAt)
+    .sort((a, b) => (b.real ? 1 : 0) - (a.real ? 1 : 0) || b.diamonds - a.diamonds || a.reachedAt - b.reachedAt)
     .slice(0, boardSize)
     .map(({ name, diamonds }) => ({ name, diamonds }));
 
@@ -47,21 +47,34 @@ export function createCounters({
         case 'viewers':
           viewers = e.count;
           return [{ t: 'counter', key: 'viewers', value: viewers }];
-        case 'join':
-          if (t < priorityUntil || t - lastJoinBannerAt < joinGapMs) return [];
+        case 'join': {
+          const isReal = Boolean(e.src && e.src !== 'mock');
+          // Real users bypass mock join throttle unless a big gift banner is active
+          if (t < priorityUntil || (!isReal && t - lastJoinBannerAt < joinGapMs)) return [];
           lastJoinBannerAt = t;
-          return [{ t: 'banner', text: `${cleanName(e.name, lists)} vừa vào chùa`, ms: 3000 }];
+          const clean = cleanName(e.name, lists);
+          return [{
+            t: 'banner',
+            text: `${clean} vừa vào chùa`,
+            ms: 3000,
+            ...(isReal && { src: e.src, uid: e.uid, name: clean }),
+          }];
+        }
         case 'gift': {
+          const isReal = Boolean(e.src && e.src !== 'mock');
           const name = cleanName(e.name, lists);
           const total = e.diamonds * e.repeat;
           const offering = giftOffering(e.giftName, total);
-          const out = [{ t: 'donor', uid: e.uid, name, giftName: e.giftName, repeat: e.repeat, diamonds: total, offering }];
+          const out = [{
+            t: 'donor', uid: e.uid, name, giftName: e.giftName, repeat: e.repeat, diamonds: total, offering,
+            ...(isReal && { src: e.src }),
+          }];
           if (giftTier(total) === 2) {
             priorityUntil = t + priorityMs;
             out.push({ t: 'banner', text: `Cảm ơn ${name} đã ${offering} (${e.giftName}) 🙏`, ms: 5000 });
           }
           const d = donors.get(e.uid);
-          donors.set(e.uid, { name, diamonds: (d?.diamonds ?? 0) + total, reachedAt: t });
+          donors.set(e.uid, { name, diamonds: (d?.diamonds ?? 0) + total, reachedAt: t, real: isReal || Boolean(d?.real) });
           boardDirty = true;
           return [...out, ...flushBoard(t)];
         }

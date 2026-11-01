@@ -96,6 +96,7 @@ function run(cmds, now) {
       case 'hud':
         hud.handle(c.msg);
         if (c.msg.t === 'donor') audio.thankDonor(c.msg);
+        else if (c.msg.t === 'banner' && c.msg.src && c.msg.src !== 'mock') audio.thankJoin(c.msg);
         break;
       case 'fx':
         if (c.kind === 'halo' && c.id) actors.halo(c.id, now);

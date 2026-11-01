@@ -222,7 +222,51 @@ export function createAudio({ onSpeak = null } = {}) {
   }
 
   let currentVoiceSrc = null;
+  let currentItem = null;
+  let currentDone = null;
   let lastPrayerSpeechAt = 0;
+  const recentRealGreet = new Map(); // uid -> ts to avoid double-greeting the same real user within 8s
+
+  function interruptBotIfSpeaking() {
+    if (speaking && currentItem && !currentItem.isReal) {
+      clearTimeout(watchdog);
+      try { currentVoiceSrc?.stop(); } catch {}
+      currentVoiceSrc = null;
+      if (typeof speechSynthesis !== 'undefined') {
+        try { speechSynthesis.cancel(); } catch {}
+      }
+      currentItem = null;
+      speaking = false;
+      currentDone = null;
+    }
+  }
+
+  function purgeQueuedBots() {
+    for (let i = speechQueue.length - 1; i >= 0; i--) {
+      if (!speechQueue[i].isReal) speechQueue.splice(i, 1);
+    }
+  }
+
+  function enqueueSpeech(item) {
+    if (item.isReal) {
+      purgeQueuedBots();
+      interruptBotIfSpeaking();
+      // Sort real gifts ahead of real prayers/joins
+      if (item.kind === 'gift') {
+        const firstNonGift = speechQueue.findIndex(x => x.kind !== 'gift');
+        if (firstNonGift === -1) speechQueue.push(item);
+        else speechQueue.splice(firstNonGift, 0, item);
+      } else {
+        speechQueue.push(item);
+      }
+      if (speechQueue.length > 6) speechQueue.pop();
+    } else {
+      // Bots never queue up if anyone (real or bot) is already speaking or waiting
+      if (speaking || speechQueue.length > 0) return;
+      speechQueue.push(item);
+    }
+    flushSpeech();
+  }
 
   function speakBrowserFallback(text, done) {
     if (typeof speechSynthesis === 'undefined') {
@@ -248,6 +292,7 @@ export function createAudio({ onSpeak = null } = {}) {
   async function flushSpeech() {
     if (!enabled || speaking || !speechQueue.length) return;
     const item = speechQueue.shift();
+    currentItem = item;
     speaking = true;
     duckMusic(true);
     onSpeak?.(item.text, true, item.kind || 'gift');
@@ -258,11 +303,14 @@ export function createAudio({ onSpeak = null } = {}) {
       finished = true;
       clearTimeout(watchdog);
       currentVoiceSrc = null;
+      currentItem = null;
+      currentDone = null;
       speaking = false;
       duckMusic(false);
       onSpeak?.('', false);
-      setTimeout(flushSpeech, 450);
+      setTimeout(flushSpeech, 320);
     };
+    currentDone = done;
 
     watchdog = setTimeout(done, 11000);
 
@@ -377,21 +425,44 @@ export function createAudio({ onSpeak = null } = {}) {
     thankPrayer(actor) {
       if (!enabled || !actor) return;
       const now = Date.now();
-      // Gently announce a worshipper's prayer when the gift queue is quiet (at most once every 14s)
-      if (speaking || speechQueue.length > 0 || now - lastPrayerSpeechAt < 14_000) {
-        softBowl();
-        return;
+      const isReal = Boolean(actor.src && actor.src !== 'mock');
+      if (isReal) {
+        const lastGreet = recentRealGreet.get(actor.id) || 0;
+        if (now - lastGreet < 8000) return;
+        recentRealGreet.set(actor.id, now);
+      } else {
+        // Bots only speak when the hall is completely quiet (at most once every 16s)
+        if (speaking || speechQueue.length > 0 || now - lastPrayerSpeechAt < 16_000) {
+          softBowl();
+          return;
+        }
+        lastPrayerSpeechAt = now;
       }
-      lastPrayerSpeechAt = now;
       softBowl();
       const who = cleanTtsName(actor.name);
       const intent = (actor.intent || 'Cầu Bình An').toLowerCase();
-      const text = `Nam mô A Di Đà Phật. Phật tử ${who} thành tâm lễ Phật, ${intent}`;
-      speechQueue.push({ uid: actor.id, offering: 'prayer', repeat: 1, text, diamonds: 0, kind: 'prayer' });
-      flushSpeech();
+      const text = isReal
+        ? `A Di Đà Phật. Chào mừng Phật tử ${who} đã vào chùa lễ Phật, nguyện ${intent}, vạn sự cát tường`
+        : `Nam mô A Di Đà Phật. Phật tử ${who} thành tâm lễ Phật, ${intent}`;
+      enqueueSpeech({ uid: actor.id, offering: 'prayer', repeat: 1, text, diamonds: 0, kind: 'prayer', isReal });
+    },
+    thankJoin(msg) {
+      if (!enabled || !msg) return;
+      const isReal = Boolean(msg.src && msg.src !== 'mock');
+      if (!isReal) return;
+      const now = Date.now();
+      const uid = msg.uid || msg.name;
+      const lastGreet = recentRealGreet.get(uid) || 0;
+      if (now - lastGreet < 8000) return;
+      recentRealGreet.set(uid, now);
+      softBowl();
+      const who = cleanTtsName(msg.name);
+      const text = `A Di Đà Phật. Chào mừng Phật tử ${who} vừa vào chùa lễ Phật, chúc bạn bình an và may mắn`;
+      enqueueSpeech({ uid, offering: 'join', repeat: 1, text, diamonds: 0, kind: 'join', isReal: true });
     },
     thankDonor(d) {
       if (!enabled || !d) return;
+      const isReal = Boolean(d.src && d.src !== 'mock');
       const total = d.diamonds ?? 1;
       const offering = d.offering || 'dâng hương';
       if (total >= 20) bell();
@@ -404,21 +475,16 @@ export function createAudio({ onSpeak = null } = {}) {
       if (existing) {
         existing.repeat += repeat;
         existing.diamonds += total;
+        existing.isReal = existing.isReal || isReal;
         existing.text = formatTtsBlessing({ name: d.name, offering, repeat: existing.repeat, diamonds: existing.diamonds });
+        if (isReal) {
+          purgeQueuedBots();
+          interruptBotIfSpeaking();
+        }
       } else {
         const text = formatTtsBlessing({ name: d.name, offering, repeat, diamonds: total });
-        if (speechQueue.length >= MAX_SPEECH_QUEUE) {
-          // Drop the lowest-value queued item if full
-          let minIdx = 0;
-          for (let i = 1; i < speechQueue.length; i++) {
-            if (speechQueue[i].diamonds < speechQueue[minIdx].diamonds) minIdx = i;
-          }
-          if (total >= speechQueue[minIdx].diamonds) speechQueue.splice(minIdx, 1);
-          else return;
-        }
-        speechQueue.push({ uid: d.uid, offering, repeat, text, diamonds: total, kind: 'gift' });
+        enqueueSpeech({ uid: d.uid, offering, repeat, text, diamonds: total, kind: 'gift', isReal });
       }
-      flushSpeech();
     },
     playMusic,
   };

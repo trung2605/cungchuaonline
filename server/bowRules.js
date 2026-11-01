@@ -78,6 +78,15 @@ export function createBowRules({ stage, lists, stats = null, now = Date.now, coo
           src: e.src,
         }));
       }
+      if (e.kind === 'join') {
+        // Real viewers joining the livestream immediately enter the 3D hall and are welcomed by name
+        if (e.src && e.src !== 'mock') {
+          return granted(1, stage.enter(e.uid, cleanName(e.name, lists), 0, 1, {
+            src: e.src,
+          }));
+        }
+        return [];
+      }
       if (e.kind !== 'chat') return [];
 
       const out = [];

@@ -260,8 +260,9 @@ export async function createActors(scene) {
       halo.visible = visualTier === 2;
       holder.add(label, halo);
       scene.add(holder);
-      const activeUntil = performance.now() + 4500;
-      live.set(actor.id, { actor: { ...actor, tier: visualTier }, holder, rig, label, nameEl, bubbleEl, halo, haloUntil: 0, activeUntil, prevBow: 0, seed: Math.random() * 10 });
+      const isReal = Boolean(actor.src && actor.src !== 'mock');
+      const activeUntil = performance.now() + (isReal ? 12_000 : 4000);
+      live.set(actor.id, { actor: { ...actor, tier: visualTier }, holder, rig, label, nameEl, bubbleEl, halo, haloUntil: 0, activeUntil, isReal, prevBow: 0, seed: Math.random() * 10 });
     },
     remove,
     clear() {
