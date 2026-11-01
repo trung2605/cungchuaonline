@@ -213,9 +213,13 @@ export function createRunners(scene) {
           targetZ,
           phase: Math.random() * Math.PI * 2,
           rank: null,
+          activeUntil: performance.now() + 5000,
         };
         live.set(runner.id, e);
       } else {
+        if ((runner.diamonds || 0) > (e.runner.diamonds || 0) || (runner.boostTier || 0) > 0) {
+          e.activeUntil = performance.now() + 6000;
+        }
         Object.assign(e.runner, runner);
         e.rig.setVisualTier(e.runner.tier || 0, e.runner.boostTier || 0);
       }
@@ -228,7 +232,14 @@ export function createRunners(scene) {
     say(id, text, ms = 6000) {
       const e = live.get(id);
       if (!e) return;
+      for (const [otherId, other] of live) {
+        if (otherId !== id && other.bubbleEl.style.display !== 'none') {
+          clearTimeout(other.bubbleTimer);
+          other.bubbleEl.style.display = 'none';
+        }
+      }
       clearTimeout(e.bubbleTimer);
+      e.activeUntil = performance.now() + ms + 1500;
       Object.assign(e.bubbleEl.style, { display: '', opacity: 1 });
       e.bubbleEl.textContent = text;
       e.bubbleTimer = setTimeout(() => {
@@ -256,9 +267,18 @@ export function createRunners(scene) {
     count: () => live.size,
     update(now, dt) {
       let maxSpeed = 1.0;
+      let shownLabels = 0;
       for (const e of live.values()) {
         const spd = e.runner.speedMult || 1.0;
         if (spd > maxSpeed) maxSpeed = spd;
+
+        const hasBubble = e.bubbleEl.style.display !== 'none';
+        const isTop3 = e.rank && e.rank <= 3;
+        const isBoosted = (e.runner.boostTier || 0) > 0;
+        const isRecent = now < (e.activeUntil || 0);
+        const shouldShow = hasBubble || isTop3 || isBoosted || (isRecent && shownLabels < 4);
+        if (shouldShow) shownLabels++;
+        e.label.visible = Boolean(shouldShow);
 
         e.phase += dt * (7.5 + spd * 3.2);
         const s = Math.sin(e.phase);

@@ -260,7 +260,8 @@ export async function createActors(scene) {
       halo.visible = visualTier === 2;
       holder.add(label, halo);
       scene.add(holder);
-      live.set(actor.id, { actor: { ...actor, tier: visualTier }, holder, rig, label, nameEl, bubbleEl, halo, haloUntil: 0, prevBow: 0, seed: Math.random() * 10 });
+      const activeUntil = performance.now() + 4500;
+      live.set(actor.id, { actor: { ...actor, tier: visualTier }, holder, rig, label, nameEl, bubbleEl, halo, haloUntil: 0, activeUntil, prevBow: 0, seed: Math.random() * 10 });
     },
     remove,
     clear() {
@@ -269,7 +270,15 @@ export async function createActors(scene) {
     say(id, text, ms) {
       const e = live.get(id);
       if (!e) return;
+      // Keep at most 1 active speech bubble in the hall to avoid overlapping text at the altar
+      for (const [otherId, other] of live) {
+        if (otherId !== id && other.bubbleEl.style.display !== 'none') {
+          clearTimeout(other.bubbleTimer);
+          other.bubbleEl.style.display = 'none';
+        }
+      }
       clearTimeout(e.bubbleTimer);
+      e.activeUntil = performance.now() + ms + 1500;
       Object.assign(e.bubbleEl.style, { display: '', opacity: 1 });
       e.bubbleEl.textContent = text;
       e.bubbleTimer = setTimeout(() => {
@@ -285,6 +294,7 @@ export async function createActors(scene) {
       const e = live.get(id);
       if (e) {
         e.actor.diamonds = diamonds;
+        e.activeUntil = performance.now() + 6000;
         const newTier = diamonds >= 20 ? 2 : diamonds >= 5 ? 1 : 0;
         if (newTier > (e.actor.tier ?? 0)) {
           e.actor.tier = newTier;
@@ -296,12 +306,16 @@ export async function createActors(scene) {
     },
     halo(id, now) {
       const e = live.get(id);
-      if (e) e.haloUntil = now + HALO_MS;
+      if (e) {
+        e.haloUntil = now + HALO_MS;
+        e.activeUntil = now + 6000;
+      }
     },
     actor: id => live.get(id)?.actor,
     // Applies poses; returns how many bows started this frame (wood block sound).
     update(poses, now, dt) {
       let bowsStarted = 0;
+      let idleLabelsShown = 0;
       for (const [id, p] of poses) {
         const e = live.get(id);
         if (!e) continue;
@@ -312,8 +326,21 @@ export async function createActors(scene) {
         e.rig.update();
         if (p.bowT01 > 0 && (p.bowT01 < e.prevBow || e.prevBow === 0)) bowsStarted++;
         e.prevBow = p.bowT01;
-        // At the altar the big altar card shows the name instead (BR-07.18).
-        e.label.visible = p.phase !== 'altar';
+        // Progressive disclosure (/impeccable distill):
+        // Never show 40+ static name pills on seated idle actors simultaneously.
+        // Only show overhead label when walking/entering, bowing, speaking, or just gifted (capped to 2 idle labels).
+        const hasBubble = e.bubbleEl.style.display !== 'none';
+        const isMoving = p.phase !== 'idle' && p.phase !== 'altar';
+        const isBowing = p.bowT01 > 0;
+        const isRecentIdle = p.phase === 'idle' && now < (e.activeUntil || 0) && idleLabelsShown < 2;
+        if (isRecentIdle && !isBowing && !hasBubble) idleLabelsShown++;
+        if (p.phase === 'altar') {
+          // At the altar, the dedicated altar card shows their name & prayer (BR-07.18).
+          e.label.visible = false;
+        } else {
+          e.nameEl.style.display = '';
+          e.label.visible = isMoving || isBowing || hasBubble || isRecentIdle;
+        }
         e.label.position.y = 1.95 - 0.6 * k;
         const left = e.haloUntil - now;
         const isTier2 = e.actor.tier === 2;

@@ -26,13 +26,11 @@ function card(name, line) {
 export function createHud() {
   let pairs = [], ci = -1, donors = [], donorTimer = null, bannerTimer = null;
   const recentPrayers = [];
-  const altarIds = [null, null, null];
-  const altarEls = ALTAR_CARD_X.map(x => {
-    const el = document.createElement('div');
-    el.style.cssText = `position:absolute;left:${x}px;top:0`;
-    $('#altar-cards').append(el);
-    return el;
-  });
+  const altarActors = [null, null, null];
+  let shownAltarId = null;
+  const altarSlot = document.createElement('div');
+  altarSlot.style.cssText = 'position:absolute;left:540px;top:0';
+  $('#altar-cards').append(altarSlot);
 
   const couplets = [$('#couplet-l'), $('#couplet-r')];
   for (const el of couplets) Object.assign(el.style, { whiteSpace: 'pre', opacity: 0 });
@@ -80,6 +78,8 @@ const giftVi = g => GIFT_VI[String(g || '').trim().toLowerCase()] || g || 'Lễ 
           }
           break;
         case 'banner': {
+          const toast = $('#voice-toast');
+          if (toast && toast.classList.contains('on')) break;
           const el = $('#banner');
           el.textContent = msg.text;
           el.classList.add('on');
@@ -135,18 +135,21 @@ const giftVi = g => GIFT_VI[String(g || '').trim().toLowerCase()] || g || 'Lễ 
       const span = $('#voice-text');
       if (!toast || !span) return;
       if (on && text) {
+        $('#banner')?.classList.remove('on');
         span.textContent = text;
         toast.classList.add('on');
       } else {
         toast.classList.remove('on');
       }
     },
-    // Big altar card per spot: initial, name, intent. Fixed positions, so they never overlap.
+    // Single centered altar card in the 540px center corridor so it never collides with left/right HUD columns.
     altar(spot, actor) {
-      const id = actor?.id ?? null;
-      if (altarIds[spot] === id) return;
-      altarIds[spot] = id;
-      altarEls[spot].replaceChildren(...(actor ? [card(actor.name, `🙏 ${actor.intent}`)] : []));
+      altarActors[spot] = actor || null;
+      const active = altarActors[1] || altarActors[0] || altarActors[2] || null;
+      const id = active?.id ?? null;
+      if (shownAltarId === id) return;
+      shownAltarId = id;
+      altarSlot.replaceChildren(...(active ? [card(active.name, `🙏 ${active.intent}`)] : []));
     },
   };
 }
