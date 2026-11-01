@@ -130,7 +130,7 @@ function frame(now) {
   prev = now;
 
   const packSpeed = runners.update(now, dt);
-  world3d.update(dt, Math.min(2.4, 0.9 + (packSpeed - 1) * 0.25));
+  world3d.update(dt, Math.min(1.55, 0.72 + (packSpeed - 1) * 0.16));
   fx.update(dt);
 
   // Subtle dynamic camera sway for adventure feel

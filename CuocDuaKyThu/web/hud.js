@@ -56,16 +56,17 @@ export function createRaceHud() {
     },
     setActiveCount(n) {
       const el = $('#runner-count');
-      if (el) el.textContent = `Đang đua: ${n} vận động viên`;
+      if (el) el.textContent = `Đang đua: ${n} VĐV`;
     },
     showWelcome(msg) {
       const card = $('#welcome-card');
       const txt = $('#welcome-text');
-      if (card && txt) {
+      const toast = $('#voice-toast');
+      if (card && txt && (!toast || !toast.classList.contains('on'))) {
         txt.textContent = msg.text || `Chào user ${msg.name} đã tham gia cuộc đua cùng chúng tôi`;
         card.classList.add('on');
         clearTimeout(welcomeTimer);
-        welcomeTimer = setTimeout(() => card.classList.remove('on'), 5000);
+        welcomeTimer = setTimeout(() => card.classList.remove('on'), 4500);
       }
       // Also push to live join feed on left wall
       const feed = $('#join-list');
@@ -113,6 +114,8 @@ export function createRaceHud() {
       const span = $('#voice-text');
       if (!toast || !span) return;
       if (on && text) {
+        $('#welcome-card')?.classList.remove('on');
+        $('#banner')?.classList.remove('on');
         span.textContent = text;
         toast.classList.add('on');
       } else {

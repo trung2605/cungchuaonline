@@ -11,9 +11,10 @@ export function createRaceFx(scene) {
 
   const mat = new THREE.PointsMaterial({
     map: glowTex,
-    size: 0.42,
-    color: 0xffd166,
+    size: 0.22,
+    color: 0xffe28a,
     transparent: true,
+    opacity: 0.78,
     depthWrite: false,
     blending: THREE.AdditiveBlending,
   });
@@ -34,23 +35,24 @@ export function createRaceFx(scene) {
 
   return {
     spawn(kind, power = 5) {
-      const count = Math.min(80, power * 10);
+      const count = Math.min(45, power * 6);
       for (let i = 0; i < count; i++) {
         emit(
-          rnd(-4.2, 4.2),
-          rnd(0.5, 4.5),
-          rnd(0, 9),
-          rnd(-1.2, 1.2),
-          rnd(0.8, 3.2),
-          rnd(3.0, 9.0),
-          rnd(1.2, 2.6)
+          rnd(-4.0, 4.0),
+          rnd(0.5, 4.2),
+          rnd(-4, 8),
+          rnd(-0.8, 0.8),
+          rnd(0.6, 2.2),
+          rnd(1.5, 4.5),
+          rnd(1.4, 2.8)
         );
       }
     },
     update(dt) {
-      // Ambient speed motes streaming past the camera
-      if (Math.random() < 0.65) {
-        emit(rnd(-5.5, 5.5), rnd(0.3, 4.2), rnd(-25, 2), 0, 0, rnd(14, 24), 1.6);
+      // Gentle fireflies floating outside the highway lanes so the road stays crystal clear
+      if (Math.random() < 0.18) {
+        const side = Math.random() < 0.5 ? -1 : 1;
+        emit(side * rnd(4.8, 11.5), rnd(0.6, 6.5), rnd(-32, 6), rnd(-0.25, 0.25), rnd(0.18, 0.55), rnd(1.8, 3.6), 2.8);
       }
       for (let i = 0; i < max; i++) {
         if (life[i] <= 0) continue;

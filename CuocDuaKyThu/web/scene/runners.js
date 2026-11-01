@@ -280,7 +280,7 @@ export function createRunners(scene) {
         if (shouldShow) shownLabels++;
         e.label.visible = Boolean(shouldShow);
 
-        e.phase += dt * (7.5 + spd * 3.2);
+        e.phase += dt * (4.2 + spd * 1.8);
         const s = Math.sin(e.phase);
         const c = Math.cos(e.phase);
 
