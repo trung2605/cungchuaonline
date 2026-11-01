@@ -129,15 +129,20 @@
   #donor .card b { display: block; font-size: 19.5px; font-weight: 800; color: #fff; max-width: 175px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   #donor .card span { display: block; font-size: 17px; font-weight: 700; color: var(--gold); line-height: 1.3; }
 
-  /* Bottom Call-To-Action Bar (raised to bottom: 185px so TikTok bottom buttons 🔗 👥 ↗️ never cover it) */
+  /* Call-To-Action Card inside Right Safe-Zone Column (Zero overlap with TikTok Mobile Chat!) */
   #footer {
-    left: 50%; bottom: 185px; translate: -50% 0; width: 1024px; padding: 15px 24px;
-    text-align: center; border-radius: 22px; border-color: var(--gold-line); pointer-events: none;
+    width: 100%; padding: 13px 15px;
+    text-align: left; border-color: var(--gold-line); pointer-events: none;
     font-variant-numeric: tabular-nums;
   }
-  #footer .title { font-size: 26px; font-weight: 800; color: var(--gold); margin-bottom: 4px; text-shadow: 0 2px 6px rgba(0, 0, 0, .85); }
-  #footer .sub { font-size: 20px; font-weight: 700; color: #e2f1ff; }
-  #footer .tiers { margin-top: 8px; padding-top: 8px; border-top: 1.5px solid rgba(255, 209, 102, .35); font-size: 19.5px; font-weight: 800; color: var(--cyan); }
+  #footer h3 {
+    margin: 0 0 8px; padding-bottom: 6px; text-align: center;
+    color: var(--gold); letter-spacing: 1px; font-size: 20px; font-weight: 800;
+    border-bottom: 1.5px solid var(--gold-line);
+  }
+  #footer .title { font-size: 18.5px; font-weight: 800; color: #fff; margin-bottom: 6px; line-height: 1.35; }
+  #footer .sub { font-size: 17.5px; font-weight: 700; color: #bfe0ff; margin-bottom: 7px; padding-bottom: 7px; border-bottom: 1px dashed rgba(255, 209, 102, .3); line-height: 1.35; }
+  #footer .tiers { font-size: 17.5px; font-weight: 800; color: var(--cyan); line-height: 1.35; }
 
   /* 3D Runner Overhead Labels */
   .label {
@@ -206,13 +211,14 @@
       <div id="board-empty" class="empty-board">Bình luận hoặc tặng quà để dẫn đầu đoàn đua!</div>
     </div>
 
-    <div id="donor"></div>
-  </div>
+    <div id="footer" class="pill">
+      <h3>🏁 CÁCH NHẬP CUỘC ĐUA</h3>
+      <div class="title">💬 Bình luận bất kỳ để hóa thân nhân vật 3D chạy khám phá thế giới!</div>
+      <div class="sub">🔊 AI đọc tên chào mừng trực tiếp trên sóng Live</div>
+      <div class="tiers">🌹 1💎 (Hoa Hồng, TikTok) Đôi Cánh · 🪷 2–5💎 (Hoa Sen, Tim Tay) Ván Trượt · 🚀 10–20+💎 (Rosa, Bánh Vòng) Tên Lửa ×4.8</div>
+    </div>
 
-  <div id="footer" class="pill">
-    <div class="title">🏁 Bình luận bất kỳ để hóa thân nhân vật 3D chạy khám phá thế giới!</div>
-    <div class="sub">Lời chào AI đọc tên trực tiếp: "Chào user [Tên] đã tham gia cuộc đua cùng chúng tôi"</div>
-    <div class="tiers">🌹 1💎 (Hoa Hồng, TikTok, GG) Đôi Cánh ×1.8 · 🪷 2–5💎 (Hoa Sen, Tim Tay) Ván Ánh Sáng ×2.4 · 🌺 10–15💎 (Rosa, Tim Đôi) Ván Vàng ×2.8 · 🚀 20+💎 (Nước Hoa, Bánh Vòng) Tên Lửa ×4.8</div>
+    <div id="donor"></div>
   </div>
 
   <button id="sound" class="pill">🔊 Bật Âm Thanh &amp; Giọng Đọc AI</button>

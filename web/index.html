@@ -190,21 +190,29 @@
   .card span { font-size: 19px; font-weight: 700; color: var(--gilt-bright); }
 
   /* ==========================================================================
-     BOTTOM CALL-TO-ACTION BAR (Raised to bottom: 185px above TikTok bottom bar)
+     CALL-TO-ACTION CARD IN RIGHT SAFE-ZONE COLUMN (Zero overlap with Mobile Chat!)
+     Moved out of the bottom chat zone into #right-col so the entire bottom half
+     of the screen (y = 930..1920px) is 100% clear for TikTok Mobile Live Chat.
      ========================================================================== */
   #footer {
-    left: 50%; bottom: 185px; translate: -50% 0; width: 1024px; padding: 14px 24px;
-    font-size: 20px; font-weight: 700; line-height: 1.38;
-    text-align: center; color: #fff6e5; pointer-events: none; border-radius: 24px;
+    width: 100%; padding: 13px 15px;
+    font-size: 18px; font-weight: 700; line-height: 1.36;
+    text-align: left; color: var(--ink); pointer-events: none;
     font-variant-numeric: tabular-nums;
   }
-  #footer div:first-child {
-    font-size: 26.5px; font-weight: 700; color: var(--gilt-bright); margin-bottom: 4px;
-    text-shadow: 0 2px 6px rgba(0, 0, 0, .9);
+  #footer h3 {
+    margin: 0 0 8px; padding-bottom: 6px; text-align: center;
+    color: var(--gilt-bright); letter-spacing: 1px; font-size: 20px; font-weight: 700;
+    border-bottom: 1.5px solid var(--gilt-line);
   }
+  #footer .cta-line {
+    margin-bottom: 7px; padding-bottom: 7px;
+    border-bottom: 1px dashed rgba(240, 202, 114, .28);
+    color: #fff6e5; font-size: 18px; font-weight: 700;
+  }
+  #footer .cta-line b { color: var(--gilt-bright); }
   #footer .footer-tiers {
-    margin-top: 7px; padding-top: 7px; border-top: 1.5px solid rgba(240, 202, 114, .42);
-    font-size: 19.5px; font-weight: 700; color: #ffebad;
+    font-size: 17.5px; font-weight: 700; color: #ffebad; line-height: 1.35;
   }
 
   #credit { left: 24px; bottom: 145px; font-size: 14px; opacity: .75; pointer-events: none; }
@@ -270,7 +278,7 @@
     </div>
   </div>
 
-  <!-- Right Safe-Zone Flex Column (Never Overlaps!) -->
+  <!-- Right Safe-Zone Flex Column (Never Overlaps Mobile Chat!) -->
   <div id="right-col">
     <div id="namo" class="pill">Đã niệm: <span>0</span><small id="hall-count">Đang lễ: 0 Phật tử</small></div>
     <div id="board" class="pill">
@@ -278,17 +286,17 @@
       <ol></ol>
       <div id="board-empty" class="empty-board">Thành tâm dâng lễ để ghi danh công đức 🙏</div>
     </div>
+    <div id="footer" class="pill">
+      <h3>CÁCH VÀO LỄ PHẬT</h3>
+      <div class="cta-line">🙏 Gõ <b>"Nam mô A Di Đà Phật"</b> để vào điện quỳ lễ</div>
+      <div id="footer-sub" class="cta-line">💬 Kèm lời cầu: <b>Bình an · Tài lộc · Sức khỏe · Gia đạo · Tình duyên · Học hành</b></div>
+      <div class="footer-tiers">🌹 <b>1💎</b> (Hoa Hồng, TikTok) Dâng hương · 🪷 <b>2–5💎</b> (Hoa Sen, Tim Tay) Hoa đăng · 🌺 <b>10–20+💎</b> (Rosa, Nước Hoa) Áo Vàng &amp; Đại hồng chung</div>
+    </div>
     <div id="donor"></div>
   </div>
 
   <div id="banner" class="pill"></div>
   <div id="voice-toast"><span class="wave"><i></i><i></i><i></i></span><span id="voice-text"></span></div>
-
-  <div id="footer" class="pill">
-    <div>🙏 Gõ "Nam mô A Di Đà Phật" để vào lễ Phật · Thả ❤️ dâng khói trầm</div>
-    <div id="footer-sub">💬 Kèm lời cầu: Bình an · Tài lộc · Sức khỏe · Gia đạo · Tình duyên · Học hành</div>
-    <div class="footer-tiers">🌹 1💎 (Hoa Hồng, TikTok, GG) Dâng hương · 🪷 2–5💎 (Hoa Sen, Tim Tay) Hoa đăng · 🌺 10–15💎 (Rosa, Tim Đôi) Áo Vàng · 🏮 20+💎 (Nước Hoa, Bánh Vòng) Đại hồng chung</div>
-  </div>
   <div id="credit"></div>
   <div id="fps"></div>
   <button id="sound" class="pill">🔊 Bật âm thanh</button>

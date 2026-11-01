@@ -48,11 +48,11 @@ export function createHud() {
   setInterval(nextCouplet, COUPLET_MS);
 
 const GIFT_VI = {
-  rose: 'Hoa Hồng', tiktok: 'TikTok', gg: 'GG', lotus: 'Hoa Sen',
-  'finger heart': 'Tim Tay', rosa: 'Hoa Rosa', perfume: 'Nước Hoa',
-  doughnut: 'Bánh Vòng', 'paper crane': 'Hạc Giấy', garland: 'Vòng Hoa',
-  'money gun': 'Pháo Lộc', swan: 'Thiên Nga', galaxy: 'Ngân Hà',
-  lion: 'Sư Tử', 'tiktok universe': 'Vũ Trụ',
+  rose: 'Hoa Hồng', tiktok: 'TikTok', gg: 'GG',
+  'heart me': 'Trái Tim', 'ice cream cone': 'Kem Ốc Quế', 'wishing bottle': 'Bình Ước Nguyện',
+  lotus: 'Hoa Sen', 'finger heart': 'Tim Tay', 'little yellow duck': 'Vịt Vàng', panda: 'Gấu Trúc',
+  rosa: 'Hoa Rosa', 'friendship necklace': 'Vòng Hữu Nghị', 'hand hearts': 'Tim Đôi', 'conical hat': 'Nón Lá',
+  perfume: 'Nước Hoa', doughnut: 'Bánh Vòng', bouquet: 'Bó Hoa Tươi', 'paper crane': 'Hạc Giấy',
 };
 const giftVi = g => GIFT_VI[String(g || '').trim().toLowerCase()] || g || 'Lễ vật';
 
