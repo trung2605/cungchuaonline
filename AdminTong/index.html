@@ -4,181 +4,431 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Admin Tổng · Hệ Sinh Thái Live TikTok</title>
+<script src="https://unpkg.com/lucide@latest"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <style>
   :root {
-    --bg: #070b14; --panel: #0f172a; --elev: #162038;
-    --ink: #f1f5f9; --mute: #94a3b8; --gold: #f5c242; --cyan: #00f5d4;
-    --line: rgba(148, 163, 184, .18); --gold-line: rgba(245, 194, 66, .45);
-    --ok: #10b981; --red: #f43f5e;
+    --bg: #f4f6fb;
+    --panel: #ffffff;
+    --elev: #f8fafc;
+    --ink: #0f172a;
+    --ink-2: #334155;
+    --mute: #64748b;
+    --primary: #4f46e5;
+    --primary-soft: #eef2ff;
+    --gold: #d97706;
+    --gold-soft: #fef3c7;
+    --teal: #0d9488;
+    --teal-soft: #ccfbf1;
+    --ok: #059669;
+    --ok-soft: #d1fae5;
+    --red: #e11d48;
+    --red-soft: #ffe4e6;
+    --line: #e2e8f0;
+    --line-strong: #cbd5e1;
+    --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
+    --shadow-md: 0 4px 16px -2px rgba(15, 23, 42, 0.08), 0 2px 6px -1px rgba(15, 23, 42, 0.04);
   }
   * { box-sizing: border-box; }
-  body { margin: 0; font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--ink); font-size: 14px; line-height: 1.45; }
+  body {
+    margin: 0;
+    font-family: 'Be Vietnam Pro', 'Inter', 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  .lucide { width: 16px; height: 16px; stroke-width: 2; vertical-align: -3px; flex-shrink: 0; }
+  .lucide-lg { width: 20px; height: 20px; }
+
+  /* Top Ecosystem Hub Bar */
   .hub-bar {
-    background: #04070d; border-bottom: 1px solid var(--gold-line);
-    padding: 8px 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; font-size: 12.5px;
+    background: #ffffff;
+    border-bottom: 1px solid var(--line);
+    padding: 8px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    font-size: 12.5px;
   }
-  .hub-bar a { text-decoration: none; padding: 4px 11px; border-radius: 99px; font-weight: 600; color: var(--mute); border: 1px solid var(--line); }
-  .hub-bar a.active { background: linear-gradient(90deg, var(--gold), #e09f24); color: #050a14; border: none; font-weight: 700; }
+  .hub-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--primary);
+    font-weight: 700;
+    letter-spacing: 0.3px;
+  }
+  .hub-bar a {
+    text-decoration: none;
+    padding: 5px 12px;
+    border-radius: 99px;
+    font-weight: 600;
+    color: var(--ink-2);
+    border: 1px solid var(--line);
+    background: var(--elev);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.15s ease;
+  }
+  .hub-bar a:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-soft); }
+  .hub-bar a.active {
+    background: var(--primary);
+    color: #ffffff;
+    border-color: var(--primary);
+    box-shadow: 0 2px 8px rgba(79, 70, 229, 0.25);
+  }
+
+  /* Sticky Main Header */
   header {
-    background: var(--panel); border-bottom: 1px solid var(--line);
-    padding: 12px 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
-    position: sticky; top: 0; z-index: 20;
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line);
+    padding: 14px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 14px;
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    box-shadow: var(--shadow-sm);
   }
-  h1 { margin: 0; font-size: 18px; color: var(--gold); display: flex; align-items: center; gap: 8px; }
-  nav { display: flex; gap: 6px; flex-wrap: wrap; }
+  .brand-title {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--ink);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .brand-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: var(--primary-soft);
+    color: var(--primary);
+    display: grid;
+    place-items: center;
+  }
+  nav { display: flex; gap: 6px; flex-wrap: wrap; background: var(--elev); padding: 4px; border-radius: 10px; border: 1px solid var(--line); }
   nav button {
-    background: transparent; color: var(--mute); border: 1px solid transparent;
-    padding: 7px 14px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13.5px;
+    background: transparent;
+    color: var(--mute);
+    border: none;
+    padding: 7px 14px;
+    border-radius: 7px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 13.5px;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    transition: all 0.15s ease;
   }
-  nav button[aria-selected="true"] { background: rgba(245, 194, 66, .16); color: var(--gold); border-color: var(--gold-line); }
-  main { max-width: 1400px; margin: 0 auto; padding: 20px 24px 64px; }
+  nav button:hover { color: var(--ink); }
+  nav button[aria-selected="true"] {
+    background: #ffffff;
+    color: var(--primary);
+    box-shadow: var(--shadow-sm);
+  }
+
+  main { max-width: 1440px; margin: 0 auto; padding: 24px 28px 64px; }
   section[hidden] { display: none; }
-  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 16px; }
-  .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 16px; }
-  @media (max-width: 1024px) { .grid-4, .grid-2 { grid-template-columns: 1fr; } }
-  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px; box-shadow: 0 6px 18px rgba(0, 0, 0, .3); }
-  .card.gold { border-color: var(--gold-line); }
-  .card h2 { margin: 0 0 8px; font-size: 13.5px; color: var(--mute); font-weight: 600; display: flex; align-items: center; justify-content: space-between; }
-  .big { font-size: 26px; font-weight: 700; color: var(--gold); font-variant-numeric: tabular-nums; }
+
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 18px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 18px; }
+  .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 18px; }
+  @media (max-width: 1100px) { .grid-4, .grid-3, .grid-2 { grid-template-columns: 1fr; } }
+
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 18px 20px;
+    box-shadow: var(--shadow-sm);
+  }
+  .card.accent { border-top: 3px solid var(--primary); }
+  .card.gold { border-top: 3px solid var(--gold); }
+  .card.teal { border-top: 3px solid var(--teal); }
+  .card h2 {
+    margin: 0 0 10px;
+    font-size: 13.5px;
+    color: var(--ink-2);
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .card-title-left { display: inline-flex; align-items: center; gap: 7px; }
+  .big {
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.5px;
+  }
+  .big.primary { color: var(--primary); }
+  .big.gold { color: var(--gold); }
+  .big.teal { color: var(--teal); }
   .sub { font-size: 12.5px; color: var(--mute); margin-top: 4px; }
+
   button, .btn {
-    background: var(--elev); color: var(--ink); border: 1px solid var(--line);
-    padding: 7px 12px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13px; text-decoration: none; display: inline-flex; align-items: center; gap: 5px;
+    background: #ffffff;
+    color: var(--ink-2);
+    border: 1px solid var(--line-strong);
+    padding: 7px 13px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 13px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.15s ease;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
   }
-  button:hover, .btn:hover { border-color: var(--cyan); }
-  button.primary { background: linear-gradient(180deg, #f5c242, #d4961a); color: #070d19; border: none; font-weight: 700; }
-  button.cyan { background: rgba(0, 245, 212, .14); border-color: var(--cyan); color: var(--cyan); }
-  button.danger { background: rgba(244, 63, 94, .14); border-color: var(--red); color: #fda4af; }
+  button:hover, .btn:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-soft); }
+  button.primary, .btn.primary {
+    background: var(--primary);
+    color: #ffffff;
+    border-color: var(--primary);
+  }
+  button.primary:hover, .btn.primary:hover { background: #4338ca; color: #ffffff; }
+  button.gold, .btn.gold {
+    background: var(--gold-soft);
+    color: #92400e;
+    border-color: #fde68a;
+  }
+  button.teal, .btn.teal {
+    background: var(--teal-soft);
+    color: #115e59;
+    border-color: #99f6e4;
+  }
+  button.danger {
+    background: var(--red-soft);
+    color: var(--red);
+    border-color: #fecdd3;
+  }
+
   input, select, textarea {
-    background: var(--bg); color: var(--ink); border: 1px solid var(--line);
-    padding: 8px 10px; border-radius: 6px; font-size: 13.5px; width: 100%; font-family: inherit;
+    background: #ffffff;
+    color: var(--ink);
+    border: 1px solid var(--line-strong);
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 13.5px;
+    width: 100%;
+    font-family: inherit;
+    transition: border-color 0.15s;
   }
-  .btn-group { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12);
+  }
+
+  .btn-group { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+
   table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  th, td { padding: 8px 10px; border-bottom: 1px solid var(--line); text-align: left; }
-  th { color: var(--mute); font-weight: 600; background: rgba(0, 0, 0, .25); position: sticky; top: 0; }
-  .scroll { max-height: 380px; overflow-y: auto; border: 1px solid var(--line); border-radius: 8px; background: var(--elev); }
-  .badge { display: inline-block; padding: 2px 8px; border-radius: 99px; font-size: 11.5px; font-weight: 700; }
-  .badge.ok { background: rgba(16, 185, 129, .18); color: #34d399; border: 1px solid rgba(16, 185, 129, .4); }
-  .badge.warn { background: rgba(245, 194, 66, .18); color: var(--gold); border: 1px solid var(--gold-line); }
-  .badge.cyan { background: rgba(0, 245, 212, .16); color: var(--cyan); border: 1px solid rgba(0, 245, 212, .35); }
-  #msg { color: var(--cyan); font-weight: 600; font-size: 13px; }
+  th, td { padding: 10px 12px; border-bottom: 1px solid var(--line); text-align: left; }
+  th {
+    color: var(--mute);
+    font-weight: 700;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    background: var(--elev);
+    position: sticky;
+    top: 0;
+    z-index: 2;
+  }
+  tr:hover td { background: #f8fafc; }
+  .scroll { max-height: 380px; overflow-y: auto; border: 1px solid var(--line); border-radius: 10px; background: #ffffff; }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 10px;
+    border-radius: 99px;
+    font-size: 12px;
+    font-weight: 700;
+  }
+  .badge.ok { background: var(--ok-soft); color: var(--ok); }
+  .badge.warn { background: var(--gold-soft); color: var(--gold); }
+  .badge.info { background: var(--primary-soft); color: var(--primary); }
+
+  .chart-wrap { position: relative; height: 250px; width: 100%; }
+  .stat-mini {
+    background: var(--elev);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 12px 14px;
+  }
+  #msg {
+    color: var(--ok);
+    font-weight: 600;
+    font-size: 13px;
+    padding: 4px 10px;
+    border-radius: 6px;
+  }
 </style>
 </head>
 <body>
 <div class="hub-bar">
   <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-    <span style="color:var(--gold);font-weight:700">👑 HỆ SINH THÁI LIVE TIKTOK:</span>
-    <a href="http://127.0.0.1:8791" class="active">🌐 Admin Tổng (:8791)</a>
-    <a href="http://127.0.0.1:8788" target="_blank">🏮 Admin Cúng Chùa (:8788) ↗</a>
-    <a href="http://127.0.0.1:8790" target="_blank">🏁 Admin Cuộc Đua Kỳ Thú (:8790) ↗</a>
+    <span class="hub-brand"><i data-lucide="layers"></i> HỆ SINH THÁI LIVE TIKTOK:</span>
+    <a href="http://127.0.0.1:8791" class="active"><i data-lucide="shield-check"></i> Admin Tổng (:8791)</a>
+    <a href="http://127.0.0.1:8788" target="_blank"><i data-lucide="Flame"></i> Admin Cúng Chùa (:8788) <i data-lucide="external-link"></i></a>
+    <a href="http://127.0.0.1:8790" target="_blank"><i data-lucide="flag"></i> Admin Cuộc Đua Kỳ Thú (:8790) <i data-lucide="external-link"></i></a>
   </div>
   <div style="display:flex;align-items:center;gap:10px">
-    <a href="http://127.0.0.1:8787" target="_blank" style="color:var(--gold);border-color:var(--gold-line)">🏮 Màn Hình 3D Chùa (:8787) ↗</a>
-    <a href="http://127.0.0.1:8789" target="_blank" style="color:var(--cyan);border-color:rgba(0,245,212,.4)">🏁 Màn Hình 3D Đua Xe (:8789) ↗</a>
+    <a href="http://127.0.0.1:8787" target="_blank"><i data-lucide="monitor-play"></i> Màn Hình 3D Chùa (:8787)</a>
+    <a href="http://127.0.0.1:8789" target="_blank"><i data-lucide="compass"></i> Màn Hình 3D Đua Xe (:8789)</a>
   </div>
 </div>
 
 <header>
-  <h1>👑 Admin Tổng · Quản Lý Toàn Bộ Trò Chơi &amp; Quà Tặng Livestream</h1>
+  <h1 class="brand-title">
+    <span class="brand-icon"><i data-lucide="layout-dashboard" class="lucide-lg"></i></span>
+    <span>Admin Tổng · Trung Tâm Điều Hành Đa Trò Chơi &amp; Quà Livestream</span>
+  </h1>
   <nav role="tablist">
-    <button role="tab" data-tab="games" aria-selected="true">🎮 Quản Lý Trò Chơi</button>
-    <button role="tab" data-tab="gifts">🎁 Quà Tặng Livestream &amp; Danh Mục</button>
-    <button role="tab" data-tab="work">📜 Lịch Sử Các Phần Đã Làm</button>
-    <button role="tab" data-tab="database">🗄️ Cấu Hình MongoDB</button>
+    <button role="tab" data-tab="games" aria-selected="true"><i data-lucide="gamepad-2"></i> Tổng Quan &amp; Biểu Đồ</button>
+    <button role="tab" data-tab="gifts"><i data-lucide="gift"></i> Quà Livestream &amp; Danh Mục</button>
+    <button role="tab" data-tab="work"><i data-lucide="clipboard-list"></i> Lịch Sử Công Việc</button>
+    <button role="tab" data-tab="database"><i data-lucide="database"></i> Kết Nối MongoDB</button>
   </nav>
   <span id="msg"></span>
 </header>
 
 <main>
-  <!-- TAB 1: QUẢN LÝ TOÀN BỘ TRÒ CHƠI -->
+  <!-- TAB 1: QUẢN LÝ TOÀN BỘ TRÒ CHƠI & BIỂU ĐỒ -->
   <section id="games">
     <div class="grid-4">
-      <div class="card gold">
-        <h2>📡 Kênh TikTok LIVE Toàn Hệ Thống</h2>
-        <div class="big" id="topTiktok">@adidaphat20266</div>
-        <div style="display:flex;gap:6px;margin-top:8px">
+      <div class="card accent">
+        <h2><span class="card-title-left"><i data-lucide="radio"></i> Kênh TikTok LIVE Toàn Hệ Thống</span></h2>
+        <div class="big primary" id="topTiktok">@adidaphat20266</div>
+        <div style="display:flex;gap:6px;margin-top:10px">
           <input id="globalTiktokInput" placeholder="Nhập @username TikTok">
-          <button class="primary" id="saveGlobalTiktokBtn" style="white-space:nowrap">Đổi Tất Cả Game</button>
+          <button class="primary" id="saveGlobalTiktokBtn" style="white-space:nowrap"><i data-lucide="refresh-cw"></i> Đổi Tất Cả</button>
         </div>
       </div>
-      <div class="card">
-        <h2>💎 Tổng Kim Cương Livestream</h2>
-        <div class="big" id="topRealDiamonds">0 💎</div>
-        <div class="sub">Cùng mô phỏng Demo: <b id="topAllDiamonds">0 💎</b></div>
+
+      <div class="card gold">
+        <h2><span class="card-title-left"><i data-lucide="gem"></i> Tổng Kim Cương Thực Tế</span></h2>
+        <div class="big gold" id="topRealDiamonds">0</div>
+        <div class="sub">Tính cả mô phỏng Demo: <b id="topAllDiamonds">0</b> kim cương</div>
       </div>
-      <div class="card">
-        <h2>🎁 Tổng Lượt Nhận Quà</h2>
-        <div class="big" id="topGiftCount">0</div>
-        <div class="sub">Chùa: <b id="topChuaDiamonds">0💎</b> · Đua: <b id="topDuaDiamonds">0💎</b></div>
+
+      <div class="card teal">
+        <h2><span class="card-title-left"><i data-lucide="gift"></i> Tổng Lượt Nhận Quà</span></h2>
+        <div class="big teal" id="topGiftCount">0</div>
+        <div class="sub">Cúng Chùa: <b id="topChuaDiamonds">0</b> · Cuộc Đua: <b id="topDuaDiamonds">0</b></div>
       </div>
+
       <div class="card">
-        <h2>🗄️ Trạng Thái Cơ Sở Dữ Liệu</h2>
-        <div id="topDbBadge" style="margin:6px 0"><span class="badge warn">Lưu JSON Cục Bộ</span></div>
+        <h2><span class="card-title-left"><i data-lucide="database"></i> Trạng Thái Lưu Trữ Dữ Liệu</span></h2>
+        <div id="topDbBadge" style="margin:6px 0"><span class="badge warn"><i data-lucide="hard-drive"></i> Lưu JSON Cục Bộ</span></div>
         <div class="sub" id="topDbSub">Chờ cấu hình MONGODB_URI trong .env</div>
       </div>
     </div>
 
+    <!-- BIỂU ĐỒ TRỰC QUAN -->
+    <div class="grid-3">
+      <div class="card">
+        <h2>
+          <span class="card-title-left"><i data-lucide="trending-up"></i> Lưu Lượng Kim Cương &amp; Quà Theo Thời Gian</span>
+          <span class="badge info">Trực tiếp</span>
+        </h2>
+        <div class="chart-wrap"><canvas id="chartTimeline"></canvas></div>
+      </div>
+
+      <div class="card">
+        <h2>
+          <span class="card-title-left"><i data-lucide="pie-chart"></i> Tỷ Trọng Kim Cương Theo Game &amp; Nguồn</span>
+        </h2>
+        <div class="chart-wrap"><canvas id="chartGameSplit"></canvas></div>
+      </div>
+
+      <div class="card">
+        <h2>
+          <span class="card-title-left"><i data-lucide="bar-chart-3"></i> Top 6 Người Tặng Quà Hàng Đầu</span>
+        </h2>
+        <div class="chart-wrap"><canvas id="chartTopDonors"></canvas></div>
+      </div>
+    </div>
+
+    <!-- ĐIỀU KHIỂN 2 GAME -->
     <div class="grid-2">
       <!-- GAME 1 CARD -->
       <div class="card gold">
         <h2>
-          <span>🏮 Game 1: Cúng Chùa Online 3D</span>
-          <span id="chuaOnlineBadge" class="badge ok">Đang chạy (:8787 / :8788)</span>
+          <span class="card-title-left"><i data-lucide="flame"></i> Game 1: Cúng Chùa Online 3D</span>
+          <span id="chuaOnlineBadge" class="badge ok"><i data-lucide="check-circle-2"></i> Đang chạy (:8787 / :8788)</span>
         </h2>
-        <div class="grid-2" style="margin:10px 0">
-          <div>
-            <div class="sub">Phật tử đang lễ trên điện:</div>
-            <div class="big" id="chuaActors">0</div>
+        <div class="grid-2" style="margin:12px 0">
+          <div class="stat-mini">
+            <div class="sub"><i data-lucide="users"></i> Phật tử đang lễ trên điện</div>
+            <div class="big gold" id="chuaActors">0</div>
           </div>
-          <div>
-            <div class="sub">Tổng lượt niệm Nam Mô:</div>
+          <div class="stat-mini">
+            <div class="sub"><i data-lucide="message-circle-heart"></i> Tổng lượt niệm Nam Mô</div>
             <div class="big" id="chuaNamo">0</div>
           </div>
         </div>
         <div class="sub" id="chuaMeta">Chế độ Demo: Đang kiểm tra...</div>
         <div class="btn-group">
-          <button class="primary" onclick="gameAction('cung-chua-online','/api/test-event',{action:'prayer',name:'Phật Tử Thiện Tâm'})">🙏 Test Phật Tử Lễ Phật</button>
-          <button class="cyan" onclick="gameAction('cung-chua-online','/api/test-event',{action:'gift1',name:'Phật Tử Thiện Tâm'})">🌹 Test Hoa Hồng (1💎)</button>
-          <button class="cyan" onclick="gameAction('cung-chua-online','/api/test-event',{action:'gift10',name:'Phật Tử Thiện Tâm'})">🪷 Test Hoa Đăng (30💎)</button>
-          <button class="primary" onclick="gameAction('cung-chua-online','/api/test-event',{action:'gift1000',name:'Đại Thí Chủ'})">👑 Test Galaxy (1000💎)</button>
-          <button onclick="gameAction('cung-chua-online','/api/demo',{on:true,rate:3})">▶️ Bật Demo</button>
-          <button onclick="gameAction('cung-chua-online','/api/demo',{on:false,rate:3})">⏹️ Tắt Demo</button>
+          <button class="primary" onclick="gameAction('cung-chua-online','/api/test-event',{action:'prayer',name:'Phật Tử Thiện Tâm'})"><i data-lucide="user-plus"></i> Test Phật Tử Lễ Phật</button>
+          <button class="gold" onclick="gameAction('cung-chua-online','/api/test-event',{action:'gift1',name:'Phật Tử Thiện Tâm'})"><i data-lucide="flower-2"></i> Test Hoa Hồng (1)</button>
+          <button class="gold" onclick="gameAction('cung-chua-online','/api/test-event',{action:'gift10',name:'Phật Tử Thiện Tâm'})"><i data-lucide="lamp"></i> Test Hoa Đăng (30)</button>
+          <button class="primary" onclick="gameAction('cung-chua-online','/api/test-event',{action:'gift1000',name:'Đại Thí Chủ'})"><i data-lucide="crown"></i> Test Galaxy (1000)</button>
+          <button onclick="gameAction('cung-chua-online','/api/demo',{on:true,rate:3})"><i data-lucide="play"></i> Bật Demo</button>
+          <button onclick="gameAction('cung-chua-online','/api/demo',{on:false,rate:3})"><i data-lucide="square"></i> Tắt Demo</button>
         </div>
-        <div class="btn-group" style="margin-top:10px;padding-top:10px;border-top:1px solid var(--line)">
-          <a class="btn cyan" href="http://127.0.0.1:8787" target="_blank">Mở Màn Hình 3D Chùa (:8787) ↗</a>
-          <a class="btn" href="http://127.0.0.1:8788" target="_blank">Mở Admin Chi Tiết Chùa (:8788) ↗</a>
+        <div class="btn-group" style="margin-top:12px;padding-top:12px;border-top:1px solid var(--line)">
+          <a class="btn primary" href="http://127.0.0.1:8787" target="_blank"><i data-lucide="monitor"></i> Mở Màn Hình 3D Chùa (:8787)</a>
+          <a class="btn" href="http://127.0.0.1:8788" target="_blank"><i data-lucide="sliders"></i> Mở Admin Chi Tiết Chùa (:8788)</a>
         </div>
       </div>
 
       <!-- GAME 2 CARD -->
-      <div class="card gold">
+      <div class="card teal">
         <h2>
-          <span>🏁 Game 2: Cuộc Đua Kỳ Thú 3D (Chạy Vô Hạn)</span>
-          <span id="duaOnlineBadge" class="badge ok">Đang chạy (:8789 / :8790)</span>
+          <span class="card-title-left"><i data-lucide="compass"></i> Game 2: Cuộc Đua Kỳ Thú 3D (Chạy Vô Hạn)</span>
+          <span id="duaOnlineBadge" class="badge ok"><i data-lucide="check-circle-2"></i> Đang chạy (:8789 / :8790)</span>
         </h2>
-        <div class="grid-2" style="margin:10px 0">
-          <div>
-            <div class="sub">Vận động viên trên đường đua:</div>
-            <div class="big" id="duaRunners">0</div>
+        <div class="grid-2" style="margin:12px 0">
+          <div class="stat-mini">
+            <div class="sub"><i data-lucide="footprints"></i> Vận động viên trên đường đua</div>
+            <div class="big teal" id="duaRunners">0</div>
           </div>
-          <div>
-            <div class="sub">Quãng đường khám phá:</div>
+          <div class="stat-mini">
+            <div class="sub"><i data-lucide="map-pin"></i> Quãng đường khám phá</div>
             <div class="big" id="duaDist">0 m</div>
           </div>
         </div>
-        <div class="sub" id="duaMeta">Địa điểm hiện tại: Vịnh Hạ Long 🇻🇳</div>
+        <div class="sub" id="duaMeta">Địa điểm hiện tại: Vịnh Hạ Long</div>
         <div class="btn-group">
-          <button class="primary" onclick="gameAction('cuoc-dua-ky-thu','/api/test-event',{action:'join',name:'Lê Trí Trung'})">👋 Test Lời Chào Nhập Cuộc</button>
-          <button class="cyan" onclick="gameAction('cuoc-dua-ky-thu','/api/test-event',{action:'gift1',name:'Lê Trí Trung'})">🌹 Test Đôi Cánh (1💎)</button>
-          <button class="cyan" onclick="gameAction('cuoc-dua-ky-thu','/api/test-event',{action:'gift30',name:'Lê Trí Trung'})">🛹 Test Ván Trượt Vàng (30💎)</button>
-          <button class="primary" onclick="gameAction('cuoc-dua-ky-thu','/api/test-event',{action:'gift1000',name:'Lê Trí Trung'})">👑 Test Phi Thuyền (1000💎)</button>
-          <button onclick="gameAction('cuoc-dua-ky-thu','/api/demo',{on:true,rate:2.5})">▶️ Bật Demo</button>
-          <button onclick="gameAction('cuoc-dua-ky-thu','/api/demo',{on:false,rate:2.5})">⏹️ Tắt Demo</button>
+          <button class="primary" onclick="gameAction('cuoc-dua-ky-thu','/api/test-event',{action:'join',name:'Lê Trí Trung'})"><i data-lucide="volume-2"></i> Test Lời Chào Nhập Cuộc</button>
+          <button class="teal" onclick="gameAction('cuoc-dua-ky-thu','/api/test-event',{action:'gift1',name:'Lê Trí Trung'})"><i data-lucide="feather"></i> Test Đôi Cánh (1)</button>
+          <button class="teal" onclick="gameAction('cuoc-dua-ky-thu','/api/test-event',{action:'gift30',name:'Lê Trí Trung'})"><i data-lucide="zap"></i> Test Ván Trượt Vàng (30)</button>
+          <button class="primary" onclick="gameAction('cuoc-dua-ky-thu','/api/test-event',{action:'gift1000',name:'Lê Trí Trung'})"><i data-lucide="rocket"></i> Test Phi Thuyền (1000)</button>
+          <button onclick="gameAction('cuoc-dua-ky-thu','/api/demo',{on:true,rate:2.5})"><i data-lucide="play"></i> Bật Demo</button>
+          <button onclick="gameAction('cuoc-dua-ky-thu','/api/demo',{on:false,rate:2.5})"><i data-lucide="square"></i> Tắt Demo</button>
         </div>
-        <div class="btn-group" style="margin-top:10px;padding-top:10px;border-top:1px solid var(--line)">
-          <a class="btn cyan" href="http://127.0.0.1:8789" target="_blank">Mở Màn Hình 3D Đua Xe (:8789) ↗</a>
-          <a class="btn" href="http://127.0.0.1:8790" target="_blank">Mở Admin Chi Tiết Đua Xe (:8790) ↗</a>
+        <div class="btn-group" style="margin-top:12px;padding-top:12px;border-top:1px solid var(--line)">
+          <a class="btn primary" href="http://127.0.0.1:8789" target="_blank"><i data-lucide="monitor"></i> Mở Màn Hình 3D Đua Xe (:8789)</a>
+          <a class="btn" href="http://127.0.0.1:8790" target="_blank"><i data-lucide="sliders"></i> Mở Admin Chi Tiết Đua Xe (:8790)</a>
         </div>
       </div>
     </div>
@@ -189,14 +439,14 @@
     <div class="grid-2">
       <div class="card">
         <h2>
-          <span>🎁 Nhật Ký Quà Nhận Livestream Toàn Hệ Thống</span>
+          <span class="card-title-left"><i data-lucide="gift"></i> Nhật Ký Quà Nhận Livestream Toàn Hệ Thống</span>
           <div style="display:flex;gap:6px">
-            <select id="filterGiftGame" style="width:auto;padding:4px 8px;font-size:12px">
+            <select id="filterGiftGame" style="width:auto;padding:5px 10px;font-size:12.5px">
               <option value="all">Mọi trò chơi</option>
-              <option value="cung-chua-online">🏮 Cúng Chùa Online</option>
-              <option value="cuoc-dua-ky-thu">🏁 Cuộc Đua Kỳ Thú</option>
+              <option value="cung-chua-online">Cúng Chùa Online</option>
+              <option value="cuoc-dua-ky-thu">Cuộc Đua Kỳ Thú</option>
             </select>
-            <select id="filterGiftSrc" style="width:auto;padding:4px 8px;font-size:12px">
+            <select id="filterGiftSrc" style="width:auto;padding:5px 10px;font-size:12.5px">
               <option value="all">TikTok + Demo</option>
               <option value="tiktok">Chỉ TikTok thật</option>
               <option value="mock">Chỉ Demo</option>
@@ -206,7 +456,7 @@
         <div class="scroll">
           <table>
             <thead>
-              <tr><th>Thời gian</th><th>Game</th><th>Nguồn</th><th>Người tặng</th><th>Quà</th><th>💎</th><th>Phần thưởng</th></tr>
+              <tr><th>Thời gian</th><th>Trò chơi</th><th>Nguồn</th><th>Người tặng</th><th>Quà</th><th>Kim cương</th><th>Phần thưởng kích hoạt</th></tr>
             </thead>
             <tbody id="globalGiftBody"></tbody>
           </table>
@@ -214,11 +464,11 @@
       </div>
 
       <div class="card">
-        <h2>🏆 Bảng Vàng Người Tặng Quà Hàng Đầu (Top Donors)</h2>
+        <h2><span class="card-title-left"><i data-lucide="trophy"></i> Bảng Vàng Người Tặng Quà Hàng Đầu (Top Donors)</span></h2>
         <div class="scroll">
           <table>
             <thead>
-              <tr><th>#</th><th>Tên Người Tặng</th><th>Số lần tặng</th><th>Quà gần nhất</th><th>Tổng 💎</th></tr>
+              <tr><th>#</th><th>Tên Người Tặng</th><th>Số lần tặng</th><th>Quà gần nhất</th><th>Tổng Kim Cương</th></tr>
             </thead>
             <tbody id="globalDonorBody"></tbody>
           </table>
@@ -226,21 +476,21 @@
       </div>
     </div>
 
-    <div class="card gold">
-      <h2>⚙️ Quản Lý Danh Mục Quà Tặng TikTok &amp; Phần Thưởng Trong Game</h2>
-      <div style="display:grid;grid-template-columns:90px 1fr 1fr 90px 1.4fr 1.4fr auto;gap:8px;margin-bottom:12px;align-items:center">
-        <input id="catId" placeholder="ID (VD: 5655)">
+    <div class="card accent">
+      <h2><span class="card-title-left"><i data-lucide="settings-2"></i> Quản Lý Danh Mục Quà Tặng TikTok &amp; Phần Thưởng Trong Game</span></h2>
+      <div style="display:grid;grid-template-columns:90px 1fr 1fr 100px 1.4fr 1.4fr auto;gap:8px;margin-bottom:14px;align-items:center">
+        <input id="catId" placeholder="ID (5655)">
         <input id="catName" placeholder="Tên gốc TikTok (Rose)">
         <input id="catVi" placeholder="Tên TV (Hoa Hồng)">
-        <input id="catDiamonds" type="number" placeholder="Số 💎" value="10">
+        <input id="catDiamonds" type="number" placeholder="Số kim cương" value="10">
         <input id="catChua" placeholder="Thưởng Cúng Chùa Online">
         <input id="catDua" placeholder="Thưởng Cuộc Đua Kỳ Thú">
-        <button class="primary" id="saveCatBtn">Lưu Quà</button>
+        <button class="primary" id="saveCatBtn"><i data-lucide="save"></i> Lưu Quà</button>
       </div>
-      <div class="scroll" style="max-height:320px">
+      <div class="scroll" style="max-height:340px">
         <table>
           <thead>
-            <tr><th>Gift ID</th><th>Tên TikTok</th><th>Tên Tiếng Việt</th><th>💎</th><th>Thưởng Cúng Chùa Online</th><th>Thưởng Cuộc Đua Kỳ Thú</th><th>Thao tác</th></tr>
+            <tr><th>Gift ID</th><th>Tên TikTok</th><th>Tên Tiếng Việt</th><th>Kim cương</th><th>Thưởng Cúng Chùa Online</th><th>Thưởng Cuộc Đua Kỳ Thú</th><th>Thao tác</th></tr>
           </thead>
           <tbody id="catalogBody"></tbody>
         </table>
@@ -250,9 +500,9 @@
 
   <!-- TAB 3: LỊCH SỬ CÁC PHẦN ĐÃ LÀM -->
   <section id="work" hidden>
-    <div class="card gold" style="margin-bottom:16px">
-      <h2>✍️ Ghi Chú Thêm Hạng Mục Công Việc / Lịch Sử Cải Tiến</h2>
-      <div style="display:grid;grid-template-columns:150px 180px 1fr 1.5fr auto;gap:8px">
+    <div class="card accent" style="margin-bottom:18px">
+      <h2><span class="card-title-left"><i data-lucide="pen-tool"></i> Ghi Chú Thêm Hạng Mục Công Việc / Lịch Sử Cải Tiến</span></h2>
+      <div style="display:grid;grid-template-columns:160px 180px 1fr 1.5fr auto;gap:8px">
         <select id="workCat">
           <option value="feature">Tính năng mới</option>
           <option value="ui_ux">Giao diện UI/UX</option>
@@ -267,12 +517,12 @@
         </select>
         <input id="workTitle" placeholder="Tiêu đề phần việc đã thực hiện">
         <input id="workDetail" placeholder="Chi tiết nội dung, cấu hình hoặc ghi chú...">
-        <button class="primary" id="addWorkBtn">Lưu Lịch Sử</button>
+        <button class="primary" id="addWorkBtn"><i data-lucide="plus-circle"></i> Lưu Lịch Sử</button>
       </div>
     </div>
 
     <div class="card">
-      <h2>📜 Lịch Sử Các Phần Đã Làm &amp; Nhật Ký Quản Trị Hệ Thống (<span id="workCount">0</span> mục)</h2>
+      <h2><span class="card-title-left"><i data-lucide="history"></i> Lịch Sử Các Phần Đã Làm &amp; Nhật Ký Quản Trị (<span id="workCount">0</span> mục)</span></h2>
       <div class="scroll" style="max-height:480px">
         <table>
           <thead>
@@ -286,23 +536,26 @@
 
   <!-- TAB 4: CẤU HÌNH MONGODB -->
   <section id="database" hidden>
-    <div class="card gold">
-      <h2>🗄️ Kết Nối Cơ Sở Dữ Liệu MongoDB (Lưu Trữ Quà Tặng, Người Chơi &amp; Lịch Sử Công Việc)</h2>
+    <div class="card accent">
+      <h2><span class="card-title-left"><i data-lucide="database"></i> Kết Nối Cơ Sở Dữ Liệu MongoDB (Lưu Trữ Quà Tặng, Người Chơi &amp; Lịch Sử Công Việc)</span></h2>
       <p class="sub" style="margin-bottom:14px">
         Khi bạn điền <code>MONGODB_URI</code> (vào file <code>.env</code> hoặc dán trực tiếp vào ô bên dưới), hệ thống sẽ tự động kết nối tới MongoDB và đồng bộ toàn bộ lịch sử quà tặng (<code>gifts</code>), danh mục quà (<code>gift_catalog</code>), sự kiện (<code>events</code>) và lịch sử các phần đã làm (<code>work_logs</code>). Khi chưa điền URI, dữ liệu vẫn được lưu an toàn tại <code>logs/master-db.json</code>.
       </p>
       <div style="display:grid;grid-template-columns:2fr 1fr auto;gap:10px;margin-bottom:14px">
         <input id="mongoUriInput" placeholder="mongodb+srv://username:password@cluster.mongodb.net/...">
         <input id="mongoDbInput" value="live_tiktok" placeholder="Tên Database (VD: live_tiktok)">
-        <button class="primary" id="saveMongoBtn">Lưu vào .env &amp; Kết Nối Ngay</button>
+        <button class="primary" id="saveMongoBtn"><i data-lucide="plug-zap"></i> Lưu vào .env &amp; Kết Nối Ngay</button>
       </div>
-      <div id="mongoStatusBox" class="card" style="background:var(--elev)"></div>
+      <div id="mongoStatusBox" class="stat-mini"></div>
     </div>
   </section>
 </main>
 
 <script>
 const $ = s => document.querySelector(s);
+const refreshIcons = () => { if (window.lucide) window.lucide.createIcons(); };
+refreshIcons();
+
 const flash = t => { $('#msg').textContent = t; setTimeout(() => { $('#msg').textContent = ''; }, 3500); };
 
 document.querySelectorAll('nav button[data-tab]').forEach(btn => {
@@ -333,6 +586,93 @@ window.gameAction = async (game, endpoint, payload) => {
   }
 };
 
+// Initialize Charts (Light Mode styling)
+let chartTimeline = null;
+let chartGameSplit = null;
+let chartTopDonors = null;
+const timelineLabels = [];
+const timelineChua = [];
+const timelineDua = [];
+
+function initCharts() {
+  if (!window.Chart) return;
+  Chart.defaults.color = '#475569';
+  Chart.defaults.font.family = "'Be Vietnam Pro', 'Inter', 'Segoe UI', sans-serif";
+
+  chartTimeline = new Chart($('#chartTimeline'), {
+    type: 'line',
+    data: {
+      labels: timelineLabels,
+      datasets: [
+        {
+          label: 'Cúng Chùa Online (Kim cương)',
+          data: timelineChua,
+          borderColor: '#d97706',
+          backgroundColor: 'rgba(217, 119, 6, 0.12)',
+          fill: true,
+          tension: 0.35,
+          borderWidth: 2,
+        },
+        {
+          label: 'Cuộc Đua Kỳ Thú (Kim cương)',
+          data: timelineDua,
+          borderColor: '#0d9488',
+          backgroundColor: 'rgba(13, 148, 136, 0.12)',
+          fill: true,
+          tension: 0.35,
+          borderWidth: 2,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom' } },
+      scales: { y: { beginAtZero: true, grid: { color: '#f1f5f9' } }, x: { grid: { display: false } } },
+    },
+  });
+
+  chartGameSplit = new Chart($('#chartGameSplit'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Cúng Chùa Online', 'Cuộc Đua Kỳ Thú'],
+      datasets: [{
+        data: [1, 1],
+        backgroundColor: ['#f59e0b', '#14b8a6'],
+        borderWidth: 2,
+        borderColor: '#ffffff',
+      }],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom' } },
+      cutout: '62%',
+    },
+  });
+
+  chartTopDonors = new Chart($('#chartTopDonors'), {
+    type: 'bar',
+    data: {
+      labels: [],
+      datasets: [{
+        label: 'Tổng Kim Cương',
+        data: [],
+        backgroundColor: '#4f46e5',
+        borderRadius: 6,
+      }],
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: { x: { beginAtZero: true, grid: { color: '#f1f5f9' } }, y: { grid: { display: false } } },
+    },
+  });
+}
+initCharts();
+
 let lastState = null;
 
 function renderGiftsTable() {
@@ -348,11 +688,11 @@ function renderGiftsTable() {
     const tr = document.createElement('tr');
     for (const v of [
       g.time,
-      g.game === 'cuoc-dua-ky-thu' ? '🏁 Đua Kỳ Thú' : '🏮 Cúng Chùa',
+      g.game === 'cuoc-dua-ky-thu' ? 'Cuộc Đua Kỳ Thú' : 'Cúng Chùa Online',
       g.src === 'mock' ? 'Demo' : 'TikTok',
       g.name,
-      `${g.giftVi} ×${g.repeat}`,
-      `💎${g.totalDiamonds}`,
+      `${g.giftVi} x${g.repeat}`,
+      `${g.totalDiamonds.toLocaleString('vi-VN')}`,
       g.reward,
     ]) {
       const td = document.createElement('td');
@@ -377,24 +717,50 @@ async function refresh() {
     if (document.activeElement !== $('#globalTiktokInput') && s.config?.tiktokUser) {
       $('#globalTiktokInput').value = s.config.tiktokUser;
     }
-    $('#topRealDiamonds').textContent = (tot.realDiamonds ?? 0).toLocaleString('vi-VN') + ' 💎';
-    $('#topAllDiamonds').textContent = ((tot.realDiamonds ?? 0) + (tot.mockDiamonds ?? 0)).toLocaleString('vi-VN') + ' 💎';
+    $('#topRealDiamonds').textContent = (tot.realDiamonds ?? 0).toLocaleString('vi-VN');
+    $('#topAllDiamonds').textContent = ((tot.realDiamonds ?? 0) + (tot.mockDiamonds ?? 0)).toLocaleString('vi-VN');
     $('#topGiftCount').textContent = (tot.totalGiftRecords ?? 0).toLocaleString('vi-VN');
-    $('#topChuaDiamonds').textContent = (tot.chuaDiamonds ?? 0).toLocaleString('vi-VN') + '💎';
-    $('#topDuaDiamonds').textContent = (tot.duaDiamonds ?? 0).toLocaleString('vi-VN') + '💎';
+    $('#topChuaDiamonds').textContent = (tot.chuaDiamonds ?? 0).toLocaleString('vi-VN');
+    $('#topDuaDiamonds').textContent = (tot.duaDiamonds ?? 0).toLocaleString('vi-VN');
+
+    // Update Charts
+    if (chartTimeline) {
+      const nowLabel = new Date().toLocaleTimeString('vi-VN', { hour12: false });
+      timelineLabels.push(nowLabel);
+      timelineChua.push(tot.chuaDiamonds ?? 0);
+      timelineDua.push(tot.duaDiamonds ?? 0);
+      if (timelineLabels.length > 15) {
+        timelineLabels.shift();
+        timelineChua.shift();
+        timelineDua.shift();
+      }
+      chartTimeline.update('none');
+    }
+    if (chartGameSplit) {
+      const cVal = Math.max(1, tot.chuaDiamonds || 0);
+      const dVal = Math.max(1, tot.duaDiamonds || 0);
+      chartGameSplit.data.datasets[0].data = [cVal, dVal];
+      chartGameSplit.update('none');
+    }
+    if (chartTopDonors) {
+      const top6 = (db.topDonors || []).slice(0, 6);
+      chartTopDonors.data.labels = top6.map(d => d.name);
+      chartTopDonors.data.datasets[0].data = top6.map(d => d.totalDiamonds);
+      chartTopDonors.update('none');
+    }
 
     const m = db.mongo || {};
     if (m.connected) {
-      $('#topDbBadge').innerHTML = `<span class="badge ok">Đã kết nối MongoDB (${m.dbName})</span>`;
+      $('#topDbBadge').innerHTML = `<span class="badge ok"><i data-lucide="check-circle-2"></i> Đã kết nối MongoDB (${m.dbName})</span>`;
       $('#topDbSub').textContent = `Đồng bộ lúc: ${m.lastSyncAt ? new Date(m.lastSyncAt).toLocaleTimeString('vi-VN') : 'vừa xong'}`;
     } else {
-      $('#topDbBadge').innerHTML = `<span class="badge warn">Lưu JSON Cục Bộ (logs/master-db.json)</span>`;
+      $('#topDbBadge').innerHTML = `<span class="badge warn"><i data-lucide="hard-drive"></i> Lưu JSON Cục Bộ (logs/master-db.json)</span>`;
       $('#topDbSub').textContent = m.error ? `Lỗi: ${m.error}` : 'Chờ điền MONGODB_URI trong .env hoặc tab MongoDB';
     }
 
     $('#mongoStatusBox').textContent = m.connected
-      ? `✅ Đã kết nối MongoDB (${m.maskedUri} · DB: ${m.dbName}). Đang lưu tự động ${tot.totalGiftRecords} bản ghi quà, ${tot.catalogCount} cấu hình quà, ${tot.workLogsCount} mục lịch sử công việc.`
-      : `ℹ️ Hiện đang lưu trữ an toàn tại logs/master-db.json (${tot.totalGiftRecords} bản ghi quà, ${tot.workLogsCount} mục lịch sử). Khi bạn về và dán MONGODB_URI vào trên, toàn bộ dữ liệu này sẽ tự động đẩy lên MongoDB.`;
+      ? `Đã kết nối MongoDB (${m.maskedUri} · DB: ${m.dbName}). Đang lưu tự động ${tot.totalGiftRecords} bản ghi quà, ${tot.catalogCount} cấu hình quà, ${tot.workLogsCount} mục lịch sử công việc.`
+      : `Hiện đang lưu trữ an toàn tại logs/master-db.json (${tot.totalGiftRecords} bản ghi quà, ${tot.workLogsCount} mục lịch sử). Khi bạn dán MONGODB_URI vào trên, toàn bộ dữ liệu này sẽ tự động đẩy lên MongoDB.`;
 
     // Game 1 state
     const g1 = s.games?.['cung-chua-online'];
@@ -427,7 +793,7 @@ async function refresh() {
 
     $('#globalDonorBody').replaceChildren(...(db.topDonors || []).map((d, i) => {
       const tr = document.createElement('tr');
-      for (const v of [i + 1, d.name, d.giftCount, d.lastGift, `💎${d.totalDiamonds.toLocaleString('vi-VN')}`]) {
+      for (const v of [i + 1, d.name, d.giftCount, d.lastGift, d.totalDiamonds.toLocaleString('vi-VN')]) {
         const td = document.createElement('td');
         td.textContent = v;
         tr.append(td);
@@ -437,14 +803,14 @@ async function refresh() {
 
     $('#catalogBody').replaceChildren(...(db.giftCatalog || []).map(c => {
       const tr = document.createElement('tr');
-      for (const v of [c.giftId, c.giftName, c.giftVi, `💎${c.diamonds}`, c.chuaReward, c.duaReward]) {
+      for (const v of [c.giftId, c.giftName, c.giftVi, c.diamonds.toLocaleString('vi-VN'), c.chuaReward, c.duaReward]) {
         const td = document.createElement('td');
         td.textContent = v;
         tr.append(td);
       }
       const tdAct = document.createElement('td');
       const editBtn = document.createElement('button');
-      editBtn.textContent = 'Sửa';
+      editBtn.textContent = 'Chỉnh sửa';
       editBtn.onclick = () => {
         $('#catId').value = c.giftId;
         $('#catName').value = c.giftName;
@@ -468,6 +834,7 @@ async function refresh() {
       }
       return tr;
     }));
+    refreshIcons();
   } catch {}
 }
 

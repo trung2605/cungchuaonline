@@ -4,165 +4,429 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Cuộc Đua Kỳ Thú 3D · Quản Trị</title>
+<script src="https://unpkg.com/lucide@latest"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <style>
   :root {
-    --bg: #080d1a; --panel: #10192d; --elev: #15223b;
-    --ink: #eef6ff; --mute: #8fa6c9; --gold: #ffd166; --cyan: #00f5d4;
-    --line: rgba(143, 166, 201, .2); --ok: #2ec4b6; --red: #ef476f;
+    --bg: #f3f7fa;
+    --panel: #ffffff;
+    --elev: #f8fafc;
+    --ink: #0f172a;
+    --ink-2: #334155;
+    --mute: #64748b;
+    --teal: #0d9488;
+    --teal-soft: #ccfbf1;
+    --blue: #0284c7;
+    --blue-soft: #e0f2fe;
+    --gold: #d97706;
+    --gold-soft: #fef3c7;
+    --ok: #059669;
+    --ok-soft: #d1fae5;
+    --red: #e11d48;
+    --red-soft: #ffe4e6;
+    --line: #e2e8f0;
+    --line-strong: #cbd5e1;
+    --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
   }
   * { box-sizing: border-box; }
-  body { margin: 0; font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--ink); font-size: 14px; }
+  body {
+    margin: 0;
+    font-family: 'Be Vietnam Pro', 'Inter', 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  .lucide { width: 16px; height: 16px; stroke-width: 2; vertical-align: -3px; flex-shrink: 0; }
+  .lucide-lg { width: 20px; height: 20px; }
+
   .hub-bar {
-    background: #050912; border-bottom: 1px solid rgba(0, 245, 212, .25);
-    padding: 7px 24px; display: flex; align-items: center; justify-content: space-between; font-size: 12.5px;
+    background: #ffffff;
+    border-bottom: 1px solid var(--line);
+    padding: 8px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    font-size: 12.5px;
   }
-  .hub-bar a { text-decoration: none; padding: 3px 10px; border-radius: 99px; font-weight: 600; }
+  .hub-brand { display: inline-flex; align-items: center; gap: 6px; color: var(--teal); font-weight: 700; }
+  .hub-bar a {
+    text-decoration: none;
+    padding: 5px 12px;
+    border-radius: 99px;
+    font-weight: 600;
+    color: var(--ink-2);
+    border: 1px solid var(--line);
+    background: var(--elev);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.15s ease;
+  }
+  .hub-bar a:hover { border-color: var(--teal); color: var(--teal); background: var(--teal-soft); }
+  .hub-bar a.active {
+    background: var(--teal);
+    color: #ffffff;
+    border-color: var(--teal);
+    box-shadow: 0 2px 8px rgba(13, 148, 136, 0.25);
+  }
+
   header {
-    background: var(--panel); border-bottom: 1px solid var(--line);
-    padding: 12px 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+    background: rgba(255, 255, 255, 0.94);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line);
+    padding: 14px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    box-shadow: var(--shadow-sm);
   }
-  h1 { margin: 0; font-size: 18px; color: var(--gold); }
-  main { max-width: 1360px; margin: 0 auto; padding: 20px 24px 60px; }
-  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 16px; }
-  .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 16px; }
-  @media (max-width: 960px) { .grid-4, .grid-2 { grid-template-columns: 1fr; } }
-  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; }
-  .card h2 { margin: 0 0 8px; font-size: 13px; color: var(--mute); font-weight: 600; }
-  .big { font-size: 26px; font-weight: 700; color: var(--gold); font-variant-numeric: tabular-nums; }
-  .sub { font-size: 12px; color: var(--mute); margin-top: 4px; }
+  .brand-title {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--ink);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .brand-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: var(--teal-soft);
+    color: var(--teal);
+    display: grid;
+    place-items: center;
+  }
+  nav { display: flex; gap: 6px; flex-wrap: wrap; background: var(--elev); padding: 4px; border-radius: 10px; border: 1px solid var(--line); }
+  nav button {
+    background: transparent;
+    color: var(--mute);
+    border: none;
+    padding: 7px 14px;
+    border-radius: 7px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 13.5px;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+  }
+  nav button[aria-selected="true"] {
+    background: #ffffff;
+    color: var(--teal);
+    box-shadow: var(--shadow-sm);
+  }
+
+  main { max-width: 1440px; margin: 0 auto; padding: 24px 28px 64px; }
+  section[hidden] { display: none; }
+
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 18px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 18px; }
+  .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 18px; }
+  @media (max-width: 1060px) { .grid-4, .grid-3, .grid-2 { grid-template-columns: 1fr; } }
+
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 18px 20px;
+    box-shadow: var(--shadow-sm);
+  }
+  .card.teal { border-top: 3px solid var(--teal); }
+  .card.blue { border-top: 3px solid var(--blue); }
+  .card.gold { border-top: 3px solid var(--gold); }
+  .card h2 {
+    margin: 0 0 10px;
+    font-size: 13.5px;
+    color: var(--ink-2);
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .card-title-left { display: inline-flex; align-items: center; gap: 7px; }
+  .big {
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+  }
+  .big.teal { color: var(--teal); }
+  .big.blue { color: var(--blue); }
+  .big.gold { color: var(--gold); }
+  .sub { font-size: 12.5px; color: var(--mute); margin-top: 4px; }
+
   button, .btn {
-    background: var(--elev); color: var(--ink); border: 1px solid var(--line);
-    padding: 7px 12px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13px;
+    background: #ffffff;
+    color: var(--ink-2);
+    border: 1px solid var(--line-strong);
+    padding: 7px 13px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 13px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.15s ease;
   }
-  button:hover { border-color: var(--cyan); }
-  button.primary { background: linear-gradient(180deg, #ffd166, #e09f24); color: #081224; border: none; font-weight: 700; }
-  button.cyan { background: rgba(0, 245, 212, .15); border-color: var(--cyan); color: var(--cyan); }
+  button:hover, .btn:hover { border-color: var(--teal); color: var(--teal); background: var(--teal-soft); }
+  button.primary, .btn.primary {
+    background: var(--teal);
+    color: #ffffff;
+    border-color: var(--teal);
+  }
+  button.primary:hover, .btn.primary:hover { background: #0f766e; color: #ffffff; }
+  button.cyan, .btn.cyan {
+    background: var(--blue-soft);
+    color: var(--blue);
+    border-color: #bae6fd;
+  }
+  button.gold {
+    background: var(--gold-soft);
+    color: #92400e;
+    border-color: #fde68a;
+  }
+  button.danger {
+    background: var(--red-soft);
+    color: var(--red);
+    border-color: #fecdd3;
+  }
+
   input, select {
-    background: var(--bg); color: var(--ink); border: 1px solid var(--line);
-    padding: 7px 10px; border-radius: 6px; font-size: 13.5px; width: 100%;
+    background: #ffffff;
+    color: var(--ink);
+    border: 1px solid var(--line-strong);
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 13.5px;
+    width: 100%;
+    font-family: inherit;
   }
-  .btn-group { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+  input:focus, select:focus {
+    outline: none;
+    border-color: var(--teal);
+    box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.12);
+  }
+  .btn-group { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+
   table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  th, td { padding: 8px 10px; border-bottom: 1px solid var(--line); text-align: left; }
-  th { color: var(--mute); font-weight: 600; background: rgba(0, 0, 0, .2); }
-  .scroll { max-height: 320px; overflow-y: auto; border: 1px solid var(--line); border-radius: 8px; background: var(--elev); }
-  #msg { color: var(--cyan); font-weight: 600; font-size: 13px; }
+  th, td { padding: 10px 12px; border-bottom: 1px solid var(--line); text-align: left; }
+  th {
+    color: var(--mute);
+    font-weight: 700;
+    font-size: 12px;
+    text-transform: uppercase;
+    background: var(--elev);
+    position: sticky;
+    top: 0;
+  }
+  tr:hover td { background: #f8fafc; }
+  .scroll { max-height: 360px; overflow-y: auto; border: 1px solid var(--line); border-radius: 10px; background: #ffffff; }
+  .chart-wrap { position: relative; height: 240px; width: 100%; }
+  .badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 99px; font-size: 12px; font-weight: 700; }
+  .badge.ok { background: var(--ok-soft); color: var(--ok); }
+  #msg { color: var(--ok); font-weight: 600; font-size: 13px; }
 </style>
 </head>
 <body>
 <div class="hub-bar">
-  <div style="display:flex;align-items:center;gap:10px">
-    <span style="color:var(--gold);font-weight:700">🎮 LIVE TIKTOK STUDIO HUB:</span>
-    <a href="http://127.0.0.1:8791" target="_blank" style="color:var(--gold);border:1px solid var(--gold)">👑 Admin Tổng (:8791) ↗</a>
-    <a href="http://127.0.0.1:8788" target="_blank" style="color:var(--mute);border:1px solid var(--line)">🏮 Cúng Chùa Online (Admin :8788) ↗</a>
-    <a href="http://127.0.0.1:8790" style="color:#061224;background:var(--cyan);font-weight:700">🏁 Cuộc Đua Kỳ Thú 3D (Đang mở)</a>
+  <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+    <span class="hub-brand"><i data-lucide="layers"></i> LIVE TIKTOK STUDIO HUB:</span>
+    <a href="http://127.0.0.1:8791" target="_blank"><i data-lucide="shield-check"></i> Admin Tổng (:8791) <i data-lucide="external-link"></i></a>
+    <a href="http://127.0.0.1:8788" target="_blank"><i data-lucide="flame"></i> Cúng Chùa Online (:8788) <i data-lucide="external-link"></i></a>
+    <a href="http://127.0.0.1:8790" class="active"><i data-lucide="flag"></i> Cuộc Đua Kỳ Thú 3D (Đang mở)</a>
   </div>
-  <div style="display:flex;align-items:center;gap:12px">
-    <a href="http://127.0.0.1:8787" target="_blank" style="color:var(--gold)">Render Chùa (:8787) ↗</a>
-    <a href="http://127.0.0.1:8789" target="_blank" style="color:var(--cyan)">Render Đua Xe (:8789) ↗</a>
+  <div style="display:flex;align-items:center;gap:10px">
+    <a href="http://127.0.0.1:8787" target="_blank"><i data-lucide="monitor-play"></i> Render Chùa (:8787)</a>
+    <a href="http://127.0.0.1:8789" target="_blank"><i data-lucide="compass"></i> Render Đua Xe (:8789)</a>
   </div>
 </div>
 
 <header>
-  <h1>🏁 Cuộc Đua Kỳ Thú 3D · Quản Trị Hành Trình Khám Phá Thế Giới</h1>
-  <div style="display:flex;align-items:center;gap:12px">
+  <h1 class="brand-title">
+    <span class="brand-icon"><i data-lucide="flag" class="lucide-lg"></i></span>
+    <span>Cuộc Đua Kỳ Thú 3D · Quản Trị Hành Trình Khám Phá Thế Giới</span>
+  </h1>
+  <nav role="tablist">
+    <button role="tab" data-tab="overview" aria-selected="true"><i data-lucide="bar-chart-3"></i> Thống Kê &amp; Biểu Đồ</button>
+    <button role="tab" data-tab="controls"><i data-lucide="sliders"></i> Điều Khiển &amp; Test Lab</button>
+    <button role="tab" data-tab="runners"><i data-lucide="users"></i> Vận Động Viên &amp; Lịch Sử</button>
+  </nav>
+  <div style="display:flex;align-items:center;gap:10px">
     <span id="msg"></span>
-    <a class="btn cyan" href="http://127.0.0.1:8789" target="_blank">Mở Màn Hình Đua 3D (:8789) ↗</a>
+    <a class="btn primary" href="http://127.0.0.1:8789" target="_blank"><i data-lucide="external-link"></i> Mở Màn Hình Đua 3D (:8789)</a>
   </div>
 </header>
 
 <main>
-  <div class="grid-4">
-    <div class="card">
-      <h2>🏃 Vận Động Viên Đang Đua</h2>
-      <div class="big" id="stActive">0</div>
-      <div class="sub">Tổng người đã tham gia: <b id="stUnique">0</b></div>
-    </div>
-    <div class="card">
-      <h2>🌍 Quãng Đường Khám Phá</h2>
-      <div class="big" id="stDist">0 m</div>
-      <div class="sub" id="stBiome">Vịnh Hạ Long 🇻🇳</div>
-    </div>
-    <div class="card">
-      <h2>💎 Tổng Kim Cương &amp; Tim</h2>
-      <div class="big" id="stDiamonds">0 💎</div>
-      <div class="sub">Lượt thả tim: <b id="stLikes">0 ❤️</b></div>
-    </div>
-    <div class="card">
-      <h2>📡 Kết Nối TikTok LIVE</h2>
-      <div class="big" id="stTiktok" style="font-size:18px">Đang kiểm tra...</div>
-      <div style="display:flex;gap:6px;margin-top:8px">
-        <input id="tiktokInput" placeholder="@username">
-        <button class="primary" id="saveTiktokBtn" style="white-space:nowrap">Đổi Kênh</button>
+  <!-- TAB 1: THỐNG KÊ & BIỂU ĐỒ -->
+  <section id="overview">
+    <div class="grid-4">
+      <div class="card teal">
+        <h2><span class="card-title-left"><i data-lucide="footprints"></i> Vận Động Viên Đang Đua</span></h2>
+        <div class="big teal" id="stActive">0</div>
+        <div class="sub">Tổng người đã tham gia: <b id="stUnique">0</b></div>
       </div>
-    </div>
-  </div>
-
-  <div class="grid-2">
-    <div class="card">
-      <h2>🧪 Phòng Thử Nghiệm Lời Chào &amp; Quà Tăng Tốc (Test Lab)</h2>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
-        <input id="testName" value="Lê Trí Trung" placeholder="Tên người chơi thử">
-        <input id="testText" value="Tham gia cuộc đua khám phá thế giới!" placeholder="Câu bình luận">
+      <div class="card blue">
+        <h2><span class="card-title-left"><i data-lucide="globe"></i> Quãng Đường Khám Phá</span></h2>
+        <div class="big blue" id="stDist">0 m</div>
+        <div class="sub" id="stBiome">Vịnh Hạ Long</div>
       </div>
-      <div class="btn-group">
-        <button class="primary" data-test="join">👋 Test Nhập Cuộc + Đọc: "Chào user [Tên]..."</button>
-        <button class="cyan" data-test="gift1">🌹 Tặng Hoa Hồng (1💎 · Đôi Cánh ×1.8)</button>
-        <button class="cyan" data-test="gift30">🛹 Tặng Bánh Vòng (30💎 · Ván Trượt Vàng ×2.8)</button>
-        <button class="cyan" data-test="gift300">🚀 Tặng Vòng Hoa (299💎 · Tên Lửa ×4.2)</button>
-        <button class="primary" data-test="gift1000">👑 Tặng Galaxy (1000💎 · Phi Thuyền ×6.5)</button>
-        <button data-test="turbo">⚡ Kích Hoạt Bão Cầu Vồng Toàn Đội</button>
+      <div class="card gold">
+        <h2><span class="card-title-left"><i data-lucide="gem"></i> Tổng Kim Cương &amp; Tim</span></h2>
+        <div class="big gold" id="stDiamonds">0</div>
+        <div class="sub">Lượt thả tim: <b id="stLikes">0</b></div>
       </div>
-    </div>
-
-    <div class="card">
-      <h2>🗺️ Chọn Điểm Đến Thế Giới &amp; Chế Độ Demo Tự Động</h2>
-      <div class="sub">Điểm đến tự động chuyển mỗi 600m hoặc bấm để chuyển ngay lập tức:</div>
-      <div class="btn-group" id="biomeBtns">
-        <button data-biome="auto" class="cyan">🔄 Tự động xoay vòng</button>
-        <button data-biome="vietnam">🇻🇳 Việt Nam</button>
-        <button data-biome="japan">🇯🇵 Nhật Bản</button>
-        <button data-biome="egypt">🇪🇬 Ai Cập</button>
-        <button data-biome="france">🇫🇷 Pháp</button>
-        <button data-biome="usa">🇺🇸 Mỹ</button>
-        <button data-biome="cosmos">🌌 Ngân Hà</button>
-      </div>
-      <div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:10px">
-        <span>🤖 <b>Chế độ Demo mô phỏng đoàn đua:</b> <span id="demoStatus">Đang chạy</span></span>
-        <div style="display:flex;gap:6px">
-          <button class="primary" id="demoOnBtn">Bật Demo</button>
-          <button id="demoOffBtn">Tắt Demo</button>
+      <div class="card">
+        <h2><span class="card-title-left"><i data-lucide="radio"></i> Kết Nối TikTok LIVE</span></h2>
+        <div class="big" id="stTiktok" style="font-size:17px">Đang kiểm tra...</div>
+        <div style="display:flex;gap:6px;margin-top:8px">
+          <input id="tiktokInput" placeholder="@username">
+          <button class="primary" id="saveTiktokBtn" style="white-space:nowrap"><i data-lucide="refresh-cw"></i> Đổi Kênh</button>
         </div>
       </div>
     </div>
-  </div>
 
-  <div class="grid-2">
-    <div class="card">
-      <h2>🏆 Bảng Xếp Hạng Đường Đua (Top Tay Đua)</h2>
-      <div class="scroll">
-        <table>
-          <thead><tr><th>#</th><th>Tên Tay Đua</th><th>Quãng đường</th><th>💎</th><th>Hạng Xe</th></tr></thead>
-          <tbody id="boardBody"></tbody>
-        </table>
+    <!-- HÀNG BIỂU ĐỒ PHÂN TÍCH TRỰC QUAN -->
+    <div class="grid-3">
+      <div class="card">
+        <h2>
+          <span class="card-title-left"><i data-lucide="trending-up"></i> Tốc Độ Đoàn Đua &amp; Quãng Đường (m)</span>
+          <span class="badge ok">Trực tiếp</span>
+        </h2>
+        <div class="chart-wrap"><canvas id="chartDistance"></canvas></div>
+      </div>
+
+      <div class="card">
+        <h2>
+          <span class="card-title-left"><i data-lucide="pie-chart"></i> Phân Bổ Cấp Độ Trang Bị Tăng Tốc</span>
+        </h2>
+        <div class="chart-wrap"><canvas id="chartTiers"></canvas></div>
+      </div>
+
+      <div class="card">
+        <h2>
+          <span class="card-title-left"><i data-lucide="trophy"></i> Top 6 Tay Đua Dẫn Đầu (m)</span>
+        </h2>
+        <div class="chart-wrap"><canvas id="chartTopRacers"></canvas></div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <h2><span class="card-title-left"><i data-lucide="award"></i> Bảng Xếp Hạng Đường Đua (Top Tay Đua)</span></h2>
+        <div class="scroll">
+          <table>
+            <thead><tr><th>#</th><th>Tên Tay Đua</th><th>Quãng đường</th><th>Kim cương</th><th>Trang bị hiện tại</th></tr></thead>
+            <tbody id="boardBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2><span class="card-title-left"><i data-lucide="activity"></i> Nhật Ký Tham Gia &amp; Tăng Tốc Gần Nhất</span></h2>
+        <div class="scroll">
+          <table>
+            <thead><tr><th>Lúc</th><th>Nguồn</th><th>Tên</th><th>Chi tiết hoạt động</th></tr></thead>
+            <tbody id="recentBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TAB 2: ĐIỀU KHIỂN & TEST LAB -->
+  <section id="controls" hidden>
+    <div class="grid-2">
+      <div class="card teal">
+        <h2><span class="card-title-left"><i data-lucide="flask-conical"></i> Phòng Thử Nghiệm Lời Chào &amp; Quà Tăng Tốc (Test Lab)</span></h2>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+          <input id="testName" value="Lê Trí Trung" placeholder="Tên người chơi thử">
+          <input id="testText" value="Tham gia cuộc đua khám phá thế giới!" placeholder="Câu bình luận">
+        </div>
+        <div class="btn-group">
+          <button class="primary" data-test="join"><i data-lucide="volume-2"></i> Test Nhập Cuộc + Đọc: "Chào user [Tên]..."</button>
+          <button class="cyan" data-test="gift1"><i data-lucide="feather"></i> Tặng Hoa Hồng (1 · Đôi Cánh x1.8)</button>
+          <button class="cyan" data-test="gift30"><i data-lucide="zap"></i> Tặng Bánh Vòng (30 · Ván Trượt Vàng x2.8)</button>
+          <button class="gold" data-test="gift300"><i data-lucide="flame"></i> Tặng Vòng Hoa (299 · Tên Lửa x4.2)</button>
+          <button class="primary" data-test="gift1000"><i data-lucide="rocket"></i> Tặng Galaxy (1000 · Phi Thuyền x6.5)</button>
+          <button data-test="turbo"><i data-lucide="sparkles"></i> Kích Hoạt Bão Cầu Vồng Toàn Đội</button>
+        </div>
+      </div>
+
+      <div class="card blue">
+        <h2><span class="card-title-left"><i data-lucide="map"></i> Chọn Điểm Đến Thế Giới &amp; Chế Độ Demo Tự Động</span></h2>
+        <div class="sub">Điểm đến tự động chuyển mỗi 600m hoặc bấm để chuyển ngay lập tức:</div>
+        <div class="btn-group" id="biomeBtns">
+          <button data-biome="auto" class="primary"><i data-lucide="refresh-cw"></i> Tự động xoay vòng</button>
+          <button data-biome="vietnam"><i data-lucide="map-pin"></i> Việt Nam (Vịnh Hạ Long)</button>
+          <button data-biome="japan"><i data-lucide="map-pin"></i> Nhật Bản (Núi Phú Sĩ)</button>
+          <button data-biome="egypt"><i data-lucide="map-pin"></i> Ai Cập (Kim Tự Tháp)</button>
+          <button data-biome="france"><i data-lucide="map-pin"></i> Pháp (Tháp Eiffel)</button>
+          <button data-biome="usa"><i data-lucide="map-pin"></i> Mỹ (Cầu Cổng Vàng)</button>
+          <button data-biome="cosmos"><i data-lucide="sparkles"></i> Cung Đường Ngân Hà</button>
+        </div>
+        <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:10px">
+          <span><i data-lucide="bot"></i> <b>Chế độ Demo mô phỏng đoàn đua:</b> <span id="demoStatus">Đang chạy</span></span>
+          <div style="display:flex;gap:6px">
+            <button class="primary" id="demoOnBtn"><i data-lucide="play"></i> Bật Demo</button>
+            <button id="demoOffBtn"><i data-lucide="square"></i> Tắt Demo</button>
+          </div>
+        </div>
       </div>
     </div>
 
     <div class="card">
-      <h2>📜 Nhật Ký Tham Gia &amp; Tăng Tốc Gần Nhất</h2>
-      <div class="scroll">
+      <h2><span class="card-title-left"><i data-lucide="megaphone"></i> Phát Thông Báo Banner Lên Giữa Màn Hình Đua 3D</span></h2>
+      <div style="display:flex;gap:10px">
+        <input id="bannerInput" placeholder="Nhập thông điệp khích lệ đoàn đua (tối đa 75 ký tự)...">
+        <button class="primary" id="sendBannerBtn" style="white-space:nowrap"><i data-lucide="send"></i> Phát Thông Báo</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- TAB 3: DANH SÁCH VẬN ĐỘNG VIÊN ĐANG CHẠY -->
+  <section id="runners" hidden>
+    <div class="card">
+      <h2><span class="card-title-left"><i data-lucide="users"></i> Danh Sách Vận Động Viên Đang Chạy Trên Đường Đua</span></h2>
+      <div class="scroll" style="max-height:480px">
         <table>
-          <thead><tr><th>Lúc</th><th>Nguồn</th><th>Tên</th><th>Chi tiết</th></tr></thead>
-          <tbody id="recentBody"></tbody>
+          <thead>
+            <tr><th>ID</th><th>Tên Vận Động Viên</th><th>Làn chạy</th><th>Tốc độ</th><th>Quãng đường</th><th>Kim cương</th><th>Trang bị</th><th>Thao tác</th></tr>
+          </thead>
+          <tbody id="runnersTableBody"></tbody>
         </table>
       </div>
     </div>
-  </div>
+  </section>
 </main>
 
 <script>
 const $ = s => document.querySelector(s);
+const refreshIcons = () => { if (window.lucide) window.lucide.createIcons(); };
+refreshIcons();
+
 const flash = t => { $('#msg').textContent = t; setTimeout(() => { $('#msg').textContent = ''; }, 3000); };
+
+document.querySelectorAll('nav button[data-tab]').forEach(btn => {
+  btn.onclick = () => {
+    document.querySelectorAll('nav button[data-tab]').forEach(b => b.setAttribute('aria-selected', String(b === btn)));
+    document.querySelectorAll('main > section').forEach(sec => { sec.hidden = sec.id !== btn.dataset.tab; });
+  };
+});
 
 async function api(method, path, body) {
   const r = await fetch(path, {
@@ -175,7 +439,85 @@ async function api(method, path, body) {
   return data;
 }
 
-const TIER_NAMES = ['Chạy bộ', 'Đôi Cánh ×1.8', 'Ván Trượt Vàng ×2.8', 'Tên Lửa ×4.2', 'Phi Thuyền ×6.5'];
+const TIER_NAMES = ['Chạy bộ (x1.0)', 'Đôi Cánh (x1.8)', 'Ván Trượt Vàng (x2.8)', 'Tên Lửa (x4.2)', 'Phi Thuyền (x6.5)'];
+
+// Charts initialization
+let chartDistance = null;
+let chartTiers = null;
+let chartTopRacers = null;
+const distLabels = [];
+const distData = [];
+const activeData = [];
+
+function initCharts() {
+  if (!window.Chart) return;
+  Chart.defaults.color = '#475569';
+  Chart.defaults.font.family = "'Be Vietnam Pro', 'Inter', 'Segoe UI', sans-serif";
+
+  chartDistance = new Chart($('#chartDistance'), {
+    type: 'line',
+    data: {
+      labels: distLabels,
+      datasets: [
+        {
+          label: 'Quãng đường đoàn (m)',
+          data: distData,
+          borderColor: '#0284c7',
+          backgroundColor: 'rgba(2, 132, 199, 0.12)',
+          fill: true,
+          tension: 0.35,
+          borderWidth: 2,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom' } },
+      scales: { y: { beginAtZero: false, grid: { color: '#f1f5f9' } }, x: { grid: { display: false } } },
+    },
+  });
+
+  chartTiers = new Chart($('#chartTiers'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Chạy bộ', 'Đôi Cánh x1.8', 'Ván Trượt Vàng x2.8', 'Tên Lửa x4.2', 'Phi Thuyền x6.5'],
+      datasets: [{
+        data: [1, 0, 0, 0, 0],
+        backgroundColor: ['#94a3b8', '#38bdf8', '#f59e0b', '#f43f5e', '#8b5cf6'],
+        borderWidth: 2,
+        borderColor: '#ffffff',
+      }],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } } },
+      cutout: '60%',
+    },
+  });
+
+  chartTopRacers = new Chart($('#chartTopRacers'), {
+    type: 'bar',
+    data: {
+      labels: [],
+      datasets: [{
+        label: 'Quãng đường (m)',
+        data: [],
+        backgroundColor: '#0d9488',
+        borderRadius: 6,
+      }],
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: { x: { beginAtZero: true, grid: { color: '#f1f5f9' } }, y: { grid: { display: false } } },
+    },
+  });
+}
+initCharts();
 
 async function refresh() {
   try {
@@ -186,8 +528,8 @@ async function refresh() {
     const d = st.worldDistanceM ?? 0;
     $('#stDist').textContent = d >= 1000 ? (d / 1000).toFixed(2) + ' km' : d + ' m';
     $('#stBiome').textContent = st.currentBiome?.name || '';
-    $('#stDiamonds').textContent = (st.totalGiftsDiamonds ?? 0).toLocaleString('vi-VN') + ' 💎';
-    $('#stLikes').textContent = (st.totalLikes ?? 0).toLocaleString('vi-VN') + ' ❤️';
+    $('#stDiamonds').textContent = (st.totalGiftsDiamonds ?? 0).toLocaleString('vi-VN');
+    $('#stLikes').textContent = (st.totalLikes ?? 0).toLocaleString('vi-VN');
     const tkStatus = st.status?.tiktok || 'chờ kết nối';
     $('#stTiktok').textContent = `@${s.config?.tiktokUser || ''} (${tkStatus})`;
     if (document.activeElement !== $('#tiktokInput') && s.config?.tiktokUser) {
@@ -195,12 +537,39 @@ async function refresh() {
     }
     $('#demoStatus').textContent = s.demo?.on ? `Đang bật (${s.demo.rate} sự kiện/s)` : 'Đang tắt';
 
+    // Update Charts
+    if (chartDistance) {
+      const nowStr = new Date().toLocaleTimeString('vi-VN', { hour12: false });
+      distLabels.push(nowStr);
+      distData.push(d);
+      if (distLabels.length > 15) {
+        distLabels.shift();
+        distData.shift();
+      }
+      chartDistance.update('none');
+    }
+    if (chartTiers) {
+      const counts = [0, 0, 0, 0, 0];
+      for (const r of (s.runners || [])) {
+        const t = Math.min(4, Math.max(0, r.tier || 0));
+        counts[t]++;
+      }
+      chartTiers.data.datasets[0].data = counts.some(x => x > 0) ? counts : [1, 0, 0, 0, 0];
+      chartTiers.update('none');
+    }
+    if (chartTopRacers) {
+      const top6 = (st.topRacers || []).slice(0, 6);
+      chartTopRacers.data.labels = top6.map(r => r.name);
+      chartTopRacers.data.datasets[0].data = top6.map(r => r.distanceM);
+      chartTopRacers.update('none');
+    }
+
     $('#boardBody').replaceChildren(...(st.topRacers || []).map((r, i) => {
       const tr = document.createElement('tr');
       const td1 = document.createElement('td'); td1.textContent = i + 1;
       const td2 = document.createElement('td'); td2.textContent = r.name;
-      const td3 = document.createElement('td'); td3.textContent = r.distanceM + ' m';
-      const td4 = document.createElement('td'); td4.textContent = r.diamonds > 0 ? '💎' + r.diamonds : '-';
+      const td3 = document.createElement('td'); td3.textContent = r.distanceM.toLocaleString('vi-VN') + ' m';
+      const td4 = document.createElement('td'); td4.textContent = r.diamonds > 0 ? r.diamonds.toLocaleString('vi-VN') : '-';
       const td5 = document.createElement('td'); td5.textContent = TIER_NAMES[r.tier || 0];
       tr.append(td1, td2, td3, td4, td5);
       return tr;
@@ -215,6 +584,36 @@ async function refresh() {
       }
       return tr;
     }));
+
+    $('#runnersTableBody').replaceChildren(...(s.runners || []).map(r => {
+      const tr = document.createElement('tr');
+      for (const v of [
+        r.id,
+        r.name,
+        `Làn ${r.lane}`,
+        `x${(r.speedMult || 1).toFixed(1)}`,
+        `${Math.round(r.distanceM || 0)} m`,
+        r.diamonds || 0,
+        TIER_NAMES[r.tier || 0],
+      ]) {
+        const td = document.createElement('td');
+        td.textContent = v;
+        tr.append(td);
+      }
+      const tdAct = document.createElement('td');
+      const btn = document.createElement('button');
+      btn.className = 'danger';
+      btn.textContent = 'Rời đường đua';
+      btn.onclick = async () => {
+        await api('POST', '/api/kick', { uid: r.id });
+        flash(`Đã mời ${r.name} rời đường đua`);
+        refresh();
+      };
+      tdAct.append(btn);
+      tr.append(tdAct);
+      return tr;
+    }));
+    refreshIcons();
   } catch {}
 }
 
@@ -244,6 +643,14 @@ $('#saveTiktokBtn').onclick = async () => {
   await api('POST', '/api/tiktok-user', { user });
   flash(`Đã chuyển sang kênh @${user}`);
   refresh();
+};
+
+$('#sendBannerBtn').onclick = async () => {
+  const text = $('#bannerInput').value.trim();
+  if (!text) return;
+  await api('POST', '/api/banner', { text });
+  $('#bannerInput').value = '';
+  flash('Đã phát thông báo lên màn hình đua 3D!');
 };
 
 $('#demoOnBtn').onclick = async () => { await api('POST', '/api/demo', { on: true, rate: 2.5 }); refresh(); };
