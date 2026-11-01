@@ -66,23 +66,15 @@ const audio = createAudio({ onSpeak: (text, on) => hud.showVoice(text, on) });
 const world = createWorld();
 
 const soundBtn = document.getElementById('sound');
-const goFullscreenIfMobile = () => {
-  if (innerWidth < 1024 && !document.fullscreenElement) {
-    document.documentElement.requestFullscreen?.().catch(() => {});
-  }
+if (soundBtn) soundBtn.style.display = 'none';
+// Auto-unlock audio by default on load and on any interaction (mouse move, key, touch, focus)
+audio.unlock();
+const autoUnlock = () => {
+  if (audio.suspended) audio.unlock();
 };
-soundBtn.onclick = () => {
-  audio.unlock();
-  soundBtn.style.display = 'none';
-  goFullscreenIfMobile();
-};
-document.body.addEventListener('click', () => {
-  audio.unlock();
-  soundBtn.style.display = 'none';
-  goFullscreenIfMobile();
-});
-// LIVE Studio autoplays; a plain Chrome tab needs one click.
-setTimeout(() => { if (audio.suspended) soundBtn.style.display = 'block'; }, 1500);
+for (const ev of ['pointerdown', 'pointermove', 'mousemove', 'touchstart', 'keydown', 'wheel', 'focus']) {
+  addEventListener(ev, autoUnlock, { passive: true });
+}
 
 function run(cmds, now) {
   for (const c of cmds) {

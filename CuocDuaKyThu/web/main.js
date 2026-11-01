@@ -50,20 +50,15 @@ composer.addPass(new UnrealBloomPass(new THREE.Vector2(W / 2, H / 2), 0.45, 0.35
 composer.addPass(new OutputPass());
 
 const soundBtn = document.getElementById('sound');
-const syncSoundBtn = () => {
-  soundBtn.style.display = audio.suspended ? 'block' : 'none';
+if (soundBtn) soundBtn.style.display = 'none';
+// Auto-unlock audio by default on load and on any interaction
+audio.unlock();
+const autoUnlock = () => {
+  if (audio.suspended) audio.unlock();
 };
-soundBtn.onclick = () => {
-  audio.unlock();
-  setTimeout(syncSoundBtn, 100);
-};
-addEventListener('pointerdown', () => {
-  if (audio.suspended) {
-    audio.unlock();
-    setTimeout(syncSoundBtn, 100);
-  }
-});
-setTimeout(syncSoundBtn, 300);
+for (const ev of ['pointerdown', 'pointermove', 'mousemove', 'touchstart', 'keydown', 'wheel', 'focus']) {
+  addEventListener(ev, autoUnlock, { passive: true });
+}
 
 function handleMsg(msg) {
   switch (msg.t) {

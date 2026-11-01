@@ -39,7 +39,8 @@ export function createRaceAudio({ onSpeak = null } = {}) {
   let currentVoiceSrc = null;
 
   function tone(freq, start, dur, peak, type = 'triangle', endFreq = freq) {
-    if (!enabled || ctx.state !== 'running') return;
+    if (!enabled) return;
+    if (ctx.state !== 'running') ctx.resume().catch(() => {});
     const o = ctx.createOscillator();
     const g = ctx.createGain();
     o.type = type;

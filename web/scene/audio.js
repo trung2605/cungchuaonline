@@ -95,6 +95,7 @@ export function createAudio({ onSpeak = null } = {}) {
   }
 
   function tone(freq, start, dur, peak, type = 'sine', endFreq = freq) {
+    if (ctx.state !== 'running') ctx.resume().catch(() => {});
     const o = ctx.createOscillator(), g = ctx.createGain();
     o.type = type;
     o.frequency.setValueAtTime(freq, start);
@@ -108,6 +109,7 @@ export function createAudio({ onSpeak = null } = {}) {
 
   const playMusic = () => {
     if (!enabled) return;
+    if (ctx.state !== 'running') ctx.resume().catch(() => {});
     if (!missing) {
       music.play().catch(() => { startSynthZen(); });
     } else {
@@ -337,10 +339,13 @@ export function createAudio({ onSpeak = null } = {}) {
     }
   }
 
+  // Auto-unlock and start meditation music by default on creation
+  ctx.resume().then(() => { playMusic(); }).catch(() => { startSynthZen(); });
+
   return {
     get suspended() { return ctx.state !== 'running'; },
     unlock() {
-      ctx.resume();
+      ctx.resume().catch(() => {});
       playMusic();
       refreshViVoice();
     },
