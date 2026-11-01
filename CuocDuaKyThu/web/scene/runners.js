@@ -412,6 +412,33 @@ export function createRunners(scene) {
 
   const formatDist = m => (m >= 1000 ? `${(m / 1000).toFixed(2)} km` : `${Math.round(m)} m`);
 
+  function hashRunnerId(id = '') {
+    let h = 2166136261;
+    const s = String(id);
+    for (let i = 0; i < s.length; i++) {
+      h ^= s.charCodeAt(i);
+      h = Math.imul(h, 16777619);
+    }
+    return Math.abs(h);
+  }
+
+  function computeFormationTarget(runner, rank = null) {
+    const h = hashRunnerId(runner.id);
+    // Spread horizontally across the stone trail (-3.15 .. +3.15) with sub-lane jitter so same-lane trekkers don't overlap
+    const laneX = (runner.lane || 0) * 0.92;
+    const xJitter = (((h % 9) - 4) / 4) * 0.36;
+    const targetX = Math.max(-3.2, Math.min(3.2, laneX + xJitter));
+
+    // Spread vertically across the MIDDLE of the frame (z = -9.8 .. +2.2) instead of the bottom camera edge (z = 7..9)
+    const rowDepth = ((h >> 4) % 16) * 0.45; // 0.0 .. 6.75m spread across the center of the road
+    const rankBonus = rank ? Math.max(0, (10 - rank) * 0.36) : 0;
+    const activeTier = Math.max(runner.tier || 0, runner.boostTier || 0);
+    const tierBonus = Math.min(2.6, activeTier * 0.65);
+    const targetZ = Math.max(-9.8, Math.min(2.2, 2.2 - rowDepth - rankBonus - tierBonus));
+
+    return { targetX, targetZ };
+  }
+
   function updateLabelText(e) {
     const r = e.runner;
     const rankStr = e.rank && e.rank <= 8 ? `🏆#${e.rank} ` : '';
@@ -436,6 +463,8 @@ export function createRunners(scene) {
       if (!e) {
         const holder = new THREE.Group();
         const rig = buildRunnerRig(runner.skin, Math.max(runner.tier || 0, runner.boostTier || 0));
+        // Scale down each trekker (~58% of previous size) so 20-40+ characters fit comfortably on the trail at once
+        rig.root.scale.setScalar(0.58);
         holder.add(rig.root);
 
         const el = document.createElement('div');
@@ -449,12 +478,11 @@ export function createRunners(scene) {
 
         const label = new CSS2DObject(el);
         label.center.set(0.5, 1);
-        label.position.set(0, 2.32, 0);
+        label.position.set(0, 1.42, 0);
         holder.add(label);
 
-        const targetX = (runner.lane || 0) * 1.08;
-        const targetZ = 7.2 - Math.min(4.5, (runner.tier || 0) * 1.1);
-        holder.position.set(targetX, 0, targetZ + 3.5);
+        const { targetX, targetZ } = computeFormationTarget(runner, null);
+        holder.position.set(targetX, 0, Math.min(4.8, targetZ + 2.8));
         scene.add(holder);
 
         e = {
@@ -479,6 +507,9 @@ export function createRunners(scene) {
           e.waveUntil = performance.now() + 3500;
         }
         Object.assign(e.runner, runner);
+        const pos = computeFormationTarget(e.runner, e.rank);
+        e.targetX = pos.targetX;
+        e.targetZ = pos.targetZ;
         e.rig.setVisualTier(e.runner.tier || 0, e.runner.boostTier || 0);
       }
       updateLabelText(e);
@@ -516,10 +547,9 @@ export function createRunners(scene) {
         Object.assign(e.runner, item);
         e.rank = rankMap.get(item.id) || null;
         e.rig.setVisualTier(e.runner.tier || 0, e.runner.boostTier || 0);
-        // Position leaders closer to the front of the trekking group (1.0 .. 9.0)
-        const rankBonus = e.rank ? Math.max(0, (9 - e.rank) * 0.62) : 0;
-        const boostBonus = (e.runner.boostTier || 0) * 0.85;
-        e.targetZ = Math.max(1.2, 8.8 - rankBonus - boostBonus);
+        const pos = computeFormationTarget(e.runner, e.rank);
+        e.targetX = pos.targetX;
+        e.targetZ = pos.targetZ;
         updateLabelText(e);
       }
     },
@@ -537,7 +567,7 @@ export function createRunners(scene) {
         const isTop3 = e.rank && e.rank <= 3;
         const isBoosted = (e.runner.boostTier || 0) > 0;
         const isRecent = now < (e.activeUntil || 0);
-        const shouldShow = hasBubble || isTop3 || isBoosted || (isRecent && shownLabels < 4);
+        const shouldShow = hasBubble || isTop3 || isBoosted || (isRecent && shownLabels < 6);
         if (shouldShow) shownLabels++;
         e.label.visible = Boolean(shouldShow);
 
@@ -549,7 +579,7 @@ export function createRunners(scene) {
         const c = Math.cos(p);
 
         // Gentle wandering along the scenic trail
-        const swayX = Math.sin(tSec * 0.75 + e.lookSeed) * 0.16;
+        const swayX = Math.sin(tSec * 0.75 + e.lookSeed) * 0.12;
         e.holder.position.x += (e.targetX + swayX - e.holder.position.x) * Math.min(1, dt * 2.8);
         e.holder.position.z += (e.targetZ - e.holder.position.z) * Math.min(1, dt * 2.2);
 
