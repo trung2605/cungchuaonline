@@ -20,8 +20,8 @@ test('TC-RACE-01: Join via chat spawns runner and emits exact welcome greeting',
   assert.ok(spawn, 'should emit spawn');
   assert.equal(spawn.runner.name, 'Lê Trí Trung');
   assert.ok(welcome, 'should emit welcome');
-  assert.equal(welcome.text, 'Chào user Lê Trí Trung đã tham gia cuộc đua cùng chúng tôi');
-  assert.equal(formatWelcomeSpeech('Lê_Trí.Trung_1992'), 'Chào user Lê Trí Trung đã tham gia cuộc đua cùng chúng tôi');
+  assert.equal(welcome.text, 'Chào mừng Lê Trí Trung vừa vào chùa lễ Phật và khởi hành vãn cảnh');
+  assert.equal(formatWelcomeSpeech('Lê_Trí.Trung_1992'), 'Chào mừng Lê Trí Trung vừa vào chùa lễ Phật và khởi hành vãn cảnh');
 });
 
 test('TC-RACE-02: Gift tiers upgrade speed, mount, and distance bonus accurately', () => {
@@ -49,7 +49,7 @@ test('TC-RACE-02: Gift tiers upgrade speed, mount, and distance bonus accurately
   assert.equal(stage.runners.get('g4').tier, 4);
 
   const tts = formatGiftBoostSpeech(donor4);
-  assert.ok(tts.includes('Chào user Đại Gia đã tham gia cuộc đua cùng chúng tôi'));
+  assert.ok(tts.includes('Chào mừng Đại Gia vừa vào chùa lễ Phật'));
   assert.ok(tts.includes('Siêu Phi Thuyền Ngân Hà'));
 });
 

@@ -63,7 +63,7 @@ export function createRaceHud() {
       const txt = $('#welcome-text');
       const toast = $('#voice-toast');
       if (card && txt && (!toast || !toast.classList.contains('on'))) {
-        txt.textContent = msg.text || `Chào user ${msg.name} đã tham gia cuộc đua cùng chúng tôi`;
+        txt.textContent = msg.text || `Chào mừng ${msg.name} vừa vào chùa lễ Phật và khởi hành vãn cảnh`;
         card.classList.add('on');
         clearTimeout(welcomeTimer);
         welcomeTimer = setTimeout(() => card.classList.remove('on'), 4500);

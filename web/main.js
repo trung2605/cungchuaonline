@@ -83,7 +83,7 @@ function run(cmds, now) {
       case 'add':
         actors.add(c.actor);
         hud.notePrayer(c.actor);
-        if (c.actor && !c.idle) audio.thankPrayer(c.actor);
+        if (c.actor && !c.idle && !c.actor.diamonds) audio.thankPrayer(c.actor);
         break;
       case 'remove': actors.remove(c.id); break;
       case 'say': actors.say(c.id, c.text, c.ms); break;
@@ -96,7 +96,6 @@ function run(cmds, now) {
       case 'hud':
         hud.handle(c.msg);
         if (c.msg.t === 'donor') audio.thankDonor(c.msg);
-        else if (c.msg.t === 'banner' && c.msg.src && c.msg.src !== 'mock') audio.thankJoin(c.msg);
         break;
       case 'fx':
         if (c.kind === 'halo' && c.id) actors.halo(c.id, now);

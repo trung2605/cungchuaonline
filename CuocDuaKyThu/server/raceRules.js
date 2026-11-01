@@ -43,7 +43,7 @@ export function createRaceRules({ stage, lists, now = Date.now, turboEveryLikes 
           if (real) uniqueRacers.add(e.uid);
           else mockRacers.add(e.uid);
           const { msgs } = stage.joinOrBoost(e.uid, name, 0, { cheer: 'Hào hứng nhập cuộc!', src });
-          pushRecent({ uid: e.uid, name, kind: 'join', src, detail: `Chào user ${name} đã tham gia cuộc đua cùng chúng tôi` });
+          pushRecent({ uid: e.uid, name, kind: 'join', src, detail: `Chào mừng ${name} vừa vào chùa lễ Phật và khởi hành vãn cảnh` });
           return msgs;
         }
         return [];

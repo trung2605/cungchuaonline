@@ -176,10 +176,10 @@ export class RaceStage {
     };
     this.runners.set(uid, runner);
 
-    const welcomeText = `Chào user ${name} đã tham gia cuộc đua cùng chúng tôi`;
+    const welcomeText = `Chào mừng ${name} vừa vào chùa lễ Phật và khởi hành vãn cảnh`;
     out.push(
       { t: 'spawn', runner: { ...runner } },
-      { t: 'welcome', id: uid, name, text: welcomeText, tier: bestTier, src: finalSrc },
+      { t: 'welcome', id: uid, name, text: welcomeText, tier: bestTier, src: finalSrc, ...(giftTierLevel > 0 && { fromGift: true }) },
     );
 
     if (giftTierLevel > 0) {

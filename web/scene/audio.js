@@ -66,13 +66,17 @@ export function formatTtsBlessing({ name = '', offering = 'dâng hương', repea
 }
 
 export function createAudio({ onSpeak = null } = {}) {
+  const isPreviewIframe = (() => {
+    try { return window.self !== window.top; } catch { return true; }
+  })();
   const ctx = new AudioContext();
   const master = ctx.createGain();
   master.connect(ctx.destination);
   const music = new Audio('assets/audio/music.mp3');
   music.loop = true;
   music.volume = 0.32;
-  let enabled = true, missing = false, triedWav = false, blockTimes = [];
+  let enabled = !isPreviewIframe, missing = false, triedWav = false, blockTimes = [];
+  if (isPreviewIframe) master.gain.value = 0;
   const speechQueue = [];
   let speaking = false;
   let viVoice = null;
@@ -226,6 +230,7 @@ export function createAudio({ onSpeak = null } = {}) {
   let currentDone = null;
   let lastPrayerSpeechAt = 0;
   const recentRealGreet = new Map(); // uid -> ts to avoid double-greeting the same real user within 8s
+  const recentNameGreet = new Map(); // normalizedName -> ts to avoid repeating the same name within 20s
 
   function interruptBotIfSpeaking() {
     if (speaking && currentItem && !currentItem.isReal) {
@@ -248,6 +253,15 @@ export function createAudio({ onSpeak = null } = {}) {
   }
 
   function enqueueSpeech(item) {
+    if (!enabled) return;
+    // Prevent duplicate text or duplicate uid+kind from stacking in the queue
+    if (currentItem && (currentItem.text === item.text || (item.uid && currentItem.uid === item.uid && currentItem.kind === item.kind && item.kind !== 'gift'))) {
+      return;
+    }
+    if (speechQueue.some(x => x.text === item.text || (item.uid && x.uid === item.uid && x.kind === item.kind && item.kind !== 'gift'))) {
+      return;
+    }
+
     if (item.isReal) {
       purgeQueuedBots();
       interruptBotIfSpeaking();
@@ -328,20 +342,12 @@ export function createAudio({ onSpeak = null } = {}) {
       }
       const src = ctx.createBufferSource();
       src.buffer = audioBuf;
-      // Calm, dignified temple speech pace
-      src.playbackRate.value = 0.94;
+      // Calm, dignified temple speech pace — dry & crisp (no artificial delay echo)
+      src.playbackRate.value = 0.96;
       const voiceGain = ctx.createGain();
       voiceGain.gain.value = 1.15;
-      // Subtle temple hall echo (110ms soft feedback delay)
-      const delay = ctx.createDelay();
-      delay.delayTime.value = 0.11;
-      const echoGain = ctx.createGain();
-      echoGain.gain.value = 0.14;
       src.connect(voiceGain);
       voiceGain.connect(master);
-      voiceGain.connect(delay);
-      delay.connect(echoGain);
-      echoGain.connect(master);
 
       currentVoiceSrc = src;
       src.onended = done;
@@ -426,24 +432,27 @@ export function createAudio({ onSpeak = null } = {}) {
       if (!enabled || !actor) return;
       const now = Date.now();
       const isReal = Boolean(actor.src && actor.src !== 'mock');
+      const who = cleanTtsName(actor.name);
+      const nameKey = who.toLowerCase();
       if (isReal) {
         const lastGreet = recentRealGreet.get(actor.id) || 0;
-        if (now - lastGreet < 8000) return;
+        const lastName = recentNameGreet.get(nameKey) || 0;
+        if (now - lastGreet < 15_000 || now - lastName < 15_000) return;
         recentRealGreet.set(actor.id, now);
+        recentNameGreet.set(nameKey, now);
       } else {
-        // Bots only speak when the hall is completely quiet (at most once every 16s)
-        if (speaking || speechQueue.length > 0 || now - lastPrayerSpeechAt < 16_000) {
+        // Bots only speak when the hall is completely quiet (at most once every 18s)
+        if (speaking || speechQueue.length > 0 || now - lastPrayerSpeechAt < 18_000) {
           softBowl();
           return;
         }
         lastPrayerSpeechAt = now;
       }
       softBowl();
-      const who = cleanTtsName(actor.name);
       const intent = (actor.intent || 'Cầu Bình An').toLowerCase();
       const text = isReal
         ? `A Di Đà Phật. Chào mừng Phật tử ${who} đã vào chùa lễ Phật, nguyện ${intent}, vạn sự cát tường`
-        : `Nam mô A Di Đà Phật. Phật tử ${who} thành tâm lễ Phật, ${intent}`;
+        : `Nam mô A Di Đà Phật. Phật tử ${who} vừa vào chùa thành tâm lễ Phật, ${intent}`;
       enqueueSpeech({ uid: actor.id, offering: 'prayer', repeat: 1, text, diamonds: 0, kind: 'prayer', isReal });
     },
     thankJoin(msg) {
@@ -452,12 +461,15 @@ export function createAudio({ onSpeak = null } = {}) {
       if (!isReal) return;
       const now = Date.now();
       const uid = msg.uid || msg.name;
-      const lastGreet = recentRealGreet.get(uid) || 0;
-      if (now - lastGreet < 8000) return;
-      recentRealGreet.set(uid, now);
-      softBowl();
       const who = cleanTtsName(msg.name);
-      const text = `A Di Đà Phật. Chào mừng Phật tử ${who} vừa vào chùa lễ Phật, chúc bạn bình an và may mắn`;
+      const nameKey = who.toLowerCase();
+      const lastGreet = recentRealGreet.get(uid) || 0;
+      const lastName = recentNameGreet.get(nameKey) || 0;
+      if (now - lastGreet < 15_000 || now - lastName < 15_000) return;
+      recentRealGreet.set(uid, now);
+      recentNameGreet.set(nameKey, now);
+      softBowl();
+      const text = `A Di Đà Phật. Chào mừng Phật tử ${who} vừa vào chùa lễ Phật, chúc gia đạo bình an`;
       enqueueSpeech({ uid, offering: 'join', repeat: 1, text, diamonds: 0, kind: 'join', isReal: true });
     },
     thankDonor(d) {

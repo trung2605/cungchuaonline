@@ -77,7 +77,7 @@ function handleMsg(msg) {
       break;
     case 'welcome':
       hud.showWelcome(msg);
-      audio.greetJoin(msg);
+      if (!msg.fromGift) audio.greetJoin(msg);
       break;
     case 'boost':
       runners.addOrUpdate(msg.runner);
