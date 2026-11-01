@@ -9,10 +9,11 @@ echo ===========================================================================
 echo   HE THONG LIVE TIKTOK 3D 24/7 (CUNG CHUA ONLINE ^& CUOC DUA KY THU)
 echo ============================================================================
 echo   * Link dan vao TikTok LIVE Studio (Add Source -^> Link):
-echo     - Cung Chua Online 3D (Chuan):  http://127.0.0.1:8787
-echo     - Cung Chua Online 3D (Nhe GPU): http://127.0.0.1:8787/?quality=low
-echo     - Cuoc Dua Ky Thu 3D (Chuan):   http://127.0.0.1:8789
-echo     - Cuoc Dua Ky Thu 3D (Nhe GPU): http://127.0.0.1:8789/?quality=low
+echo     - Cung Chua Online 3D:          http://lvh.me:8787
+echo     - Cung Chua Online 3D (Nhe GPU): http://lvh.me:8787/?quality=low
+echo     - Cuoc Dua Ky Thu 3D:           http://lvh.me:8789
+echo     - Cuoc Dua Ky Thu 3D (Nhe GPU): http://lvh.me:8789/?quality=low
+echo     (Hoac dung: http://localtest.me:8787 va http://localtest.me:8789)
 echo.
 echo   * Trang Quan Tri Admin Tong:      http://127.0.0.1:8791
 echo     (Tai khoan: admin  ^|  Mat khau xem trong file .env)

@@ -42,10 +42,11 @@ Mặc định trên VPS, khi bạn tắt cửa sổ Remote Desktop thì Windows 
    - Cửa sổ Watchdog 24/7 sẽ bật cả 3 dịch vụ (`:8787`, `:8789`, `:8791`) và tự động khởi động lại trong 3 giây nếu có bất kỳ dịch vụ nào bị ngắt.
 2. Mở **TikTok LIVE Studio** trên VPS và đăng nhập kênh TikTok của bạn:
    - Chọn **Add source (Thêm nguồn)** → **Link (Liên kết)**.
-   - Nhập đường dẫn:
-     - Bản đầy đủ hiệu ứng: **`http://127.0.0.1:8787`**
-     - Hoặc bản siêu nhẹ tiết kiệm GPU khi treo nhiều ngày: **`http://127.0.0.1:8787/?quality=low`**
-   - Độ phân giải: **`1080 x 1920`** (Dọc 9:16), FPS: **`30`**.
+   - Nhập đường dẫn tên miền nội bộ (TikTok LIVE Studio yêu cầu URL có đuôi tên miền `.me` thay vì dãy số IP `127.0.0.1`):
+     - **Cúng Chùa Online 3D**: **`http://lvh.me:8787`** *(hoặc `http://localtest.me:8787`)*
+     - **Cuộc Đua Kỳ Thú 3D**: **`http://lvh.me:8789`** *(hoặc `http://localtest.me:8789`)*
+     - Bản siêu nhẹ tiết kiệm GPU: **`http://lvh.me:8787/?quality=low`**
+   - Bật **Custom resolution**: **`1080`** x **`1920`** (Dọc 9:16).
 3. Bấm **Go LIVE** trên TikTok LIVE Studio.
 
 ### Bước 4: Thoát VPS Để Tắt Máy Tính Cá Nhân Mà Không Bị Đen Màn Hình 3D
