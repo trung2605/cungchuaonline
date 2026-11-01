@@ -21,7 +21,7 @@ test('TC-RACE-01: Join via chat spawns runner and emits exact welcome greeting',
   assert.equal(spawn.runner.name, 'Lê Trí Trung');
   assert.ok(welcome, 'should emit welcome');
   assert.equal(welcome.text, 'Chào mừng Lê Trí Trung vừa vào chùa lễ Phật và khởi hành vãn cảnh');
-  assert.equal(formatWelcomeSpeech('Lê_Trí.Trung_1992'), 'Chào mừng Lê Trí Trung vừa vào chùa lễ Phật và khởi hành vãn cảnh');
+  assert.equal(formatWelcomeSpeech('Lê_Trí.Trung_1992'), 'A Di Đà Phật. Chào mừng Phật tử Lê Trí Trung vào chùa lễ Phật');
 });
 
 test('TC-RACE-02: Gift tiers upgrade speed, mount, and distance bonus accurately', () => {

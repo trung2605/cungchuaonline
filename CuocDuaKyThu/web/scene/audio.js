@@ -13,16 +13,14 @@ export function cleanRaceTtsName(raw = '') {
 }
 
 const WELCOME_TEMPLATES = [
-  name => `A Di Đà Phật. Chào mừng Phật tử ${name} vừa vào chùa lễ Phật và khởi hành vãn cảnh`,
-  name => `Chào mừng Phật tử ${name} vừa vào chùa thành tâm lễ Phật, chúc bạn vạn sự bình an`,
-  name => `Nam mô A Di Đà Phật. Chào đón ${name} vừa vào chùa dâng hương và bộ hành khám phá kỳ quan`,
+  name => `A Di Đà Phật. Chào mừng Phật tử ${name} vào chùa lễ Phật`,
 ];
 let welcomeTemplateIdx = 0;
 
 export function formatWelcomeSpeech(name = '', useFixed = true) {
   const who = cleanRaceTtsName(name);
   if (useFixed) {
-    return `Chào mừng ${who} vừa vào chùa lễ Phật và khởi hành vãn cảnh`;
+    return `A Di Đà Phật. Chào mừng Phật tử ${who} vào chùa lễ Phật`;
   }
   const fn = WELCOME_TEMPLATES[welcomeTemplateIdx++ % WELCOME_TEMPLATES.length];
   return fn(who);

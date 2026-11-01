@@ -449,10 +449,7 @@ export function createAudio({ onSpeak = null } = {}) {
         lastPrayerSpeechAt = now;
       }
       softBowl();
-      const intent = (actor.intent || 'Cầu Bình An').toLowerCase();
-      const text = isReal
-        ? `A Di Đà Phật. Chào mừng Phật tử ${who} đã vào chùa lễ Phật, nguyện ${intent}, vạn sự cát tường`
-        : `Nam mô A Di Đà Phật. Phật tử ${who} vừa vào chùa thành tâm lễ Phật, ${intent}`;
+      const text = `A Di Đà Phật. Chào mừng Phật tử ${who} vào chùa lễ Phật`;
       enqueueSpeech({ uid: actor.id, offering: 'prayer', repeat: 1, text, diamonds: 0, kind: 'prayer', isReal });
     },
     thankJoin(msg) {
@@ -469,7 +466,7 @@ export function createAudio({ onSpeak = null } = {}) {
       recentRealGreet.set(uid, now);
       recentNameGreet.set(nameKey, now);
       softBowl();
-      const text = `A Di Đà Phật. Chào mừng Phật tử ${who} vừa vào chùa lễ Phật, chúc gia đạo bình an`;
+      const text = `A Di Đà Phật. Chào mừng Phật tử ${who} vào chùa lễ Phật`;
       enqueueSpeech({ uid, offering: 'join', repeat: 1, text, diamonds: 0, kind: 'join', isReal: true });
     },
     thankDonor(d) {
