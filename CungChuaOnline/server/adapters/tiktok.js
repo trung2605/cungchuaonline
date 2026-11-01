@@ -12,15 +12,38 @@ export function startTiktok(user, ingest, {
   onStatus = () => {},
   schedule = setTimeout,
   rand = Math.random,
+  keepAlive = false,
+  staleMs = 0,
 }) {
   let n = 0;
   let conn = null;
   let timer = null;
+  let staleTimer = null;
   let stopped = false;
   let ended = false;
+  const comboTimers = new Map();
+
+  const clearStale = () => {
+    if (staleTimer) {
+      clearTimeout(staleTimer);
+      staleTimer = null;
+    }
+  };
+
+  const armStaleWatchdog = c => {
+    if (!staleMs || stopped) return;
+    clearStale();
+    staleTimer = setTimeout(() => {
+      if (c !== conn || stopped) return;
+      onStatus('reconnecting (refreshing roomId)');
+      Promise.resolve().then(() => c.disconnect()).catch(() => {});
+      retry();
+    }, staleMs);
+  };
 
   const retry = () => {
     if (stopped || ended || timer) return;
+    clearStale();
     timer = schedule(() => {
       timer = null;
       open();
@@ -43,12 +66,54 @@ export function startTiktok(user, ingest, {
         if (!live()) return;
         // If streamEnd fires before WebSocket handshake completes (e.g. cached stale room end),
         // ignore it so retry() keeps polling until the streamer goes live.
-        if (name === 'streamEnd' && !c.isConnected) return;
+        if (name === 'streamEnd' && !c.isConnected) {
+          if (keepAlive) {
+            Promise.resolve().then(() => c.disconnect()).catch(() => {});
+            retry();
+          }
+          return;
+        }
+        if (name !== 'streamEnd') armStaleWatchdog(c);
+
+        // Safety net for combo gifts (e.g., Quick-Send Rose x1 on TikTok mobile where TikTok
+        // may emit repeatCount=1, repeatEnd=0 without a trailing repeatEnd=1 packet).
+        if (name === 'gift' && data) {
+          const uid = data.user?.displayId || data.user?.uniqueId || data.user?.id || '';
+          const gKey = `${uid}:${data.giftId || data.gift?.id || 0}:${data.groupId || ''}`;
+          const prev = comboTimers.get(gKey);
+          if (prev) {
+            clearTimeout(prev);
+            comboTimers.delete(gKey);
+          }
+          const mapped = map(name, data);
+          if (!mapped && keepAlive) {
+            const tId = setTimeout(() => {
+              comboTimers.delete(gKey);
+              if (!live()) return;
+              const fallbackEvt = map('gift', { ...data, repeatEnd: 1 });
+              if (fallbackEvt) ingest(fallbackEvt);
+            }, 3200);
+            comboTimers.set(gKey, tId);
+            return;
+          }
+          if (mapped) ingest(mapped);
+          return;
+        }
+
         const e = map(name, data);
         if (!e) return;
-        if (e.kind === 'end' && !ended) {
-          ended = true;
-          onStatus('ended');
+        if (e.kind === 'end') {
+          if (keepAlive) {
+            onStatus('ended (waiting for next live)');
+            ingest(e);
+            Promise.resolve().then(() => c.disconnect()).catch(() => {});
+            retry();
+            return;
+          }
+          if (!ended) {
+            ended = true;
+            onStatus('ended');
+          }
         }
         ingest(e);
       });
@@ -57,6 +122,7 @@ export function startTiktok(user, ingest, {
       if (!live()) return;
       n = 0;
       onStatus('connected');
+      armStaleWatchdog(c);
     });
     c.on('disconnected', info => {
       if (!live()) return;
@@ -82,6 +148,9 @@ export function startTiktok(user, ingest, {
   return {
     stop() {
       stopped = true;
+      clearStale();
+      for (const t of comboTimers.values()) clearTimeout(t);
+      comboTimers.clear();
       clearTimeout(timer);
       timer = null;
       if (conn) Promise.resolve().then(() => conn.disconnect()).catch(() => {});

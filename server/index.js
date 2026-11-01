@@ -164,6 +164,8 @@ const connectTiktokUser = async newUser => {
     Connection: TikTokLiveConnection,
     map: mapTiktok,
     onStatus: onStatus('tiktok', `tiktok @${currentUser}`),
+    keepAlive: true,
+    staleMs: 40_000,
   });
   return { user: currentUser, status: status.tiktok ?? 'connecting' };
 };
