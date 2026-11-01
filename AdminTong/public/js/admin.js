@@ -38,18 +38,65 @@ async function gameAction(game, endpoint, payload = {}, method = 'POST') {
 }
 
 // ============================================================================
-// 2-LEVEL IN-PLACE TAB NAVIGATION (3 Main Tabs + Sub-Tabs, No New Browser Tabs)
+// LEFT SIDEBAR TREE NAVIGATION & SUB-NAVIGATION (Main Group + Sub-Nav + Breadcrumb)
 // ============================================================================
-function switchMainTab(mainTab) {
+const MAIN_TAB_LABELS = {
+  master: 'Admin Tổng (Hệ Thống)',
+  chua: 'Cúng Chùa Online 3D',
+  dua: 'Cuộc Đua Kỳ Thú 3D',
+};
+
+const activeSubTabByParent = {
+  master: 'master-overview',
+  chua: 'chua-analytics',
+  dua: 'dua-analytics',
+};
+
+function updateBreadcrumb(parentTab, subTabId) {
+  const parentEl = $('breadcrumbParent');
+  const currentEl = $('breadcrumbCurrent');
+  if (parentEl) {
+    parentEl.textContent = MAIN_TAB_LABELS[parentTab] || 'Admin Tổng';
+  }
+  if (currentEl) {
+    const activeBtn = document.querySelector(`.sub-tab-btn[data-sub="${subTabId}"]`);
+    currentEl.textContent = activeBtn ? activeBtn.textContent.trim() : '';
+  }
+}
+
+function switchMainTab(mainTab, toggleExpandIfSame = false) {
   const clean = (mainTab || 'master').replace(/^#/, '');
   const target = ['master', 'chua', 'dua'].includes(clean) ? clean : 'master';
 
+  const currentActiveBtn = document.querySelector('.main-tab-btn.active');
+  const isSameTab = currentActiveBtn && currentActiveBtn.dataset.mainTab === target;
+
   document.querySelectorAll('.main-tab-btn').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.mainTab === target);
+    const isTarget = btn.dataset.mainTab === target;
+    btn.classList.toggle('active', isTarget);
+    const group = btn.closest('.nav-group');
+    if (group) {
+      if (isTarget) {
+        const nextExpanded = isSameTab && toggleExpandIfSame
+          ? !group.classList.contains('expanded')
+          : true;
+        group.classList.toggle('expanded', nextExpanded);
+        btn.setAttribute('aria-expanded', String(nextExpanded));
+      }
+    }
   });
+
   document.querySelectorAll('.main-tab-view').forEach(view => {
     view.classList.toggle('active', view.id === `main-view-${target}`);
   });
+
+  const subId = activeSubTabByParent[target];
+  document.querySelectorAll('.sub-tab-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.parent === target && btn.dataset.sub === subId);
+  });
+
+  updateBreadcrumb(target, subId);
+
   if (history.replaceState) {
     history.replaceState(null, '', `#${target}`);
   }
@@ -58,14 +105,24 @@ function switchMainTab(mainTab) {
 window.switchMainTab = switchMainTab;
 
 function switchSubTab(parentTab, subTabId) {
-  const container = $(`main-view-${parentTab}`);
-  if (!container) return;
-  container.querySelectorAll('.sub-tab-btn').forEach(btn => {
+  const cleanParent = ['master', 'chua', 'dua'].includes(parentTab) ? parentTab : 'master';
+  activeSubTabByParent[cleanParent] = subTabId;
+
+  // Ensure parent main view is active and expanded
+  switchMainTab(cleanParent, false);
+
+  const container = $(`main-view-${cleanParent}`);
+  if (container) {
+    container.querySelectorAll('.sub-tab-panel').forEach(panel => {
+      panel.classList.toggle('active', panel.id === `sub-${subTabId}`);
+    });
+  }
+
+  document.querySelectorAll('.sub-tab-btn').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.sub === subTabId);
   });
-  container.querySelectorAll('.sub-tab-panel').forEach(panel => {
-    panel.classList.toggle('active', panel.id === `sub-${subTabId}`);
-  });
+
+  updateBreadcrumb(cleanParent, subTabId);
   setTimeout(() => window.dispatchEvent(new Event('resize')), 40);
 }
 window.switchSubTab = switchSubTab;
@@ -731,14 +788,23 @@ window.addEventListener('DOMContentLoaded', () => {
   initApexCharts();
 
   // Initial route from hash (#master, #chua, #dua)
-  if (window.location.hash) switchMainTab(window.location.hash);
+  if (window.location.hash) switchMainTab(window.location.hash, false);
 
-  // Level 1: Top 3 Main Tabs (Admin Tổng / Admin Cúng Chùa / Admin Cuộc Đua Kỳ Thú)
-  document.querySelectorAll('.main-tab-btn').forEach(btn => {
-    btn.addEventListener('click', () => switchMainTab(btn.dataset.mainTab));
+  // Left Sidebar Collapse / Expand Toggle
+  $('btnToggleSidebar')?.addEventListener('click', () => {
+    const shell = $('adminShell');
+    if (shell) {
+      shell.classList.toggle('sidebar-collapsed');
+      setTimeout(() => window.dispatchEvent(new Event('resize')), 240);
+    }
   });
 
-  // Level 2: Sub-tabs inside each Main Tab
+  // Level 1: Left Sidebar Main Groups (Admin Tổng / Admin Cúng Chùa / Admin Cuộc Đua Kỳ Thú)
+  document.querySelectorAll('.main-tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => switchMainTab(btn.dataset.mainTab, true));
+  });
+
+  // Level 2: Left Sidebar Tree Sub-tabs inside each Main Group
   document.querySelectorAll('.sub-tab-btn').forEach(btn => {
     btn.addEventListener('click', () => switchSubTab(btn.dataset.parent, btn.dataset.sub));
   });

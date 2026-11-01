@@ -15,102 +15,171 @@
   <link rel="stylesheet" href="/assets/css/admin.css" />
 </head>
 <body>
-  <!-- ==================================================================== -->
-  <!-- LEVEL 1: TOP ECOSYSTEM 3-TAB BAR (Chuyển Tab Tại Chỗ, Không Mở Tab Mới) -->
-  <!-- ==================================================================== -->
-  <header class="eco-bar">
-    <div class="eco-left">
-      <span class="eco-label"><i data-lucide="layers"></i> HỆ SINH THÁI LIVE TIKTOK:</span>
-      <nav class="main-tabs" aria-label="Chọn phân hệ quản trị">
-        <button type="button" class="main-tab-btn active" data-main-tab="master">
-          <i data-lucide="shield-check"></i>
-          <span>Admin Tổng (:8791)</span>
-          <span class="tab-pill-count" id="navBadgeGifts">0 quà</span>
-        </button>
-        <button type="button" class="main-tab-btn" data-main-tab="chua">
-          <i data-lucide="flame"></i>
-          <span>Admin Cúng Chùa (:8788)</span>
-          <span class="tab-pill-count" id="navBadgeChua">0 lễ</span>
-        </button>
-        <button type="button" class="main-tab-btn" data-main-tab="dua">
-          <i data-lucide="flag"></i>
-          <span>Admin Cuộc Đua Kỳ Thú (:8790)</span>
-          <span class="tab-pill-count" id="navBadgeDua">0 đua</span>
-        </button>
+  <div class="admin-shell" id="adminShell">
+    <!-- ==================================================================== -->
+    <!-- LEFT SIDEBAR NAVIGATION (Shadcn / Linear / Modern SaaS Tree Layout)   -->
+    <!-- ==================================================================== -->
+    <aside class="admin-sidebar" id="adminSidebar" aria-label="Điều hướng hệ thống">
+      <div class="sidebar-brand">
+        <div class="sidebar-logo"><i data-lucide="layers"></i></div>
+        <div class="sidebar-brand-text">
+          <strong>Live TikTok Studio</strong>
+          <span>Hệ thống Quản trị 3D 24/7</span>
+        </div>
+      </div>
+
+      <div class="sidebar-section-label">PHÂN HỆ &amp; ĐIỀU KHIỂN</div>
+
+      <nav class="sidebar-nav">
+        <!-- GROUP 1: ADMIN TỔNG -->
+        <div class="nav-group expanded" data-nav-group="master">
+          <button type="button" class="main-tab-btn active" data-main-tab="master">
+            <i data-lucide="shield-check" class="nav-icon"></i>
+            <span class="nav-label">Admin Tổng (:8791)</span>
+            <span class="tab-pill-count" id="navBadgeGifts">0 quà</span>
+            <i data-lucide="chevron-down" class="nav-chevron"></i>
+          </button>
+          <div class="sidebar-subnav" role="tablist">
+            <button type="button" class="sub-tab-btn active" data-parent="master" data-sub="master-overview">
+              <i data-lucide="bar-chart-3"></i>
+              <span>Tổng Quan &amp; Biểu Đồ</span>
+            </button>
+            <button type="button" class="sub-tab-btn" data-parent="master" data-sub="master-fx">
+              <i data-lucide="wand-2"></i>
+              <span>Hiệu Ứng &amp; Emotion Live</span>
+            </button>
+            <button type="button" class="sub-tab-btn" data-parent="master" data-sub="master-gifts">
+              <i data-lucide="gift"></i>
+              <span>Quà Livestream &amp; Danh Mục</span>
+            </button>
+            <button type="button" class="sub-tab-btn" data-parent="master" data-sub="master-worklogs">
+              <i data-lucide="clipboard-list"></i>
+              <span>Lịch Sử Công Việc</span>
+            </button>
+            <button type="button" class="sub-tab-btn" data-parent="master" data-sub="master-mongodb">
+              <i data-lucide="database"></i>
+              <span>Kết Nối MongoDB</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- GROUP 2: ADMIN CÚNG CHÙA ONLINE -->
+        <div class="nav-group" data-nav-group="chua">
+          <button type="button" class="main-tab-btn" data-main-tab="chua">
+            <i data-lucide="flame" class="nav-icon"></i>
+            <span class="nav-label">Cúng Chùa 3D (:8787)</span>
+            <span class="tab-pill-count" id="navBadgeChua">0 lễ</span>
+            <i data-lucide="chevron-down" class="nav-chevron"></i>
+          </button>
+          <div class="sidebar-subnav" role="tablist">
+            <button type="button" class="sub-tab-btn active" data-parent="chua" data-sub="chua-analytics">
+              <i data-lucide="line-chart"></i>
+              <span>Thống Kê &amp; Phật Tử</span>
+            </button>
+            <button type="button" class="sub-tab-btn" data-parent="chua" data-sub="chua-controls">
+              <i data-lucide="sliders"></i>
+              <span>Không Gian 3D &amp; Hiệu Ứng</span>
+            </button>
+            <button type="button" class="sub-tab-btn" data-parent="chua" data-sub="chua-lists">
+              <i data-lucide="book-open-check"></i>
+              <span>Câu Đối, Từ Khóa &amp; Bộ Lọc</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- GROUP 3: ADMIN CUỘC ĐUA KỲ THÚ -->
+        <div class="nav-group" data-nav-group="dua">
+          <button type="button" class="main-tab-btn" data-main-tab="dua">
+            <i data-lucide="flag" class="nav-icon"></i>
+            <span class="nav-label">Cuộc Đua 3D (:8789)</span>
+            <span class="tab-pill-count" id="navBadgeDua">0 đua</span>
+            <i data-lucide="chevron-down" class="nav-chevron"></i>
+          </button>
+          <div class="sidebar-subnav" role="tablist">
+            <button type="button" class="sub-tab-btn active" data-parent="dua" data-sub="dua-analytics">
+              <i data-lucide="bar-chart-2"></i>
+              <span>Thống Kê &amp; Vận Động Viên</span>
+            </button>
+            <button type="button" class="sub-tab-btn" data-parent="dua" data-sub="dua-controls">
+              <i data-lucide="globe-2"></i>
+              <span>Kỳ Quan, Hiệu Ứng &amp; Điều Khiển</span>
+            </button>
+          </div>
+        </div>
       </nav>
-    </div>
 
-    <div class="eco-right">
-      <div class="status-chip ok" id="chipMongo">
-        <span class="dot-pulse"></span> MongoDB: Đang kiểm tra...
-      </div>
-      <div class="status-chip warn" id="chipTiktok">
-        <span class="dot-pulse"></span> TikTok: Đang đồng bộ...
-      </div>
-      <button type="button" class="btn sm" data-toggle-read-comments title="Bật / Tắt giọng đọc AI đọc nội dung bình luận của người xem trên cả 2 màn hình 3D">
-        <i data-lucide="message-square-off"></i> <span class="read-comments-toggle-label">Đọc Bình Luận: ĐANG TẮT</span>
-      </button>
-      <button type="button" class="btn sm" data-toggle-mock title="Khi TẮT: chỉ thống kê người dùng thật từ TikTok LIVE. Khi BẬT: thống kê kèm dữ liệu mẫu (Fake)">
-        <i data-lucide="user-check"></i> <span class="mock-toggle-label">Dữ Liệu Mẫu: ĐANG TẮT (Chỉ Người Thật)</span>
-      </button>
-      <button type="button" class="btn sm" id="btnToggle3DPreview" title="Xem trực tiếp 2 màn hình 3D ngay trong trang này mà không cần mở tab mới">
-        <i data-lucide="monitor-play"></i> Xem 3D Tại Trang
-      </button>
-      <button type="button" class="btn sm danger" id="btnCleanAllTop" title="Reset toàn bộ dữ liệu hệ thống & MongoDB về 0 để bắt đầu phiên Live mới">
-        <i data-lucide="rotate-ccw"></i> Reset Dữ Liệu Về 0
-      </button>
-    </div>
-  </header>
-
-  <!-- Collapsible In-Page 3D Live Preview Drawer (Không cần mở tab mới) -->
-  <section class="preview-drawer" id="previewDrawer">
-    <div class="preview-grid">
-      <div class="preview-frame-card">
-        <div class="preview-frame-head">
-          <span><i data-lucide="landmark" style="width:14px;height:14px;vertical-align:-2px;color:var(--gold)"></i> Màn Hình 3D Cúng Chùa Online (:8787)</span>
-          <span style="font-size:11px;color:var(--text-muted)">http://127.0.0.1:8787</span>
+      <div class="sidebar-footer">
+        <div class="sidebar-section-label" style="padding:0 0 6px">TRẠNG THÁI HỆ THỐNG</div>
+        <div class="status-chip ok" id="chipMongo">
+          <span class="dot-pulse"></span> MongoDB: Đang kiểm tra...
         </div>
-        <iframe id="iframeChua3D" title="Màn hình 3D Cúng Chùa Online"></iframe>
-      </div>
-      <div class="preview-frame-card">
-        <div class="preview-frame-head">
-          <span><i data-lucide="trophy" style="width:14px;height:14px;vertical-align:-2px;color:var(--teal)"></i> Màn Hình 3D Cuộc Đua Kỳ Thú (:8789)</span>
-          <span style="font-size:11px;color:var(--text-muted)">http://127.0.0.1:8789</span>
+        <div class="status-chip warn" id="chipTiktok">
+          <span class="dot-pulse"></span> TikTok: Đang đồng bộ...
         </div>
-        <iframe id="iframeDua3D" title="Màn hình 3D Cuộc Đua Kỳ Thú"></iframe>
+        <div class="sidebar-ports">
+          <span class="badge emerald" id="chuaStatusBadge">Chùa :8787</span>
+          <span class="badge emerald" id="duaStatusBadge">Đua :8789</span>
+        </div>
       </div>
-    </div>
-  </section>
+    </aside>
 
-  <!-- ==================================================================== -->
-  <!-- MAIN TAB 1: ADMIN TỔNG — TRUNG TÂM ĐIỀU HÀNH ĐA TRÒ CHƠI & QUÀ LIVE   -->
-  <!-- ==================================================================== -->
-  <div class="main-tab-view active" id="main-view-master">
-    <div class="sub-bar">
-      <div class="sub-bar-title">
-        <div class="sub-bar-icon"><i data-lucide="layout-grid"></i></div>
-        <h1>Admin Tổng · Trung Tâm Điều Hành Đa Trò Chơi &amp; Quà Livestream</h1>
-      </div>
-      <div class="sub-tabs" role="tablist">
-        <button type="button" class="sub-tab-btn active" data-parent="master" data-sub="master-overview">
-          <i data-lucide="bar-chart-3"></i> Tổng Quan &amp; Biểu Đồ
-        </button>
-        <button type="button" class="sub-tab-btn" data-parent="master" data-sub="master-fx">
-          <i data-lucide="wand-2"></i> Hiệu Ứng &amp; Emotion Live
-        </button>
-        <button type="button" class="sub-tab-btn" data-parent="master" data-sub="master-gifts">
-          <i data-lucide="gift"></i> Quà Livestream &amp; Danh Mục
-        </button>
-        <button type="button" class="sub-tab-btn" data-parent="master" data-sub="master-worklogs">
-          <i data-lucide="clipboard-list"></i> Lịch Sử Công Việc
-        </button>
-        <button type="button" class="sub-tab-btn" data-parent="master" data-sub="master-mongodb">
-          <i data-lucide="database"></i> Kết Nối MongoDB
-        </button>
-      </div>
-    </div>
+    <!-- ==================================================================== -->
+    <!-- RIGHT WORKSPACE AREA (Single Clean Topbar + Active Content View)      -->
+    <!-- ==================================================================== -->
+    <div class="admin-workspace">
+      <header class="workspace-topbar">
+        <div class="topbar-left">
+          <button type="button" class="btn sm icon-only" id="btnToggleSidebar" title="Thu gọn / Mở rộng thanh điều hướng bên trái">
+            <i data-lucide="panel-left"></i>
+          </button>
+          <div class="workspace-breadcrumb">
+            <span id="breadcrumbParent">Admin Tổng (:8791)</span>
+            <i data-lucide="chevron-right" class="breadcrumb-sep"></i>
+            <strong id="breadcrumbCurrent">Tổng Quan &amp; Biểu Đồ</strong>
+          </div>
+        </div>
 
-    <main class="content-area">
+        <div class="topbar-right">
+          <button type="button" class="btn sm" data-toggle-read-comments title="Bật / Tắt giọng đọc AI đọc nội dung bình luận của người xem trên cả 2 màn hình 3D">
+            <i data-lucide="message-square-off"></i> <span class="read-comments-toggle-label">🔇 Đọc Bình Luận: ĐANG TẮT</span>
+          </button>
+          <button type="button" class="btn sm" data-toggle-mock title="Khi TẮT: chỉ thống kê người dùng thật từ TikTok LIVE. Khi BẬT: thống kê kèm dữ liệu mẫu (Fake)">
+            <i data-lucide="user-check"></i> <span class="mock-toggle-label">Dữ Liệu Mẫu: ĐANG TẮT (Chỉ Người Thật)</span>
+          </button>
+          <button type="button" class="btn sm" id="btnToggle3DPreview" title="Xem trực tiếp 2 màn hình 3D ngay trong trang này mà không cần mở tab mới">
+            <i data-lucide="monitor-play"></i> Xem 3D Tại Trang
+          </button>
+          <button type="button" class="btn sm danger" id="btnCleanAllTop" title="Reset toàn bộ dữ liệu hệ thống & MongoDB về 0 để bắt đầu phiên Live mới">
+            <i data-lucide="rotate-ccw"></i> Reset Dữ Liệu Về 0
+          </button>
+        </div>
+      </header>
+
+      <!-- Collapsible In-Page 3D Live Preview Drawer (Không cần mở tab mới) -->
+      <section class="preview-drawer" id="previewDrawer">
+        <div class="preview-grid">
+          <div class="preview-frame-card">
+            <div class="preview-frame-head">
+              <span><i data-lucide="landmark" style="width:14px;height:14px;vertical-align:-2px;color:var(--gold)"></i> Màn Hình 3D Cúng Chùa Online (:8787)</span>
+              <span style="font-size:11px;color:var(--text-muted)">http://lvh.me:8787</span>
+            </div>
+            <iframe id="iframeChua3D" title="Màn hình 3D Cúng Chùa Online"></iframe>
+          </div>
+          <div class="preview-frame-card">
+            <div class="preview-frame-head">
+              <span><i data-lucide="trophy" style="width:14px;height:14px;vertical-align:-2px;color:var(--teal)"></i> Màn Hình 3D Cuộc Đua Kỳ Thú (:8789)</span>
+              <span style="font-size:11px;color:var(--text-muted)">http://lvh.me:8789</span>
+            </div>
+            <iframe id="iframeDua3D" title="Màn hình 3D Cuộc Đua Kỳ Thú"></iframe>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================================================================== -->
+      <!-- MAIN TAB 1: ADMIN TỔNG — TRUNG TÂM ĐIỀU HÀNH ĐA TRÒ CHƠI & QUÀ LIVE   -->
+      <!-- ==================================================================== -->
+      <div class="main-tab-view active" id="main-view-master">
+        <main class="content-area">
       <!-- SUB-TAB 1.1: TỔNG QUAN & BIỂU ĐỒ -->
       <section class="sub-tab-panel active" id="sub-master-overview">
         <!-- Quick TikTok Switcher & Auto-Demo Character Spawner Strip -->
@@ -689,28 +758,6 @@
   <!-- MAIN TAB 2: ADMIN CÚNG CHÙA ONLINE (:8788) — Chuyển Tab Tại Chỗ       -->
   <!-- ==================================================================== -->
   <div class="main-tab-view" id="main-view-chua">
-    <div class="sub-bar">
-      <div class="sub-bar-title">
-        <div class="sub-bar-icon gold"><i data-lucide="landmark"></i></div>
-        <h1>Admin Cúng Chùa Online 3D · Quản Trị Chánh Điện &amp; Nghi Lễ</h1>
-        <span class="badge emerald" id="chuaStatusBadge">Đang kết nối...</span>
-        <button type="button" class="btn sm" data-toggle-mock style="margin-left:8px">
-          <i data-lucide="user-check"></i> <span class="mock-toggle-label">Dữ Liệu Mẫu: ĐANG TẮT (Chỉ Người Thật)</span>
-        </button>
-      </div>
-      <div class="sub-tabs" role="tablist">
-        <button type="button" class="sub-tab-btn active" data-parent="chua" data-sub="chua-analytics">
-          <i data-lucide="line-chart"></i> Thống Kê &amp; Phật Tử Đang Lễ
-        </button>
-        <button type="button" class="sub-tab-btn" data-parent="chua" data-sub="chua-controls">
-          <i data-lucide="sliders"></i> Không Gian 3D &amp; Hiệu Ứng Chánh Điện
-        </button>
-        <button type="button" class="sub-tab-btn" data-parent="chua" data-sub="chua-lists">
-          <i data-lucide="book-open-check"></i> Câu Đối, Từ Khóa &amp; Bộ Lọc
-        </button>
-      </div>
-    </div>
-
     <main class="content-area">
       <!-- SUB-TAB 2.1: THỐNG KÊ & PHẬT TỬ -->
       <section class="sub-tab-panel active" id="sub-chua-analytics">
@@ -991,25 +1038,6 @@
   <!-- MAIN TAB 3: ADMIN CUỘC ĐUA KỲ THÚ (:8790) — Chuyển Tab Tại Chỗ        -->
   <!-- ==================================================================== -->
   <div class="main-tab-view" id="main-view-dua">
-    <div class="sub-bar">
-      <div class="sub-bar-title">
-        <div class="sub-bar-icon teal"><i data-lucide="trophy"></i></div>
-        <h1>Admin Cuộc Đua Kỳ Thú 3D · Hành Trình Khám Phá Thế Giới</h1>
-        <span class="badge emerald" id="duaStatusBadge">Đang kết nối...</span>
-        <button type="button" class="btn sm" data-toggle-mock style="margin-left:8px">
-          <i data-lucide="user-check"></i> <span class="mock-toggle-label">Dữ Liệu Mẫu: ĐANG TẮT (Chỉ Người Thật)</span>
-        </button>
-      </div>
-      <div class="sub-tabs" role="tablist">
-        <button type="button" class="sub-tab-btn active" data-parent="dua" data-sub="dua-analytics">
-          <i data-lucide="bar-chart-2"></i> Thống Kê &amp; Vận Động Viên Đang Chạy
-        </button>
-        <button type="button" class="sub-tab-btn" data-parent="dua" data-sub="dua-controls">
-          <i data-lucide="globe-2"></i> Kỳ Quan Thế Giới, Hiệu Ứng &amp; Điều Khiển
-        </button>
-      </div>
-    </div>
-
     <main class="content-area">
       <!-- SUB-TAB 3.1: THỐNG KÊ & VẬN ĐỘNG VIÊN -->
       <section class="sub-tab-panel active" id="sub-dua-analytics">
@@ -1185,6 +1213,8 @@
       </section>
     </main>
   </div>
+  </div><!-- /.admin-workspace -->
+</div><!-- /.admin-shell -->
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <!-- Modular Controller -->
