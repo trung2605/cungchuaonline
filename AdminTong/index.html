@@ -306,6 +306,36 @@
               <div class="fx-tile-desc">Tạo làn khói trầm hương nghi ngút tại lư đồng và toàn thể Phật tử dâng hương.</div>
             </button>
 
+            <button type="button" class="fx-tile" data-fx-game="cung-chua-online" data-fx-preset="golden_rain">
+              <div class="fx-tile-top"><span class="badge gold">Hiệu ứng Mới</span><i data-lucide="sparkles" style="color:var(--gold)"></i></div>
+              <div class="fx-tile-title">Mưa Cam Lồ Hoàng Kim ✨</div>
+              <div class="fx-tile-desc">Mưa hoa kim liên và giọt cam lồ vàng rực rỡ rơi khắp chánh điện kèm sóng âm vàng.</div>
+            </button>
+
+            <button type="button" class="fx-tile" data-fx-game="cung-chua-online" data-fx-preset="dharma_wheel">
+              <div class="fx-tile-top"><span class="badge gold">Mandala 3D</span><i data-lucide="sun" style="color:var(--gold)"></i></div>
+              <div class="fx-tile-title">Pháp Luân Thường Chuyển ☸️</div>
+              <div class="fx-tile-desc">Vòng Mandala Liên Hoa 3D xoay tròn dưới thảm đỏ kèm cột xoắn ốc ánh sáng.</div>
+            </button>
+
+            <button type="button" class="fx-tile" data-fx-game="cung-chua-online" data-fx-preset="lantern_festival">
+              <div class="fx-tile-top"><span class="badge brand">Lễ Hội 3D</span><i data-lucide="lamp" style="color:var(--brand)"></i></div>
+              <div class="fx-tile-title">Lễ Hội Vạn Hoa Đăng 🏮</div>
+              <div class="fx-tile-desc">Hàng chục ngọn thiên đăng rực sáng bay lên từ hai bên chánh điện.</div>
+            </button>
+
+            <button type="button" class="fx-tile" data-fx-game="cung-chua-online" data-fx-preset="buddha_aura">
+              <div class="fx-tile-top"><span class="badge gold">Thiên Thượng</span><i data-lucide="Sparkle" style="color:var(--gold)"></i></div>
+              <div class="fx-tile-title">Phật Quang Phổ Chiếu 🌟</div>
+              <div class="fx-tile-desc">5 cột sáng hoàng kim chiếu rọi từ vòm bảo điện xuống kèm hào quang xoay sau tượng Phật.</div>
+            </button>
+
+            <button type="button" class="fx-tile" data-fx-game="cung-chua-online" data-fx-preset="peach_blossom">
+              <div class="fx-tile-top"><span class="badge rose">Phú Quý</span><i data-lucide="flower" style="color:var(--rose)"></i></div>
+              <div class="fx-tile-title">Mưa Hoa Đào &amp; Hoa Mai 🌸</div>
+              <div class="fx-tile-desc">Cánh hoa đào hồng và hoa mai vàng bay lượn khắp chánh điện cầu phúc lộc.</div>
+            </button>
+
             <button type="button" class="fx-tile" data-fx-game="cung-chua-online" data-fx-preset="emotion_namo">
               <div class="fx-tile-top"><span class="badge emerald">Emotion Tập Thể</span><i data-lucide="message-circle-heart" style="color:var(--emerald)"></i></div>
               <div class="fx-tile-title">Đồng Thanh Niệm Nam Mô 🙏</div>
@@ -388,11 +418,16 @@
               <div class="form-group">
                 <label class="form-label" for="customFxKind">Loại Hiệu Ứng Hình Ảnh 3D</label>
                 <select id="customFxKind">
-                  <option value="lotus">🌸 Mưa Hoa Sen / Tia Sáng (Lotus / Spark)</option>
+                  <option value="lotus">🌸 Mưa Hoa Sen Từ Bi (Lotus)</option>
+                  <option value="golden_rain">✨ Mưa Cam Lồ Hoàng Kim (Golden Rain)</option>
+                  <option value="dharma_wheel">☸️ Pháp Luân Thường Chuyển (Mandala 3D)</option>
+                  <option value="lantern_festival">🏮 Lễ Hội Vạn Hoa Đăng (Sky Lanterns)</option>
+                  <option value="buddha_aura">🌟 Phật Quang Phổ Chiếu (Cột Sáng Thiên Thượng)</option>
+                  <option value="peach_blossom">🌸 Mưa Hoa Đào &amp; Hoa Mai Phú Quý</option>
                   <option value="bell">🔔 Đại Hồng Chung &amp; Hào Quang (Bell)</option>
                   <option value="lamp">🏮 Đại Hoa Đăng / Ván Trượt (Lamp / Hover)</option>
                   <option value="turbo">⚡ Siêu Bão Cầu Vồng / Vũ Trụ (Turbo / Warp)</option>
-                  <option value="smoke">🕯️ Khói Trầm Hương (Smoke)</option>
+                  <option value="smoke">🕯️ Khói Trầm Hương Cửu Phẩm (Smoke)</option>
                 </select>
               </div>
             </div>
@@ -833,19 +868,59 @@
             <div class="card-header">
               <div>
                 <h2 class="card-title"><i data-lucide="wand-2"></i> Kích Hoạt Nhanh Hiệu Ứng &amp; Emotion Chánh Điện</h2>
-                <div class="card-subtitle">Phát hiệu ứng 3D và bong bóng cảm xúc ngay lập tức lên màn hình Chùa</div>
+                <div class="card-subtitle">Phát hiệu ứng 3D cao cấp và bong bóng cảm xúc ngay lập tức hoặc tự động Random theo chu kỳ</div>
               </div>
+              <button type="button" class="btn sm gold" id="btnChuaRandomFxOnce">
+                <i data-lucide="shuffle"></i> Random 1 Hiệu Ứng Ngay
+              </button>
             </div>
-            <div class="row-inline" style="margin-bottom:14px">
+
+            <div class="form-label" style="margin-bottom:8px">✨ Hiệu ứng ánh sáng &amp; pháp khí 3D Chánh Điện:</div>
+            <div class="row-inline" style="margin-bottom:10px;flex-wrap:wrap;gap:8px">
               <button type="button" class="btn gold" data-fx-game="cung-chua-online" data-fx-preset="bell_halo"><i data-lucide="bell-ring"></i> Đại Hồng Chung</button>
               <button type="button" class="btn primary" data-fx-game="cung-chua-online" data-fx-preset="lotus_rain"><i data-lucide="flower-2"></i> Mưa Hoa Sen</button>
+              <button type="button" class="btn gold" data-fx-game="cung-chua-online" data-fx-preset="golden_rain"><i data-lucide="sparkles"></i> Mưa Cam Lồ Hoàng Kim</button>
+              <button type="button" class="btn gold" data-fx-game="cung-chua-online" data-fx-preset="dharma_wheel"><i data-lucide="sun"></i> Pháp Luân Mandala 3D</button>
+              <button type="button" class="btn gold" data-fx-game="cung-chua-online" data-fx-preset="lantern_festival"><i data-lucide="lamp"></i> Lễ Hội Vạn Hoa Đăng</button>
+              <button type="button" class="btn primary" data-fx-game="cung-chua-online" data-fx-preset="buddha_aura"><i data-lucide="zap"></i> Phật Quang Phổ Chiếu</button>
+              <button type="button" class="btn rose" data-fx-game="cung-chua-online" data-fx-preset="peach_blossom"><i data-lucide="flower"></i> Mưa Hoa Đào &amp; Hoa Mai</button>
               <button type="button" class="btn gold" data-fx-game="cung-chua-online" data-fx-preset="sacred_lamps"><i data-lucide="flame"></i> Đại Hoa Đăng</button>
               <button type="button" class="btn teal" data-fx-game="cung-chua-online" data-fx-preset="incense_cloud"><i data-lucide="cloud"></i> Khói Trầm Hương</button>
             </div>
-            <div class="row-inline">
+
+            <div class="form-label" style="margin-bottom:8px;margin-top:12px">🙏 Bong bóng đồng thanh cầu nguyện (Toàn thể Phật tử lạy lễ):</div>
+            <div class="row-inline" style="margin-bottom:16px;flex-wrap:wrap;gap:8px">
               <button type="button" class="btn emerald" data-fx-game="cung-chua-online" data-fx-preset="emotion_namo"><i data-lucide="message-circle-heart"></i> Đồng Thanh Niệm Phật</button>
               <button type="button" class="btn emerald" data-fx-game="cung-chua-online" data-fx-preset="emotion_peace"><i data-lucide="heart-handshake"></i> Đồng Thanh Cầu Bình An</button>
               <button type="button" class="btn gold" data-fx-game="cung-chua-online" data-fx-preset="emotion_wealth"><i data-lucide="sparkles"></i> Đồng Thanh Cầu Tài Lộc</button>
+              <button type="button" class="btn primary" data-fx-game="cung-chua-online" data-fx-preset="emotion_joy"><i data-lucide="smile-plus"></i> Hoan Hỷ Công Đức</button>
+            </div>
+
+            <div style="border-top:1px solid var(--border);padding-top:14px;background:rgba(217,119,6,0.06);padding:12px 14px;border-radius:10px;border:1px solid rgba(217,119,6,0.22)">
+              <div class="row-inline" style="justify-content:space-between;margin-bottom:8px">
+                <label class="form-label" style="margin-bottom:0;font-weight:800;color:var(--text-primary)">
+                  🎲 Tự Động Random Hiệu Ứng Chánh Điện Trong Live Theo Số Giây
+                </label>
+                <span class="badge" id="chuaAutoFxBadge">Đang tắt</span>
+              </div>
+              <div class="row-inline" style="gap:12px;flex-wrap:wrap;margin-bottom:10px">
+                <div>
+                  <label class="form-label" for="chuaAutoFxSec">Chu kỳ Random (giây · 5s – 600s)</label>
+                  <input type="number" id="chuaAutoFxSec" min="5" max="600" step="5" value="25" style="width:120px;font-weight:700" />
+                </div>
+                <label class="row-inline" style="cursor:pointer;font-weight:700;margin-top:18px">
+                  <input type="checkbox" id="chuaAutoFxEmotion" checked style="width:17px;height:17px" />
+                  Kèm bong bóng Phật tử đồng thanh cầu nguyện &amp; lạy lễ
+                </label>
+              </div>
+              <div class="row-inline" style="gap:8px;flex-wrap:wrap">
+                <button type="button" class="btn sm primary" id="btnChuaAutoFxStart">
+                  <i data-lucide="play"></i> Bật Random Hiệu Ứng Tự Động
+                </button>
+                <button type="button" class="btn sm danger" id="btnChuaAutoFxStop">
+                  <i data-lucide="square"></i> Tắt Random Hiệu Ứng
+                </button>
+              </div>
             </div>
           </div>
         </div>

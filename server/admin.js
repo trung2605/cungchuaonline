@@ -94,6 +94,179 @@ export async function startAdmin({ port = 8788, host = '127.0.0.1', password, ct
   const { pipeline, stage, lists, blocked, stats, counters, status, broadcast, demo } = ctx;
   let okHosts = new Set();
 
+  const FX_PRESETS = {
+    bell_halo: {
+      fx: [{ t: 'fx', kind: 'bell', power: 10 }, { t: 'fx', kind: 'halo', power: 10 }],
+      bubble: 'Nam Mô A Di Đà Phật 🙏',
+      banner: '🔔 Đại Hồng Chung Ngân Vang · Hào Quang Chiếu Rọi Toàn Chánh Điện 🙏',
+      bows: 3,
+    },
+    lotus_rain: {
+      fx: [{ t: 'fx', kind: 'lotus', power: 10 }],
+      bubble: 'Hoan Hỷ Công Đức · Tâm Thanh Tịnh 🪷',
+      banner: '🌸 Mưa Hoa Sen Từ Bi Rơi Khắp Chánh Điện · Phước Báu Vô Lượng 🙏',
+      bows: 2,
+    },
+    sacred_lamps: {
+      fx: [{ t: 'fx', kind: 'lamp', power: 10 }],
+      bubble: 'Cầu Bình An · Trí Tuệ Sáng Suốt 🏮',
+      banner: '🏮 Thắp Sáng Đại Hoa Đăng Cầu Quốc Thái Dân An · Gia Đạo Hạnh Phúc ✨',
+      bows: 2,
+    },
+    incense_cloud: {
+      fx: [{ t: 'fx', kind: 'smoke', power: 10 }],
+      bubble: 'Thành Tâm Dâng Hương Cầu Nguyện 🙏',
+      banner: '🕯️ Khói Trầm Hương Quyện Tỏa · Lời Cầu Nguyện Thấu Chín Tầng Mây',
+      bows: 2,
+    },
+    golden_rain: {
+      fx: [{ t: 'fx', kind: 'golden_rain', power: 10 }],
+      bubble: 'Phước Lộc Viên Mãn · Cát Tường Như Ý ✨',
+      banner: '✨ Mưa Cam Lồ Hoàng Kim Rơi Khắp Chánh Điện · Vạn Sự Cát Tường 🙏',
+      bows: 2,
+    },
+    dharma_wheel: {
+      fx: [{ t: 'fx', kind: 'dharma_wheel', power: 10 }],
+      bubble: 'Pháp Luân Thường Chuyển · Tâm Sáng Như Gương ☸️',
+      banner: '☸️ Pháp Luân Thường Chuyển · Hào Quang Liên Hoa Xoay Giữa Chánh Điện 🙏',
+      bows: 3,
+    },
+    lantern_festival: {
+      fx: [{ t: 'fx', kind: 'lantern_festival', power: 10 }],
+      bubble: 'Vạn Hoa Đăng Cầu Phúc · Quốc Thái Dân An 🏮',
+      banner: '🏮 Lễ Hội Vạn Hoa Đăng Bay Lên Trời Đêm · Cầu Nguyện Bình An ✨',
+      bows: 2,
+    },
+    buddha_aura: {
+      fx: [{ t: 'fx', kind: 'buddha_aura', power: 10 }],
+      bubble: 'Phật Quang Phổ Chiếu · Gia Đạo An Khang 🌟',
+      banner: '🌟 Phật Quang Phổ Chiếu · Cột Sáng Thiên Thượng Rọi Khắp Bảo Điện 🙏',
+      bows: 3,
+    },
+    peach_blossom: {
+      fx: [{ t: 'fx', kind: 'peach_blossom', power: 10 }],
+      bubble: 'Hoa Khai Phú Quý · Xuân Phúc Trường Tồn 🌸',
+      banner: '🌸 Mưa Hoa Đào & Hoa Mai Hoàng Kim · Khai Xuân Phú Quý An Khang ✨',
+      bows: 2,
+    },
+    emotion_namo: {
+      fx: [{ t: 'fx', kind: 'bell', power: 6 }],
+      bubble: 'Nam Mô A Di Đà Phật 🙏',
+      banner: '🙏 Toàn Thể Phật Tử Đồng Thanh Niệm Nam Mô A Di Đà Phật!',
+      bows: 3,
+    },
+    emotion_peace: {
+      fx: [{ t: 'fx', kind: 'lotus', power: 7 }],
+      bubble: 'Cầu Gia Đạo Bình An · Sức Khỏe Dồi Dào 🪷',
+      banner: '🪷 Đại Chúng Đồng Tâm Cầu Nguyện Bình An & Sức Khỏe!',
+      bows: 2,
+    },
+    emotion_wealth: {
+      fx: [{ t: 'fx', kind: 'golden_rain', power: 8 }],
+      bubble: 'Cầu Tài Lộc Hanh Thông · Vạn Sự Như Ý ✨',
+      banner: '✨ Đại Chúng Đồng Tâm Cầu Tài Lộc Hanh Thông · Công Thành Danh Toại!',
+      bows: 2,
+    },
+    emotion_joy: {
+      fx: [{ t: 'fx', kind: 'peach_blossom', power: 8 }],
+      bubble: 'Tâm An Vạn Sự An · Hoan Hỷ Công Đức 🌸',
+      banner: '🌸 Hoan Hỷ Công Đức · Tâm An Vạn Sự An!',
+      bows: 1,
+    },
+  };
+
+  const RANDOM_PRESET_KEYS = Object.keys(FX_PRESETS);
+  let lastRandomPreset = '';
+
+  function executeFxEmotion(body = {}) {
+    let preset = body.preset || 'custom';
+    if (preset === 'random') {
+      const candidates = RANDOM_PRESET_KEYS.filter(k => k !== lastRandomPreset);
+      preset = candidates[Math.floor(Math.random() * candidates.length)] || 'lotus_rain';
+      lastRandomPreset = preset;
+    }
+    const power = Math.max(1, Math.min(10, Number(body.power) || 8));
+    const withEmotion = body.withEmotion !== false;
+    const msgs = [];
+
+    const cfg = FX_PRESETS[preset] || {
+      fx: body.fxKind ? [{ t: 'fx', kind: body.fxKind, power }] : [{ t: 'fx', kind: 'lotus', power }],
+      bubble: body.bubble ? cleanBubble(String(body.bubble), lists, 40) : '',
+      banner: body.banner ? cleanBubble(String(body.banner), lists, 60) : '',
+      bows: Number(body.bows ?? 2),
+    };
+
+    if (withEmotion && cfg.bubble && stage.actors.size === 0) {
+      msgs.push(...stage.enter('ceremony_1', 'Phật Tử Thiện Tâm', 1, 2, { intent: 'Cầu Bình An' }));
+      msgs.push(...stage.enter('ceremony_2', 'Phật Tử An Nhiên', 1, 2, { intent: 'Cầu Tài Lộc' }));
+    }
+
+    if (cfg.fx?.length) msgs.push(...cfg.fx);
+    if (withEmotion && (cfg.bubble || cfg.bows > 0)) {
+      msgs.push(...(stage.triggerEmotionAll?.(cfg.bubble, { bows: cfg.bows, ms: 6000 }) ?? []));
+    }
+    if (cfg.banner) {
+      msgs.push({ t: 'banner', text: cfg.banner, ms: 5000 });
+    }
+    broadcast(msgs);
+    return { ok: true, preset, count: msgs.length };
+  }
+
+  // Automatic Random FX Scheduler (configurable interval in seconds from Admin)
+  let autoFxTimer = null;
+  const autoFxState = {
+    on: false,
+    intervalSec: Number(ctx.initialAutoFx?.intervalSec) || 30,
+    withEmotion: ctx.initialAutoFx?.withEmotion !== false,
+    lastPreset: '',
+    lastTriggeredAt: null,
+  };
+
+  function stopAutoFx() {
+    if (autoFxTimer) {
+      clearTimeout(autoFxTimer);
+      autoFxTimer = null;
+    }
+    autoFxState.on = false;
+  }
+
+  function scheduleNextAutoFx() {
+    if (!autoFxState.on) return;
+    const baseMs = Math.max(5, Math.min(600, autoFxState.intervalSec)) * 1000;
+    // Add slight +/-15% natural jitter so effects feel organic in live stream
+    const delayMs = Math.round(baseMs * (0.85 + Math.random() * 0.3));
+    autoFxTimer = setTimeout(() => {
+      if (!autoFxState.on) return;
+      const res = executeFxEmotion({ preset: 'random', withEmotion: autoFxState.withEmotion });
+      autoFxState.lastPreset = res.preset;
+      autoFxState.lastTriggeredAt = new Date().toLocaleTimeString('vi-VN', { hour12: false });
+      scheduleNextAutoFx();
+    }, delayMs);
+  }
+
+  function configureAutoFx({ on, intervalSec, withEmotion } = {}) {
+    if (intervalSec !== undefined) {
+      const sec = Number(intervalSec);
+      if (!Number.isFinite(sec) || sec < 5 || sec > 600) throw bad('Chu kỳ random hiệu ứng phải từ 5 đến 600 giây');
+      autoFxState.intervalSec = Math.round(sec);
+    }
+    if (withEmotion !== undefined) {
+      autoFxState.withEmotion = Boolean(withEmotion);
+    }
+    if (on !== undefined) {
+      stopAutoFx();
+      if (on) {
+        autoFxState.on = true;
+        // Fire one immediately so the admin sees instant feedback, then schedule loop
+        const res = executeFxEmotion({ preset: 'random', withEmotion: autoFxState.withEmotion });
+        autoFxState.lastPreset = res.preset;
+        autoFxState.lastTriggeredAt = new Date().toLocaleTimeString('vi-VN', { hour12: false });
+        scheduleNextAutoFx();
+      }
+    }
+    return { ...autoFxState };
+  }
+
   const routes = {
     'GET /': (req, res) =>
       fs.readFile(PAGE, (err, html) =>
@@ -107,6 +280,7 @@ export async function startAdmin({ port = 8788, host = '127.0.0.1', password, ct
       lists,
       scene: pipeline.snapshot().scene,
       stayConfig: stage.getStayConfig?.() ?? { stayMinutes: 5 },
+      autoFx: { ...autoFxState },
       demo: demo.state(),
       demoConfig: demo.config?.() ?? { on: demo.state().on, rate: demo.state().rate ?? 3, giftRatio: 0.08, prayerRatio: 0.65 },
       actors: stage.snapshot(),
@@ -240,6 +414,7 @@ export async function startAdmin({ port = 8788, host = '127.0.0.1', password, ct
 
     'POST /api/reset-all': async () => {
       demo.stop?.();
+      stopAutoFx();
       const leaveMsgs = stage.clearAll?.() ?? [];
       const counterMsgs = counters?.reset?.() ?? [];
       stats.resetAll?.();
@@ -251,83 +426,14 @@ export async function startAdmin({ port = 8788, host = '127.0.0.1', password, ct
 
     'POST /api/fx-emotion': async req => {
       const body = await readJson(req);
-      const preset = body.preset || 'custom';
-      const power = Math.max(1, Math.min(10, Number(body.power) || 8));
-      const msgs = [];
+      return executeFxEmotion(body);
+    },
 
-      const presets = {
-        bell_halo: {
-          fx: [{ t: 'fx', kind: 'bell', power: 10 }, { t: 'fx', kind: 'halo', power: 10 }],
-          bubble: 'Nam Mô A Di Đà Phật 🙏',
-          banner: '🔔 Đại Hồng Chung Ngân Vang · Hào Quang Chiếu Rọi Toàn Chánh Điện 🙏',
-          bows: 3,
-        },
-        lotus_rain: {
-          fx: [{ t: 'fx', kind: 'lotus', power: 10 }],
-          bubble: 'Hoan Hỷ Công Đức · Tâm Thanh Tịnh 🪷',
-          banner: '🌸 Mưa Hoa Sen Từ Bi Rơi Khắp Chánh Điện · Phước Báu Vô Lượng 🙏',
-          bows: 2,
-        },
-        sacred_lamps: {
-          fx: [{ t: 'fx', kind: 'lamp', power: 10 }],
-          bubble: 'Cầu Bình An · Trí Tuệ Sáng Suốt 🏮',
-          banner: '🏮 Thắp Sáng Đại Hoa Đăng Cầu Quốc Thái Dân An · Gia Đạo Hạnh Phúc ✨',
-          bows: 2,
-        },
-        incense_cloud: {
-          fx: [{ t: 'fx', kind: 'smoke', power: 10 }],
-          bubble: 'Thành Tâm Dâng Hương Cầu Nguyện 🙏',
-          banner: '🕯️ Khói Trầm Hương Quyện Tỏa · Lời Cầu Nguyện Thấu Chín Tầng Mây',
-          bows: 2,
-        },
-        emotion_namo: {
-          fx: [{ t: 'fx', kind: 'bell', power: 6 }],
-          bubble: 'Nam Mô A Di Đà Phật 🙏',
-          banner: '🙏 Toàn Thể Phật Tử Đồng Thanh Niệm Nam Mô A Di Đà Phật!',
-          bows: 3,
-        },
-        emotion_peace: {
-          fx: [{ t: 'fx', kind: 'lotus', power: 7 }],
-          bubble: 'Cầu Gia Đạo Bình An · Sức Khỏe Dồi Dào 🪷',
-          banner: '🪷 Đại Chúng Đồng Tâm Cầu Nguyện Bình An & Sức Khỏe!',
-          bows: 2,
-        },
-        emotion_wealth: {
-          fx: [{ t: 'fx', kind: 'lamp', power: 8 }],
-          bubble: 'Cầu Tài Lộc Hanh Thông · Vạn Sự Như Ý ✨',
-          banner: '✨ Đại Chúng Đồng Tâm Cầu Tài Lộc Hanh Thông · Công Thành Danh Toại!',
-          bows: 2,
-        },
-        emotion_joy: {
-          fx: [{ t: 'fx', kind: 'flower', power: 8 }],
-          bubble: 'Tâm An Vạn Sự An · Hoan Hỷ Công Đức 🌸',
-          banner: '🌸 Hoan Hỷ Công Đức · Tâm An Vạn Sự An!',
-          bows: 1,
-        },
-      };
-
-      const cfg = presets[preset] || {
-        fx: body.fxKind ? [{ t: 'fx', kind: body.fxKind, power }] : [{ t: 'fx', kind: 'lotus', power }],
-        bubble: body.bubble ? cleanBubble(String(body.bubble), lists, 40) : '',
-        banner: body.banner ? cleanBubble(String(body.banner), lists, 60) : '',
-        bows: Number(body.bows ?? 2),
-      };
-
-      // Ensure at least 2 ceremonial devotees are present if emotion requires bowing/bubbles on an empty stage
-      if (cfg.bubble && stage.actors.size === 0) {
-        msgs.push(...stage.enter('ceremony_1', 'Phật Tử Thiện Tâm', 1, 2, { intent: 'Cầu Bình An' }));
-        msgs.push(...stage.enter('ceremony_2', 'Phật Tử An Nhiên', 1, 2, { intent: 'Cầu Tài Lộc' }));
-      }
-
-      if (cfg.fx?.length) msgs.push(...cfg.fx);
-      if (cfg.bubble || cfg.bows > 0) {
-        msgs.push(...(stage.triggerEmotionAll?.(cfg.bubble, { bows: cfg.bows, ms: 6000 }) ?? []));
-      }
-      if (cfg.banner) {
-        msgs.push({ t: 'banner', text: cfg.banner, ms: 5000 });
-      }
-      broadcast(msgs);
-      return { ok: true, count: msgs.length };
+    'POST /api/auto-fx': async req => {
+      const body = await readJson(req);
+      const autoFx = configureAutoFx(body);
+      await ctx.saveSceneConfig?.();
+      return { ok: true, autoFx };
     },
 
     'POST /api/kick': async req => {
@@ -372,6 +478,9 @@ export async function startAdmin({ port = 8788, host = '127.0.0.1', password, ct
 
   return {
     port: real,
-    close: () => new Promise(r => server.close(() => r())),
+    close: () => {
+      stopAutoFx();
+      return new Promise(r => server.close(() => r()));
+    },
   };
 }

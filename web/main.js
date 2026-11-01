@@ -100,8 +100,13 @@ function run(cmds, now) {
       case 'fx':
         if (c.kind === 'halo' && c.id) actors.halo(c.id, now);
         else fx.spawn(c.kind, c.pos, c.power, now);
-        // Standalone bell trigger (e.g. from admin panel when no donor message is present)
-        if (c.kind === 'bell' && !c.id) audio.bell();
+        // Standalone temple sound resonance when FX is triggered from Admin or Auto-FX
+        if (!c.id) {
+          if (c.kind === 'bell' || c.kind === 'buddha_aura') audio.bell();
+          else if (c.kind === 'dharma_wheel' || c.kind === 'lantern_festival' || c.kind === 'golden_rain') audio.mediumBell();
+          else if (c.kind === 'lotus' || c.kind === 'lamp' || c.kind === 'peach_blossom') audio.chime();
+          else if (c.kind === 'smoke') audio.softBowl();
+        }
         break;
     }
   }

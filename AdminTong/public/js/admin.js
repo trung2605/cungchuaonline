@@ -538,6 +538,21 @@ function renderAll(state) {
     $('quickStayMinutes').value = chuaStayMins;
   }
 
+  // Sync Chua Auto Random FX state
+  const autoFx = chua.autoFx || { on: false, intervalSec: 25, withEmotion: true };
+  if ($('chuaAutoFxBadge')) {
+    $('chuaAutoFxBadge').className = `badge ${autoFx.on ? 'emerald' : ''}`;
+    $('chuaAutoFxBadge').textContent = autoFx.on
+      ? `ĐANG CHẠY (Mỗi ~${autoFx.intervalSec}s${autoFx.lastPreset ? ` · Vừa phát: ${autoFx.lastPreset}` : ''})`
+      : 'Đang tắt';
+  }
+  if ($('chuaAutoFxSec') && document.activeElement !== $('chuaAutoFxSec') && autoFx.intervalSec) {
+    $('chuaAutoFxSec').value = autoFx.intervalSec;
+  }
+  if ($('chuaAutoFxEmotion') && document.activeElement !== $('chuaAutoFxEmotion') && autoFx.withEmotion !== undefined) {
+    $('chuaAutoFxEmotion').checked = Boolean(autoFx.withEmotion);
+  }
+
   // Hydrate Chua Lists once so we don't overwrite user edits while typing
   if (!chuaListsHydrated && chua.lists) {
     chuaListsHydrated = true;
@@ -862,6 +877,28 @@ window.addEventListener('DOMContentLoaded', () => {
   $('btnDuaStaySave')?.addEventListener('click', () =>
     triggerStayTime('cuoc-dua-ky-thu', $('duaStayMinutesInput')?.value)
   );
+
+  // Auto Random FX Scheduler Controls (Cúng Chùa Online 3D)
+  const triggerChuaAutoFx = async on => {
+    const intervalSec = Math.max(5, Math.min(600, Number($('chuaAutoFxSec')?.value) || 25));
+    const withEmotion = $('chuaAutoFxEmotion') ? $('chuaAutoFxEmotion').checked : true;
+    await gameAction('cung-chua-online', '/api/auto-fx', { on, intervalSec, withEmotion });
+    showToast(
+      on
+        ? `Đã BẬT tự động Random hiệu ứng Chánh Điện mỗi ~${intervalSec} giây!`
+        : 'Đã TẮT tự động Random hiệu ứng Chánh Điện!'
+    );
+    await pollState();
+  };
+
+  $('btnChuaAutoFxStart')?.addEventListener('click', () => triggerChuaAutoFx(true));
+  $('btnChuaAutoFxStop')?.addEventListener('click', () => triggerChuaAutoFx(false));
+  $('btnChuaRandomFxOnce')?.addEventListener('click', async () => {
+    const withEmotion = $('chuaAutoFxEmotion') ? $('chuaAutoFxEmotion').checked : true;
+    await api('POST', '/api/fx-emotion', { game: 'cung-chua-online', preset: 'random', withEmotion });
+    showToast('Đã phát ngẫu nhiên 1 hiệu ứng 3D lên Chánh Điện!');
+    await pollState();
+  });
 
   // 4. Game 1: Cúng Chùa Online Controls
   $('btnChuaSaveScene').addEventListener('click', async () => {
