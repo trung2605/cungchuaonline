@@ -1,5 +1,70 @@
 import * as THREE from 'three';
-import { VN_PROVINCES_63 } from '../../server/raceStage.js';
+
+const VN_PROVINCES_63 = [
+  { code: 1, name: 'Hà Giang', biomeId: 'vn_hagiang' },
+  { code: 2, name: 'Cao Bằng', biomeId: 'vn_hagiang' },
+  { code: 3, name: 'Bắc Kạn', biomeId: 'vn_hagiang' },
+  { code: 4, name: 'Lạng Sơn', biomeId: 'vn_hagiang' },
+  { code: 5, name: 'Tuyên Quang', biomeId: 'vn_hagiang' },
+  { code: 6, name: 'Thái Nguyên', biomeId: 'vn_hagiang' },
+  { code: 7, name: 'Lào Cai', biomeId: 'vn_sapa' },
+  { code: 8, name: 'Yên Bái', biomeId: 'vn_sapa' },
+  { code: 9, name: 'Lai Châu', biomeId: 'vn_sapa' },
+  { code: 10, name: 'Điện Biên', biomeId: 'vn_sapa' },
+  { code: 11, name: 'Sơn La', biomeId: 'vn_sapa' },
+  { code: 12, name: 'Hòa Bình', biomeId: 'vn_sapa' },
+  { code: 13, name: 'Phú Thọ', biomeId: 'vn_hanoi' },
+  { code: 14, name: 'Vĩnh Phúc', biomeId: 'vn_hanoi' },
+  { code: 15, name: 'Quảng Ninh', biomeId: 'vn_halong' },
+  { code: 16, name: 'Hải Phòng', biomeId: 'vn_halong' },
+  { code: 17, name: 'Bắc Giang', biomeId: 'vn_halong' },
+  { code: 18, name: 'Bắc Ninh', biomeId: 'vn_halong' },
+  { code: 19, name: 'Hải Dương', biomeId: 'vn_halong' },
+  { code: 20, name: 'Hưng Yên', biomeId: 'vn_halong' },
+  { code: 21, name: 'Thủ Đô Hà Nội', biomeId: 'vn_hanoi' },
+  { code: 22, name: 'Hà Nam', biomeId: 'vn_ninhbinh' },
+  { code: 23, name: 'Thái Bình', biomeId: 'vn_ninhbinh' },
+  { code: 24, name: 'Nam Định', biomeId: 'vn_ninhbinh' },
+  { code: 25, name: 'Ninh Bình', biomeId: 'vn_ninhbinh' },
+  { code: 26, name: 'Thanh Hóa', biomeId: 'vn_ninhbinh' },
+  { code: 27, name: 'Nghệ An', biomeId: 'vn_ninhbinh' },
+  { code: 28, name: 'Hà Tĩnh', biomeId: 'vn_ninhbinh' },
+  { code: 29, name: 'Quảng Bình', biomeId: 'vn_hue' },
+  { code: 30, name: 'Quảng Trị', biomeId: 'vn_hue' },
+  { code: 31, name: 'Thừa Thiên Huế', biomeId: 'vn_hue' },
+  { code: 32, name: 'Đà Nẵng', biomeId: 'vn_danang' },
+  { code: 33, name: 'Quảng Nam', biomeId: 'vn_hoian' },
+  { code: 34, name: 'Quảng Ngãi', biomeId: 'vn_hoian' },
+  { code: 35, name: 'Bình Định', biomeId: 'vn_hoian' },
+  { code: 36, name: 'Phú Yên', biomeId: 'vn_hoian' },
+  { code: 37, name: 'Khánh Hòa', biomeId: 'vn_nhatrang' },
+  { code: 38, name: 'Ninh Thuận', biomeId: 'vn_nhatrang' },
+  { code: 39, name: 'Bình Thuận', biomeId: 'vn_nhatrang' },
+  { code: 40, name: 'Kon Tum', biomeId: 'vn_dalat' },
+  { code: 41, name: 'Gia Lai', biomeId: 'vn_dalat' },
+  { code: 42, name: 'Đắk Lắk', biomeId: 'vn_dalat' },
+  { code: 43, name: 'Đắk Nông', biomeId: 'vn_dalat' },
+  { code: 44, name: 'Lâm Đồng', biomeId: 'vn_dalat' },
+  { code: 45, name: 'Bình Phước', biomeId: 'vn_saigon' },
+  { code: 46, name: 'Tây Ninh', biomeId: 'vn_saigon' },
+  { code: 47, name: 'Bình Dương', biomeId: 'vn_saigon' },
+  { code: 48, name: 'Đồng Nai', biomeId: 'vn_saigon' },
+  { code: 49, name: 'Bà Rịa – Vũng Tàu', biomeId: 'vn_saigon' },
+  { code: 50, name: 'TP. Hồ Chí Minh', biomeId: 'vn_saigon' },
+  { code: 51, name: 'Long An', biomeId: 'vn_mientay' },
+  { code: 52, name: 'Tiền Giang', biomeId: 'vn_mientay' },
+  { code: 53, name: 'Bến Tre', biomeId: 'vn_mientay' },
+  { code: 54, name: 'Trà Vinh', biomeId: 'vn_mientay' },
+  { code: 55, name: 'Vĩnh Long', biomeId: 'vn_mientay' },
+  { code: 56, name: 'Đồng Tháp', biomeId: 'vn_mientay' },
+  { code: 57, name: 'An Giang', biomeId: 'vn_mientay' },
+  { code: 58, name: 'Kiên Giang', biomeId: 'vn_mientay' },
+  { code: 59, name: 'TP. Cần Thơ', biomeId: 'vn_mientay' },
+  { code: 60, name: 'Hậu Giang', biomeId: 'vn_mientay' },
+  { code: 61, name: 'Sóc Trăng', biomeId: 'vn_mientay' },
+  { code: 62, name: 'Bạc Liêu', biomeId: 'vn_mientay' },
+  { code: 63, name: 'Cà Mau', biomeId: 'vn_mientay' },
+];
 
 export function canvasTex(w, h, draw) {
   const c = document.createElement('canvas');
@@ -859,28 +924,28 @@ function buildRoadsideScene(biomeId, side, variant, animList, provBaseIdx = 0) {
     citadel.add(palaceRoof);
     g.add(citadel);
   } else if (biomeId === 'vn_danang') {
-    // Đà Nẵng Cầu Vàng: Giant Mossy Stone Hand (Bàn Tay Đá Khổng Lồ) supporting the Golden Bridge!
+    // Đà Nẵng Cầu Vàng: Giant Mossy Stone Hand (Bàn Tay Đá Khổng Lồ) cradling the Golden Bridge!
     const handGroup = new THREE.Group();
-    handGroup.position.set(side * 2.35, -0.35, 0);
-    const stoneMat = new THREE.MeshStandardMaterial({ color: 0x78716c, roughness: 0.92 });
-    const mossMat = new THREE.MeshStandardMaterial({ color: 0x3f6212, roughness: 0.9 });
+    handGroup.position.set(side * 0.55, -0.45, 0);
+    const stoneMat = new THREE.MeshStandardMaterial({ color: 0x9ca3af, roughness: 0.88 });
+    const mossMat = new THREE.MeshStandardMaterial({ color: 0x4d7c0f, roughness: 0.85 });
 
-    // Forearm & Palm rising from the clouds
-    const palm = new THREE.Mesh(new THREE.BoxGeometry(1.75, 2.2, 1.65), stoneMat);
-    palm.position.y = 0.8;
+    // Giant Forearm & Sculpted Palm rising from the clouds right under the bridge edge
+    const palm = new THREE.Mesh(new THREE.BoxGeometry(1.9, 2.3, 1.8), stoneMat);
+    palm.position.y = 0.65;
     handGroup.add(palm);
 
-    // 5 Giant Sculpted Stone Fingers curling up beside the golden bridge
+    // 5 Giant Sculpted Stone Fingers curling up right beside the golden bridge railing
     for (let f = 0; f < 5; f++) {
-      const zOff = (f - 2) * 0.34;
-      const fingerH = f === 2 ? 2.45 : f === 1 || f === 3 ? 2.2 : 1.75;
-      const finger = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.24, fingerH, 10), stoneMat);
-      finger.position.set(-side * 0.55, 2.1 + fingerH * 0.32, zOff);
-      finger.rotation.z = side * 0.22;
+      const zOff = (f - 2) * 0.36;
+      const fingerH = f === 2 ? 2.65 : f === 1 || f === 3 ? 2.35 : 1.85;
+      const finger = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.26, fingerH, 10), stoneMat);
+      finger.position.set(-side * 0.45, 1.95 + fingerH * 0.34, zOff);
+      finger.rotation.z = side * 0.25;
       handGroup.add(finger);
 
-      const mossCap = new THREE.Mesh(new THREE.SphereGeometry(0.2, 8, 6), mossMat);
-      mossCap.position.set(-side * 0.45, 2.1 + fingerH * 0.68, zOff);
+      const mossCap = new THREE.Mesh(new THREE.SphereGeometry(0.22, 8, 6), mossMat);
+      mossCap.position.set(-side * 0.38, 1.95 + fingerH * 0.7, zOff);
       handGroup.add(mossCap);
     }
     g.add(handGroup);
@@ -998,11 +1063,11 @@ function buildRoadsideScene(biomeId, side, variant, animList, provBaseIdx = 0) {
     spire.position.set(side * 3.7, h + 1.1, 0);
     g.add(spire);
   } else if (biomeId === 'vn_mientay') {
-    // Miền Tây: Cai Rang Floating Market Fruit Boat (Ghe Chợ Nổi Cây Bẹo Trái Cây) + Water Coconut Palms
+    // Miền Tây: Cai Rang Floating Market Fruit Boat (Ghe Chợ Nổi Cây Bẹo Trái Cây) right beside the wooden bridge
     const boat = new THREE.Group();
-    boat.position.set(side * 2.25, 0.22, 0);
+    boat.position.set(side * 0.95, 0.18, 0);
     const hull = new THREE.Mesh(
-      new THREE.BoxGeometry(1.05, 0.42, 2.65),
+      new THREE.BoxGeometry(1.1, 0.44, 2.75),
       new THREE.MeshStandardMaterial({ color: 0x78350f, roughness: 0.75 })
     );
     boat.add(hull);
@@ -1010,23 +1075,23 @@ function buildRoadsideScene(biomeId, side, variant, animList, provBaseIdx = 0) {
     const fruitCols = [0x16a34a, 0xfacc15, 0xef4444, 0xf97316];
     for (let f = 0; f < 4; f++) {
       const mound = new THREE.Mesh(
-        new THREE.SphereGeometry(0.28, 8, 8),
+        new THREE.SphereGeometry(0.3, 8, 8),
         new THREE.MeshStandardMaterial({ color: fruitCols[(variant + f) % fruitCols.length], roughness: 0.6 })
       );
-      mound.position.set((f % 2 - 0.5) * 0.35, 0.32, (Math.floor(f / 2) - 0.5) * 0.75);
+      mound.position.set((f % 2 - 0.5) * 0.36, 0.34, (Math.floor(f / 2) - 0.5) * 0.78);
       boat.add(mound);
     }
     // Iconic "Cây Bẹo" bamboo pole advertising fruits at the bow
     const cayBeo = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.025, 0.035, 2.3, 6),
+      new THREE.CylinderGeometry(0.028, 0.038, 2.4, 6),
       new THREE.MeshStandardMaterial({ color: 0xca8a04 })
     );
-    cayBeo.position.set(0, 1.15, 1.0);
+    cayBeo.position.set(0, 1.2, 1.0);
     cayBeo.rotation.x = 0.2;
     boat.add(cayBeo);
     g.add(boat);
     animList.push(t => {
-      boat.position.y = 0.22 + Math.sin(t * 1.8 + phaseOffset) * 0.11;
+      boat.position.y = 0.18 + Math.sin(t * 1.8 + phaseOffset) * 0.11;
       boat.rotation.z = Math.sin(t * 1.4 + phaseOffset) * 0.06;
     });
   }
@@ -1038,23 +1103,23 @@ function buildHighwayGateway(biomeId) {
   const pillarMat = new THREE.MeshStandardMaterial({ color: 0x8c2318, roughness: 0.65 });
   const roofMat = new THREE.MeshStandardMaterial({ color: 0xd99b38, metalness: 0.35, roughness: 0.45 });
 
-  for (const x of [-5.2, 5.2]) {
-    const p = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.4, 7.6, 12), pillarMat);
-    p.position.set(x, 3.8, 0);
+  for (const x of [-6.2, 6.2]) {
+    const p = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.35, 8.2, 12), pillarMat);
+    p.position.set(x, 4.1, 0);
     g.add(p);
   }
-  const beam1 = new THREE.Mesh(new THREE.BoxGeometry(12.4, 0.65, 1.1), roofMat);
-  beam1.position.set(0, 7.4, 0);
+  const beam1 = new THREE.Mesh(new THREE.BoxGeometry(14.2, 0.65, 1.0), roofMat);
+  beam1.position.set(0, 8.0, 0);
   g.add(beam1);
-  const beam2 = new THREE.Mesh(new THREE.BoxGeometry(13.6, 0.55, 1.4), pillarMat);
-  beam2.position.set(0, 8.2, 0);
+  const beam2 = new THREE.Mesh(new THREE.BoxGeometry(15.4, 0.55, 1.3), pillarMat);
+  beam2.position.set(0, 8.8, 0);
   g.add(beam2);
 
   const lanternMat = new THREE.MeshStandardMaterial({ color: 0xff2a1a, emissive: 0x991b1b, emissiveIntensity: 0.85 });
-  for (const x of [-3.6, -1.3, 1.3, 3.6]) {
+  for (const x of [-4.2, -1.5, 1.5, 4.2]) {
     const l = new THREE.Mesh(new THREE.SphereGeometry(0.26, 10, 10), lanternMat);
     l.scale.set(1, 1.25, 1);
-    l.position.set(x, 6.75, 0);
+    l.position.set(x, 7.35, 0);
     g.add(l);
   }
   return g;
@@ -1389,9 +1454,9 @@ export function buildRaceWorld(scene) {
       const row = new THREE.Group();
       row.position.z = 16 - i * 6.2;
       const leftProp = buildRoadsideScene(biomeId, -1, i, animCallbacks, provStartIdx);
-      leftProp.position.x = -5.1;
+      leftProp.position.x = -4.55;
       const rightProp = buildRoadsideScene(biomeId, 1, i + 1, animCallbacks, provStartIdx);
-      rightProp.position.x = 5.1;
+      rightProp.position.x = 4.55;
       row.add(leftProp, rightProp);
       propsGroup.add(row);
       propRows.push(row);
@@ -1399,7 +1464,7 @@ export function buildRaceWorld(scene) {
 
     for (let gIdx = 0; gIdx < 2; gIdx++) {
       const gate = buildHighwayGateway(biomeId);
-      gate.position.z = -6 - gIdx * 36;
+      gate.position.z = -14 - gIdx * 36;
       propsGroup.add(gate);
       gateRows.push(gate);
     }

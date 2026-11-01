@@ -153,7 +153,7 @@ export async function startRaceAdmin({ port = 8790, host = '127.0.0.1', password
       } else {
         // Test join + greeting: remove existing first if they want to test fresh welcome greeting
         if (action === 'join' && stage.has(uid)) broadcast(stage.remove(uid));
-        const text = typeof body.text === 'string' && body.text.trim() ? body.text.trim() : 'Tham gia cuộc đua khám phá thế giới!';
+        const text = typeof body.text === 'string' && body.text.trim() ? body.text.trim() : 'Cùng đi bộ xuyên Việt khám phá 63 tỉnh thành!';
         ingest({ kind: 'chat', src, uid, name: rawName, text, ts });
       }
       return { ok: true };

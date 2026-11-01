@@ -95,6 +95,7 @@ export function createRaceHud() {
     showBanner(text, ms = 4500) {
       const el = $('#banner');
       if (!el) return;
+      $('#welcome-card')?.classList.remove('on');
       el.textContent = text;
       el.classList.add('on');
       clearTimeout(bannerTimer);

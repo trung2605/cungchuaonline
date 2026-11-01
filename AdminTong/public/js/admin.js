@@ -308,7 +308,7 @@ function initApexCharts() {
   charts.duaTiers = new ApexCharts($('chartDuaTiers'), {
     chart: { type: 'donut', height: 260, fontFamily: baseFont },
     colors: ['#bfdbfe', '#93c5fd', '#60a5fa', '#3b82f6', '#1d4ed8'],
-    labels: ['Chạy bộ (x1.0)', 'Đôi Cánh (x1.8)', 'Ván Trượt Vàng (x2.8)', 'Tên Lửa (x4.2)', 'Phi Thuyền (x6.5)'],
+    labels: ['Đi bộ (x1.0)', 'Cánh Chim Lạc (x1.8)', 'Xe Cub Phượt (x2.8)', 'Chiến Mã Thánh Gióng (x4.2)', 'Rồng Vàng (x6.5)'],
     series: [0, 0, 0, 0, 0],
     plotOptions: { pie: { donut: { size: '64%' } } },
     dataLabels: { enabled: false },
@@ -543,7 +543,7 @@ function renderAll(state) {
   }
 
   $('chuaStatusBadge').className = `badge ${chuaOnline ? 'emerald' : 'rose'}`;
-  $('chuaStatusBadge').textContent = chuaOnline ? 'Đang Hoạt Động (:8787)' : 'Offline';
+  $('chuaStatusBadge').textContent = chuaOnline ? 'Chùa 3D (:8787) · Online' : 'Chùa 3D (:8787) · Offline';
   if (chua.scene) {
     if (document.activeElement !== $('chuaThemeSelect')) $('chuaThemeSelect').value = chua.scene.theme || 'night';
     $('chuaSoundCheck').checked = chua.scene.sound !== false;
@@ -676,7 +676,7 @@ function renderAll(state) {
   }
 
   $('duaStatusBadge').className = `badge ${duaOnline ? 'emerald' : 'rose'}`;
-  $('duaStatusBadge').textContent = duaOnline ? `Đang Hoạt Động (:8789) · ${dua.stats?.currentBiome?.name || ''}` : 'Offline';
+  $('duaStatusBadge').textContent = duaOnline ? 'Xuyên Việt (:8789) · Online' : 'Xuyên Việt (:8789) · Offline';
   if (dua.scene) {
     $('duaSoundCheck').checked = dua.scene.sound !== false;
     if ($('duaReadCommentsCheck')) $('duaReadCommentsCheck').checked = Boolean(dua.scene.readComments);

@@ -2,14 +2,14 @@ const HO = ['Nguyễn', 'Trần', 'Lê', 'Phạm', 'Hoàng', 'Huỳnh', 'Phan', 
 const TEN = ['An', 'Bình', 'Chi', 'Dũng', 'Giang', 'Hà', 'Hải', 'Hạnh', 'Hiếu', 'Hoa', 'Hùng', 'Hương', 'Khánh', 'Lan', 'Linh', 'Long', 'Mai', 'Minh', 'Nam', 'Ngọc', 'Phúc', 'Quân', 'Tâm', 'Thảo', 'Trang', 'Tuấn', 'Vân', 'Yến'];
 
 const CHEERS = [
-  'Cho mình tham gia cuộc đua với!',
-  'Tăng tốc vượt lên dẫn đầu nào anh em ơi 🔥',
-  'Đẹp quá, đang chạy qua kỳ quan thế giới!',
-  'Quyết tâm lấy Top 1 chặng này 🏁',
-  'Đua vui quá cả nhà ơi, thả tim mở Turbo nào!',
-  'Chạy xuyên lục địa cùng mọi người vui ghê 🚀',
-  'Việt Nam vô địch, bứt tốc thôi!',
-  'Cố lên anh em ơi sắp sang điểm đến mới rồi!',
+  'Cùng đi bộ xuyên Việt khám phá 63 tỉnh thành!',
+  'Việt Nam quê hương ta tươi đẹp quá cả nhà ơi 🇻🇳',
+  'Đi bộ vãn cảnh từ Hà Giang tới Mũi Cà Mau!',
+  'Chúc đại chúng bình an trên hành trình xuyên Việt 🙏',
+  'Cảnh đẹp non sông gấm vóc Việt Nam tuyệt vời quá!',
+  'Cố lên cả đoàn ơi, sắp qua cột mốc tỉnh mới rồi!',
+  'Việt Nam muôn năm, cùng bước đều khám phá non sông!',
+  'Tặng quà cưỡi Xe Cub Phượt xuyên Việt vui ghê 🛵',
 ];
 
 const GIFTS = [

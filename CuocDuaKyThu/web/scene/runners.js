@@ -115,23 +115,6 @@ const jetMat = std(0xb91c1c, { metalness: 0.55, roughness: 0.35, emissive: 0x450
 const flameMat = new THREE.MeshBasicMaterial({ color: 0xfacc15 });
 const crownMat = std(0xfacc15, { metalness: 0.78, roughness: 0.25, emissive: 0x422006 });
 
-// Optional VRM template cache
-let vrmTemplates = [null, null, null, null];
-function loadVrmTemplates() {
-  const loader = new GLTFLoader();
-  loader.register(p => new VRMLoaderPlugin(p));
-  return Promise.all([0, 1, 2, 3].map(idx =>
-    loader.loadAsync(`assets/models/layman_${idx}.vrm`).then(g => {
-      const vrm = g.userData.vrm;
-      VRMUtils.rotateVRM0(vrm);
-      VRMUtils.removeUnnecessaryVertices(g.scene);
-      VRMUtils.combineSkeletons(g.scene);
-      return vrm;
-    }).catch(() => null)
-  ));
-}
-loadVrmTemplates().then(res => { vrmTemplates = res; });
-
 // Builds a detailed 3D Trekking Backpack with a Waving Miniature Vietnamese Flag (`Balo Xuyên Việt & Cờ Đỏ Sao Vàng`)
 function createTrekkingBackpack() {
   const pack = new THREE.Group();
@@ -523,15 +506,17 @@ export function createRunners(scene) {
 
   function computeFormationTarget(runner, rank = null) {
     const h = hashRunnerId(runner.id);
-    const laneX = (runner.lane || 0) * 0.86;
+    const laneX = (runner.lane || 0) * 0.88;
     const xJitter = (((h % 9) - 4) / 4) * 0.34;
     const laneOffset = Math.max(-2.95, Math.min(2.95, laneX + xJitter));
 
-    const rowDepth = ((h >> 4) % 16) * 0.45;
-    const rankBonus = rank ? Math.max(0, (10 - rank) * 0.36) : 0;
+    // Use golden-ratio distribution along the depth of the road (-9.2 .. +2.6) so walkers and labels spread cleanly
+    const goldenFrac = ((h * 0.61803398875) % 1 + 1) % 1;
+    const rowDepth = goldenFrac * 8.2;
+    const rankBonus = rank ? Math.max(0, (10 - rank) * 0.32) : 0;
     const activeTier = Math.max(runner.tier || 0, runner.boostTier || 0);
-    const tierBonus = Math.min(2.6, activeTier * 0.65);
-    const targetZ = Math.max(-9.8, Math.min(2.2, 2.2 - rowDepth - rankBonus - tierBonus));
+    const tierBonus = Math.min(2.2, activeTier * 0.55);
+    const targetZ = Math.max(-9.6, Math.min(2.6, 2.6 - rowDepth - rankBonus * 0.4 - tierBonus * 0.4));
 
     return { laneOffset, targetZ };
   }
@@ -574,7 +559,8 @@ export function createRunners(scene) {
 
         const label = new CSS2DObject(el);
         label.center.set(0.5, 1);
-        label.position.set(0, 1.42, 0);
+        const h = hashRunnerId(runner.id);
+        label.position.set(0, 1.38 + (h % 4) * 0.14, 0);
         holder.add(label);
 
         const { laneOffset, targetZ } = computeFormationTarget(runner, null);
