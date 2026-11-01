@@ -1,8 +1,12 @@
 import http from 'node:http';
 import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import crypto from 'node:crypto';
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PAGE = new URL('../index.html', import.meta.url);
+const PUBLIC_DIR = path.resolve(__dirname, '../public');
 const BODY_MAX = 128 * 1024;
 
 class HttpError extends Error {
@@ -171,15 +175,18 @@ export async function startMasterAdmin({
       return { ok: true, mongo: status };
     },
 
-    // Trigger remote action on one or all games (demo, test-event, banner, biome, scene)
+    // Trigger remote action on one or all games (demo, test-event, banner, biome, scene, lists, block, kick)
     'POST /api/game-action': async req => {
-      const { game = 'all', endpoint = '/api/test-event', payload = {} } = await readJson(req);
+      const { game = 'all', method = 'POST', endpoint = '/api/test-event', payload } = await readJson(req);
       const targets = game === 'all' ? Object.keys(gameAdmins) : [game];
+      const httpMethod = ['POST', 'PUT', 'DELETE', 'GET'].includes(String(method).toUpperCase())
+        ? String(method).toUpperCase()
+        : 'POST';
       const results = {};
       await Promise.all(
         targets.map(async k => {
           try {
-            results[k] = await callSubAdmin(k, 'POST', endpoint, payload);
+            results[k] = await callSubAdmin(k, httpMethod, endpoint, httpMethod === 'DELETE' ? undefined : (payload ?? {}));
           } catch (err) {
             results[k] = { ok: false, error: err.message };
           }
@@ -188,10 +195,56 @@ export async function startMasterAdmin({
       db.addWorkLog({
         category: 'control',
         game,
-        title: `Điều khiển trò chơi (${game}) -> ${endpoint}`,
-        detail: JSON.stringify(payload),
+        title: `Điều khiển trò chơi (${game}) -> ${httpMethod} ${endpoint}`,
+        detail: payload ? JSON.stringify(payload).slice(0, 180) : '',
       });
       return { ok: true, results };
+    },
+
+    // Trigger live FX & Emotions across one or all games
+    'POST /api/fx-emotion': async req => {
+      const body = await readJson(req);
+      const game = body.game || 'all';
+      const targets = game === 'all' ? Object.keys(gameAdmins) : [game];
+      const results = {};
+      await Promise.all(
+        targets.map(async k => {
+          try {
+            results[k] = await callSubAdmin(k, 'POST', '/api/fx-emotion', body);
+          } catch (err) {
+            results[k] = { ok: false, error: err.message };
+          }
+        })
+      );
+      db.addWorkLog({
+        category: 'fx_emotion',
+        game,
+        title: `Kích hoạt Hiệu ứng & Emotion Livestream (${body.preset || 'custom'})`,
+        detail: `Mục tiêu: ${game} · Bong bóng: ${body.bubble || '(mặc định)'}`,
+      });
+      return { ok: true, results };
+    },
+
+    // Clean & reset all data to 0 across MongoDB, local files, and all games
+    'POST /api/system/reset-all': async () => {
+      const results = {};
+      await Promise.all(
+        Object.keys(gameAdmins).map(async k => {
+          try {
+            results[k] = await callSubAdmin(k, 'POST', '/api/reset-all', {});
+          } catch (err) {
+            results[k] = { ok: false, error: err.message };
+          }
+        })
+      );
+      await db.resetAllData?.();
+      db.addWorkLog({
+        category: 'database',
+        game: 'all',
+        title: 'Làm sạch toàn bộ dữ liệu hệ thống & MongoDB về 0 (Clean Database)',
+        detail: 'Sẵn sàng ghi nhận dữ liệu mới từ phiên phát sóng trực tiếp (LIVE).',
+      });
+      return { ok: true, results, db: db.summary() };
     },
 
     // Upsert an item in the Global Gift Catalog
@@ -229,7 +282,7 @@ export async function startMasterAdmin({
     },
 
     'POST /api/gifts/clear': async () => {
-      db.clearGiftHistory();
+      await db.resetAllData?.();
       db.addWorkLog({
         category: 'admin',
         game: 'all',
@@ -240,14 +293,36 @@ export async function startMasterAdmin({
     },
   };
 
+  const MIME = {
+    '.css': 'text/css; charset=utf-8',
+    '.js': 'text/javascript; charset=utf-8',
+    '.json': 'application/json; charset=utf-8',
+    '.svg': 'image/svg+xml',
+  };
+
   const server = http.createServer(async (req, res) => {
     if (!okHosts.has(req.headers.host)) return send(res, 403, { error: 'host không hợp lệ' });
     if (!authorized(req.headers.authorization, password)) {
       return res.writeHead(401, { 'www-authenticate': 'Basic realm="live-tiktok-master-admin", charset="UTF-8"' }).end();
     }
-    const path = req.url.split('?')[0];
-    const m = /^\/api\/gift-catalog\/(\d+)$/.exec(path);
-    const route = routes[`${req.method} ${m ? '/api/gift-catalog/:id' : path}`];
+    const urlPath = req.url.split('?')[0];
+
+    if (req.method === 'GET' && urlPath.startsWith('/assets/')) {
+      const rel = urlPath.slice('/assets/'.length);
+      const safePath = path.resolve(PUBLIC_DIR, rel);
+      if (!safePath.startsWith(PUBLIC_DIR)) return send(res, 404, { error: 'not found' });
+      return fs.readFile(safePath, (err, buf) => {
+        if (err) return send(res, 404, { error: 'not found' });
+        const ext = path.extname(safePath).toLowerCase();
+        res.writeHead(200, {
+          'content-type': MIME[ext] || 'application/octet-stream',
+          'cache-control': 'no-store',
+        }).end(buf);
+      });
+    }
+
+    const m = /^\/api\/gift-catalog\/(\d+)$/.exec(urlPath);
+    const route = routes[`${req.method} ${m ? '/api/gift-catalog/:id' : urlPath}`];
     if (!route) return send(res, 404, { error: 'không có route' });
     try {
       const out = await route(req, res, m?.[1]);

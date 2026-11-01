@@ -220,6 +220,98 @@ export async function startAdmin({ port = 8788, host = '127.0.0.1', password, ct
       return { ok: true };
     },
 
+    'POST /api/reset-all': async () => {
+      demo.stop?.();
+      const leaveMsgs = stage.clearAll?.() ?? [];
+      const counterMsgs = counters?.reset?.() ?? [];
+      stats.resetAll?.();
+      await ctx.saveHistory?.();
+      await ctx.saveSceneConfig?.();
+      broadcast([...leaveMsgs, ...counterMsgs, pipeline.snapshot()]);
+      return { ok: true };
+    },
+
+    'POST /api/fx-emotion': async req => {
+      const body = await readJson(req);
+      const preset = body.preset || 'custom';
+      const power = Math.max(1, Math.min(10, Number(body.power) || 8));
+      const msgs = [];
+
+      const presets = {
+        bell_halo: {
+          fx: [{ t: 'fx', kind: 'bell', power: 10 }, { t: 'fx', kind: 'halo', power: 10 }],
+          bubble: 'Nam Mô A Di Đà Phật 🙏',
+          banner: '🔔 Đại Hồng Chung Ngân Vang · Hào Quang Chiếu Rọi Toàn Chánh Điện 🙏',
+          bows: 3,
+        },
+        lotus_rain: {
+          fx: [{ t: 'fx', kind: 'lotus', power: 10 }],
+          bubble: 'Hoan Hỷ Công Đức · Tâm Thanh Tịnh 🪷',
+          banner: '🌸 Mưa Hoa Sen Từ Bi Rơi Khắp Chánh Điện · Phước Báu Vô Lượng 🙏',
+          bows: 2,
+        },
+        sacred_lamps: {
+          fx: [{ t: 'fx', kind: 'lamp', power: 10 }],
+          bubble: 'Cầu Bình An · Trí Tuệ Sáng Suốt 🏮',
+          banner: '🏮 Thắp Sáng Đại Hoa Đăng Cầu Quốc Thái Dân An · Gia Đạo Hạnh Phúc ✨',
+          bows: 2,
+        },
+        incense_cloud: {
+          fx: [{ t: 'fx', kind: 'smoke', power: 10 }],
+          bubble: 'Thành Tâm Dâng Hương Cầu Nguyện 🙏',
+          banner: '🕯️ Khói Trầm Hương Quyện Tỏa · Lời Cầu Nguyện Thấu Chín Tầng Mây',
+          bows: 2,
+        },
+        emotion_namo: {
+          fx: [{ t: 'fx', kind: 'bell', power: 6 }],
+          bubble: 'Nam Mô A Di Đà Phật 🙏',
+          banner: '🙏 Toàn Thể Phật Tử Đồng Thanh Niệm Nam Mô A Di Đà Phật!',
+          bows: 3,
+        },
+        emotion_peace: {
+          fx: [{ t: 'fx', kind: 'lotus', power: 7 }],
+          bubble: 'Cầu Gia Đạo Bình An · Sức Khỏe Dồi Dào 🪷',
+          banner: '🪷 Đại Chúng Đồng Tâm Cầu Nguyện Bình An & Sức Khỏe!',
+          bows: 2,
+        },
+        emotion_wealth: {
+          fx: [{ t: 'fx', kind: 'lamp', power: 8 }],
+          bubble: 'Cầu Tài Lộc Hanh Thông · Vạn Sự Như Ý ✨',
+          banner: '✨ Đại Chúng Đồng Tâm Cầu Tài Lộc Hanh Thông · Công Thành Danh Toại!',
+          bows: 2,
+        },
+        emotion_joy: {
+          fx: [{ t: 'fx', kind: 'flower', power: 8 }],
+          bubble: 'Tâm An Vạn Sự An · Hoan Hỷ Công Đức 🌸',
+          banner: '🌸 Hoan Hỷ Công Đức · Tâm An Vạn Sự An!',
+          bows: 1,
+        },
+      };
+
+      const cfg = presets[preset] || {
+        fx: body.fxKind ? [{ t: 'fx', kind: body.fxKind, power }] : [{ t: 'fx', kind: 'lotus', power }],
+        bubble: body.bubble ? cleanBubble(String(body.bubble), lists, 40) : '',
+        banner: body.banner ? cleanBubble(String(body.banner), lists, 60) : '',
+        bows: Number(body.bows ?? 2),
+      };
+
+      // Ensure at least 2 ceremonial devotees are present if emotion requires bowing/bubbles on an empty stage
+      if (cfg.bubble && stage.actors.size === 0) {
+        msgs.push(...stage.enter('ceremony_1', 'Phật Tử Thiện Tâm', 1, 2, { intent: 'Cầu Bình An' }));
+        msgs.push(...stage.enter('ceremony_2', 'Phật Tử An Nhiên', 1, 2, { intent: 'Cầu Tài Lộc' }));
+      }
+
+      if (cfg.fx?.length) msgs.push(...cfg.fx);
+      if (cfg.bubble || cfg.bows > 0) {
+        msgs.push(...(stage.triggerEmotionAll?.(cfg.bubble, { bows: cfg.bows, ms: 6000 }) ?? []));
+      }
+      if (cfg.banner) {
+        msgs.push({ t: 'banner', text: cfg.banner, ms: 5000 });
+      }
+      broadcast(msgs);
+      return { ok: true, count: msgs.length };
+    },
+
     'POST /api/kick': async req => {
       const { uid } = await readJson(req);
       if (typeof uid !== 'string' || !uid) throw bad('uid không hợp lệ');

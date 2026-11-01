@@ -95,6 +95,32 @@ export class Stage {
     return this.actors.has(uid) ? [this.#remove(uid)] : [];
   }
 
+  clearAll() {
+    const out = [];
+    for (const uid of [...this.actors.keys()]) {
+      out.push(this.#remove(uid));
+    }
+    this.occupied.fill(null);
+    this.diamondsByUid.clear();
+    return out;
+  }
+
+  triggerEmotionAll(text, { bows = 2, ms = 6000 } = {}) {
+    const out = [];
+    const t = this.now();
+    for (const a of this.actors.values()) {
+      a.expiresAt = Math.max(a.expiresAt, t + 60_000);
+      if (bows > 0) {
+        a.bows = Math.min(MAX_BOWS, a.bows + bows);
+        out.push({ t: 'bow', id: a.id, times: bows });
+      }
+      if (text) {
+        out.push({ t: 'say', id: a.id, text, ms });
+      }
+    }
+    return out;
+  }
+
   has(uid) {
     return this.actors.has(uid);
   }

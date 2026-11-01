@@ -160,5 +160,14 @@ export function createRaceRules({ stage, lists, now = Date.now, turboEveryLikes 
     clearLogs() {
       recentEvents.length = 0;
     },
+    resetAll() {
+      totalLikes = 0;
+      totalGiftsDiamonds = 0;
+      totalChats = 0;
+      viewers = 0;
+      viewersPeak = 0;
+      uniqueRacers.clear();
+      recentEvents.length = 0;
+    },
   };
 }

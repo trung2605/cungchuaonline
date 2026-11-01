@@ -384,6 +384,34 @@ export function createDatabase({
     }
   }
 
+  async function resetAllData() {
+    state.gifts.length = 0;
+    state.events.length = 0;
+    saveLocal();
+    if (storeFile) {
+      try {
+        const logsDir = path.dirname(storeFile);
+        const histFile = path.join(logsDir, 'history.json');
+        if (fs.existsSync(histFile)) fs.unlinkSync(histFile);
+        for (const f of fs.readdirSync(logsDir)) {
+          if (/^stats-\d{8}-\d{4}\.json$/.test(f) || /^events-\d{4}-\d{2}-\d{2}\.ndjson$/.test(f)) {
+            try { fs.unlinkSync(path.join(logsDir, f)); } catch {}
+          }
+        }
+      } catch {}
+    }
+    if (db) {
+      try {
+        await Promise.all([
+          db.collection('gifts').deleteMany({}),
+          db.collection('events').deleteMany({}),
+        ]);
+        mongoStatus.lastSyncAt = new Date(now()).toISOString();
+      } catch {}
+    }
+    return true;
+  }
+
   return {
     connectMongo,
     syncToMongo,
@@ -393,6 +421,7 @@ export function createDatabase({
     upsertGiftCatalogItem,
     deleteGiftCatalogItem,
     clearGiftHistory,
+    resetAllData,
     summary,
     saveLocal,
     close: async () => {

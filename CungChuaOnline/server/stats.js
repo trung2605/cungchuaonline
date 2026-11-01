@@ -136,6 +136,24 @@ export function createStats({ lists, now = Date.now, recentMax = 200 }) {
       demoDiamonds = 0;
       demoEvents = 0;
     },
+    resetAll() {
+      bowers.clear();
+      bows = 0;
+      filtered = 0;
+      diamonds = 0;
+      viewersPeak = 0;
+      viewersCurrent = 0;
+      prayers.clear();
+      donors.clear();
+      recent.clear();
+      giftLog.length = 0;
+      eventLog.length = 0;
+      demoBowers.clear();
+      demoBows = 0;
+      demoGifts = 0;
+      demoDiamonds = 0;
+      demoEvents = 0;
+    },
     exportHistory() {
       return {
         savedAt: now(),

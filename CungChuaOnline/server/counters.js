@@ -72,5 +72,17 @@ export function createCounters({
     tick: () => flushBoard(now()),
     state: () => ({ namo, viewers }),
     board,
+    reset() {
+      namo = 0;
+      viewers = 0;
+      donors.clear();
+      lastTop = '[]';
+      boardDirty = false;
+      return [
+        { t: 'counter', key: 'namo', value: 0 },
+        { t: 'counter', key: 'viewers', value: 0 },
+        { t: 'board', top: [] },
+      ];
+    },
   };
 }

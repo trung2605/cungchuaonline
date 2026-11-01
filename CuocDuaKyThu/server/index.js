@@ -164,8 +164,7 @@ const demo = {
   config: () => ({ on: demoStop !== null, ...demoCfg }),
 };
 
-// Start a lively initial pack of 6 explorers + gentle Demo Mode so the endless race is immediately active on launch
-demo.start(2, { giftRatio: 0.14 });
+// Demo Mode stays off by default so live stream starts clean at 0; Admin can toggle Demo ON anytime.
 
 let admin = null;
 const password = process.env.ADMIN_PASSWORD?.trim();

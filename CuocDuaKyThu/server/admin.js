@@ -146,6 +146,86 @@ export async function startRaceAdmin({ port = 8790, host = '127.0.0.1', password
       broadcast(stage.remove(uid));
       return { ok: true };
     },
+
+    'POST /api/reset-all': async () => {
+      demo.stop?.();
+      const leaveMsgs = stage.clearAll?.() ?? [];
+      rules.resetAll?.();
+      broadcast([
+        ...leaveMsgs,
+        { t: 'counter', key: 'likes', value: 0 },
+        { t: 'counter', key: 'viewers', value: 0 },
+        { t: 'worldTick', worldDistanceM: 0, biome: stage.currentBiome(), board: [], runners: [] },
+      ]);
+      return { ok: true };
+    },
+
+    'POST /api/fx-emotion': async req => {
+      const body = await readJson(req);
+      const preset = body.preset || 'custom';
+      const msgs = [];
+
+      const presets = {
+        rainbow_turbo: {
+          turbo: true,
+          bubble: 'Bão Cầu Vồng x2.2! Tăng tốc tối đa! ⚡🌈',
+          banner: '⚡🌈 SIÊU BÃO CẦU VỒNG KÍCH HOẠT! Toàn bộ tay đua tăng tốc x2.2!',
+          fxKind: 'turbo',
+          speedMult: 2.4,
+        },
+        mass_cheer: {
+          turbo: false,
+          bubble: 'Quyết tâm bứt phá về đích! 🏆🔥',
+          banner: '🔥 ĐOÀN ĐUA ĐỒNG LOẠT BỨT TỐC! Ai sẽ vươn lên dẫn đầu?',
+          fxKind: 'spark',
+          speedMult: 2.0,
+        },
+        rocket_storm: {
+          turbo: false,
+          bubble: 'Kích hoạt Tên Lửa Tia Chớp! 🚀⚡',
+          banner: '🚀 CƠN MƯA TÊN LỬA TIA CHỚP! Cả đoàn đua phóng vọt qua kỳ quan!',
+          fxKind: 'jet',
+          speedMult: 3.2,
+        },
+        cosmic_warp: {
+          turbo: true,
+          bubble: 'Du hành Ngân Hà Siêu Quang! 🌌✨',
+          banner: '🌌 BƯỚC NHẢY KHÔNG GIAN NGÂN HÀ! Tốc độ ánh sáng kích hoạt!',
+          fxKind: 'warp',
+          speedMult: 4.5,
+        },
+      };
+
+      const cfg = presets[preset] || {
+        turbo: Boolean(body.turbo),
+        bubble: body.bubble ? cleanBubble(String(body.bubble), lists, 48) : '',
+        banner: body.banner ? cleanBubble(String(body.banner), lists, 75) : '',
+        fxKind: body.fxKind || 'spark',
+        speedMult: Number(body.speedMult) || 2.0,
+      };
+
+      if (cfg.bubble && stage.runners.size === 0) {
+        const r1 = stage.joinOrBoost('ceremony_racer_1', 'Tay Đua Tiên Phong', 1, { addDistanceM: 50 });
+        const r2 = stage.joinOrBoost('ceremony_racer_2', 'Khám Phá Thế Giới', 1, { addDistanceM: 40 });
+        msgs.push(...r1.msgs, ...r2.msgs);
+      }
+
+      if (cfg.turbo) {
+        msgs.push(...stage.triggerGlobalTurbo(10_000));
+      }
+      if (cfg.bubble || cfg.fxKind) {
+        msgs.push(...(stage.triggerEmotionAll?.(cfg.bubble, {
+          boostMs: 8000,
+          speedMult: cfg.speedMult,
+          fxKind: cfg.fxKind,
+        }) ?? []));
+      }
+      if (cfg.banner && !cfg.turbo) {
+        msgs.push({ t: 'banner', text: cfg.banner, ms: 5000 });
+      }
+      broadcast(msgs);
+      return { ok: true, count: msgs.length };
+    },
   };
 
   const server = http.createServer(async (req, res) => {

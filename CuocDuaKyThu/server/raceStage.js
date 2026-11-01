@@ -277,6 +277,40 @@ export class RaceStage {
     return [{ t: 'leave', id: uid }];
   }
 
+  clearAll() {
+    const out = [];
+    for (const uid of [...this.runners.keys()]) {
+      this.runners.delete(uid);
+      out.push({ t: 'leave', id: uid });
+    }
+    this.statsByUid.clear();
+    this.worldDistanceM = 0;
+    this.biomeIdx = 0;
+    this.forcedBiome = null;
+    this.globalTurboUntil = 0;
+    return out;
+  }
+
+  triggerEmotionAll(text, { boostMs = 6000, speedMult = 2.0, fxKind = 'spark' } = {}) {
+    const t = this.now();
+    const out = [];
+    for (const r of this.runners.values()) {
+      r.expiresAt = Math.max(r.expiresAt, t + 90_000);
+      if (boostMs > 0) {
+        r.boostUntil = Math.max(r.boostUntil, t + boostMs);
+        r.speedMult = Math.max(r.speedMult, speedMult);
+      }
+      if (text) {
+        r.cheer = text;
+        out.push({ t: 'say', id: r.id, text, ms: 6000 });
+      }
+      if (fxKind) {
+        out.push({ t: 'fx', kind: fxKind, at: r.id, power: 8 });
+      }
+    }
+    return out;
+  }
+
   has(uid) {
     return this.runners.has(uid);
   }
