@@ -50,9 +50,9 @@
   .biome-bar { height: 7px; background: rgba(255, 255, 255, .18); border-radius: 99px; overflow: hidden; }
   #biome-bar-fill { height: 100%; width: 25%; background: linear-gradient(90deg, #b88b4a, #e8c682); transition: width .4s ease; }
 
-  /* Welcome Greeting Card & Toast (Clean lower-center zone, never stacking) */
+  /* Welcome Greeting Card & Toast (Clean bottom-center zone, never covering middle trail) */
   #welcome-card {
-    left: 50%; top: 760px; translate: -50% 0; max-width: 520px; padding: 11px 22px;
+    left: 50%; bottom: 225px; top: auto; translate: -50% 0; max-width: 520px; padding: 11px 22px;
     background: linear-gradient(180deg, rgba(34, 29, 24, .95), rgba(20, 17, 14, .96));
     border: 1.5px solid var(--gold-line); border-radius: 999px;
     box-shadow: 0 8px 22px rgba(0, 0, 0, .65);
@@ -64,7 +64,7 @@
   #welcome-card.on { opacity: 1; transform: none; }
 
   #banner {
-    left: 50%; top: 825px; translate: -50% 0; max-width: 480px; padding: 11px 22px;
+    left: 50%; bottom: 135px; top: auto; translate: -50% 0; max-width: 480px; padding: 11px 22px;
     font-size: 22px; font-weight: 800; color: #f4e2bc; text-align: center;
     opacity: 0; transform: translateY(8px); transition: opacity 280ms ease, transform 260ms ease;
     pointer-events: none; border-color: var(--gold-line);
@@ -72,7 +72,7 @@
   #banner.on { opacity: 1; transform: none; }
 
   #voice-toast {
-    left: 50%; top: 825px; translate: -50% 0; width: 480px; max-width: 480px; padding: 12px 20px;
+    left: 50%; bottom: 135px; top: auto; translate: -50% 0; width: 490px; max-width: 490px; padding: 12px 20px;
     font-size: 21px; font-weight: 700; color: #f5e6c8; text-align: center;
     background: rgba(24, 21, 18, .95); border: 1.5px solid var(--gold-line); border-radius: 22px;
     box-shadow: 0 8px 24px rgba(0, 0, 0, .65);
