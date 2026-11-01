@@ -157,7 +157,11 @@ export function createRaceRules({ stage, lists, now = Date.now, turboEveryLikes 
           src,
         });
         const out = [...msgs];
-        if (bubble) out.push(...stage.say(e.uid, bubble, 6500));
+        if (bubble) {
+          for (const sm of stage.say(e.uid, bubble, 6500)) {
+            out.push({ ...sm, name, src });
+          }
+        }
         pushRecent({
           uid: e.uid,
           name,

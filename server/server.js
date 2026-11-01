@@ -54,6 +54,7 @@ export async function startServer({
     '/vendor/font/': 'node_modules/@fontsource/be-vietnam-pro/',
   },
   getSnapshot,
+  onClientMsg,
 }) {
   // Longest prefix first so mounts win over '/'.
   const roots = [...Object.entries(mounts), ['/', webRoot]]
@@ -105,7 +106,15 @@ export async function startServer({
 
   const wss = new WebSocketServer({ server });
   // Sent synchronously on connection, so it always precedes any broadcast.
-  wss.on('connection', ws => ws.send(JSON.stringify(getSnapshot())));
+  wss.on('connection', ws => {
+    ws.send(JSON.stringify(getSnapshot()));
+    ws.on('message', raw => {
+      try {
+        const msg = JSON.parse(String(raw));
+        onClientMsg?.(msg, ws);
+      } catch {}
+    });
+  });
 
   await new Promise((resolve, reject) => {
     server.once('error', reject);

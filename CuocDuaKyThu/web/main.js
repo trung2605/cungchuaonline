@@ -51,6 +51,24 @@ composer.addPass(new OutputPass());
 
 const soundBtn = document.getElementById('sound');
 if (soundBtn) soundBtn.style.display = 'none';
+const commentTtsBtn = document.getElementById('toggle-comment-tts');
+let liveWs = null;
+
+function syncCommentTtsBtn(on) {
+  audio.setReadComments(on);
+  if (!commentTtsBtn) return;
+  commentTtsBtn.classList.toggle('off', !on);
+  commentTtsBtn.textContent = on ? '🔊 Đọc bình luận: BẬT' : '🔇 Đọc bình luận: TẮT';
+}
+
+commentTtsBtn?.addEventListener('click', () => {
+  const next = !audio.readComments;
+  syncCommentTtsBtn(next);
+  if (liveWs && liveWs.readyState === 1) {
+    liveWs.send(JSON.stringify({ t: 'setReadComments', readComments: next }));
+  }
+});
+
 // Auto-unlock audio by default on load and on any interaction
 audio.unlock();
 const autoUnlock = () => {
@@ -70,6 +88,7 @@ function handleMsg(msg) {
       hud.updateBoard(msg.board || []);
       hud.setActiveCount(runners.count());
       if (msg.scene?.sound !== undefined) audio.setEnabled(msg.scene.sound);
+      if (msg.scene?.readComments !== undefined) syncCommentTtsBtn(Boolean(msg.scene.readComments));
       break;
     case 'spawn':
       runners.addOrUpdate(msg.runner);
@@ -88,6 +107,9 @@ function handleMsg(msg) {
       break;
     case 'say':
       runners.say(msg.id, msg.text, msg.ms);
+      if (audio.readComments && msg.text) {
+        audio.speakComment({ id: msg.id, name: msg.name, src: msg.src }, msg.text);
+      }
       break;
     case 'donor':
       hud.showDonor(msg);
@@ -112,12 +134,14 @@ function handleMsg(msg) {
       break;
     case 'scene':
       if (msg.scene?.sound !== undefined) audio.setEnabled(msg.scene.sound);
+      if (msg.scene?.readComments !== undefined) syncCommentTtsBtn(Boolean(msg.scene.readComments));
       break;
   }
 }
 
 function connect() {
   const ws = new WebSocket(`ws://${location.host}`);
+  liveWs = ws;
   ws.onmessage = e => handleMsg(JSON.parse(e.data));
   ws.onclose = () => setTimeout(connect, 2000);
 }

@@ -46,7 +46,16 @@ const pipeline = createPipeline({
   dedupe: createDedupe(),
   rules: [createBowRules({ stage, lists, stats, allowAllRealChat: true }), createEffects(), counters, stats],
 });
-const srv = await startServer({ getSnapshot: () => pipeline.snapshot() });
+const srv = await startServer({
+  getSnapshot: () => pipeline.snapshot(),
+  onClientMsg: msg => {
+    if (msg?.t === 'setReadComments' && typeof msg.readComments === 'boolean') {
+      const msgs = pipeline.setScene({ readComments: msg.readComments });
+      srv.broadcast(msgs);
+      try { saveSceneConfig(); } catch {}
+    }
+  },
+});
 console.log(`[${stamp()}] Render + WS: http://127.0.0.1:${srv.port}`);
 
 // Per-source state (BR-10.5); admin shows it.

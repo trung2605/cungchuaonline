@@ -67,6 +67,24 @@ const world = createWorld();
 
 const soundBtn = document.getElementById('sound');
 if (soundBtn) soundBtn.style.display = 'none';
+const commentTtsBtn = document.getElementById('toggle-comment-tts');
+let liveWs = null;
+
+function syncCommentTtsBtn(on) {
+  audio.setReadComments(on);
+  if (!commentTtsBtn) return;
+  commentTtsBtn.classList.toggle('off', !on);
+  commentTtsBtn.textContent = on ? '🔊 Đọc bình luận: BẬT' : '🔇 Đọc bình luận: TẮT';
+}
+
+commentTtsBtn?.addEventListener('click', () => {
+  const next = !audio.readComments;
+  syncCommentTtsBtn(next);
+  if (liveWs && liveWs.readyState === 1) {
+    liveWs.send(JSON.stringify({ t: 'setReadComments', readComments: next }));
+  }
+});
+
 // Auto-unlock audio by default on load and on any interaction (mouse move, key, touch, focus)
 audio.unlock();
 const autoUnlock = () => {
@@ -83,15 +101,25 @@ function run(cmds, now) {
       case 'add':
         actors.add(c.actor);
         hud.notePrayer(c.actor);
-        if (c.actor && !c.idle && !c.actor.diamonds) audio.thankPrayer(c.actor);
+        if (c.actor && !c.idle && !c.actor.diamonds && (!audio.readComments || !c.actor.prayer)) {
+          audio.thankPrayer(c.actor);
+        }
         break;
       case 'remove': actors.remove(c.id); break;
-      case 'say': actors.say(c.id, c.text, c.ms); break;
+      case 'say': {
+        actors.say(c.id, c.text, c.ms);
+        if (audio.readComments) {
+          const actor = actors.actor(c.id) || world.actors.get(c.id)?.actor;
+          if (actor && c.text) audio.speakComment(actor, c.text);
+        }
+        break;
+      }
       case 'unsay': actors.unsay(c.id); break;
       case 'badge': actors.badge(c.id, c.diamonds); break;
       case 'scene':
         hall.setTheme(c.scene.theme, now);
         audio.setEnabled(c.scene.sound);
+        if (c.scene.readComments !== undefined) syncCommentTtsBtn(Boolean(c.scene.readComments));
         break;
       case 'hud':
         hud.handle(c.msg);
@@ -119,6 +147,7 @@ if (params.get('debug') === '1') window.stageMsg = receive;
 // BR-07.11: reconnect every 2 s; the server sends a fresh snapshot on connect.
 (function connect() {
   const ws = new WebSocket(`ws://${location.host}`);
+  liveWs = ws;
   ws.onmessage = e => receive(JSON.parse(e.data));
   ws.onclose = () => setTimeout(connect, RECONNECT_MS);
 })();

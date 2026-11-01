@@ -47,6 +47,9 @@
       <div class="status-chip warn" id="chipTiktok">
         <span class="dot-pulse"></span> TikTok: Đang đồng bộ...
       </div>
+      <button type="button" class="btn sm" data-toggle-read-comments title="Bật / Tắt giọng đọc AI đọc nội dung bình luận của người xem trên cả 2 màn hình 3D">
+        <i data-lucide="message-square-off"></i> <span class="read-comments-toggle-label">Đọc Bình Luận: ĐANG TẮT</span>
+      </button>
       <button type="button" class="btn sm" data-toggle-mock title="Khi TẮT: chỉ thống kê người dùng thật từ TikTok LIVE. Khi BẬT: thống kê kèm dữ liệu mẫu (Fake)">
         <i data-lucide="user-check"></i> <span class="mock-toggle-label">Dữ Liệu Mẫu: ĐANG TẮT (Chỉ Người Thật)</span>
       </button>
@@ -140,6 +143,9 @@
           </div>
 
           <div class="row-inline">
+            <button type="button" class="btn sm" data-toggle-read-comments>
+              <i data-lucide="message-square-off"></i> <span class="read-comments-toggle-label">Đọc Bình Luận: ĐANG TẮT</span>
+            </button>
             <button type="button" class="btn sm" data-toggle-mock>
               <i data-lucide="user-check"></i> <span class="mock-toggle-label">Thống Kê Mẫu: TẮT (Chỉ Người Thật)</span>
             </button>
@@ -815,6 +821,10 @@
                   <input type="checkbox" id="chuaSoundCheck" checked style="width:18px;height:18px" />
                   Bật âm thanh Chuông Mõ &amp; Giọng đọc lễ
                 </label>
+                <label class="row-inline" style="cursor:pointer;font-weight:700;margin-bottom:8px">
+                  <input type="checkbox" id="chuaReadCommentsCheck" style="width:18px;height:18px" />
+                  Đọc nội dung bình luận bằng giọng AI (Đã lọc từ nhạy cảm)
+                </label>
                 <button type="button" class="btn primary" id="btnChuaSaveScene">
                   <i data-lucide="check"></i> Áp Dụng Không Gian
                 </button>
@@ -1108,9 +1118,13 @@
             </div>
 
             <div class="form-group">
-              <label class="row-inline" style="cursor:pointer;font-weight:700">
+              <label class="row-inline" style="cursor:pointer;font-weight:700;margin-bottom:6px">
                 <input type="checkbox" id="duaSoundCheck" checked style="width:18px;height:18px" />
                 Bật Âm Thanh Động Cơ &amp; Giọng Đọc AI Chào Mừng Tay Đua Mới
+              </label>
+              <label class="row-inline" style="cursor:pointer;font-weight:700">
+                <input type="checkbox" id="duaReadCommentsCheck" style="width:18px;height:18px" />
+                Đọc nội dung bình luận bằng giọng AI (Đã lọc từ nhạy cảm)
               </label>
             </div>
 

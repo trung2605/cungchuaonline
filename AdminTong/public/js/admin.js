@@ -490,7 +490,17 @@ function renderAll(state) {
   if (chua.scene) {
     if (document.activeElement !== $('chuaThemeSelect')) $('chuaThemeSelect').value = chua.scene.theme || 'night';
     $('chuaSoundCheck').checked = chua.scene.sound !== false;
+    if ($('chuaReadCommentsCheck')) $('chuaReadCommentsCheck').checked = Boolean(chua.scene.readComments);
   }
+
+  const readCommentsOn = Boolean(chua.scene?.readComments || dua.scene?.readComments);
+  document.querySelectorAll('[data-toggle-read-comments]').forEach(btn => {
+    btn.classList.toggle('primary', readCommentsOn);
+    const label = btn.querySelector('.read-comments-toggle-label');
+    if (label) {
+      label.textContent = readCommentsOn ? '🔊 Đọc Bình Luận: ĐANG BẬT' : '🔇 Đọc Bình Luận: ĐANG TẮT';
+    }
+  });
 
   // Update Auto-Demo status badges across all 3 tabs
   const fmtDemoRate = r => {
@@ -612,6 +622,7 @@ function renderAll(state) {
   $('duaStatusBadge').textContent = duaOnline ? `Đang Hoạt Động (:8789) · ${dua.stats?.currentBiome?.name || ''}` : 'Offline';
   if (dua.scene) {
     $('duaSoundCheck').checked = dua.scene.sound !== false;
+    if ($('duaReadCommentsCheck')) $('duaReadCommentsCheck').checked = Boolean(dua.scene.readComments);
   }
 
   // Biome Grid
@@ -735,6 +746,21 @@ window.addEventListener('DOMContentLoaded', () => {
   // Synchronized Mock/Sample Data Filter Toggle across all 3 pages/tabs
   document.querySelectorAll('[data-toggle-mock]').forEach(btn => {
     btn.addEventListener('click', toggleMockDataMode);
+  });
+
+  // Global Toggle for Comment TTS Reading across both 3D games
+  document.querySelectorAll('[data-toggle-read-comments]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const current = Boolean($('chuaReadCommentsCheck')?.checked || $('duaReadCommentsCheck')?.checked);
+      const next = !current;
+      await gameAction('all', '/api/scene', { readComments: next });
+      showToast(
+        next
+          ? '🔊 Đã BẬT giọng AI đọc nội dung bình luận (Tự động lọc từ nhạy cảm)!'
+          : '🔇 Đã TẮT đọc nội dung bình luận (Chỉ đọc quà tặng & chào mừng tên)!'
+      );
+      await pollState();
+    });
   });
 
   // In-Page 3D Live Preview Drawer (No new browser tabs needed!)
@@ -904,8 +930,15 @@ window.addEventListener('DOMContentLoaded', () => {
   $('btnChuaSaveScene').addEventListener('click', async () => {
     const theme = $('chuaThemeSelect').value;
     const sound = $('chuaSoundCheck').checked;
-    await gameAction('cung-chua-online', '/api/scene', { theme, sound });
+    const readComments = Boolean($('chuaReadCommentsCheck')?.checked);
+    await gameAction('cung-chua-online', '/api/scene', { theme, sound, readComments });
     showToast('Đã cập nhật không gian & âm thanh Chánh Điện 3D!');
+    await pollState();
+  });
+  $('chuaReadCommentsCheck')?.addEventListener('change', async () => {
+    const readComments = Boolean($('chuaReadCommentsCheck').checked);
+    await gameAction('cung-chua-online', '/api/scene', { readComments });
+    showToast(readComments ? '🔊 Đã BẬT đọc bình luận Chùa 3D!' : '🔇 Đã TẮT đọc bình luận Chùa 3D!');
     await pollState();
   });
 
@@ -977,6 +1010,12 @@ window.addEventListener('DOMContentLoaded', () => {
   $('duaSoundCheck').addEventListener('change', async () => {
     await gameAction('cuoc-dua-ky-thu', '/api/scene', { sound: $('duaSoundCheck').checked });
     showToast('Đã cập nhật âm thanh & giọng đọc chào mừng Cuộc Đua Kỳ Thú!');
+  });
+  $('duaReadCommentsCheck')?.addEventListener('change', async () => {
+    const readComments = Boolean($('duaReadCommentsCheck').checked);
+    await gameAction('cuoc-dua-ky-thu', '/api/scene', { readComments });
+    showToast(readComments ? '🔊 Đã BẬT đọc bình luận Cuộc Đua Kỳ Thú!' : '🔇 Đã TẮT đọc bình luận Cuộc Đua Kỳ Thú!');
+    await pollState();
   });
 
   $('btnDuaBanner').addEventListener('click', async () => {

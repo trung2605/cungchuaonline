@@ -323,15 +323,20 @@ export async function startAdmin({ port = 8788, host = '127.0.0.1', password, ct
     },
 
     'POST /api/scene': async req => {
-      const { theme, sound, stayMinutes } = await readJson(req);
+      const { theme, sound, readComments, stayMinutes } = await readJson(req);
       if (theme !== undefined && !THEMES.includes(theme)) throw bad(`theme phải là ${THEMES.join('/')}`);
       if (sound !== undefined && typeof sound !== 'boolean') throw bad('sound phải là boolean');
+      if (readComments !== undefined && typeof readComments !== 'boolean') throw bad('readComments phải là boolean');
       if (stayMinutes !== undefined) {
         const mins = Number(stayMinutes);
         if (!Number.isFinite(mins) || mins < 0.5 || mins > 180) throw bad('stayMinutes phải từ 0.5 đến 180 phút');
         stage.setStayMinutes?.(mins);
       }
-      const msgs = pipeline.setScene({ ...(theme && { theme }), ...(sound !== undefined && { sound }) });
+      const msgs = pipeline.setScene({
+        ...(theme && { theme }),
+        ...(sound !== undefined && { sound }),
+        ...(readComments !== undefined && { readComments }),
+      });
       broadcast(msgs);
       await ctx.saveSceneConfig?.();
       return { scene: msgs[0].scene, stayConfig: stage.getStayConfig?.() };

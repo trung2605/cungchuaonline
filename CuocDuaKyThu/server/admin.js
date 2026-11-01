@@ -89,14 +89,18 @@ export async function startRaceAdmin({ port = 8790, host = '127.0.0.1', password
     },
 
     'POST /api/scene': async req => {
-      const { sound, stayMinutes } = await readJson(req);
+      const { sound, readComments, stayMinutes } = await readJson(req);
       if (sound !== undefined && typeof sound !== 'boolean') throw bad('sound phải là boolean');
+      if (readComments !== undefined && typeof readComments !== 'boolean') throw bad('readComments phải là boolean');
       if (stayMinutes !== undefined) {
         const mins = Number(stayMinutes);
         if (!Number.isFinite(mins) || mins < 0.5 || mins > 180) throw bad('stayMinutes phải từ 0.5 đến 180 phút');
         stage.setStayMinutes?.(mins);
       }
-      const scene = ctx.setScene({ ...(sound !== undefined && { sound }) });
+      const scene = ctx.setScene({
+        ...(sound !== undefined && { sound }),
+        ...(readComments !== undefined && { readComments }),
+      });
       broadcast([{ t: 'scene', scene }]);
       return { scene, stayConfig: stage.getStayConfig?.() };
     },

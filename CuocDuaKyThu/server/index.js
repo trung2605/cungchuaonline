@@ -43,7 +43,7 @@ const stage = new RaceStage({
 });
 const rules = createRaceRules({ stage, lists });
 
-let scene = { sound: true };
+let scene = { sound: true, readComments: false };
 
 const getSnapshot = () => ({
   t: 'snapshot',
@@ -64,6 +64,12 @@ const srv = await startServer({
     '/vendor/font/': path.join(ROOT_DIR, 'node_modules/@fontsource/be-vietnam-pro/'),
   },
   getSnapshot,
+  onClientMsg: msg => {
+    if (msg?.t === 'setReadComments' && typeof msg.readComments === 'boolean') {
+      scene = { ...scene, readComments: msg.readComments };
+      srv.broadcast([{ t: 'scene', scene }]);
+    }
+  },
 });
 console.log(`[${stamp()}] [Cuộc Đua Kỳ Thú] Render 3D + WS: http://127.0.0.1:${srv.port}`);
 

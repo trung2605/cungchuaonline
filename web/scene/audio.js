@@ -160,7 +160,7 @@ export function createAudio({ onSpeak = null } = {}) {
   const music = new Audio('assets/audio/music.mp3');
   music.loop = true;
   music.volume = 0.32;
-  let enabled = !isPreviewIframe, missing = false, triedWav = false, blockTimes = [];
+  let enabled = !isPreviewIframe, readComments = false, missing = false, triedWav = false, blockTimes = [];
   if (isPreviewIframe) master.gain.value = 0;
   const speechQueue = [];
   let speaking = false;
@@ -502,10 +502,31 @@ export function createAudio({ onSpeak = null } = {}) {
 
   return {
     get suspended() { return ctx.state !== 'running'; },
+    get readComments() { return readComments; },
     unlock() {
       ctx.resume().catch(() => {});
       playMusic();
       refreshViVoice();
+    },
+    setReadComments(on) {
+      readComments = Boolean(on);
+      if (!readComments) {
+        for (let i = speechQueue.length - 1; i >= 0; i--) {
+          if (speechQueue[i].kind === 'comment') speechQueue.splice(i, 1);
+        }
+        if (currentItem?.kind === 'comment') {
+          clearTimeout(watchdog);
+          try { currentVoiceSrc?.stop(); } catch {}
+          currentVoiceSrc = null;
+          if (typeof speechSynthesis !== 'undefined') {
+            try { speechSynthesis.cancel(); } catch {}
+          }
+          currentItem = null;
+          speaking = false;
+          onSpeak?.('', false);
+          setTimeout(flushSpeech, 150);
+        }
+      }
     },
     setEnabled(on) {
       enabled = on;
@@ -557,7 +578,7 @@ export function createAudio({ onSpeak = null } = {}) {
       enqueueSpeech({ uid: actor.id, offering: 'join', repeat: 1, text, diamonds: 0, kind: 'join', priority: isReal ? 1 : 0, isReal });
     },
     speakComment(actor, rawComment = '') {
-      if (!enabled || !actor) return;
+      if (!enabled || !readComments || !actor) return;
       const now = Date.now();
       const isReal = Boolean(actor.src && actor.src !== 'mock');
       const who = cleanTtsName(actor.name);
