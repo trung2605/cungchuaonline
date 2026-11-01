@@ -519,6 +519,25 @@ function renderAll(state) {
     $('duaDemoBadge').textContent = duaDemoOn ? `ĐANG CHẠY (${fmtDemoRate(dua.demo?.rate || 0.2)})` : 'Đang tắt';
   }
 
+  // Sync Stay Time (Minutes) inputs & badges
+  const chuaStayMins = Number(chua.stayConfig?.stayMinutes) || 5;
+  const duaStayMins = Number(dua.stayConfig?.stayMinutes) || 5;
+  if ($('chuaStayBadge')) {
+    $('chuaStayBadge').textContent = `Đang giữ: ${chuaStayMins} phút (Áo Vàng ${chuaStayMins * 2}p · Hoàng Kim ${chuaStayMins * 5}p)`;
+  }
+  if ($('duaStayBadge')) {
+    $('duaStayBadge').textContent = `Đang giữ: ${duaStayMins} phút (Quà tặng ${duaStayMins * 2}p – ${duaStayMins * 8}p)`;
+  }
+  if ($('chuaStayMinutesInput') && document.activeElement !== $('chuaStayMinutesInput')) {
+    $('chuaStayMinutesInput').value = chuaStayMins;
+  }
+  if ($('duaStayMinutesInput') && document.activeElement !== $('duaStayMinutesInput')) {
+    $('duaStayMinutesInput').value = duaStayMins;
+  }
+  if ($('quickStayMinutes') && document.activeElement !== $('quickStayMinutes')) {
+    $('quickStayMinutes').value = chuaStayMins;
+  }
+
   // Hydrate Chua Lists once so we don't overwrite user edits while typing
   if (!chuaListsHydrated && chua.lists) {
     chuaListsHydrated = true;
@@ -824,6 +843,24 @@ window.addEventListener('DOMContentLoaded', () => {
   );
   $('duaDemoStopBtn')?.addEventListener('click', () =>
     triggerAutoDemo('cuoc-dua-ky-thu', false, $('duaDemoRate')?.value, $('duaDemoGiftPct')?.value, 70)
+  );
+
+  // Stay Duration (TTL in Minutes) Controls
+  const triggerStayTime = async (game, mins) => {
+    const cleanMins = Math.max(0.5, Math.min(180, Number(mins) || 5));
+    await gameAction(game, '/api/stay-time', { stayMinutes: cleanMins });
+    showToast(`Đã cập nhật thời gian người tham gia ở lại thành ${cleanMins} phút (Tự động gia hạn luôn cho những người đang có mặt)!`);
+    await pollState();
+  };
+
+  $('btnQuickStaySave')?.addEventListener('click', () =>
+    triggerStayTime('all', $('quickStayMinutes')?.value)
+  );
+  $('btnChuaStaySave')?.addEventListener('click', () =>
+    triggerStayTime('cung-chua-online', $('chuaStayMinutesInput')?.value)
+  );
+  $('btnDuaStaySave')?.addEventListener('click', () =>
+    triggerStayTime('cuoc-dua-ky-thu', $('duaStayMinutesInput')?.value)
   );
 
   // 4. Game 1: Cúng Chùa Online Controls

@@ -10,11 +10,43 @@ function skinOf(uid) {
 }
 
 export class Stage {
-  constructor({ max = 150, front = 20, now = Date.now } = {}) {
+  constructor({ max = 150, front = 20, now = Date.now, stayMinutes = 0 } = {}) {
     Object.assign(this, { max, front, now });
     this.actors = new Map(); // uid -> Actor
     this.occupied = new Array(max).fill(null);
     this.diamondsByUid = new Map(); // survives leave/re-enter for the whole session
+    this.stayMinutes = 0;
+    this.ttlMap = { ...TTL };
+    if (stayMinutes > 0) this.setStayMinutes(stayMinutes);
+  }
+
+  setStayMinutes(mins) {
+    const m = Math.max(0.5, Math.min(180, Number(mins) || 5));
+    this.stayMinutes = m;
+    const baseMs = Math.round(m * 60_000);
+    this.ttlMap = {
+      0: baseMs,
+      1: baseMs * 2,
+      2: baseMs * 5,
+    };
+    const t = this.now();
+    for (const a of this.actors.values()) {
+      const targetExp = (a.joinedAt || t) + this.ttlMap[a.tier || 0];
+      a.expiresAt = Math.max(a.expiresAt, t + baseMs, targetExp);
+    }
+    return this.getStayConfig();
+  }
+
+  getStayConfig() {
+    const baseMinutes = Math.round((this.ttlMap[0] / 60_000) * 10) / 10;
+    return {
+      stayMinutes: baseMinutes,
+      ttlSec: {
+        0: Math.round(this.ttlMap[0] / 1000),
+        1: Math.round(this.ttlMap[1] / 1000),
+        2: Math.round(this.ttlMap[2] / 1000),
+      },
+    };
   }
 
   #free(from, to) {
@@ -39,7 +71,7 @@ export class Stage {
       const out = [];
       a.tier = Math.max(a.tier, tier);
       a.bows = Math.min(MAX_BOWS, a.bows + addBows);
-      a.expiresAt = Math.max(a.expiresAt, t + TTL[a.tier]);
+      a.expiresAt = Math.max(a.expiresAt, t + this.ttlMap[a.tier]);
       a.intent = intent ?? a.intent;
       a.diamonds = diamonds;
       if (src) a.src = src;
@@ -86,7 +118,7 @@ export class Stage {
 
     const actor = {
       id: uid, name, tier, slot, skin: skinOf(uid), bows: Math.min(MAX_BOWS, addBows),
-      joinedAt: t, expiresAt: t + TTL[tier], intent: intent ?? DEFAULT_INTENT, diamonds,
+      joinedAt: t, expiresAt: t + this.ttlMap[tier], intent: intent ?? DEFAULT_INTENT, diamonds,
       ...(src && { src }),
     };
     this.actors.set(uid, actor);

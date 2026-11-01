@@ -106,6 +106,7 @@ export async function startAdmin({ port = 8788, host = '127.0.0.1', password, ct
       blocked: [...blocked],
       lists,
       scene: pipeline.snapshot().scene,
+      stayConfig: stage.getStayConfig?.() ?? { stayMinutes: 5 },
       demo: demo.state(),
       demoConfig: demo.config?.() ?? { on: demo.state().on, rate: demo.state().rate ?? 3, giftRatio: 0.08, prayerRatio: 0.65 },
       actors: stage.snapshot(),
@@ -148,13 +149,27 @@ export async function startAdmin({ port = 8788, host = '127.0.0.1', password, ct
     },
 
     'POST /api/scene': async req => {
-      const { theme, sound } = await readJson(req);
+      const { theme, sound, stayMinutes } = await readJson(req);
       if (theme !== undefined && !THEMES.includes(theme)) throw bad(`theme phải là ${THEMES.join('/')}`);
       if (sound !== undefined && typeof sound !== 'boolean') throw bad('sound phải là boolean');
+      if (stayMinutes !== undefined) {
+        const mins = Number(stayMinutes);
+        if (!Number.isFinite(mins) || mins < 0.5 || mins > 180) throw bad('stayMinutes phải từ 0.5 đến 180 phút');
+        stage.setStayMinutes?.(mins);
+      }
       const msgs = pipeline.setScene({ ...(theme && { theme }), ...(sound !== undefined && { sound }) });
       broadcast(msgs);
       await ctx.saveSceneConfig?.();
-      return { scene: msgs[0].scene };
+      return { scene: msgs[0].scene, stayConfig: stage.getStayConfig?.() };
+    },
+
+    'POST /api/stay-time': async req => {
+      const { stayMinutes } = await readJson(req);
+      const mins = Number(stayMinutes);
+      if (!Number.isFinite(mins) || mins < 0.5 || mins > 180) throw bad('Thời gian ở lại phải từ 0.5 đến 180 phút');
+      const stayConfig = stage.setStayMinutes?.(mins);
+      await ctx.saveSceneConfig?.();
+      return { ok: true, stayConfig };
     },
 
     'POST /api/banner': async req => {

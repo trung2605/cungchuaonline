@@ -16,7 +16,7 @@ export const BIOMES = [
 // Tier 2: 10-99 💎 (Golden Hoverboard, 2.8x speed for 18s, +350m/gift, TTL 240s)
 // Tier 3: 100-999 💎 (Lightning Jet, 4.2x speed for 28s, +1500m/gift, TTL 360s)
 // Tier 4: 1000+ 💎 (Cosmic Warp Champion, 6.5x speed for 45s, +10000m/gift, TTL 600s)
-export const RACE_TTL = { 0: 90_000, 1: 150_000, 2: 240_000, 3: 360_000, 4: 600_000 };
+export const RACE_TTL = { 0: 300_000, 1: 600_000, 2: 900_000, 3: 1_500_000, 4: 2_700_000 };
 export const BOOST_SPEED = { 0: 1.0, 1: 1.8, 2: 2.8, 3: 4.2, 4: 6.5 };
 export const BOOST_MS = { 0: 0, 1: 10_000, 2: 18_000, 3: 28_000, 4: 45_000 };
 export const BONUS_DIST = { 0: 0, 1: 80, 2: 350, 3: 1500, 4: 10_000 };
@@ -51,7 +51,7 @@ function laneOf(uid, occupiedCount) {
 }
 
 export class RaceStage {
-  constructor({ max = 120, now = Date.now, baseSpeedMps = 14 } = {}) {
+  constructor({ max = 120, now = Date.now, baseSpeedMps = 14, stayMinutes = 5 } = {}) {
     Object.assign(this, { max, now, baseSpeedMps });
     this.runners = new Map(); // uid -> Runner
     this.statsByUid = new Map(); // uid -> { name, distanceM, diamonds, tier, src, updatedAt }
@@ -61,6 +61,42 @@ export class RaceStage {
     this.forcedBiome = null; // null = auto cycle
     this.globalTurboUntil = 0;
     this.lastTickAt = now();
+    this.stayMinutes = 5;
+    this.ttlMap = { ...RACE_TTL };
+    if (stayMinutes > 0) this.setStayMinutes(stayMinutes);
+  }
+
+  setStayMinutes(mins) {
+    const m = Math.max(0.5, Math.min(180, Number(mins) || 5));
+    this.stayMinutes = m;
+    const baseMs = Math.round(m * 60_000);
+    this.ttlMap = {
+      0: baseMs,
+      1: Math.round(baseMs * 2),
+      2: Math.round(baseMs * 3),
+      3: Math.round(baseMs * 5),
+      4: Math.round(baseMs * 8),
+    };
+    const t = this.now();
+    for (const r of this.runners.values()) {
+      const targetExp = (r.joinedAt || t) + this.ttlMap[r.tier || 0];
+      r.expiresAt = Math.max(r.expiresAt, t + baseMs, targetExp);
+    }
+    return this.getStayConfig();
+  }
+
+  getStayConfig() {
+    const baseMinutes = Math.round((this.ttlMap[0] / 60_000) * 10) / 10;
+    return {
+      stayMinutes: baseMinutes,
+      ttlSec: {
+        0: Math.round(this.ttlMap[0] / 1000),
+        1: Math.round(this.ttlMap[1] / 1000),
+        2: Math.round(this.ttlMap[2] / 1000),
+        3: Math.round(this.ttlMap[3] / 1000),
+        4: Math.round(this.ttlMap[4] / 1000),
+      },
+    };
   }
 
   currentBiome() {
@@ -107,7 +143,7 @@ export class RaceStage {
       existing.tier = Math.max(existing.tier, bestTier);
       existing.diamonds = diamonds;
       existing.distanceM = distanceM;
-      existing.expiresAt = Math.max(existing.expiresAt, t + RACE_TTL[existing.tier]);
+      existing.expiresAt = Math.max(existing.expiresAt, t + this.ttlMap[existing.tier]);
       if (cheer) existing.cheer = cheer;
       if (giftTierLevel > 0 || boostMs > 0) {
         const bTier = Math.max(giftTierLevel, existing.boostTier || 1);
@@ -172,7 +208,7 @@ export class RaceStage {
       diamonds,
       cheer: cheer || 'Quyết tâm về đích!',
       joinedAt: t,
-      expiresAt: t + RACE_TTL[bestTier],
+      expiresAt: t + this.ttlMap[bestTier],
     };
     this.runners.set(uid, runner);
 

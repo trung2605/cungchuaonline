@@ -144,6 +144,16 @@
               <i data-lucide="user-check"></i> <span class="mock-toggle-label">Thống Kê Mẫu: TẮT (Chỉ Người Thật)</span>
             </button>
           </div>
+
+          <div class="row-inline" style="background:rgba(16,185,129,0.08);padding:6px 12px;border-radius:10px;border:1px solid rgba(16,185,129,0.3)">
+            <span style="font-weight:800;font-size:13px;color:#047857;display:inline-flex;align-items:center;gap:5px">
+              <i data-lucide="clock" style="width:16px;height:16px"></i> Thời Gian Ở Lại (Phút):
+            </span>
+            <input type="number" id="quickStayMinutes" min="0.5" max="180" step="0.5" value="5" style="width:65px;padding:5px 8px;font-weight:700" title="Thời gian nhân vật ở lại trong Chùa 3D & Đường Đua 3D (0.5 - 180 phút). Quà lớn tự động nhân 2x - 8x thời gian này!" />
+            <button type="button" class="btn sm emerald" id="btnQuickStaySave">
+              <i data-lucide="check"></i> Lưu Thời Gian
+            </button>
+          </div>
         </div>
 
         <div class="kpi-grid">
@@ -776,6 +786,15 @@
               </div>
             </div>
 
+            <div class="form-group" style="margin-top:12px;margin-bottom:12px;background:rgba(37,99,235,0.05);padding:10px 12px;border-radius:10px;border:1px solid var(--border)">
+              <label class="form-label" for="chuaStayMinutesInput">⏳ Thời Gian Phật Tử Ở Lại Trong Chánh Điện (Phút · Tặng quà tự động nhân 2x – 5x)</label>
+              <div class="row-inline">
+                <input type="number" id="chuaStayMinutesInput" min="0.5" max="180" step="0.5" value="5" style="width:110px;font-weight:700" />
+                <button type="button" class="btn sm primary" id="btnChuaStaySave"><i data-lucide="clock"></i> Cập Nhật Thời Gian Ở Lại</button>
+                <span class="badge emerald" id="chuaStayBadge">Mặc định: 5 phút</span>
+              </div>
+            </div>
+
             <div class="form-group" style="margin-top:14px;margin-bottom:14px">
               <label class="form-label" for="chuaBannerInput">Phát thông báo chữ vàng trên màn hình Chùa 3D</label>
               <div class="row-inline">
@@ -1018,6 +1037,15 @@
                 <input type="checkbox" id="duaSoundCheck" checked style="width:18px;height:18px" />
                 Bật Âm Thanh Động Cơ &amp; Giọng Đọc AI Chào Mừng Tay Đua Mới
               </label>
+            </div>
+
+            <div class="form-group" style="margin-top:10px;margin-bottom:14px;background:rgba(13,148,136,0.06);padding:10px 12px;border-radius:10px;border:1px solid var(--border)">
+              <label class="form-label" for="duaStayMinutesInput">⏳ Thời Gian Người Tham Gia Ở Lại Trên Hành Trình (Phút · Quà tặng tự động nhân 2x – 8x)</label>
+              <div class="row-inline">
+                <input type="number" id="duaStayMinutesInput" min="0.5" max="180" step="0.5" value="5" style="width:110px;font-weight:700" />
+                <button type="button" class="btn sm teal" id="btnDuaStaySave"><i data-lucide="clock"></i> Cập Nhật Thời Gian Ở Lại</button>
+                <span class="badge teal" id="duaStayBadge">Mặc định: 5 phút</span>
+              </div>
             </div>
 
             <div class="form-group" style="margin-bottom:14px">
