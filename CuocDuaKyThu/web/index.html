@@ -89,11 +89,10 @@
     display: flex; flex-direction: column; gap: 16px;
     pointer-events: none;
   }
-  #guide { width: 100%; padding: 15px 16px; font-size: 22px; pointer-events: none; }
+  #guide { width: 100%; padding: 15px 16px; font-size: 23.5px; pointer-events: none; }
   #guide h3 { margin: 0 0 11px; padding-bottom: 8px; text-align: center; color: var(--gold); letter-spacing: 0.8px; font-size: 26px; font-weight: 800; border-bottom: 2px solid var(--gold-line); }
-  #guide .tier { margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1.5px dashed rgba(255, 255, 255, .24); line-height: 1.35; font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; color: #ffffff; }
+  #guide .tier { margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1.5px dashed rgba(255, 255, 255, .24); line-height: 1.32; font-size: 23.5px; font-weight: 800; font-variant-numeric: tabular-nums; color: var(--cyan); }
   #guide .tier:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
-  #guide .tier b { display: block; color: var(--cyan); font-size: 24px; font-weight: 800; margin-bottom: 3px; }
 
   #joins { width: 100%; padding: 14px 16px; font-size: 22px; pointer-events: none; }
   #joins h3 { margin: 0 0 9px; padding-bottom: 7px; text-align: center; color: var(--cyan); letter-spacing: 0.8px; font-size: 25px; font-weight: 800; border-bottom: 2px solid var(--line); }
@@ -183,17 +182,18 @@
   <div id="left-col">
     <div id="guide" class="pill">
       <h3>BẢNG TĂNG TỐC ĐUA</h3>
-      <div class="tier"><b>💬 Bình luận / Thả ❤️</b>Nhập cuộc 3D · 500 ❤️ Bão Cầu Vồng</div>
-      <div class="tier"><b>🌹 1 💎 (Hoa Hồng, TikTok, GG, Kem)</b>Đôi Cánh Năng Lượng · ×1.8 (+80m)</div>
-      <div class="tier"><b>🪷 2–5 💎 (Hoa Sen, Tim Tay, Vịt Vàng)</b>Ván Trượt Ánh Sáng · ×2.4 (+220m)</div>
-      <div class="tier"><b>🌺 10–15 💎 (Hoa Rosa, Vòng Hữu Nghị, Tim Đôi)</b>Ván Trượt Hoàng Kim · ×2.8 (+350m)</div>
-      <div class="tier"><b>🚀 20+ 💎 (Nước Hoa, Bánh Vòng, Bó Hoa)</b>Tên Lửa Hoàng Kim · Dẫn đầu ×4.8 (+1.500m)</div>
+      <div class="tier">💬 Bình luận: Vào đua 3D</div>
+      <div class="tier">❤️ 500 Tim: Bão Cầu Vồng</div>
+      <div class="tier">🌹 1 💎 (Hoa Hồng, TikTok): Đôi Cánh ×1.8</div>
+      <div class="tier">🪷 2–5 💎 (Hoa Sen, Tim Tay): Ván Trượt ×2.4</div>
+      <div class="tier">🌺 10–15 💎 (Rosa, Tim Đôi): Ván Vàng ×2.8</div>
+      <div class="tier">🚀 20+ 💎 (Nước Hoa, Bánh Vòng): Tên Lửa ×4.8</div>
     </div>
 
     <div id="joins" class="pill">
       <h3>VỪA NHẬP CUỘC</h3>
       <ul id="join-list">
-        <li>🏁 Bình luận để xuất hiện trên đường đua!</li>
+        <li>🏁 Bình luận để chạy 3D!</li>
       </ul>
     </div>
   </div>
@@ -202,20 +202,19 @@
     <div id="odometer" class="pill">
       <b>QUÃNG ĐƯỜNG ĐOÀN</b>
       <span id="world-dist">0 m</span>
-      <span id="runner-count">Đang đua: 0 vận động viên</span>
+      <span id="runner-count">Đang đua: 0 VĐV</span>
     </div>
 
     <div id="board" class="pill">
       <h3>🏆 BẢNG XẾP HẠNG ĐUA</h3>
       <ol></ol>
-      <div id="board-empty" class="empty-board">Bình luận hoặc tặng quà để dẫn đầu đoàn đua!</div>
+      <div id="board-empty" class="empty-board">Bình luận hoặc tặng quà!</div>
     </div>
 
     <div id="footer" class="pill">
       <h3>🏁 CÁCH NHẬP CUỘC ĐUA</h3>
-      <div class="title">💬 Bình luận bất kỳ để hóa thân nhân vật 3D chạy khám phá thế giới!</div>
-      <div class="sub">🔊 AI đọc tên chào mừng trực tiếp trên sóng Live</div>
-      <div class="tiers">🌹 1💎 (Hoa Hồng, TikTok) Đôi Cánh · 🪷 2–5💎 (Hoa Sen, Tim Tay) Ván Trượt · 🚀 10–20+💎 (Rosa, Bánh Vòng) Tên Lửa ×4.8</div>
+      <div class="title">💬 Bình luận bất kỳ để chạy 3D</div>
+      <div class="tiers">🔊 AI đọc tên chào mừng trực tiếp</div>
     </div>
 
     <div id="donor"></div>
