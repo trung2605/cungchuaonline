@@ -77,16 +77,27 @@ for (const ev of ['pointerdown', 'pointermove', 'mousemove', 'touchstart', 'keyd
 }
 
 function run(cmds, now) {
+  const sayOps = cmds.filter(c => c.op === 'say');
+  const sayIds = new Set(sayOps.map(c => c.id));
+  const isMassEmotion = sayOps.length > 2;
+
   for (const c of cmds) {
     switch (c.op) {
       case 'reset': actors.clear(); break;
       case 'add':
         actors.add(c.actor);
         hud.notePrayer(c.actor);
-        if (c.actor && !c.idle && !c.actor.diamonds) audio.thankPrayer(c.actor);
+        if (c.actor && !c.idle && !c.actor.diamonds && !sayIds.has(c.actor.id)) {
+          audio.thankPrayer(c.actor);
+        }
         break;
       case 'remove': actors.remove(c.id); break;
-      case 'say': actors.say(c.id, c.text, c.ms); break;
+      case 'say':
+        actors.say(c.id, c.text, c.ms);
+        if (!isMassEmotion) {
+          audio.speakComment(actors.actor(c.id), c.text);
+        }
+        break;
       case 'unsay': actors.unsay(c.id); break;
       case 'badge': actors.badge(c.id, c.diamonds); break;
       case 'scene':

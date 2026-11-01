@@ -229,11 +229,24 @@ export function createAudio({ onSpeak = null } = {}) {
   let currentItem = null;
   let currentDone = null;
   let lastPrayerSpeechAt = 0;
-  const recentRealGreet = new Map(); // uid -> ts to avoid double-greeting the same real user within 8s
-  const recentNameGreet = new Map(); // normalizedName -> ts to avoid repeating the same name within 20s
+  const recentRealGreet = new Map(); // uid -> ts to avoid double-greeting the same real user on join within 15s
+  const recentNameGreet = new Map(); // normalizedName -> ts to avoid repeating join greeting within 15s
+  const recentCommentSpeech = new Map(); // uid+text -> ts to avoid duplicate spam within 5s
 
-  function interruptBotIfSpeaking() {
-    if (speaking && currentItem && !currentItem.isReal) {
+  function cleanCommentForTts(raw = '') {
+    return String(raw)
+      .normalize('NFC')
+      .replace(/[\p{Extended_Pictographic}\uFE0F\u200D]+/gu, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .slice(0, 60);
+  }
+
+  function interruptSpeechIfLowerPriority(newPriority = 2) {
+    if (!speaking || !currentItem) return;
+    const curPriority = currentItem.priority ?? (currentItem.isReal ? 1 : 0);
+    // Real user actions always interrupt bots (priority 0); Real Gifts (priority 3) also interrupt Join greetings (priority 1)
+    if (!currentItem.isReal || (newPriority >= 3 && curPriority <= 1)) {
       clearTimeout(watchdog);
       try { currentVoiceSrc?.stop(); } catch {}
       currentVoiceSrc = null;
@@ -252,28 +265,43 @@ export function createAudio({ onSpeak = null } = {}) {
     }
   }
 
+  // Priority levels:
+  // 3 = Real Gift (Highest)
+  // 2 = Real Comment / Prayer (Any non-sensitive comment)
+  // 1 = Real Join (Viewer entering room)
+  // 0 = Bot / Mock (Lowest, only when hall is completely silent)
   function enqueueSpeech(item) {
     if (!enabled) return;
-    // Prevent duplicate text or duplicate uid+kind from stacking in the queue
-    if (currentItem && (currentItem.text === item.text || (item.uid && currentItem.uid === item.uid && currentItem.kind === item.kind && item.kind !== 'gift'))) {
+    const prio = item.priority ?? (item.isReal ? (item.kind === 'gift' ? 3 : item.kind === 'comment' ? 2 : 1) : 0);
+    item.priority = prio;
+
+    // Prevent exact duplicate text or duplicate uid+kind from stacking in the queue
+    if (currentItem && currentItem.text === item.text && item.kind !== 'gift') {
       return;
     }
-    if (speechQueue.some(x => x.text === item.text || (item.uid && x.uid === item.uid && x.kind === item.kind && item.kind !== 'gift'))) {
+    if (speechQueue.some(x => x.text === item.text && item.kind !== 'gift')) {
       return;
     }
 
     if (item.isReal) {
       purgeQueuedBots();
-      interruptBotIfSpeaking();
-      // Sort real gifts ahead of real prayers/joins
-      if (item.kind === 'gift') {
-        const firstNonGift = speechQueue.findIndex(x => x.kind !== 'gift');
-        if (firstNonGift === -1) speechQueue.push(item);
-        else speechQueue.splice(firstNonGift, 0, item);
-      } else {
-        speechQueue.push(item);
+      interruptSpeechIfLowerPriority(prio);
+
+      // If this user is commenting or gifting, remove any pending 'join' greeting for the same uid in queue
+      if (prio >= 2 && item.uid) {
+        for (let i = speechQueue.length - 1; i >= 0; i--) {
+          if (speechQueue[i].uid === item.uid && (speechQueue[i].priority ?? 1) < prio) {
+            speechQueue.splice(i, 1);
+          }
+        }
       }
-      if (speechQueue.length > 6) speechQueue.pop();
+
+      // Insert in descending priority order (3: Gift > 2: Comment > 1: Join)
+      const insertIdx = speechQueue.findIndex(x => (x.priority ?? 1) < prio);
+      if (insertIdx === -1) speechQueue.push(item);
+      else speechQueue.splice(insertIdx, 0, item);
+
+      if (speechQueue.length > 8) speechQueue.pop();
     } else {
       // Bots never queue up if anyone (real or bot) is already speaking or waiting
       if (speaking || speechQueue.length > 0) return;
@@ -450,7 +478,37 @@ export function createAudio({ onSpeak = null } = {}) {
       }
       softBowl();
       const text = `A Di Đà Phật. Chào mừng Phật tử ${who} vào chùa lễ Phật`;
-      enqueueSpeech({ uid: actor.id, offering: 'prayer', repeat: 1, text, diamonds: 0, kind: 'prayer', isReal });
+      enqueueSpeech({ uid: actor.id, offering: 'join', repeat: 1, text, diamonds: 0, kind: 'join', priority: isReal ? 1 : 0, isReal });
+    },
+    speakComment(actor, rawComment = '') {
+      if (!enabled || !actor) return;
+      const now = Date.now();
+      const isReal = Boolean(actor.src && actor.src !== 'mock');
+      const who = cleanTtsName(actor.name);
+      const cleanText = cleanCommentForTts(rawComment);
+      if (!cleanText || !/[\p{L}\p{N}]/u.test(cleanText)) {
+        // Comment was only emojis/icons; greet them instead if they haven't been greeted
+        if (isReal) this.thankPrayer(actor);
+        return;
+      }
+      const dedupeKey = `${actor.id}:${cleanText.toLowerCase()}`;
+      if (now - (recentCommentSpeech.get(dedupeKey) || 0) < 6000) return;
+      recentCommentSpeech.set(dedupeKey, now);
+
+      if (!isReal) {
+        if (speaking || speechQueue.length > 0 || now - lastPrayerSpeechAt < 18_000) {
+          softBowl();
+          return;
+        }
+        lastPrayerSpeechAt = now;
+      } else {
+        recentRealGreet.set(actor.id, now);
+        recentNameGreet.set(who.toLowerCase(), now);
+      }
+
+      softBowl();
+      const text = `Phật tử ${who}: ${cleanText}`;
+      enqueueSpeech({ uid: actor.id, offering: 'comment', repeat: 1, text, diamonds: 0, kind: 'comment', priority: isReal ? 2 : 0, isReal });
     },
     thankJoin(msg) {
       if (!enabled || !msg) return;
@@ -467,7 +525,7 @@ export function createAudio({ onSpeak = null } = {}) {
       recentNameGreet.set(nameKey, now);
       softBowl();
       const text = `A Di Đà Phật. Chào mừng Phật tử ${who} vào chùa lễ Phật`;
-      enqueueSpeech({ uid, offering: 'join', repeat: 1, text, diamonds: 0, kind: 'join', isReal: true });
+      enqueueSpeech({ uid, offering: 'join', repeat: 1, text, diamonds: 0, kind: 'join', priority: 1, isReal: true });
     },
     thankDonor(d) {
       if (!enabled || !d) return;
@@ -485,14 +543,15 @@ export function createAudio({ onSpeak = null } = {}) {
         existing.repeat += repeat;
         existing.diamonds += total;
         existing.isReal = existing.isReal || isReal;
+        existing.priority = existing.isReal ? 3 : 0;
         existing.text = formatTtsBlessing({ name: d.name, offering, repeat: existing.repeat, diamonds: existing.diamonds });
         if (isReal) {
           purgeQueuedBots();
-          interruptBotIfSpeaking();
+          interruptSpeechIfLowerPriority(3);
         }
       } else {
         const text = formatTtsBlessing({ name: d.name, offering, repeat, diamonds: total });
-        enqueueSpeech({ uid: d.uid, offering, repeat, text, diamonds: total, kind: 'gift', isReal });
+        enqueueSpeech({ uid: d.uid, offering, repeat, text, diamonds: total, kind: 'gift', priority: isReal ? 3 : 0, isReal });
       }
     },
     playMusic,

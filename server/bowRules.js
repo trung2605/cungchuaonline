@@ -92,14 +92,16 @@ export function createBowRules({ stage, lists, stats = null, now = Date.now, coo
       const out = [];
       const t = now();
       const last = lastFree.get(e.uid);
-      if (isTrigger(e.text, lists) && (last === undefined || t - last >= cooldownMs)) {
+      const isReal = Boolean(e.src && e.src !== 'mock');
+      const bubble = cleanBubble(e.text, lists);
+      // Real viewers who write ANY non-sensitive comment (or anyone matching trigger words) enter the hall
+      if ((isTrigger(e.text, lists) || (isReal && bubble)) && (last === undefined || t - last >= cooldownMs)) {
         lastFree.set(e.uid, t);
         out.push(...granted(1, stage.enter(e.uid, cleanName(e.name, lists), 0, 1, {
           intent: detectIntent(e.text, lists) ?? undefined,
           src: e.src,
         })));
       }
-      const bubble = cleanBubble(e.text, lists);
       if (bubble) out.push(...stage.say(e.uid, bubble));
       else st?.noteFiltered();
       return out;

@@ -554,6 +554,7 @@ export function createRunners(scene) {
       }
     },
     count: () => live.size,
+    getRunner: id => live.get(id)?.runner || null,
     update(now, dt) {
       let maxSpeed = 1.0;
       let shownLabels = 0;

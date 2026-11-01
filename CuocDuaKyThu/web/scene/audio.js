@@ -111,8 +111,19 @@ export function createRaceAudio({ onSpeak = null } = {}) {
     }
   }
 
-  function interruptBotIfSpeaking() {
-    if (speaking && currentItem && !currentItem.isReal) {
+  function cleanCommentForTts(raw = '') {
+    return String(raw)
+      .normalize('NFC')
+      .replace(/[\p{Extended_Pictographic}\uFE0F\u200D]+/gu, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .slice(0, 60);
+  }
+
+  function interruptSpeechIfLowerPriority(newPriority = 2) {
+    if (!speaking || !currentItem) return;
+    const curPrio = currentItem.priority ?? (currentItem.isReal ? 1 : 0);
+    if (!currentItem.isReal || (newPriority >= 3 && curPrio <= 1)) {
       clearTimeout(watchdog);
       try { currentVoiceSrc?.stop(); } catch {}
       currentVoiceSrc = null;
@@ -132,25 +143,29 @@ export function createRaceAudio({ onSpeak = null } = {}) {
 
   function enqueueSpeech(item) {
     if (!enabled) return;
-    // Strict deduplication: never queue if the exact same text or same user is already speaking or queued
-    if (currentItem && (currentItem.text === item.text || (item.uid && currentItem.uid === item.uid && currentItem.priority === item.priority))) {
+    const prio = item.priority ?? 1;
+    // Strict deduplication: never queue if the exact same text is already speaking or queued
+    if (currentItem && currentItem.text === item.text) {
       return;
     }
-    if (speechQueue.some(x => x.text === item.text || (item.uid && x.uid === item.uid && x.priority === item.priority))) {
+    if (speechQueue.some(x => x.text === item.text)) {
       return;
     }
 
     if (item.isReal) {
       purgeQueuedBots();
-      interruptBotIfSpeaking();
-      if (item.priority >= 2) {
-        const firstJoin = speechQueue.findIndex(x => x.priority < 2);
-        if (firstJoin === -1) speechQueue.push(item);
-        else speechQueue.splice(firstJoin, 0, item);
-      } else {
-        speechQueue.push(item);
+      interruptSpeechIfLowerPriority(prio);
+      if (prio >= 2 && item.uid) {
+        for (let i = speechQueue.length - 1; i >= 0; i--) {
+          if (speechQueue[i].uid === item.uid && (speechQueue[i].priority ?? 1) < prio) {
+            speechQueue.splice(i, 1);
+          }
+        }
       }
-      if (speechQueue.length > 6) speechQueue.pop();
+      const insertIdx = speechQueue.findIndex(x => (x.priority ?? 1) < prio);
+      if (insertIdx === -1) speechQueue.push(item);
+      else speechQueue.splice(insertIdx, 0, item);
+      if (speechQueue.length > 8) speechQueue.pop();
     } else {
       // Bots never queue if anyone is speaking or waiting in the queue
       if (speaking || speechQueue.length > 0) return;
@@ -275,6 +290,27 @@ export function createRaceAudio({ onSpeak = null } = {}) {
       const text = formatWelcomeSpeech(msg.name, false);
       enqueueSpeech({ uid, text, priority: 1, isReal });
     },
+    speakComment(runner, rawComment = '') {
+      if (!enabled || !runner) return;
+      const isReal = Boolean(runner.src && runner.src !== 'mock');
+      const now = Date.now();
+      const uid = runner.id || runner.uid || runner.name || '';
+      const who = cleanRaceTtsName(runner.name);
+      const cleanText = cleanCommentForTts(rawComment);
+      if (!cleanText || !/[\p{L}\p{N}]/u.test(cleanText)) return;
+
+      if (!isReal) {
+        if (speaking || speechQueue.length > 0 || now - lastWelcomeSpeechAt < 16_000) return;
+        lastWelcomeSpeechAt = now;
+      } else {
+        recentUidGreet.set(uid, now);
+        recentNameGreet.set(who.toLowerCase(), now);
+      }
+
+      joinChime();
+      const text = `Phật tử ${who}: ${cleanText}`;
+      enqueueSpeech({ uid, text, priority: isReal ? 2 : 0, isReal });
+    },
     announceGift(d) {
       if (!enabled || !d) return;
       const isReal = Boolean(d.src && d.src !== 'mock');
@@ -285,7 +321,7 @@ export function createRaceAudio({ onSpeak = null } = {}) {
 
       boostSfx(d.tier || 1);
       const text = formatGiftBoostSpeech(d);
-      enqueueSpeech({ uid, text, priority: 2 + (d.tier || 1), isReal });
+      enqueueSpeech({ uid, text, priority: 3 + (d.tier || 1), isReal });
     },
   };
 }
