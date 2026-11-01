@@ -95,7 +95,7 @@ const giftVi = g => GIFT_VI[String(g || '').trim().toLowerCase()] || g || 'Lễ 
         case 'board': {
           const empty = $('#board-empty');
           if (empty) empty.style.display = msg.top.length ? 'none' : 'block';
-          $('#board ol').replaceChildren(...msg.top.slice(0, 5).map(r => {
+          $('#board ol').replaceChildren(...msg.top.slice(0, 10).map(r => {
             const li = document.createElement('li');
             li.textContent = `${r.name} · 💎${r.diamonds.toLocaleString('vi-VN')}`;
             return li;

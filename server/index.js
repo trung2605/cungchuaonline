@@ -39,7 +39,7 @@ const stage = new Stage({
   max: Number(process.env.MAX_ACTORS || 150),
   stayMinutes: Number(process.env.STAY_MINUTES || 5),
 });
-const counters = createCounters({ lists });
+const counters = createCounters({ lists, boardSize: 12 });
 const stats = createStats({ lists });
 const pipeline = createPipeline({
   stage, lists, blocked, counters,

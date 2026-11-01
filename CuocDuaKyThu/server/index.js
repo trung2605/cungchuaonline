@@ -50,7 +50,7 @@ const getSnapshot = () => ({
   runners: stage.snapshot(),
   biome: stage.currentBiome(),
   worldDistanceM: Math.round(stage.worldDistanceM),
-  board: stage.board(8),
+  board: stage.board(12),
   scene,
   stats: rules.statsState(status),
 });

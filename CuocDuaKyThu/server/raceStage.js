@@ -318,7 +318,7 @@ export class RaceStage {
     return out;
   }
 
-  board(limit = 8, includeMock = true) {
+  board(limit = 12, includeMock = true) {
     return [...this.statsByUid.entries()]
       .filter(([, s]) => includeMock || s.src !== 'mock')
       .map(([uid, s]) => ({

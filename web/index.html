@@ -86,20 +86,22 @@
   #namo.bump span { animation: bump 600ms var(--ease-out); }
   @keyframes bump { 30% { transform: scale(1.16); color: #fff2c4; } }
 
-  #board { width: 100%; padding: 13px 14px; }
+  #board { width: 100%; min-height: 365px; padding: 14px 14px 16px; display: flex; flex-direction: column; }
   #board h3 {
-    margin: 0 0 8px; padding-bottom: 7px; text-align: center;
+    margin: 0 0 10px; padding-bottom: 8px; text-align: center;
     color: var(--gilt-bright); letter-spacing: 0.8px; font-size: 23.5px; font-weight: 700;
     border-bottom: 2px solid var(--gilt-line);
     text-shadow: 0 2px 4px rgba(0, 0, 0, .85);
   }
-  #board ol { margin: 0; padding-left: 25px; font-variant-numeric: tabular-nums; }
+  #board ol { margin: 0; padding-left: 26px; font-variant-numeric: tabular-nums; flex: 1; }
   #board li {
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    line-height: 1.46; color: var(--gilt-bright); font-size: 21.5px; font-weight: 700;
+    line-height: 1.52; padding: 3px 0; border-bottom: 1px dashed rgba(240, 202, 114, .18);
+    color: var(--gilt-bright); font-size: 21.5px; font-weight: 700;
   }
+  #board li:last-child { border-bottom: none; }
   #board li::marker { color: var(--gilt-bright); font-weight: 700; }
-  #board .empty-board { font-size: 21px; font-weight: 700; color: var(--gilt-bright); text-align: center; line-height: 1.32; padding: 4px 2px; }
+  #board .empty-board { font-size: 21px; font-weight: 700; color: var(--gilt-bright); text-align: center; line-height: 1.38; padding: 14px 4px; margin: auto 0; }
 
   #donor { width: 100%; }
   #donor .card {
