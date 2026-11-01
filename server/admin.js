@@ -169,9 +169,9 @@ export async function startAdmin({ port = 8788, host = '127.0.0.1', password, ct
     },
 
     'POST /api/demo': async req => {
-      const { on, rate = 3, giftRatio, prayerRatio } = await readJson(req);
+      const { on, rate = 0.25, giftRatio, prayerRatio } = await readJson(req);
       if (typeof on !== 'boolean') throw bad('on phải là boolean');
-      if (!(Number.isFinite(rate) && rate >= 1 && rate <= 50)) throw bad('rate phải từ 1 đến 50');
+      if (!(Number.isFinite(rate) && rate >= 0.01 && rate <= 50)) throw bad('rate phải từ 0.01 đến 50');
       if (demo.configure) demo.configure({ rate, giftRatio, prayerRatio });
       if (on) demo.start(rate, { giftRatio, prayerRatio });
       else demo.stop();

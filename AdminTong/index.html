@@ -127,7 +127,7 @@
               <i data-lucide="bot" style="width:16px;height:16px"></i> Chạy Nhân Vật Mẫu 3D:
             </span>
             <label style="font-size:12px;font-weight:700;color:var(--text-secondary)">Tần suất/giây:</label>
-            <input type="number" id="quickDemoRate" min="1" max="50" value="2" style="width:62px;padding:5px 8px;font-weight:700" title="Số sự kiện ngẫu nhiên mỗi giây (1-50)" />
+            <input type="number" id="quickDemoRate" min="0.01" max="50" step="0.01" value="0.15" style="width:70px;padding:5px 8px;font-weight:700" title="Số sự kiện ngẫu nhiên mỗi giây (VD: 0.02 = ~50s/lần, 0.15 = ~7s/lần, 1 = 1s/lần)" />
             <label style="font-size:12px;font-weight:700;color:var(--text-secondary)">% Quà:</label>
             <input type="number" id="quickDemoGiftPct" min="0" max="85" value="15" style="width:62px;padding:5px 8px;font-weight:700" title="Tỷ lệ tặng quà ngẫu nhiên (0-85%)" />
             <button type="button" class="btn sm primary" id="btnQuickDemoStart">
@@ -413,8 +413,8 @@
 
             <div class="grid-3" style="margin-bottom:10px">
               <div class="form-group" style="margin-bottom:0">
-                <label class="form-label" for="masterDemoRate">Tần suất (sự kiện/giây: 1–50)</label>
-                <input type="number" id="masterDemoRate" min="1" max="50" step="1" value="2" />
+                <label class="form-label" for="masterDemoRate">Tần suất (/giây: 0.01–50 · VD: 0.1 = ~10s/lần)</label>
+                <input type="number" id="masterDemoRate" min="0.01" max="50" step="0.01" value="0.15" />
               </div>
               <div class="form-group" style="margin-bottom:0">
                 <label class="form-label" for="masterDemoGiftPct">Tỷ lệ tặng quà (%)</label>
@@ -791,8 +791,8 @@
               </div>
               <div class="grid-3" style="margin-bottom:10px">
                 <div>
-                  <label class="form-label" for="chuaDemoRate">Tần suất (/giây)</label>
-                  <input type="number" id="chuaDemoRate" min="1" max="50" value="2" />
+                  <label class="form-label" for="chuaDemoRate">Tần suất (/giây · VD: 0.05 = ~20s)</label>
+                  <input type="number" id="chuaDemoRate" min="0.01" max="50" step="0.01" value="0.15" />
                 </div>
                 <div>
                   <label class="form-label" for="chuaDemoGiftPct">% Tặng quà</label>
@@ -1035,8 +1035,8 @@
               </div>
               <div class="grid-2" style="margin-bottom:10px">
                 <div>
-                  <label class="form-label" for="duaDemoRate">Tần suất (sự kiện/giây)</label>
-                  <input type="number" id="duaDemoRate" min="1" max="50" value="2" />
+                  <label class="form-label" for="duaDemoRate">Tần suất (/giây · VD: 0.05 = ~20s)</label>
+                  <input type="number" id="duaDemoRate" min="0.01" max="50" step="0.01" value="0.15" />
                 </div>
                 <div>
                   <label class="form-label" for="duaDemoGiftPct">Tỷ lệ tặng quà (%)</label>

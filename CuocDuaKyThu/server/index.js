@@ -146,16 +146,16 @@ if (args.mock) {
 
 let demoStop = null;
 let demoRate = null;
-let demoCfg = { rate: 2, giftRatio: 0.14 };
+let demoCfg = { rate: 0.25, giftRatio: 0.14 };
 const demo = {
   configure(opts = {}) {
-    if (Number.isFinite(opts.rate) && opts.rate >= 0.5 && opts.rate <= 50) demoCfg.rate = opts.rate;
+    if (Number.isFinite(opts.rate) && opts.rate >= 0.01 && opts.rate <= 50) demoCfg.rate = opts.rate;
     if (Number.isFinite(opts.giftRatio) && opts.giftRatio >= 0 && opts.giftRatio <= 0.85) demoCfg.giftRatio = opts.giftRatio;
   },
   start(r = demoCfg.rate, opts = {}) {
     demo.configure({ rate: r, ...opts });
     demo.stop();
-    demoStop = startMockRace(ingest, { rate: demoCfg.rate, giftRatio: demoCfg.giftRatio });
+    demoStop = startMockRace(ingest, { rate: demoCfg.rate, giftRatio: demoCfg.giftRatio, jitter: true });
     demoRate = demoCfg.rate;
   },
   stop() {

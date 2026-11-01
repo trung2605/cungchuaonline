@@ -493,11 +493,15 @@ function renderAll(state) {
   }
 
   // Update Auto-Demo status badges across all 3 tabs
+  const fmtDemoRate = r => {
+    const n = Number(r) || 0.2;
+    return n < 1 ? `${n}/s (~${Math.round(1 / n)}s/lần Random)` : `${n}/s (Random)`;
+  };
   const chuaDemoOn = Boolean(chua.demo?.on);
   const duaDemoOn = Boolean(dua.demo?.on);
   const anyDemoOn = chuaDemoOn || duaDemoOn;
   const demoText = anyDemoOn
-    ? `ĐANG CHẠY (${chua.demo?.rate || dua.demo?.rate || 2}/s)`
+    ? `ĐANG CHẠY (${fmtDemoRate(chua.demo?.rate || dua.demo?.rate || 0.2)})`
     : 'Đang tắt';
   for (const id of ['quickDemoStatusBadge', 'masterDemoStatusBadge']) {
     const el = $(id);
@@ -508,11 +512,11 @@ function renderAll(state) {
   }
   if ($('chuaDemoBadge')) {
     $('chuaDemoBadge').className = `badge ${chuaDemoOn ? 'brand' : ''}`;
-    $('chuaDemoBadge').textContent = chuaDemoOn ? `ĐANG CHẠY (${chua.demo?.rate || 2}/s)` : 'Đang tắt';
+    $('chuaDemoBadge').textContent = chuaDemoOn ? `ĐANG CHẠY (${fmtDemoRate(chua.demo?.rate || 0.2)})` : 'Đang tắt';
   }
   if ($('duaDemoBadge')) {
     $('duaDemoBadge').className = `badge ${duaDemoOn ? 'brand' : ''}`;
-    $('duaDemoBadge').textContent = duaDemoOn ? `ĐANG CHẠY (${dua.demo?.rate || 2}/s)` : 'Đang tắt';
+    $('duaDemoBadge').textContent = duaDemoOn ? `ĐANG CHẠY (${fmtDemoRate(dua.demo?.rate || 0.2)})` : 'Đang tắt';
   }
 
   // Hydrate Chua Lists once so we don't overwrite user edits while typing
@@ -781,13 +785,14 @@ window.addEventListener('DOMContentLoaded', () => {
 
   // Auto-Demo Character Spawner Controls (Quick Bar, Master Tab, Chua Tab, Dua Tab)
   const triggerAutoDemo = async (game, on, rate, giftPct, prayerPct = 70) => {
-    const cleanRate = Math.max(1, Math.min(50, Number(rate) || 2));
+    const cleanRate = Math.max(0.01, Math.min(50, Number(rate) || 0.2));
     const giftRatio = Math.max(0, Math.min(0.85, (Number(giftPct) || 15) / 100));
     const prayerRatio = Math.max(0.1, Math.min(0.95, (Number(prayerPct) || 70) / 100));
     await gameAction(game, '/api/demo', { on, rate: cleanRate, giftRatio, prayerRatio });
+    const rateLabel = cleanRate < 1 ? `${cleanRate}/giây (~${Math.round(1 / cleanRate)}s/lần Random)` : `${cleanRate}/giây (Random)`;
     showToast(
       on
-        ? `Đã BẬT chạy nhân vật mẫu tự động (${cleanRate} sự kiện/giây · ${Math.round(giftRatio * 100)}% quà)!`
+        ? `Đã BẬT chạy nhân vật mẫu tự động (${rateLabel} · ${Math.round(giftRatio * 100)}% quà)!`
         : 'Đã TẮT chạy nhân vật mẫu tự động!'
     );
     await pollState();

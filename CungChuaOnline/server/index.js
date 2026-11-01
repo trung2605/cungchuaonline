@@ -187,17 +187,17 @@ if (args.mock) {
 // BR-09.9: demo mock runs alongside the real source.
 let demoStop = null;
 let demoRate = null;
-let demoCfg = { rate: 3, giftRatio: 0.08, prayerRatio: 0.65 };
+let demoCfg = { rate: 0.25, giftRatio: 0.12, prayerRatio: 0.70 };
 const demo = {
   configure(opts = {}) {
-    if (Number.isFinite(opts.rate) && opts.rate >= 1 && opts.rate <= 50) demoCfg.rate = opts.rate;
+    if (Number.isFinite(opts.rate) && opts.rate >= 0.01 && opts.rate <= 50) demoCfg.rate = opts.rate;
     if (Number.isFinite(opts.giftRatio) && opts.giftRatio >= 0 && opts.giftRatio <= 0.9) demoCfg.giftRatio = opts.giftRatio;
     if (Number.isFinite(opts.prayerRatio) && opts.prayerRatio >= 0.1 && opts.prayerRatio <= 0.95) demoCfg.prayerRatio = opts.prayerRatio;
   },
   start(r, opts = {}) {
     demo.configure({ rate: r, ...opts });
     demo.stop();
-    demoStop = startMock(ingest, { rate: demoCfg.rate, giftRatio: demoCfg.giftRatio, prayerRatio: demoCfg.prayerRatio });
+    demoStop = startMock(ingest, { rate: demoCfg.rate, giftRatio: demoCfg.giftRatio, prayerRatio: demoCfg.prayerRatio, jitter: true });
     demoRate = demoCfg.rate;
   },
   stop() {
