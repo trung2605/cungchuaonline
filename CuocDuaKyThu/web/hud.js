@@ -73,7 +73,7 @@ export function createRaceHud() {
         const idx = joinFeed.findIndex(x => x.id === msg.id);
         if (idx !== -1) joinFeed.splice(idx, 1);
         joinFeed.unshift({ id: msg.id, name: msg.name });
-        if (joinFeed.length > 5) joinFeed.length = 5;
+        if (joinFeed.length > 3) joinFeed.length = 3;
         feed.replaceChildren(...joinFeed.map(item => {
           const li = document.createElement('li');
           const b = document.createElement('b');
@@ -101,7 +101,7 @@ export function createRaceHud() {
       if (empty) empty.style.display = top.length ? 'none' : 'block';
       const ol = $('#board ol');
       if (!ol) return;
-      ol.replaceChildren(...top.map(r => {
+      ol.replaceChildren(...top.slice(0, 5).map(r => {
         const li = document.createElement('li');
         const dBadge = r.diamonds > 0 ? ` · 💎${r.diamonds}` : '';
         li.textContent = `${r.name} · ${fmtDist(r.distanceM)}${dBadge}`;

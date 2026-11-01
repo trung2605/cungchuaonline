@@ -95,7 +95,7 @@ const giftVi = g => GIFT_VI[String(g || '').trim().toLowerCase()] || g || 'Lễ 
         case 'board': {
           const empty = $('#board-empty');
           if (empty) empty.style.display = msg.top.length ? 'none' : 'block';
-          $('#board ol').replaceChildren(...msg.top.map(r => {
+          $('#board ol').replaceChildren(...msg.top.slice(0, 5).map(r => {
             const li = document.createElement('li');
             li.textContent = `${r.name} · 💎${r.diamonds.toLocaleString('vi-VN')}`;
             return li;
@@ -117,7 +117,7 @@ const giftVi = g => GIFT_VI[String(g || '').trim().toLowerCase()] || g || 'Lễ 
       const idx = recentPrayers.findIndex(x => x.id === actor.id);
       if (idx !== -1) recentPrayers.splice(idx, 1);
       recentPrayers.unshift(item);
-      if (recentPrayers.length > 4) recentPrayers.length = 4;
+      if (recentPrayers.length > 3) recentPrayers.length = 3;
       list.replaceChildren(...recentPrayers.map(p => {
         const li = document.createElement('li');
         const b = document.createElement('b');

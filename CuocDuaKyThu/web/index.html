@@ -34,35 +34,26 @@
     backdrop-filter: blur(8px);
   }
 
-  /* Center Destination & Odometer Header (Safe Zone below TikTok top bar) */
+  /* Center Destination & Odometer Header (Safe Zone below TikTok top bar, 36px clear gap from side columns) */
   #world-card {
-    left: 50%; top: 162px; translate: -50% 0; width: 510px; padding: 12px 22px;
+    left: 50%; top: 158px; translate: -50% 0; width: 464px; padding: 14px 20px;
     text-align: center; border-color: var(--gold-line);
     box-shadow: 0 0 24px rgba(255, 209, 102, .24), 0 8px 22px rgba(0, 0, 0, .65);
     pointer-events: none;
   }
-  #world-card .eyebrow { font-size: 14px; font-weight: 800; letter-spacing: 2px; color: var(--cyan); text-transform: uppercase; }
-  #biome-name { font-size: 25px; font-weight: 800; color: #fff; margin: 3px 0; text-shadow: 0 2px 8px rgba(0, 0, 0, .85); }
-  #biome-sub { font-size: 15.5px; font-weight: 600; color: #d0e8ff; margin-bottom: 7px; }
-  .biome-bar { height: 7px; background: rgba(255, 255, 255, .16); border-radius: 99px; overflow: hidden; }
+  #world-card .eyebrow { font-size: 16px; font-weight: 800; letter-spacing: 1.8px; color: var(--cyan); text-transform: uppercase; }
+  #biome-name { font-size: 27px; font-weight: 800; color: #fff; margin: 4px 0; text-shadow: 0 2px 8px rgba(0, 0, 0, .85); }
+  #biome-sub { font-size: 18px; font-weight: 700; color: #d0e8ff; margin-bottom: 8px; }
+  .biome-bar { height: 8px; background: rgba(255, 255, 255, .16); border-radius: 99px; overflow: hidden; }
   #biome-bar-fill { height: 100%; width: 25%; background: linear-gradient(90deg, var(--cyan), var(--gold)); transition: width .4s ease; }
-
-  /* Right Odometer & Active Runners Counter */
-  #odometer {
-    right: 12px; top: 166px; width: 244px; padding: 11px 14px; text-align: center;
-    font-variant-numeric: tabular-nums; border-color: var(--gold-line); pointer-events: none;
-  }
-  #odometer b { display: block; font-size: 15px; font-weight: 800; color: var(--gold); letter-spacing: 1px; }
-  #world-dist { display: block; font-size: 28px; font-weight: 800; color: #fff; margin: 2px 0; }
-  #runner-count { display: block; font-size: 16px; font-weight: 700; color: var(--cyan); }
 
   /* Welcome Greeting Card ("Chào user [tên] đã tham gia cuộc đua cùng chúng tôi") */
   #welcome-card {
-    left: 50%; top: 284px; translate: -50% 0; max-width: 680px; padding: 12px 26px;
+    left: 50%; top: 294px; translate: -50% 0; max-width: 660px; padding: 14px 26px;
     background: linear-gradient(90deg, rgba(16, 48, 82, .96), rgba(28, 78, 118, .96), rgba(16, 48, 82, .96));
     border: 2px solid var(--gold); border-radius: 999px;
     box-shadow: 0 0 28px rgba(255, 209, 102, .45), 0 8px 24px rgba(0, 0, 0, .65);
-    color: #fff; font-size: 22px; font-weight: 800; text-align: center;
+    color: #fff; font-size: 24px; font-weight: 800; text-align: center;
     opacity: 0; transform: translateY(-10px) scale(.96);
     transition: opacity 320ms var(--ease-out), transform 320ms var(--ease-out);
     pointer-events: none; white-space: nowrap;
@@ -70,83 +61,102 @@
   #welcome-card.on { opacity: 1; transform: none; }
 
   #banner {
-    left: 50%; top: 348px; translate: -50% 0; max-width: 620px; padding: 10px 24px;
-    font-size: 22px; font-weight: 800; color: var(--gold); text-align: center;
-    opacity: 0; transform: translateY(-8px); transition: opacity 280ms ease, transform 280ms ease;
+    left: 50%; top: 362px; translate: -50% 0; max-width: 620px; padding: 12px 24px;
+    font-size: 24px; font-weight: 800; color: var(--gold); text-align: center;
+    opacity: 0; transform: translateY(-8px); transition: opacity 280ms ease, transform 260ms ease;
     pointer-events: none; border-color: var(--gold-line);
   }
   #banner.on { opacity: 1; transform: none; }
 
   #voice-toast {
-    left: 50%; top: 408px; translate: -50% 0; max-width: 580px; padding: 10px 22px;
-    font-size: 19.5px; font-weight: 700; color: #fff; text-align: center;
+    left: 50%; top: 428px; translate: -50% 0; max-width: 580px; padding: 12px 24px;
+    font-size: 21.5px; font-weight: 700; color: #fff; text-align: center;
     background: rgba(8, 22, 44, .96); border: 1.5px solid var(--cyan); border-radius: 26px;
     box-shadow: 0 0 22px rgba(0, 245, 212, .4);
     opacity: 0; transform: translateY(-6px); transition: opacity 260ms ease, transform 260ms ease;
-    pointer-events: none; display: flex; align-items: center; gap: 12px; line-height: 1.35;
+    pointer-events: none; display: flex; align-items: center; gap: 12px; line-height: 1.38;
   }
   #voice-toast.on { opacity: 1; transform: none; }
-  .wave { display: inline-flex; align-items: center; gap: 4px; height: 18px; flex: none; }
-  .wave i { display: block; width: 4px; height: 7px; border-radius: 2px; background: var(--cyan); animation: wave-bar 600ms ease-in-out infinite alternate; }
-  .wave i:nth-child(2) { animation-delay: 160ms; height: 14px; }
-  .wave i:nth-child(3) { animation-delay: 320ms; height: 9px; }
-  @keyframes wave-bar { to { height: 18px; background: var(--gold); } }
+  .wave { display: inline-flex; align-items: center; gap: 4px; height: 20px; flex: none; }
+  .wave i { display: block; width: 4px; height: 8px; border-radius: 2px; background: var(--cyan); animation: wave-bar 600ms ease-in-out infinite alternate; }
+  .wave i:nth-child(2) { animation-delay: 160ms; height: 15px; }
+  .wave i:nth-child(3) { animation-delay: 320ms; height: 10px; }
+  @keyframes wave-bar { to { height: 20px; background: var(--gold); } }
 
-  /* Left Stack: positioned at top: 238px so TikTok LIVE Studio Avatar + Daily Ranking badge never covers it */
-  #guide { left: 12px; top: 238px; width: 244px; padding: 12px 14px; font-size: 15.2px; pointer-events: none; }
-  #guide h3 { margin: 0 0 8px; padding-bottom: 6px; text-align: center; color: var(--gold); letter-spacing: 1.3px; font-size: 18.5px; font-weight: 800; border-bottom: 1.5px solid var(--gold-line); }
-  #guide .tier { margin-bottom: 7px; padding-bottom: 7px; border-bottom: 1px dashed rgba(255, 255, 255, .18); line-height: 1.34; font-weight: 600; font-variant-numeric: tabular-nums; }
+  /* Left Safe-Zone Flex Column: starts at top: 268px (40px below TikTok Daily Ranking badge) with 18px gap so boxes never collide */
+  #left-col {
+    left: 16px; top: 268px; width: 256px;
+    display: flex; flex-direction: column; gap: 18px;
+    pointer-events: none;
+  }
+  #guide { width: 100%; padding: 14px 16px; font-size: 17.5px; pointer-events: none; }
+  #guide h3 { margin: 0 0 10px; padding-bottom: 8px; text-align: center; color: var(--gold); letter-spacing: 1.2px; font-size: 21px; font-weight: 800; border-bottom: 1.5px solid var(--gold-line); }
+  #guide .tier { margin-bottom: 9px; padding-bottom: 9px; border-bottom: 1px dashed rgba(255, 255, 255, .2); line-height: 1.35; font-weight: 700; font-variant-numeric: tabular-nums; color: #f0f7ff; }
   #guide .tier:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
-  #guide .tier b { display: block; color: var(--cyan); font-size: 16.5px; font-weight: 800; margin-bottom: 2px; }
+  #guide .tier b { display: block; color: var(--cyan); font-size: 19px; font-weight: 800; margin-bottom: 3px; }
 
-  #joins { left: 12px; top: 642px; width: 244px; padding: 11px 14px; font-size: 15.8px; pointer-events: none; }
-  #joins h3 { margin: 0 0 7px; padding-bottom: 5px; text-align: center; color: var(--cyan); letter-spacing: 1.1px; font-size: 18px; font-weight: 800; border-bottom: 1.5px solid var(--line); }
+  #joins { width: 100%; padding: 14px 16px; font-size: 18px; pointer-events: none; }
+  #joins h3 { margin: 0 0 8px; padding-bottom: 7px; text-align: center; color: var(--cyan); letter-spacing: 1.1px; font-size: 20px; font-weight: 800; border-bottom: 1.5px solid var(--line); }
   #joins ul { margin: 0; padding: 0; list-style: none; }
-  #joins li { padding: 5px 0; border-bottom: 1px dashed rgba(255, 255, 255, .16); font-size: 15.8px; font-weight: 600; line-height: 1.35; white-space: normal; word-break: break-word; }
+  #joins li { padding: 6px 0; border-bottom: 1px dashed rgba(255, 255, 255, .18); font-size: 18px; font-weight: 700; line-height: 1.38; white-space: normal; word-break: break-word; }
+  #joins li:last-child { border-bottom: none; padding-bottom: 0; }
   #joins li b { color: var(--gold); font-weight: 800; }
 
-  /* Right Stack: Gift Boost Card + Top 8 Racers Leaderboard */
-  #donor { right: 12px; top: 274px; width: 244px; pointer-events: none; }
-  #donor .card { display: flex; align-items: center; gap: 9px; padding: 9px 12px; border-color: var(--gold); box-shadow: 0 0 18px rgba(255, 209, 102, .35); }
-  #donor .avatar { flex: none; width: 38px; height: 38px; font-size: 18px; border-radius: 50%; background: linear-gradient(135deg, var(--gold), #ff7b00); color: #051020; font-weight: 800; display: grid; place-items: center; }
-  #donor .card b { display: block; font-size: 17.5px; font-weight: 800; color: #fff; max-width: 175px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  #donor .card span { display: block; font-size: 15px; font-weight: 600; color: var(--gold); line-height: 1.28; }
+  /* Right Safe-Zone Flex Column: starts at top: 185px (below TikTok viewer avatars) with 18px gap */
+  #right-col {
+    right: 16px; top: 185px; width: 256px;
+    display: flex; flex-direction: column; gap: 18px;
+    pointer-events: none;
+  }
+  #odometer {
+    width: 100%; padding: 14px 16px; text-align: center;
+    font-variant-numeric: tabular-nums; border-color: var(--gold-line); pointer-events: none;
+  }
+  #odometer b { display: block; font-size: 18px; font-weight: 800; color: var(--gold); letter-spacing: 1px; }
+  #world-dist { display: block; font-size: 32px; font-weight: 800; color: #fff; margin: 3px 0; }
+  #runner-count { display: block; font-size: 18px; font-weight: 700; color: var(--cyan); }
 
-  #board { right: 12px; top: 382px; width: 244px; padding: 12px 14px; font-size: 16.5px; pointer-events: none; }
-  #board h3 { margin: 0 0 8px; padding-bottom: 6px; text-align: center; color: var(--gold); letter-spacing: 1.3px; font-size: 18.5px; font-weight: 800; border-bottom: 1.5px solid var(--gold-line); }
-  #board ol { margin: 0; padding-left: 22px; font-variant-numeric: tabular-nums; }
-  #board li { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.54; color: #f0f7ff; font-size: 16.5px; font-weight: 700; }
+  #board { width: 100%; padding: 14px 16px; font-size: 18.5px; pointer-events: none; }
+  #board h3 { margin: 0 0 9px; padding-bottom: 7px; text-align: center; color: var(--gold); letter-spacing: 1.2px; font-size: 20px; font-weight: 800; border-bottom: 1.5px solid var(--gold-line); }
+  #board ol { margin: 0; padding-left: 24px; font-variant-numeric: tabular-nums; }
+  #board li { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.55; color: #f0f7ff; font-size: 18.5px; font-weight: 800; margin-bottom: 3px; }
   #board li::marker { color: var(--gold); font-weight: 800; }
-  #board .empty-board { font-size: 15.5px; font-weight: 600; color: #b8d4f2; text-align: center; padding: 6px 2px; line-height: 1.4; }
+  #board .empty-board { font-size: 17.5px; font-weight: 700; color: #b8d4f2; text-align: center; padding: 8px 2px; line-height: 1.4; }
 
-  /* Bottom Call-To-Action Bar (above TikTok comment input) */
+  #donor { width: 100%; pointer-events: none; }
+  #donor .card { display: flex; align-items: center; gap: 10px; padding: 11px 14px; border-color: var(--gold); box-shadow: 0 0 18px rgba(255, 209, 102, .35); }
+  #donor .avatar { flex: none; width: 42px; height: 42px; font-size: 20px; border-radius: 50%; background: linear-gradient(135deg, var(--gold), #ff7b00); color: #051020; font-weight: 800; display: grid; place-items: center; }
+  #donor .card b { display: block; font-size: 19.5px; font-weight: 800; color: #fff; max-width: 175px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #donor .card span { display: block; font-size: 17px; font-weight: 700; color: var(--gold); line-height: 1.3; }
+
+  /* Bottom Call-To-Action Bar (raised to bottom: 185px so TikTok bottom buttons 🔗 👥 ↗️ never cover it) */
   #footer {
-    left: 50%; bottom: 118px; translate: -50% 0; width: 1024px; padding: 12px 22px;
+    left: 50%; bottom: 185px; translate: -50% 0; width: 1024px; padding: 15px 24px;
     text-align: center; border-radius: 22px; border-color: var(--gold-line); pointer-events: none;
     font-variant-numeric: tabular-nums;
   }
-  #footer .title { font-size: 23.5px; font-weight: 800; color: var(--gold); margin-bottom: 3px; text-shadow: 0 2px 6px rgba(0, 0, 0, .85); }
-  #footer .sub { font-size: 18px; font-weight: 600; color: #e2f1ff; }
-  #footer .tiers { margin-top: 6px; padding-top: 6px; border-top: 1.5px solid rgba(255, 209, 102, .35); font-size: 17.5px; font-weight: 800; color: var(--cyan); }
+  #footer .title { font-size: 26px; font-weight: 800; color: var(--gold); margin-bottom: 4px; text-shadow: 0 2px 6px rgba(0, 0, 0, .85); }
+  #footer .sub { font-size: 20px; font-weight: 700; color: #e2f1ff; }
+  #footer .tiers { margin-top: 8px; padding-top: 8px; border-top: 1.5px solid rgba(255, 209, 102, .35); font-size: 19.5px; font-weight: 800; color: var(--cyan); }
 
   /* 3D Runner Overhead Labels */
   .label {
-    font-size: 18.5px; font-weight: 700; color: #fff;
-    padding: 3px 10px; border-radius: 999px;
-    background: rgba(6, 16, 34, .85); border: 1.5px solid rgba(255, 255, 255, .35);
+    font-size: 21px; font-weight: 800; color: #fff;
+    padding: 4px 12px; border-radius: 999px;
+    background: rgba(6, 16, 34, .88); border: 1.5px solid rgba(255, 255, 255, .42);
     text-shadow: 0 2px 4px #000; white-space: nowrap; font-variant-numeric: tabular-nums;
   }
-  .label.tier1 { font-size: 19.5px; font-weight: 800; border-color: #38bdf8; color: #e0f2fe; background: rgba(7, 42, 74, .9); }
-  .label.tier2 { font-size: 20px; font-weight: 800; border-color: #f59e0b; color: #fef3c7; background: rgba(68, 36, 6, .92); }
-  .label.tier3 { font-size: 20.5px; font-weight: 800; border-color: #fb7185; color: #ffe4e6; background: rgba(76, 12, 30, .94); box-shadow: 0 0 12px rgba(244, 63, 94, .45); }
-  .label.tier4 { font-size: 21.5px; font-weight: 800; border-color: #ffd700; color: #fffbeb; padding: 4px 13px; background: linear-gradient(180deg, rgba(92, 54, 4, .95), rgba(44, 22, 2, .95)); box-shadow: 0 0 16px rgba(255, 215, 0, .6); }
+  .label.tier1 { font-size: 22px; font-weight: 800; border-color: #38bdf8; color: #e0f2fe; background: rgba(7, 42, 74, .92); }
+  .label.tier2 { font-size: 22.5px; font-weight: 800; border-color: #f59e0b; color: #fef3c7; background: rgba(68, 36, 6, .94); }
+  .label.tier3 { font-size: 23px; font-weight: 800; border-color: #fb7185; color: #ffe4e6; background: rgba(76, 12, 30, .95); box-shadow: 0 0 12px rgba(244, 63, 94, .45); }
+  .label.tier4 { font-size: 24px; font-weight: 800; border-color: #ffd700; color: #fffbeb; padding: 5px 15px; background: linear-gradient(180deg, rgba(92, 54, 4, .96), rgba(44, 22, 2, .96)); box-shadow: 0 0 16px rgba(255, 215, 0, .6); }
   .bubble {
-    margin-bottom: 6px; padding: 7px 14px; max-width: 270px; white-space: normal;
-    background: rgba(255, 252, 240, .97); color: #0a192f; border: 1.5px solid #ffd166; border-radius: 14px 14px 14px 4px;
-    font-size: 18.5px; font-weight: 700; line-height: 1.32; text-shadow: none; box-shadow: 0 6px 16px rgba(0, 0, 0, .55);
+    margin-bottom: 7px; padding: 8px 16px; max-width: 290px; white-space: normal;
+    background: rgba(255, 252, 240, .98); color: #0a192f; border: 2px solid #ffd166; border-radius: 16px 16px 16px 4px;
+    font-size: 21px; font-weight: 800; line-height: 1.34; text-shadow: none; box-shadow: 0 6px 16px rgba(0, 0, 0, .55);
     transition: opacity .5s;
   }
-  #sound { right: 24px; bottom: 24px; padding: 12px 20px; font-size: 18px; font-weight: 700; display: none; color: var(--gold); cursor: pointer; }
+  #sound { right: 24px; bottom: 24px; padding: 14px 22px; font-size: 20px; font-weight: 800; display: none; color: var(--gold); cursor: pointer; }
 </style>
 </head>
 <body>
@@ -161,37 +171,42 @@
     <div class="biome-bar"><div id="biome-bar-fill"></div></div>
   </div>
 
-  <div id="odometer" class="pill">
-    <b>QUÃNG ĐƯỜNG ĐOÀN</b>
-    <span id="world-dist">0 m</span>
-    <span id="runner-count">Đang đua: 0 vận động viên</span>
-  </div>
-
   <div id="welcome-card">🏁 <span id="welcome-text">Chào mừng bạn tham gia cuộc đua cùng chúng tôi!</span></div>
   <div id="banner" class="pill"></div>
   <div id="voice-toast"><span class="wave"><i></i><i></i><i></i></span><span id="voice-text"></span></div>
 
-  <div id="guide" class="pill">
-    <h3>BẢNG TĂNG TỐC ĐUA</h3>
-    <div class="tier"><b>💬 Bình luận bất kỳ / Thả ❤️</b>Nhập cuộc đua 3D · 500 ❤️ Bão Cầu Vồng</div>
-    <div class="tier"><b>🌹 Quà 1–9 💎 (Hoa hồng, TikTok)</b>Đôi Cánh Năng Lượng · Tốc độ ×1.8 (+80m)</div>
-    <div class="tier"><b>🛹 Quà 10–99 💎 (Bánh vòng, Hạc)</b>Ván Trượt Hoàng Kim · Tốc độ ×2.8 (+350m)</div>
-    <div class="tier"><b>🚀 Quà 100–999 💎 (Vòng hoa)</b>Tên Lửa Tia Chớp · Tốc độ ×4.2 (+1.500m)</div>
-    <div class="tier"><b>👑 Quà 1000+ 💎 (Galaxy, Sư tử)</b>Siêu Phi Thuyền · Dẫn đầu ×6.5 (+10.000m)</div>
+  <div id="left-col">
+    <div id="guide" class="pill">
+      <h3>BẢNG TĂNG TỐC ĐUA</h3>
+      <div class="tier"><b>💬 Bình luận / Thả ❤️</b>Nhập cuộc 3D · 500 ❤️ Bão Cầu Vồng</div>
+      <div class="tier"><b>🌹 Quà 1–9 💎 (Hoa hồng)</b>Đôi Cánh Năng Lượng · ×1.8 (+80m)</div>
+      <div class="tier"><b>🛹 Quà 10–99 💎 (Bánh vòng)</b>Ván Trượt Hoàng Kim · ×2.8 (+350m)</div>
+      <div class="tier"><b>🚀 Quà 100–999 💎 (Vòng hoa)</b>Tên Lửa Tia Chớp · ×4.2 (+1.500m)</div>
+      <div class="tier"><b>👑 Quà 1000+ 💎 (Galaxy)</b>Siêu Phi Thuyền · Dẫn đầu ×6.5</div>
+    </div>
+
+    <div id="joins" class="pill">
+      <h3>VỪA NHẬP CUỘC</h3>
+      <ul id="join-list">
+        <li>🏁 Bình luận để xuất hiện trên đường đua!</li>
+      </ul>
+    </div>
   </div>
 
-  <div id="joins" class="pill">
-    <h3>VỪA NHẬP CUỘC</h3>
-    <ul id="join-list">
-      <li>🏁 Bình luận để xuất hiện trên đường đua!</li>
-    </ul>
-  </div>
+  <div id="right-col">
+    <div id="odometer" class="pill">
+      <b>QUÃNG ĐƯỜNG ĐOÀN</b>
+      <span id="world-dist">0 m</span>
+      <span id="runner-count">Đang đua: 0 vận động viên</span>
+    </div>
 
-  <div id="donor"></div>
-  <div id="board" class="pill">
-    <h3>🏆 BẢNG XẾP HẠNG ĐUA</h3>
-    <ol></ol>
-    <div id="board-empty" class="empty-board">Bình luận hoặc tặng quà để dẫn đầu đoàn đua!</div>
+    <div id="board" class="pill">
+      <h3>🏆 BẢNG XẾP HẠNG ĐUA</h3>
+      <ol></ol>
+      <div id="board-empty" class="empty-board">Bình luận hoặc tặng quà để dẫn đầu đoàn đua!</div>
+    </div>
+
+    <div id="donor"></div>
   </div>
 
   <div id="footer" class="pill">
