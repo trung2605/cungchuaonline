@@ -22,10 +22,14 @@ export function createStats({ lists, now = Date.now, recentMax = 200 }) {
 
   // Demo tracking & detailed chronological logs
   const demoBowers = new Set();
+  let realNamo = 0;
+  let demoNamo = 0;
   let demoBows = 0;
   let demoGifts = 0;
   let demoDiamonds = 0;
   let demoEvents = 0;
+  const demoPrayers = new Map(); // fold -> { text, count }
+  const demoDonors = new Map(); // uid -> { uid, name, diamonds }
   const giftLog = []; // newest first, capped at LOG_MAX
   const eventLog = []; // newest first, capped at LOG_MAX
 
@@ -59,14 +63,17 @@ export function createStats({ lists, now = Date.now, recentMax = 200 }) {
             ts, kind: triggered ? 'prayer' : 'chat', src: e.src ?? 'tiktok',
             uid: e.uid, name, text: text ?? '(bị lọc)', raw: e.text, intent,
           });
-          if (real && triggered) {
+          if (real && isTrigger(e.text, lists)) realNamo++;
+          if (!real && isTrigger(e.text, lists)) demoNamo++;
+          if (triggered) {
+            const targetMap = real ? prayers : demoPrayers;
             const k = fold(text);
-            const p = prayers.get(k) ?? { text, count: 0 };
+            const p = targetMap.get(k) ?? { text, count: 0 };
             p.count++;
-            prayers.set(k, p);
-            if (prayers.size > PRAYER_KEYS_MAX) {
-              const low = [...prayers].sort((a, b) => a[1].count - b[1].count).slice(0, PRAYER_KEYS_MAX / 2);
-              for (const [key] of low) prayers.delete(key);
+            targetMap.set(k, p);
+            if (targetMap.size > PRAYER_KEYS_MAX) {
+              const low = [...targetMap].sort((a, b) => a[1].count - b[1].count).slice(0, PRAYER_KEYS_MAX / 2);
+              for (const [key] of low) targetMap.delete(key);
             }
           }
           break;
@@ -89,6 +96,13 @@ export function createStats({ lists, now = Date.now, recentMax = 200 }) {
           if (!real) {
             demoGifts += repeat;
             demoDiamonds += total;
+            const dm = demoDonors.get(e.uid) ?? { uid: e.uid, name: '', diamonds: 0, gifts: 0, lastGift: '', lastTs: ts };
+            dm.name = name;
+            dm.diamonds += total;
+            dm.gifts = (dm.gifts || 0) + repeat;
+            dm.lastGift = `${e.giftName} ×${repeat}`;
+            dm.lastTs = ts;
+            demoDonors.set(e.uid, dm);
             break;
           }
           diamonds += total;
@@ -131,13 +145,17 @@ export function createStats({ lists, now = Date.now, recentMax = 200 }) {
       giftLog.length = 0;
       eventLog.length = 0;
       demoBowers.clear();
+      demoNamo = 0;
       demoBows = 0;
       demoGifts = 0;
       demoDiamonds = 0;
       demoEvents = 0;
+      demoPrayers.clear();
+      demoDonors.clear();
     },
     resetAll() {
       bowers.clear();
+      realNamo = 0;
       bows = 0;
       filtered = 0;
       diamonds = 0;
@@ -149,10 +167,13 @@ export function createStats({ lists, now = Date.now, recentMax = 200 }) {
       giftLog.length = 0;
       eventLog.length = 0;
       demoBowers.clear();
+      demoNamo = 0;
       demoBows = 0;
       demoGifts = 0;
       demoDiamonds = 0;
       demoEvents = 0;
+      demoPrayers.clear();
+      demoDonors.clear();
     },
     exportHistory() {
       return {
@@ -164,8 +185,8 @@ export function createStats({ lists, now = Date.now, recentMax = 200 }) {
         viewersPeak,
         prayers: [...prayers.entries()],
         donors: [...donors.entries()],
-        giftLog: giftLog.slice(0, 150),
-        eventLog: eventLog.slice(0, 150),
+        giftLog: giftLog.filter(g => g.src !== 'mock').slice(0, 150),
+        eventLog: eventLog.filter(ev => ev.src !== 'mock').slice(0, 150),
       };
     },
     importHistory(h) {
@@ -197,7 +218,8 @@ export function createStats({ lists, now = Date.now, recentMax = 200 }) {
         uptime,
         uniqueBowers: bowers.size,
         bows,
-        namo: counters?.state().namo ?? 0,
+        namo: counters?.state().namo ?? realNamo,
+        realNamo,
         topPrayers: top(prayers, 'count').map(({ text, count }) => ({ text, count })),
         topDonors: top(donors, 'diamonds').map(d => ({ uid: d.uid, name: d.name, diamonds: d.diamonds })),
         diamonds,
@@ -208,10 +230,13 @@ export function createStats({ lists, now = Date.now, recentMax = 200 }) {
         sources: { tiktok: sources.tiktok ?? 'off', tikfinity: sources.tikfinity ?? 'off' },
         demoStats: {
           uniqueBowers: demoBowers.size,
+          namo: demoNamo,
           bows: demoBows,
           gifts: demoGifts,
           diamonds: demoDiamonds,
           events: demoEvents,
+          topPrayers: top(demoPrayers, 'count').map(({ text, count }) => ({ text, count })),
+          topDonors: top(demoDonors, 'diamonds').map(d => ({ uid: d.uid, name: d.name, diamonds: d.diamonds })),
         },
         giftLog: giftLog.slice(0, 100),
         eventLog: eventLog.slice(0, 120),

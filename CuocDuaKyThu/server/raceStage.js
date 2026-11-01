@@ -54,8 +54,9 @@ export class RaceStage {
   constructor({ max = 120, now = Date.now, baseSpeedMps = 14 } = {}) {
     Object.assign(this, { max, now, baseSpeedMps });
     this.runners = new Map(); // uid -> Runner
-    this.statsByUid = new Map(); // uid -> { name, distanceM, diamonds, tier, updatedAt }
+    this.statsByUid = new Map(); // uid -> { name, distanceM, diamonds, tier, src, updatedAt }
     this.worldDistanceM = 0;
+    this.realWorldDistanceM = 0;
     this.biomeIdx = 0;
     this.forcedBiome = null; // null = auto cycle
     this.globalTurboUntil = 0;
@@ -86,14 +87,15 @@ export class RaceStage {
     ];
   }
 
-  joinOrBoost(uid, name, giftTierLevel = 0, { addDiamonds = 0, addDistanceM = 0, boostMs = 0, cheer = '' } = {}) {
+  joinOrBoost(uid, name, giftTierLevel = 0, { addDiamonds = 0, addDistanceM = 0, boostMs = 0, cheer = '', src = 'tiktok' } = {}) {
     const t = this.now();
-    const prev = this.statsByUid.get(uid) || { name, distanceM: 0, diamonds: 0, tier: 0, updatedAt: t };
+    const prev = this.statsByUid.get(uid) || { name, distanceM: 0, diamonds: 0, tier: 0, src, updatedAt: t };
     const diamonds = prev.diamonds + addDiamonds;
     const distanceM = prev.distanceM + addDistanceM;
     const bestTier = Math.max(prev.tier, giftTierLevel, raceGiftTier(diamonds));
+    const finalSrc = src === 'mock' && prev.src && prev.src !== 'mock' ? prev.src : (src || prev.src || 'tiktok');
 
-    this.statsByUid.set(uid, { name, distanceM, diamonds, tier: bestTier, updatedAt: t });
+    this.statsByUid.set(uid, { name, distanceM, diamonds, tier: bestTier, src: finalSrc, updatedAt: t });
 
     const existing = this.runners.get(uid);
     const out = [];
@@ -101,6 +103,7 @@ export class RaceStage {
 
     if (existing) {
       existing.name = name;
+      existing.src = finalSrc;
       existing.tier = Math.max(existing.tier, bestTier);
       existing.diamonds = diamonds;
       existing.distanceM = distanceM;
@@ -146,6 +149,7 @@ export class RaceStage {
     const runner = {
       id: uid,
       name,
+      src: finalSrc,
       skin: skinOf(uid),
       lane: laneOf(uid, this.runners.size),
       tier: bestTier,
@@ -209,8 +213,15 @@ export class RaceStage {
     const globalTurbo = t < this.globalTurboUntil;
     const prevCycle = Math.floor(this.worldDistanceM / 600);
     const activeCount = this.runners.size;
-    const worldStep = (this.baseSpeedMps + Math.min(12, activeCount * 0.25)) * (globalTurbo ? 1.6 : 1.0) * dt;
-    this.worldDistanceM += worldStep;
+    const realActiveCount = [...this.runners.values()].filter(r => r.src !== 'mock').length;
+    if (activeCount > 0) {
+      const worldStep = (this.baseSpeedMps + Math.min(12, activeCount * 0.25)) * (globalTurbo ? 1.6 : 1.0) * dt;
+      this.worldDistanceM += worldStep;
+    }
+    if (realActiveCount > 0) {
+      const realStep = (this.baseSpeedMps + Math.min(12, realActiveCount * 0.25)) * (globalTurbo ? 1.6 : 1.0) * dt;
+      this.realWorldDistanceM += realStep;
+    }
 
     const newCycle = Math.floor(this.worldDistanceM / 600);
     if (!this.forcedBiome && newCycle > prevCycle) {
@@ -247,6 +258,7 @@ export class RaceStage {
       board: this.board(),
       runners: [...this.runners.values()].map(r => ({
         id: r.id,
+        src: r.src || 'tiktok',
         distanceM: Math.round(r.distanceM),
         speedMult: r.speedMult,
         tier: r.tier,
@@ -258,11 +270,13 @@ export class RaceStage {
     return out;
   }
 
-  board(limit = 8) {
+  board(limit = 8, includeMock = true) {
     return [...this.statsByUid.entries()]
+      .filter(([, s]) => includeMock || s.src !== 'mock')
       .map(([uid, s]) => ({
         uid,
         name: s.name,
+        src: s.src || 'tiktok',
         distanceM: Math.round(s.distanceM),
         diamonds: s.diamonds,
         tier: s.tier,
@@ -285,6 +299,7 @@ export class RaceStage {
     }
     this.statsByUid.clear();
     this.worldDistanceM = 0;
+    this.realWorldDistanceM = 0;
     this.biomeIdx = 0;
     this.forcedBiome = null;
     this.globalTurboUntil = 0;

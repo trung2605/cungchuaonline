@@ -213,15 +213,11 @@ const saveSceneConfig = () => {
   } catch {}
 };
 
-// Load saved scene & demo config on startup
+// Load saved scene config on startup (never auto-start demo in live mode)
 try {
   if (fs.existsSync(SCENE_FILE)) {
     const saved = JSON.parse(fs.readFileSync(SCENE_FILE, 'utf8'));
     if (saved?.scene) pipeline.setScene(saved.scene);
-    if (saved?.demo) {
-      demo.configure(saved.demo);
-      if (saved.demo.on) demo.start(saved.demo.rate, saved.demo);
-    }
   }
 } catch {}
 

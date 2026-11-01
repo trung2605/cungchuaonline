@@ -159,9 +159,10 @@ export async function startMasterAdmin({
     // Configure & connect MongoDB URI at runtime
     'POST /api/mongodb': async req => {
       const { uri, dbName = 'live_tiktok' } = await readJson(req);
-      const cleanUri = typeof uri === 'string' ? uri.trim() : '';
+      const inputUri = typeof uri === 'string' ? uri.trim() : '';
+      const cleanUri = inputUri || (process.env.MONGODB_URI ? process.env.MONGODB_URI.trim() : '');
       const cleanDb = typeof dbName === 'string' && dbName.trim() ? dbName.trim() : 'live_tiktok';
-      updateEnvVar?.('MONGODB_URI', cleanUri);
+      if (inputUri) updateEnvVar?.('MONGODB_URI', cleanUri);
       updateEnvVar?.('MONGODB_DB', cleanDb);
       const status = await db.connectMongo(cleanUri, cleanDb);
       db.addWorkLog({

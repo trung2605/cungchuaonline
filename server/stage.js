@@ -28,7 +28,7 @@ export class Stage {
     return { t: 'leave', id: uid };
   }
 
-  enter(uid, name, tier, addBows, { intent, addDiamonds = 0, visit = false } = {}) {
+  enter(uid, name, tier, addBows, { intent, addDiamonds = 0, visit = false, src } = {}) {
     const t = this.now();
     const diamonds = (this.diamondsByUid.get(uid) ?? 0) + addDiamonds;
     if (addDiamonds) this.diamondsByUid.set(uid, diamonds);
@@ -42,6 +42,7 @@ export class Stage {
       a.expiresAt = Math.max(a.expiresAt, t + TTL[a.tier]);
       a.intent = intent ?? a.intent;
       a.diamonds = diamonds;
+      if (src) a.src = src;
       if (a.tier === 2 && a.slot >= this.front) {
         const s = this.#free(0, this.front);
         if (s !== -1) {
@@ -74,6 +75,7 @@ export class Stage {
     const actor = {
       id: uid, name, tier, slot, skin: skinOf(uid), bows: Math.min(MAX_BOWS, addBows),
       joinedAt: t, expiresAt: t + TTL[tier], intent: intent ?? DEFAULT_INTENT, diamonds,
+      ...(src && { src }),
     };
     this.actors.set(uid, actor);
     this.occupied[slot] = uid;

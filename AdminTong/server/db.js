@@ -325,31 +325,43 @@ export function createDatabase({
     let realDiamonds = 0;
     let mockGiftsCount = 0;
     let mockDiamonds = 0;
-    let chuaDiamonds = 0;
-    let duaDiamonds = 0;
-    const donorMap = new Map(); // uid -> { uid, name, realDiamonds, totalDiamonds, giftCount, lastGift }
+    let realChuaDiamonds = 0;
+    let realDuaDiamonds = 0;
+    let mockChuaDiamonds = 0;
+    let mockDuaDiamonds = 0;
+    const donorMap = new Map(); // uid -> { uid, name, realDiamonds, totalDiamonds, giftCount, realGiftCount, lastGift }
 
     for (const g of state.gifts) {
       const isMock = g.src === 'mock';
       if (isMock) {
         mockGiftsCount += g.repeat;
         mockDiamonds += g.totalDiamonds;
+        if (g.game === 'cuoc-dua-ky-thu') mockDuaDiamonds += g.totalDiamonds;
+        else mockChuaDiamonds += g.totalDiamonds;
       } else {
         realGiftsCount += g.repeat;
         realDiamonds += g.totalDiamonds;
+        if (g.game === 'cuoc-dua-ky-thu') realDuaDiamonds += g.totalDiamonds;
+        else realChuaDiamonds += g.totalDiamonds;
       }
-      if (g.game === 'cuoc-dua-ky-thu') duaDiamonds += g.totalDiamonds;
-      else chuaDiamonds += g.totalDiamonds;
 
-      const d = donorMap.get(g.uid) || { uid: g.uid, name: g.name, realDiamonds: 0, totalDiamonds: 0, giftCount: 0, lastGift: g.giftVi };
+      const d = donorMap.get(g.uid) || { uid: g.uid, name: g.name, realDiamonds: 0, totalDiamonds: 0, giftCount: 0, realGiftCount: 0, lastGift: g.giftVi };
       d.name = g.name || d.name;
       d.totalDiamonds += g.totalDiamonds;
-      if (!isMock) d.realDiamonds += g.totalDiamonds;
+      if (!isMock) {
+        d.realDiamonds += g.totalDiamonds;
+        d.realGiftCount += g.repeat;
+      }
       d.giftCount += g.repeat;
       donorMap.set(g.uid, d);
     }
 
-    const topDonors = [...donorMap.values()]
+    const realTopDonors = [...donorMap.values()]
+      .filter(d => d.realDiamonds > 0)
+      .sort((a, b) => b.realDiamonds - a.realDiamonds)
+      .slice(0, 15);
+
+    const allTopDonors = [...donorMap.values()]
       .sort((a, b) => b.totalDiamonds - a.totalDiamonds)
       .slice(0, 15);
 
@@ -357,17 +369,26 @@ export function createDatabase({
       mongo: { ...mongoStatus },
       totals: {
         totalGiftRecords: state.gifts.length,
+        realGiftRecords: state.gifts.filter(g => g.src !== 'mock').length,
         realGiftsCount,
         realDiamonds,
         mockGiftsCount,
         mockDiamonds,
-        chuaDiamonds,
-        duaDiamonds,
+        realChuaDiamonds,
+        realDuaDiamonds,
+        mockChuaDiamonds,
+        mockDuaDiamonds,
+        chuaDiamonds: realChuaDiamonds + mockChuaDiamonds,
+        duaDiamonds: realDuaDiamonds + mockDuaDiamonds,
         workLogsCount: state.workLogs.length,
         catalogCount: state.giftCatalog.length,
       },
-      topDonors,
+      topDonors: allTopDonors,
+      realTopDonors,
+      allTopDonors,
+      realGifts: state.gifts.filter(g => g.src !== 'mock').slice(0, 100),
       recentGifts: state.gifts.slice(0, 100),
+      realEvents: state.events.filter(e => e.src !== 'mock').slice(0, 60),
       recentEvents: state.events.slice(0, 60),
       workLogs: state.workLogs.slice(0, 100),
       giftCatalog: state.giftCatalog,

@@ -10,6 +10,12 @@ export function createRaceRules({ stage, lists, now = Date.now, turboEveryLikes 
   let viewersPeak = 0;
   const startedAt = new Date().toISOString();
   const uniqueRacers = new Set();
+
+  let mockLikes = 0;
+  let mockGiftsDiamonds = 0;
+  let mockChats = 0;
+  const mockRacers = new Set();
+
   const recentEvents = []; // max 80
 
   function pushRecent(item) {
@@ -20,20 +26,24 @@ export function createRaceRules({ stage, lists, now = Date.now, turboEveryLikes 
   return {
     handle(e) {
       const t = now();
+      const src = e.src || 'tiktok';
+      const real = src !== 'mock';
       const name = e.name ? cleanName(e.name, lists) : 'Tay Đua';
 
       if (e.kind === 'viewers') {
-        viewers = e.count;
-        if (viewers > viewersPeak) viewersPeak = viewers;
+        if (real) {
+          viewers = e.count;
+          if (viewers > viewersPeak) viewersPeak = viewers;
+        }
         return [{ t: 'counter', key: 'viewers', value: viewers }];
       }
 
       if (e.kind === 'join') {
-        // When a user enters the room or taps join, if there's plenty of room on the track, welcome them
         if (!stage.has(e.uid) && stage.runners.size < 45) {
-          uniqueRacers.add(e.uid);
-          const { msgs } = stage.joinOrBoost(e.uid, name, 0, { cheer: 'Hào hứng nhập cuộc!' });
-          pushRecent({ uid: e.uid, name, kind: 'join', src: e.src, detail: `Chào user ${name} đã tham gia cuộc đua cùng chúng tôi` });
+          if (real) uniqueRacers.add(e.uid);
+          else mockRacers.add(e.uid);
+          const { msgs } = stage.joinOrBoost(e.uid, name, 0, { cheer: 'Hào hứng nhập cuộc!', src });
+          pushRecent({ uid: e.uid, name, kind: 'join', src, detail: `Chào user ${name} đã tham gia cuộc đua cùng chúng tôi` });
           return msgs;
         }
         return [];
@@ -41,21 +51,28 @@ export function createRaceRules({ stage, lists, now = Date.now, turboEveryLikes 
 
       if (e.kind === 'like') {
         const count = Number(e.count) || 1;
-        const prev = totalLikes;
-        totalLikes += count;
-        const out = [{ t: 'counter', key: 'likes', value: totalLikes }];
+        const prev = totalLikes + mockLikes;
+        if (real) {
+          totalLikes += count;
+          uniqueRacers.add(e.uid);
+        } else {
+          mockLikes += count;
+          mockRacers.add(e.uid);
+        }
+        const combinedLikes = totalLikes + mockLikes;
+        const out = [{ t: 'counter', key: 'likes', value: real ? totalLikes : combinedLikes }];
 
-        uniqueRacers.add(e.uid);
         const { msgs, isNewJoin } = stage.joinOrBoost(e.uid, name, 0, {
           addDistanceM: Math.min(30, count * 2),
           boostMs: 4000,
+          src,
         });
         out.push(...msgs);
         out.push({ t: 'fx', kind: 'spark', at: e.uid, power: Math.min(10, Math.ceil(count / 3)) });
         if (isNewJoin) {
-          pushRecent({ uid: e.uid, name, kind: 'join', src: e.src, detail: `Thả ❤️ nhập cuộc đua (+${Math.min(30, count * 2)}m)` });
+          pushRecent({ uid: e.uid, name, kind: 'join', src, detail: `Thả ❤️ nhập cuộc đua (+${Math.min(30, count * 2)}m)` });
         }
-        if (Math.floor(totalLikes / turboEveryLikes) > Math.floor(prev / turboEveryLikes)) {
+        if (Math.floor(combinedLikes / turboEveryLikes) > Math.floor(prev / turboEveryLikes)) {
           out.push(...stage.triggerGlobalTurbo(8000));
         }
         return out;
@@ -64,8 +81,13 @@ export function createRaceRules({ stage, lists, now = Date.now, turboEveryLikes 
       if (e.kind === 'gift') {
         const repeat = Math.max(1, Number(e.repeat) || 1);
         const diamonds = Math.max(1, Number(e.diamonds) || 1) * repeat;
-        totalGiftsDiamonds += diamonds;
-        uniqueRacers.add(e.uid);
+        if (real) {
+          totalGiftsDiamonds += diamonds;
+          uniqueRacers.add(e.uid);
+        } else {
+          mockGiftsDiamonds += diamonds;
+          mockRacers.add(e.uid);
+        }
 
         const tier = raceGiftTier(diamonds);
         const bonusM = (BONUS_DIST[tier] || 80) * Math.min(repeat, 10);
@@ -78,6 +100,7 @@ export function createRaceRules({ stage, lists, now = Date.now, turboEveryLikes 
           addDistanceM: bonusM,
           boostMs,
           cheer: `Kích hoạt ${mountLabel}!`,
+          src,
         });
 
         const out = [
@@ -110,7 +133,7 @@ export function createRaceRules({ stage, lists, now = Date.now, turboEveryLikes 
           uid: e.uid,
           name,
           kind: 'gift',
-          src: e.src,
+          src,
           giftName: `${giftVi} ×${repeat}`,
           diamonds,
           detail: `${mountLabel} (+${bonusM}m)`,
@@ -119,12 +142,18 @@ export function createRaceRules({ stage, lists, now = Date.now, turboEveryLikes 
       }
 
       if (e.kind === 'chat') {
-        totalChats++;
-        uniqueRacers.add(e.uid);
+        if (real) {
+          totalChats++;
+          uniqueRacers.add(e.uid);
+        } else {
+          mockChats++;
+          mockRacers.add(e.uid);
+        }
         const bubble = cleanBubble(e.text, lists, 48);
         const { msgs, isNewJoin } = stage.joinOrBoost(e.uid, name, 0, {
           addDistanceM: 15,
           cheer: bubble || 'Tăng tốc khám phá!',
+          src,
         });
         const out = [...msgs];
         if (bubble) out.push(...stage.say(e.uid, bubble, 6500));
@@ -132,7 +161,7 @@ export function createRaceRules({ stage, lists, now = Date.now, turboEveryLikes 
           uid: e.uid,
           name,
           kind: isNewJoin ? 'join' : 'chat',
-          src: e.src,
+          src,
           detail: bubble || '(đã lọc)',
         });
         return out;
@@ -141,24 +170,41 @@ export function createRaceRules({ stage, lists, now = Date.now, turboEveryLikes 
       return [];
     },
     statsState(status = {}) {
+      const allRunners = [...stage.runners.values()];
+      const realRunnersCount = allRunners.filter(r => r.src !== 'mock').length;
+      const mockRunnersCount = allRunners.filter(r => r.src === 'mock').length;
       return {
         startedAt,
         activeRunners: stage.runners.size,
+        realActiveRunners: realRunnersCount,
+        mockActiveRunners: mockRunnersCount,
         uniqueRacers: uniqueRacers.size,
         worldDistanceM: Math.round(stage.worldDistanceM),
+        realWorldDistanceM: Math.round(stage.realWorldDistanceM ?? 0),
         currentBiome: stage.currentBiome(),
         totalLikes,
         totalGiftsDiamonds,
         totalChats,
         viewers,
         viewersPeak,
-        topRacers: stage.board(10),
+        topRacers: stage.board(10, false),
+        allTopRacers: stage.board(10, true),
+        demoStats: {
+          likes: mockLikes,
+          diamonds: mockGiftsDiamonds,
+          chats: mockChats,
+          uniqueRacers: mockRacers.size,
+        },
         status,
       };
     },
     recent: () => recentEvents,
     clearLogs() {
       recentEvents.length = 0;
+      mockLikes = 0;
+      mockGiftsDiamonds = 0;
+      mockChats = 0;
+      mockRacers.clear();
     },
     resetAll() {
       totalLikes = 0;
@@ -167,6 +213,10 @@ export function createRaceRules({ stage, lists, now = Date.now, turboEveryLikes 
       viewers = 0;
       viewersPeak = 0;
       uniqueRacers.clear();
+      mockLikes = 0;
+      mockGiftsDiamonds = 0;
+      mockChats = 0;
+      mockRacers.clear();
       recentEvents.length = 0;
     },
   };

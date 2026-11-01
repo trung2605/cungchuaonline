@@ -47,6 +47,9 @@
       <div class="status-chip warn" id="chipTiktok">
         <span class="dot-pulse"></span> TikTok: Đang đồng bộ...
       </div>
+      <button type="button" class="btn sm" data-toggle-mock title="Khi TẮT: chỉ thống kê người dùng thật từ TikTok LIVE. Khi BẬT: thống kê kèm dữ liệu mẫu (Fake)">
+        <i data-lucide="user-check"></i> <span class="mock-toggle-label">Dữ Liệu Mẫu: ĐANG TẮT (Chỉ Người Thật)</span>
+      </button>
       <button type="button" class="btn sm" id="btnToggle3DPreview" title="Xem trực tiếp 2 màn hình 3D ngay trong trang này mà không cần mở tab mới">
         <i data-lucide="monitor-play"></i> Xem 3D Tại Trang
       </button>
@@ -119,6 +122,9 @@
             </button>
           </div>
           <div class="row-inline">
+            <button type="button" class="btn sm" data-toggle-mock>
+              <i data-lucide="user-check"></i> <span class="mock-toggle-label">Dữ Liệu Mẫu: ĐANG TẮT (Chỉ Người Thật)</span>
+            </button>
             <button type="button" class="btn gold" onclick="window.switchMainTab('chua')">
               <i data-lucide="flame"></i> Sang Tab Cúng Chùa
             </button>
@@ -387,31 +393,31 @@
           <div class="card">
             <div class="card-header">
               <div>
-                <h2 class="card-title"><i data-lucide="flask-conical"></i> Giả Lập Nhanh Người Chơi &amp; Quà Tặng</h2>
-                <div class="card-subtitle">Kiểm tra lời chào AI và hiệu ứng quà tặng trên cả 2 trò chơi</div>
+                <h2 class="card-title"><i data-lucide="flask-conical"></i> Kiểm Thử Hiệu Ứng Trên Màn Hình 3D (Dữ Liệu Mẫu)</h2>
+                <div class="card-subtitle">Các thao tác thử nghiệm dưới đây được gắn nhãn Dữ Liệu Mẫu (Fake) — không tính vào thống kê người thật khi tắt Dữ Liệu Mẫu</div>
               </div>
             </div>
 
             <div class="form-group">
-              <label class="form-label" for="simActorName">Tên người chơi thử nghiệm</label>
-              <input type="text" id="simActorName" value="Lê Trí Trung" placeholder="Nhập tên hiển thị..." />
+              <label class="form-label" for="simActorName">Tên nhân vật thử nghiệm (Mẫu)</label>
+              <input type="text" id="simActorName" value="Khách Thử Nghiệm" placeholder="Nhập tên hiển thị..." />
             </div>
 
             <div class="form-label" style="margin-bottom:6px">Cúng Chùa Online 3D (:8787)</div>
             <div class="row-inline" style="margin-bottom:14px">
-              <button type="button" class="btn sm" data-sim-game="cung-chua-online" data-sim-action="prayer"><i data-lucide="user-plus"></i> Vào Lễ Phật</button>
-              <button type="button" class="btn sm gold" data-sim-game="cung-chua-online" data-sim-action="gift1"><i data-lucide="flower-2"></i> Hoa Hồng (1💎)</button>
-              <button type="button" class="btn sm gold" data-sim-game="cung-chua-online" data-sim-action="gift10"><i data-lucide="flame"></i> Hoa Đăng (30💎)</button>
-              <button type="button" class="btn sm primary" data-sim-game="cung-chua-online" data-sim-action="gift1000"><i data-lucide="crown"></i> Galaxy (1000💎)</button>
+              <button type="button" class="btn sm" data-sim-game="cung-chua-online" data-sim-action="prayer"><i data-lucide="user-plus"></i> Vào Lễ Phật (Mẫu)</button>
+              <button type="button" class="btn sm gold" data-sim-game="cung-chua-online" data-sim-action="gift1"><i data-lucide="flower-2"></i> Hoa Hồng (Mẫu)</button>
+              <button type="button" class="btn sm gold" data-sim-game="cung-chua-online" data-sim-action="gift10"><i data-lucide="flame"></i> Hoa Đăng (Mẫu)</button>
+              <button type="button" class="btn sm primary" data-sim-game="cung-chua-online" data-sim-action="gift1000"><i data-lucide="crown"></i> Galaxy (Mẫu)</button>
             </div>
 
             <div class="form-label" style="margin-bottom:6px">Cuộc Đua Kỳ Thú 3D (:8789)</div>
             <div class="row-inline">
-              <button type="button" class="btn sm" data-sim-game="cuoc-dua-ky-thu" data-sim-action="join"><i data-lucide="user-plus"></i> Tham Gia + Chào AI</button>
-              <button type="button" class="btn sm teal" data-sim-game="cuoc-dua-ky-thu" data-sim-action="gift1"><i data-lucide="feather"></i> Đôi Cánh (×1.8)</button>
-              <button type="button" class="btn sm gold" data-sim-game="cuoc-dua-ky-thu" data-sim-action="gift30"><i data-lucide="disc"></i> Ván Trượt (×2.8)</button>
-              <button type="button" class="btn sm danger" data-sim-game="cuoc-dua-ky-thu" data-sim-action="gift300"><i data-lucide="rocket"></i> Tên Lửa (×4.2)</button>
-              <button type="button" class="btn sm primary" data-sim-game="cuoc-dua-ky-thu" data-sim-action="gift1000"><i data-lucide="orbit"></i> Phi Thuyền (×6.5)</button>
+              <button type="button" class="btn sm" data-sim-game="cuoc-dua-ky-thu" data-sim-action="join"><i data-lucide="user-plus"></i> Tham Gia (Mẫu)</button>
+              <button type="button" class="btn sm teal" data-sim-game="cuoc-dua-ky-thu" data-sim-action="gift1"><i data-lucide="feather"></i> Đôi Cánh (Mẫu)</button>
+              <button type="button" class="btn sm gold" data-sim-game="cuoc-dua-ky-thu" data-sim-action="gift30"><i data-lucide="disc"></i> Ván Trượt (Mẫu)</button>
+              <button type="button" class="btn sm danger" data-sim-game="cuoc-dua-ky-thu" data-sim-action="gift300"><i data-lucide="rocket"></i> Tên Lửa (Mẫu)</button>
+              <button type="button" class="btn sm primary" data-sim-game="cuoc-dua-ky-thu" data-sim-action="gift1000"><i data-lucide="orbit"></i> Phi Thuyền (Mẫu)</button>
             </div>
           </div>
         </div>
@@ -599,13 +605,16 @@
         <div class="sub-bar-icon gold"><i data-lucide="landmark"></i></div>
         <h1>Admin Cúng Chùa Online 3D · Quản Trị Chánh Điện &amp; Nghi Lễ</h1>
         <span class="badge emerald" id="chuaStatusBadge">Đang kết nối...</span>
+        <button type="button" class="btn sm" data-toggle-mock style="margin-left:8px">
+          <i data-lucide="user-check"></i> <span class="mock-toggle-label">Dữ Liệu Mẫu: ĐANG TẮT (Chỉ Người Thật)</span>
+        </button>
       </div>
       <div class="sub-tabs" role="tablist">
         <button type="button" class="sub-tab-btn active" data-parent="chua" data-sub="chua-analytics">
           <i data-lucide="line-chart"></i> Thống Kê &amp; Phật Tử Đang Lễ
         </button>
         <button type="button" class="sub-tab-btn" data-parent="chua" data-sub="chua-controls">
-          <i data-lucide="sliders"></i> Không Gian 3D, Hiệu Ứng &amp; Test Lab
+          <i data-lucide="sliders"></i> Không Gian 3D &amp; Hiệu Ứng Chánh Điện
         </button>
         <button type="button" class="sub-tab-btn" data-parent="chua" data-sub="chua-lists">
           <i data-lucide="book-open-check"></i> Câu Đối, Từ Khóa &amp; Bộ Lọc
@@ -616,6 +625,41 @@
     <main class="content-area">
       <!-- SUB-TAB 2.1: THỐNG KÊ & PHẬT TỬ -->
       <section class="sub-tab-panel active" id="sub-chua-analytics">
+        <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:18px">
+          <div class="kpi-card">
+            <div class="kpi-top">
+              <span>Đã Niệm Nam Mô</span>
+              <div class="kpi-icon brand"><i data-lucide="flame"></i></div>
+            </div>
+            <div class="kpi-value" id="chuaKpiNamo">0</div>
+            <div class="kpi-sub" id="chuaKpiNamoSub">Chỉ tính người thật</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-top">
+              <span>Tổng Lượt Lạy Lễ</span>
+              <div class="kpi-icon brand"><i data-lucide="heart-handshake"></i></div>
+            </div>
+            <div class="kpi-value" id="chuaKpiBows">0</div>
+            <div class="kpi-sub" id="chuaKpiBowersSub">0 Phật tử thành tâm</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-top">
+              <span>Kim Cương Công Đức</span>
+              <div class="kpi-icon gold"><i data-lucide="gem"></i></div>
+            </div>
+            <div class="kpi-value" id="chuaKpiDiamonds">0</div>
+            <div class="kpi-sub" id="chuaKpiGiftsSub">Quà tặng dâng lễ</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-top">
+              <span>Đang Quỳ Trong Điện</span>
+              <div class="kpi-icon emerald"><i data-lucide="users"></i></div>
+            </div>
+            <div class="kpi-value" id="chuaKpiActors">0</div>
+            <div class="kpi-sub" id="chuaKpiActorsSub">Tối đa 150 chiếu lễ</div>
+          </div>
+        </div>
+
         <div class="grid-2">
           <div class="card">
             <div class="card-header">
@@ -662,16 +706,16 @@
         </div>
       </section>
 
-      <!-- SUB-TAB 2.2: KHÔNG GIAN 3D, HIỆU ỨNG & TEST LAB -->
+      <!-- SUB-TAB 2.2: KHÔNG GIAN 3D & HIỆU ỨNG -->
       <section class="sub-tab-panel" id="sub-chua-controls">
         <div class="grid-2">
           <div class="card">
             <div class="card-header">
               <div>
-                <h2 class="card-title"><i data-lucide="sliders"></i> Điều Khiển Không Gian Chánh Điện &amp; Chế Độ Demo</h2>
-                <div class="card-subtitle">Tùy chỉnh bối cảnh 3D, âm thanh chuông mõ và thông báo</div>
+                <h2 class="card-title"><i data-lucide="sliders"></i> Điều Khiển Không Gian Chánh Điện &amp; Thông Báo</h2>
+                <div class="card-subtitle">Tùy chỉnh bối cảnh ánh sáng 3D, âm thanh chuông mõ và thông báo chữ vàng</div>
               </div>
-              <span class="badge brand" id="chuaDemoBadge">Demo Đang Tắt</span>
+              <span class="badge brand">Chế Độ Live Thật</span>
             </div>
 
             <div class="grid-2" style="margin-bottom:12px">
@@ -691,16 +735,6 @@
                 <button type="button" class="btn primary" id="btnChuaSaveScene">
                   <i data-lucide="check"></i> Áp Dụng Không Gian
                 </button>
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label class="form-label">Chế độ Demo Tự Động (Dùng khi thử nghiệm, tắt khi Live thật)</label>
-              <div class="row-inline">
-                <input type="number" id="chuaDemoRate" value="3" min="1" max="50" style="width:90px" />
-                <span style="font-size:12px;color:var(--text-muted)">sự kiện/giây</span>
-                <button type="button" class="btn sm gold" id="btnChuaDemoOn"><i data-lucide="play"></i> Bật Demo</button>
-                <button type="button" class="btn sm danger" id="btnChuaDemoOff"><i data-lucide="square"></i> Tắt Demo (Live Thật)</button>
               </div>
             </div>
 
@@ -795,6 +829,9 @@
         <div class="sub-bar-icon teal"><i data-lucide="trophy"></i></div>
         <h1>Admin Cuộc Đua Kỳ Thú 3D · Hành Trình Khám Phá Thế Giới</h1>
         <span class="badge emerald" id="duaStatusBadge">Đang kết nối...</span>
+        <button type="button" class="btn sm" data-toggle-mock style="margin-left:8px">
+          <i data-lucide="user-check"></i> <span class="mock-toggle-label">Dữ Liệu Mẫu: ĐANG TẮT (Chỉ Người Thật)</span>
+        </button>
       </div>
       <div class="sub-tabs" role="tablist">
         <button type="button" class="sub-tab-btn active" data-parent="dua" data-sub="dua-analytics">
@@ -809,6 +846,41 @@
     <main class="content-area">
       <!-- SUB-TAB 3.1: THỐNG KÊ & VẬN ĐỘNG VIÊN -->
       <section class="sub-tab-panel active" id="sub-dua-analytics">
+        <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:18px">
+          <div class="kpi-card">
+            <div class="kpi-top">
+              <span>Quãng Đường Đoàn</span>
+              <div class="kpi-icon teal"><i data-lucide="compass"></i></div>
+            </div>
+            <div class="kpi-value" id="duaKpiDist">0 m</div>
+            <div class="kpi-sub" id="duaKpiBiomeSub">Vịnh Hạ Long &amp; Phố Cổ</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-top">
+              <span>Đang Trên Đường Đua</span>
+              <div class="kpi-icon emerald"><i data-lucide="footprints"></i></div>
+            </div>
+            <div class="kpi-value" id="duaKpiRunners">0</div>
+            <div class="kpi-sub" id="duaKpiRacersSub">0 tổng vận động viên</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-top">
+              <span>Kim Cương Tăng Tốc</span>
+              <div class="kpi-icon gold"><i data-lucide="gem"></i></div>
+            </div>
+            <div class="kpi-value" id="duaKpiDiamonds">0</div>
+            <div class="kpi-sub" id="duaKpiDiamondsSub">Chỉ tính người thật</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-top">
+              <span>Lượt Thả Tim &amp; Chat</span>
+              <div class="kpi-icon brand"><i data-lucide="heart"></i></div>
+            </div>
+            <div class="kpi-value" id="duaKpiLikes">0</div>
+            <div class="kpi-sub" id="duaKpiChatsSub">0 bình luận nhập cuộc</div>
+          </div>
+        </div>
+
         <div class="grid-2">
           <div class="card">
             <div class="card-header">
@@ -864,7 +936,7 @@
               <h2 class="card-title"><i data-lucide="globe-2"></i> Chọn Điểm Đến Kỳ Quan Thế Giới (Chuyển Cảnh 3D Tức Thì)</h2>
               <div class="card-subtitle">Bấm vào bất kỳ kỳ quan nào để đưa toàn bộ đoàn đua dịch chuyển ngay lập tức trên Livestream</div>
             </div>
-            <span class="badge teal" id="duaDemoBadge">Demo Đang Tắt</span>
+            <span class="badge teal">Chế Độ Live Thật</span>
           </div>
           <div class="biome-grid" id="duaBiomeGrid"></div>
         </div>
@@ -873,7 +945,7 @@
           <div class="card">
             <div class="card-header">
               <div>
-                <h2 class="card-title"><i data-lucide="sliders"></i> Điều Khiển Đường Đua, Giọng Đọc AI &amp; Demo</h2>
+                <h2 class="card-title"><i data-lucide="sliders"></i> Điều Khiển Đường Đua, Giọng Đọc AI &amp; Thông Báo</h2>
                 <div class="card-subtitle">Lời chào mặc định: "Chào user [tên] đã tham gia cuộc đua cùng chúng tôi"</div>
               </div>
             </div>
@@ -883,16 +955,6 @@
                 <input type="checkbox" id="duaSoundCheck" checked style="width:18px;height:18px" />
                 Bật Âm Thanh Động Cơ &amp; Giọng Đọc AI Chào Mừng Tay Đua Mới
               </label>
-            </div>
-
-            <div class="form-group">
-              <label class="form-label">Chế độ Demo Đường Đua (Tắt khi chạy Live thật)</label>
-              <div class="row-inline">
-                <input type="number" id="duaDemoRate" value="2.5" min="0.5" max="30" step="0.5" style="width:90px" />
-                <span style="font-size:12px;color:var(--text-muted)">sự kiện/giây</span>
-                <button type="button" class="btn sm teal" id="btnDuaDemoOn"><i data-lucide="play"></i> Bật Demo Đua</button>
-                <button type="button" class="btn sm danger" id="btnDuaDemoOff"><i data-lucide="square"></i> Tắt Demo (Live Thật)</button>
-              </div>
             </div>
 
             <div class="form-group" style="margin-bottom:0">

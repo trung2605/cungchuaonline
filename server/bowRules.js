@@ -67,6 +67,7 @@ export function createBowRules({ stage, lists, stats = null, now = Date.now, coo
         return granted(n, stage.enter(e.uid, cleanName(e.name, lists), giftTier(total), n, {
           addDiamonds: total,
           visit: true,
+          src: e.src,
         }));
       }
       if (e.kind !== 'chat') return [];
@@ -76,7 +77,10 @@ export function createBowRules({ stage, lists, stats = null, now = Date.now, coo
       const last = lastFree.get(e.uid);
       if (isTrigger(e.text, lists) && (last === undefined || t - last >= cooldownMs)) {
         lastFree.set(e.uid, t);
-        out.push(...granted(1, stage.enter(e.uid, cleanName(e.name, lists), 0, 1, { intent: detectIntent(e.text, lists) ?? undefined })));
+        out.push(...granted(1, stage.enter(e.uid, cleanName(e.name, lists), 0, 1, {
+          intent: detectIntent(e.text, lists) ?? undefined,
+          src: e.src,
+        })));
       }
       const bubble = cleanBubble(e.text, lists);
       if (bubble) out.push(...stage.say(e.uid, bubble));
