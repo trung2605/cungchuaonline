@@ -88,7 +88,6 @@ function handleMsg(msg) {
       break;
     case 'say':
       runners.say(msg.id, msg.text, msg.ms);
-      audio.speakComment?.(runners.getRunner?.(msg.id), msg.text);
       break;
     case 'donor':
       hud.showDonor(msg);
