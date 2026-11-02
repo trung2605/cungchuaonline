@@ -66,21 +66,58 @@ export async function startServer({
 
   const ttsCache = new Map();
 
+  function splitTtsClauses(text, maxLen = 155) {
+    if (text.length <= maxLen) return [text];
+    const parts = text.split(/(?<=[,.;!?])\s+/);
+    const out = [];
+    let cur = '';
+    for (const p of parts) {
+      if (!cur) {
+        cur = p;
+      } else if ((cur + ' ' + p).length <= maxLen) {
+        cur += ' ' + p;
+      } else {
+        out.push(cur);
+        cur = p;
+      }
+    }
+    if (cur) out.push(cur);
+    return out.flatMap(seg => {
+      if (seg.length <= maxLen) return [seg];
+      const words = seg.split(/\s+/);
+      const chunks = [];
+      let wCur = '';
+      for (const w of words) {
+        if (!wCur) wCur = w;
+        else if ((wCur + ' ' + w).length <= maxLen) wCur += ' ' + w;
+        else { chunks.push(wCur); wCur = w; }
+      }
+      if (wCur) chunks.push(wCur);
+      return chunks;
+    });
+  }
+
   const server = http.createServer(async (req, res) => {
     if (req.method !== 'GET' && req.method !== 'HEAD') return notFound(res);
     if (req.url.startsWith('/tts?')) {
       try {
         const u = new URL(req.url, 'http://localhost');
-        const q = (u.searchParams.get('q') || '').trim().slice(0, 240);
+        const q = (u.searchParams.get('q') || '').trim().slice(0, 320);
         if (!q) return notFound(res);
         let buf = ttsCache.get(q);
         if (!buf) {
-          const r = await fetch(`https://translate.googleapis.com/translate_tts?ie=UTF-8&tl=vi&client=tw-ob&q=${encodeURIComponent(q)}`, {
-            headers: { 'User-Agent': 'Mozilla/5.0' },
-          });
-          if (!r.ok) return notFound(res);
-          buf = Buffer.from(await r.arrayBuffer());
-          if (ttsCache.size >= 350) ttsCache.delete(ttsCache.keys().next().value);
+          const clauses = splitTtsClauses(q, 155);
+          const bufs = await Promise.all(
+            clauses.map(async c => {
+              const r = await fetch(`https://translate.googleapis.com/translate_tts?ie=UTF-8&tl=vi&client=tw-ob&q=${encodeURIComponent(c)}`, {
+                headers: { 'User-Agent': 'Mozilla/5.0' },
+              });
+              if (!r.ok) throw new Error('tts chunk failed');
+              return Buffer.from(await r.arrayBuffer());
+            })
+          );
+          buf = Buffer.concat(bufs);
+          if (ttsCache.size >= 400) ttsCache.delete(ttsCache.keys().next().value);
           ttsCache.set(q, buf);
         }
         res.writeHead(200, {

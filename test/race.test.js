@@ -169,14 +169,16 @@ test('TC-RACE-07: Multi-song regional jukebox & AI cultural storytelling cover a
     }
 
     const stories = LANDMARK_STORIES[b.id];
-    assert.ok(Array.isArray(stories) && stories.length >= 14, `biome ${b.id} should have at least 14 cultural narration chapters`);
+    assert.ok(Array.isArray(stories) && stories.length >= 18, `biome ${b.id} should have at least 18 cultural narration chapters`);
     for (const line of stories) {
-      assert.ok(line.length >= 40 && line.length <= 210, `story line in ${b.id} must fit TTS length cleanly`);
+      assert.ok(line.length >= 40 && line.length <= 215, `story line in ${b.id} must fit TTS length cleanly`);
+      assert.ok(!/Phật tử|vào chùa lễ Phật/i.test(line), `story line in ${b.id} must not mix temple game wording`);
     }
   }
 
   for (let code = 1; code <= 63; code++) {
     const provStory = PROVINCE_STORIES[code];
-    assert.ok(typeof provStory === 'string' && provStory.length >= 40 && provStory.length <= 210, `province ${code} must have a cultural narration line`);
+    assert.ok(typeof provStory === 'string' && provStory.length >= 40 && provStory.length <= 215, `province ${code} must have a cultural narration line`);
+    assert.ok(!/Phật tử|vào chùa lễ Phật/i.test(provStory), `province ${code} must not mix temple game wording`);
   }
 });

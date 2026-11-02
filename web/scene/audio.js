@@ -497,16 +497,34 @@ export function createAudio({ onSpeak = null } = {}) {
     }
   }
 
-  // Auto-unlock and start meditation music by default on creation, keeping audio permanently ON 24/7
-  ctx.resume().then(() => { playMusic(); }).catch(() => { startSynthZen(); });
-  setInterval(() => {
-    if (!isPreviewIframe) {
+  // Auto-unlock and start meditation music when visible; automatically silence if tab is hidden in background
+  // so it never overlaps with Cuộc Đua Kỳ Thú (:8789) when switching tabs
+  function syncVisibilityAudio() {
+    if (isPreviewIframe) return;
+    if (typeof document !== 'undefined' && document.hidden) {
+      enabled = false;
+      master.gain.value = 0;
+      try { music.pause(); } catch {}
+      speechQueue.length = 0;
+      if (speaking) {
+        clearTimeout(watchdog);
+        try { currentVoiceSrc?.stop(); } catch {}
+        currentVoiceSrc = null;
+        currentItem = null;
+        speaking = false;
+      }
+    } else {
       enabled = true;
       master.gain.value = 1;
       if (ctx.state !== 'running') ctx.resume().catch(() => {});
-      if (!synthZenRunning) playMusic();
+      if (!zenRunning) playMusic();
     }
-  }, 1500);
+  }
+  if (typeof document !== 'undefined') {
+    document.addEventListener('visibilitychange', syncVisibilityAudio);
+  }
+  ctx.resume().then(() => { syncVisibilityAudio(); }).catch(() => { syncVisibilityAudio(); });
+  setInterval(syncVisibilityAudio, 1500);
 
   return {
     get suspended() { return ctx.state !== 'running'; },

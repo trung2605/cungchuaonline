@@ -5,7 +5,7 @@ const CHEERS = [
   'Cùng đi bộ xuyên Việt khám phá 63 tỉnh thành!',
   'Việt Nam quê hương ta tươi đẹp quá cả nhà ơi 🇻🇳',
   'Đi bộ vãn cảnh từ Hà Giang tới Mũi Cà Mau!',
-  'Chúc đại chúng bình an trên hành trình xuyên Việt 🙏',
+  'Chúc cả đoàn đi bộ xuyên Việt thật nhiều niềm vui và năng lượng 🇻🇳',
   'Cảnh đẹp non sông gấm vóc Việt Nam tuyệt vời quá!',
   'Cố lên cả đoàn ơi, sắp qua cột mốc tỉnh mới rồi!',
   'Việt Nam muôn năm, cùng bước đều khám phá non sông!',
