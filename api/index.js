@@ -162,15 +162,17 @@ function serveStaticFile(req, res, baseDir, relPath, cacheControl = 'public, max
 let runtimePromise = null;
 
 function createEventRingBuffer(maxEvents = 250) {
-  let seq = 1;
+  let seq = Date.now() * 1000;
   const events = [];
   return {
     pushBatch(msgs) {
       if (!Array.isArray(msgs) || !msgs.length) return seq;
+      const now = Date.now();
       for (const msg of msgs) {
         if (!msg || msg.t === 'snapshot') continue;
-        seq += 1;
-        events.push({ seq, ts: Date.now(), msg });
+        seq = Math.max(seq + 1, now * 1000);
+        const eid = msg._eid || `${seq}_${Math.random().toString(36).slice(2, 7)}`;
+        events.push({ seq, ts: now, msg: { ...msg, _eid: eid } });
       }
       if (events.length > maxEvents) {
         events.splice(0, events.length - maxEvents);
@@ -180,7 +182,8 @@ function createEventRingBuffer(maxEvents = 250) {
     pollSince(sinceSeq = 0) {
       const s = Number(sinceSeq) || 0;
       if (s <= 0) return { seq, messages: [] };
-      const messages = events.filter(e => e.seq > s).map(e => e.msg);
+      const cutoff = Date.now() - 12_000;
+      const messages = events.filter(e => e.seq > s && e.ts >= cutoff).map(e => e.msg);
       return { seq, messages };
     },
     currentSeq() {
@@ -347,6 +350,7 @@ async function initUnifiedRuntime() {
     stayMinutes: Number(process.env.STAY_MINUTES || 5),
   });
   const duaRules = createRaceRules({ stage: duaStage, lists, status: duaStatus });
+  const duaDedupe = createDedupe();
   let duaScene = { sound: true, readComments: true, bgmVocal: true, bgmVocalVolume: 0.15 };
 
   const getDuaSnapshot = () => ({
@@ -367,6 +371,7 @@ async function initUnifiedRuntime() {
   const ingestDua = raw => {
     for (const e of Array.isArray(raw) ? raw : [raw]) {
       if (!e) continue;
+      if (duaDedupe.seen(e)) continue;
       const msgs = duaRules.handle(e);
       if (msgs.length) broadcastDua(msgs);
       if (e.kind === 'gift') {
@@ -516,7 +521,7 @@ async function initUnifiedRuntime() {
       lastTickAt = now;
       const chuaMsgs = chuaPipeline.tick(now);
       if (chuaMsgs.length) broadcastChua(chuaMsgs);
-      const duaMsgs = duaStage.tick(now);
+      const duaMsgs = duaStage.tick(now).filter(m => m && m.t !== 'worldTick');
       if (duaMsgs.length) broadcastDua(duaMsgs);
       chuaAdmin.stepAutoBalance?.();
       duaAdmin.stepAutoBalance?.();

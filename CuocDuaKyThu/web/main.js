@@ -276,6 +276,7 @@ function handleMsg(msg) {
 // Hybrid Real-Time Transport: Local WebSocket (:8789) + Vercel Cloud HTTP Polling (/api/dua/poll)
 let duaCloudPollingActive = false;
 let duaCloudSeq = 0;
+const seenDuaCloudEvents = new Set();
 
 async function pollDuaCloud() {
   try {
@@ -284,9 +285,20 @@ async function pollDuaCloud() {
       const data = await res.json();
       if (data.snapshot) handleMsg(data.snapshot);
       if (Array.isArray(data.messages)) {
-        for (const m of data.messages) handleMsg(m);
+        for (const m of data.messages) {
+          if (m?._eid) {
+            if (seenDuaCloudEvents.has(m._eid)) continue;
+            seenDuaCloudEvents.add(m._eid);
+            if (seenDuaCloudEvents.size > 400) {
+              seenDuaCloudEvents.delete(seenDuaCloudEvents.values().next().value);
+            }
+          }
+          handleMsg(m);
+        }
       }
-      if (typeof data.seq === 'number') duaCloudSeq = data.seq;
+      if (typeof data.seq === 'number' && data.seq > duaCloudSeq) {
+        duaCloudSeq = data.seq;
+      }
     }
   } catch {}
   if (duaCloudPollingActive) setTimeout(pollDuaCloud, 1200);

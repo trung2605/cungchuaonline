@@ -1001,6 +1001,7 @@ export function createAudio({ onSpeak = null } = {}) {
   const recentRealGreet = new Map(); // uid -> ts to avoid double-greeting the same real user on join within 15s
   const recentNameGreet = new Map(); // normalizedName -> ts to avoid repeating join greeting within 15s
   const recentCommentSpeech = new Map(); // uid+text -> ts to avoid duplicate spam within 5s
+  const recentDonorSpeech = new Map(); // uid+offering+repeat+diamonds -> ts to avoid duplicate gift reading within 10s
 
   function interruptSpeechIfLowerPriority(_newPriority = 2) {
     // Never cut off a sentence mid-speech; let the active sentence finish naturally (`onended = done`),
@@ -1024,10 +1025,10 @@ export function createAudio({ onSpeak = null } = {}) {
     item.priority = prio;
 
     // Prevent exact duplicate text or duplicate uid+kind from stacking in the queue
-    if (currentItem && currentItem.text === item.text && item.kind !== 'gift') {
+    if (currentItem && currentItem.text === item.text) {
       return;
     }
-    if (speechQueue.some(x => x.text === item.text && item.kind !== 'gift')) {
+    if (speechQueue.some(x => x.text === item.text)) {
       return;
     }
 
@@ -1394,14 +1395,22 @@ export function createAudio({ onSpeak = null } = {}) {
     },
     thankDonor(d) {
       if (!enabled || !d) return;
+      const now = Date.now();
       const isReal = Boolean(d.src && d.src !== 'mock');
       const total = d.diamonds ?? 1;
       const offering = d.offering || 'dâng hương';
+      const repeat = Number(d.repeat) || 1;
+      const sig = `${d.uid || d.name || ''}:${offering}:${repeat}:${total}`;
+      if (now - (recentDonorSpeech.get(sig) || 0) < 10_000) return;
+      recentDonorSpeech.set(sig, now);
+      if (recentDonorSpeech.size > 200) {
+        recentDonorSpeech.delete(recentDonorSpeech.keys().next().value);
+      }
+
       if (total >= 20) bell();
       else if (total >= 5 || offering === 'dâng đèn hoa đăng') mediumBell();
       else chime();
 
-      const repeat = Number(d.repeat) || 1;
       // Deduplicate if the same user already has a pending utterance in the queue
       const existing = speechQueue.find(x => x.uid && x.uid === d.uid && x.offering === offering);
       if (existing) {

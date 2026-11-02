@@ -111,14 +111,16 @@ export function formatGiftBoostSpeech({
   regionalItem = null,
 } = {}) {
   const who = cleanRaceTtsName(name);
-  const greet = isNewJoin ? `Chào mừng ${who} cùng tham gia hành trình đi bộ xuyên Việt. ` : '';
   const combo = repeat > 1 ? `${repeat} ${giftVi}` : giftVi;
   const specPhrase = regionalItem?.name
-    ? ` và đặc sản ${regionalItem.name} ${regionalItem.actionVerb || 'cầm trên tay thưởng thức trên đường đi'}`
+    ? ` và ${regionalItem.name}`
     : '';
-  const kingNote = overtookKing ? ', chính thức soán ngôi Top 1 Vua Hành Trình!' : ' trên hành trình xuyên Việt!';
+  const kingNote = overtookKing ? ', chính thức soán ngôi Top 1 Vua Hành Trình!' : '!';
   const chestNote = chestUnlocked ? ' Đại tiệc Kho Báu Lễ Hội đã nổ, tăng tốc toàn đoàn gấp ba lần!' : '';
-  return `${greet}Cảm ơn ${who} đã tặng ${combo}, nhận ${mountLabel}${specPhrase}, tiến thêm ${bonusM} mét${kingNote}${chestNote}`;
+  if (isNewJoin) {
+    return `Chào mừng ${who} cùng tham gia hành trình đi bộ xuyên Việt, tặng ${combo} nhận ${mountLabel}${specPhrase}, tiến thêm ${bonusM} mét${kingNote}${chestNote}`;
+  }
+  return `Cảm ơn ${who} đã tặng ${combo}, nhận ${mountLabel}${specPhrase}, tiến thêm ${bonusM} mét${kingNote}${chestNote}`;
 }
 
 const GIFT_CTA_SENTENCES = [
@@ -733,6 +735,7 @@ export function createRaceAudio({ onSpeak = null } = {}) {
   let lastInteractiveDoneAt = 0;
   let lastMockJoinAt = 0;
   let lastMockCommentAt = 0;
+  let lastMockGiftAt = 0;
   let nextFlushTimer = null;
   let watchdog = null;
   let currentVoiceSrc = null;
@@ -740,6 +743,7 @@ export function createRaceAudio({ onSpeak = null } = {}) {
   let interactiveGenderToggle = 0;
   const recentJoinUid = new Map();
   const recentCommentKey = new Map();
+  const recentGiftKey = new Map();
 
   // Continuous AI Cultural Storyteller state & Dual-Voice AudioBuffer Cache
   let currentStoryBiomeId = 'vn_hagiang';
@@ -1551,8 +1555,8 @@ export function createRaceAudio({ onSpeak = null } = {}) {
     const prio = item.priority ?? 1;
     const isStory = item.kind === 'story';
 
-    if (currentItem && currentItem.text === item.text && item.kind !== 'gift') return;
-    if (speechQueue.some(x => x.text === item.text && item.kind !== 'gift')) return;
+    if (currentItem && currentItem.text === item.text) return;
+    if (speechQueue.some(x => x.text === item.text)) return;
 
     if (isStory) {
       if (speaking || speechQueue.length > 0) return;
@@ -1621,13 +1625,6 @@ export function createRaceAudio({ onSpeak = null } = {}) {
 
       for (const s of splitIntoAtomicSentences(chapterText)) {
         pendingStorySentences.push({ text: s, gender });
-      }
-
-      // Every 5 chapters, weave in 1 natural Gift-Encouraging Call-To-Action sentence!
-      if (storyStepIdx % 5 === 0) {
-        const ctaText = GIFT_CTA_SENTENCES[storyCtaIdx++ % GIFT_CTA_SENTENCES.length];
-        const ctaGender = gender === 'male' ? 'female' : 'male';
-        pendingStorySentences.push({ text: ctaText, gender: ctaGender });
       }
     }
 
@@ -1917,6 +1914,10 @@ export function createRaceAudio({ onSpeak = null } = {}) {
           speechQueue.splice(i, 1);
         }
       }
+      if (currentItem && !currentItem.isReal && currentItem.kind !== 'story') {
+        stopCurrentSpeechImmediately(false);
+        setTimeout(queueNextStoryNow, 150);
+      }
     },
     setEnabled(_on) {
       if (isPreviewIframe) return;
@@ -1976,10 +1977,40 @@ export function createRaceAudio({ onSpeak = null } = {}) {
     announceGift(d) {
       if (!enabled || !d) return;
       const isReal = Boolean(d.src && d.src !== 'mock');
+      const now = Date.now();
       const uid = d.uid || d.name || '';
+      const giftSig = `${uid}:${d.giftName || d.giftVi || 'gift'}:${d.repeat || 1}:${d.diamonds || 1}`;
+
+      // Deduplicate identical gift announcements within 10s so cloud polling or combo packets never repeat
+      const lastExact = recentGiftKey.get(giftSig) || 0;
+      if (now - lastExact < 10_000) return;
+      recentGiftKey.set(giftSig, now);
+      if (recentGiftKey.size > 200) {
+        recentGiftKey.delete(recentGiftKey.keys().next().value);
+      }
+
+      if (!isReal) {
+        const queuedInteractive = speechQueue.filter(x => x.kind !== 'story').length;
+        if (queuedInteractive >= 2 || now - lastMockGiftAt < 4500) return;
+        lastMockGiftAt = now;
+      }
+
+      const text = formatGiftBoostSpeech(d);
+      const priority = (isReal ? 12 : 8) + (d.tier || 1);
+
+      // If this user already has an unspoken gift announcement waiting in speechQueue, coalesce it in-place
+      // so rapid gift taps read only the latest combined reward once instead of repeating!
+      const existingGift = uid ? speechQueue.find(x => x.uid === uid && x.kind === 'gift') : null;
+      if (existingGift) {
+        existingGift.text = text;
+        existingGift.tier = Math.max(existingGift.tier || 1, d.tier || 1);
+        existingGift.priority = Math.max(existingGift.priority || 1, priority);
+        existingGift.isReal = existingGift.isReal || isReal;
+        fetchAndDecodeDualVoiceTts(text).catch(() => {});
+        return;
+      }
 
       const gender = interactiveGenderToggle++ % 2 === 0 ? 'female' : 'male';
-      const text = formatGiftBoostSpeech(d);
       // Gift priority (13..16 real / 9..12 demo) is the highest priority
       enqueueSpeech({
         uid,
@@ -1987,7 +2018,7 @@ export function createRaceAudio({ onSpeak = null } = {}) {
         kind: 'gift',
         tier: d.tier || 1,
         gender,
-        priority: (isReal ? 12 : 8) + (d.tier || 1),
+        priority,
         isReal,
       });
     },

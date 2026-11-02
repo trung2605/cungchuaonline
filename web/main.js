@@ -263,6 +263,7 @@ if (params.get('debug') === '1') window.stageMsg = receive;
 // Hybrid Real-Time Transport: Local WebSocket (:8787) + Vercel Cloud HTTP Polling (/api/chua/poll)
 let cloudPollingActive = false;
 let cloudSeq = 0;
+const seenChuaCloudEvents = new Set();
 
 async function pollChuaCloud() {
   try {
@@ -271,9 +272,20 @@ async function pollChuaCloud() {
       const data = await res.json();
       if (data.snapshot) receive(data.snapshot);
       if (Array.isArray(data.messages)) {
-        for (const m of data.messages) receive(m);
+        for (const m of data.messages) {
+          if (m?._eid) {
+            if (seenChuaCloudEvents.has(m._eid)) continue;
+            seenChuaCloudEvents.add(m._eid);
+            if (seenChuaCloudEvents.size > 400) {
+              seenChuaCloudEvents.delete(seenChuaCloudEvents.values().next().value);
+            }
+          }
+          receive(m);
+        }
       }
-      if (typeof data.seq === 'number') cloudSeq = data.seq;
+      if (typeof data.seq === 'number' && data.seq > cloudSeq) {
+        cloudSeq = data.seq;
+      }
     }
   } catch {}
   if (cloudPollingActive) setTimeout(pollChuaCloud, 1200);
