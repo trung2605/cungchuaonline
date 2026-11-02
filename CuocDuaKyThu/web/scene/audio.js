@@ -660,6 +660,235 @@ export function createRaceAudio({ onSpeak = null } = {}) {
   acousticDry.connect(bgmWarmFilter);
   acousticDry.connect(hallReverb);
 
+  // ==========================================================================
+  // SOFT BACKGROUND SUNG LYRIC & FORMANT VOCAL LAYER ("Nhạc Có Lời Nhỏ Nhẹ")
+  // Stereo-widened, low-passed at 1600Hz, and reverberated in the concert hall
+  // so it blends into the BGM and NEVER conflicts with MC voiceovers or SFX!
+  // ==========================================================================
+  let bgmVocalEnabled = true;
+  let bgmVocalVolume = 0.16; // 16% soft background singing level
+  let activeRaceLyricSrc = null;
+  let activeRaceLyricGain = null;
+  let lastRaceLyricAt = 0;
+  let raceLyricCursor = 0;
+  let lastRaceSfxAt = 0;
+  const raceLyricCache = new Map();
+
+  const bgmVocalBus = ctx.createGain();
+  bgmVocalBus.gain.value = bgmVocalVolume;
+
+  const raceVocalLowpass = ctx.createBiquadFilter();
+  raceVocalLowpass.type = 'lowpass';
+  raceVocalLowpass.frequency.value = 1620;
+  raceVocalLowpass.Q.value = 0.65;
+
+  const raceVocalWarmth = ctx.createBiquadFilter();
+  raceVocalWarmth.type = 'peaking';
+  raceVocalWarmth.frequency.value = 390;
+  raceVocalWarmth.gain.value = 2.6;
+
+  const raceVocalPan = ctx.createStereoPanner ? ctx.createStereoPanner() : null;
+  if (raceVocalPan) {
+    raceVocalPan.pan.value = -0.38;
+    bgmVocalBus.connect(raceVocalWarmth).connect(raceVocalLowpass).connect(raceVocalPan);
+    raceVocalPan.connect(bgmWarmFilter);
+    raceVocalPan.connect(hallReverb);
+  } else {
+    bgmVocalBus.connect(raceVocalWarmth).connect(raceVocalLowpass);
+    raceVocalLowpass.connect(bgmWarmFilter);
+    raceVocalLowpass.connect(hallReverb);
+  }
+
+  const BIOME_SUNG_LYRICS = {
+    vn_hagiang: [
+      'Mây vờn đỉnh núi Hà Giang, cờ đỏ tung bay nơi địa đầu Tổ quốc',
+      'Tiếng khèn gọi bạn bên sườn núi đá, hoa tam giác mạch nở hồng sương mai',
+    ],
+    vn_sapa: [
+      'Em đi giữa biển vàng, nghe mênh mang trên đồng lúa hát',
+      'Sương giăng mờ đỉnh Fansipan, tiếng sáo Hơ Mông ngân vang núi rừng',
+    ],
+    vn_halong: [
+      'Hạ Long biển biếc mây trời, thuyền ai lướt sóng giữa ngàn đảo xanh',
+      'Nắng vàng trải nhẹ mặt vịnh, sóng vỗ rì rào khúc hát quê hương',
+    ],
+    vn_hanoi: [
+      'Hà Nội mùa thu, mặt hồ Gươm xanh thắm bóng tháp Rùa ngàn năm',
+      'Nhớ phố cổ rêu phong, chiều thu gió heo may nồng nàn',
+    ],
+    vn_ninhbinh: [
+      'Tràng An non nước hữu tình, thuyền trôi nhẹ giữa mây trời cố đô',
+      'Chuông chùa Bái Đính ngân vang, bình yên khắp nẻo đường quê',
+    ],
+    vn_hue: [
+      'Chiều trên dòng sông Hương, tiếng chuông Thiên Mụ ngân vang đôi bờ',
+      'Ai về xứ Huế mộng mơ, nghe câu Nam Bình thương nhớ ngàn năm',
+    ],
+    vn_danang: [
+      'Đà Nẵng thành phố bên sông Hàn, cầu Vàng rực sáng giữa ngàn mây trắng',
+      'Biển Mỹ Khê sóng vỗ hiền hòa, nhịp sống trẻ trung vươn mình ra biển lớn',
+    ],
+    vn_hoian: [
+      'Đêm Hội An lung linh đèn lồng, dòng sông Hoài chở nặng tình quê',
+      'Phố cổ bình yên bên mái ngói rêu phong, thương nhớ hoài phố hội',
+    ],
+    vn_dalat: [
+      'Ai lên xứ hoa đào, dừng chân bên hồ nghe thông reo chiều sương',
+      'Đà Lạt mộng mơ trong sương mờ, ngàn hoa khoe sắc dưới nắng vàng',
+    ],
+    vn_nhatrang: [
+      'Nha Trang biển xanh cát trắng, nắng vàng rực rỡ vịnh ngọc hiền hòa',
+      'Tháp Bà cổ kính bên bờ biển xanh, gió biển hát khúc ca thanh bình',
+    ],
+    vn_saigon: [
+      'Sài Gòn đẹp lắm Sài Gòn ơi, phố xá rực rỡ ánh đèn đêm',
+      'Dòng sông Sài Gòn lấp lánh, nhịp sống nghĩa tình năng động vươn cao',
+    ],
+    vn_mientay: [
+      'Chiếc áo bà ba trên dòng sông nước, câu hò miền Tây ngọt ngào thương nhớ',
+      'Chợ nổi Cái Răng nhộn nhịp bình minh, tình người miền Tây chân chất hiền hòa',
+    ],
+  };
+
+  function stopRaceBackgroundLyric() {
+    if (activeRaceLyricGain && ctx.state === 'running') {
+      try {
+        activeRaceLyricGain.gain.setTargetAtTime(0.0001, ctx.currentTime, 0.035);
+      } catch {}
+    }
+    if (activeRaceLyricSrc) {
+      const s = activeRaceLyricSrc;
+      activeRaceLyricSrc = null;
+      setTimeout(() => {
+        try { s.stop(); } catch {}
+      }, 110);
+    }
+  }
+
+  const RACE_VOWEL_FORMANTS = [
+    [710, 1190, 2520], // "Aaa"
+    [450, 870, 2410],  // "Ooo"
+    [340, 710, 2340],  // "Uuu"
+  ];
+  function playRaceFormantVocal(freq, start, durSec, vol = 0.048) {
+    if (!enabled || bgmMuted || !bgmVocalEnabled || ctx.state !== 'running' || freq <= 0) return;
+    // When MC is speaking an interactive participant event, keep formant choir silent;
+    // when MC is reading story, keep formant choir at a very soft instrumental pad whisper (35% of normal).
+    if (speaking && currentItem?.kind !== 'story') return;
+    const effVol = speaking ? vol * 0.32 : vol;
+    const vowel = RACE_VOWEL_FORMANTS[Math.floor(tickCount / 4) % RACE_VOWEL_FORMANTS.length];
+    const srcOsc = ctx.createOscillator();
+    const subOsc = ctx.createOscillator();
+    const vib = ctx.createOscillator();
+    const vibG = ctx.createGain();
+
+    srcOsc.type = 'sawtooth';
+    subOsc.type = 'triangle';
+    const singFreq = freq > 480 ? freq * 0.5 : freq;
+    srcOsc.frequency.setValueAtTime(singFreq * 0.992, start);
+    srcOsc.frequency.exponentialRampToValueAtTime(singFreq, start + 0.08);
+    subOsc.frequency.setValueAtTime(singFreq * 0.5, start);
+
+    vib.frequency.setValueAtTime(5.2, start);
+    vibG.gain.setValueAtTime(singFreq * 0.0085, start);
+    vib.connect(vibG);
+    vibG.connect(srcOsc.frequency);
+    vibG.connect(subOsc.frequency);
+
+    const env = ctx.createGain();
+    const totalDur = Math.max(0.45, durSec * 1.32);
+    env.gain.setValueAtTime(0.0001, start);
+    env.gain.linearRampToValueAtTime(effVol, start + 0.09);
+    env.gain.exponentialRampToValueAtTime(0.0001, start + totalDur);
+
+    for (const [idx, fHz] of vowel.entries()) {
+      const bp = ctx.createBiquadFilter();
+      bp.type = 'bandpass';
+      bp.frequency.setValueAtTime(fHz, start);
+      bp.Q.value = 4.2 + idx * 1.2;
+      const fg = ctx.createGain();
+      fg.gain.value = idx === 0 ? 1.0 : idx === 1 ? 0.55 : 0.25;
+      srcOsc.connect(bp);
+      subOsc.connect(bp);
+      bp.connect(fg).connect(env);
+    }
+
+    env.connect(bgmVocalBus);
+    srcOsc.start(start);
+    subOsc.start(start);
+    vib.start(start);
+    srcOsc.stop(start + totalDur + 0.05);
+    subOsc.stop(start + totalDur + 0.05);
+    vib.stop(start + totalDur + 0.05);
+  }
+
+  async function preloadAndPlayRaceLyric() {
+    if (!enabled || bgmMuted || !bgmVocalEnabled || speaking || speechQueue.length > 0) return;
+    const now = Date.now();
+    if (activeRaceLyricSrc || now - lastRaceLyricAt < 3500 || now - lastRaceSfxAt < 1200) return;
+    const lines = BIOME_SUNG_LYRICS[currentStoryBiomeId] || BIOME_SUNG_LYRICS.vn_hagiang;
+    if (!lines || !lines.length) return;
+    const text = lines[raceLyricCursor++ % lines.length];
+    lastRaceLyricAt = now;
+
+    try {
+      let buf = raceLyricCache.get(text);
+      if (!buf) {
+        const res = await fetch(`/tts?q=${encodeURIComponent(text)}`);
+        if (!res.ok) return;
+        const arr = await res.arrayBuffer();
+        if (!arr.byteLength) return;
+        buf = await ctx.decodeAudioData(arr.slice(0));
+        if (raceLyricCache.size > 28) {
+          const oldest = raceLyricCache.keys().next().value;
+          raceLyricCache.delete(oldest);
+        }
+        raceLyricCache.set(text, buf);
+      }
+      // Ensure MC did not start speaking while fetching
+      if (!enabled || bgmMuted || !bgmVocalEnabled || speaking || speechQueue.length > 0) return;
+
+      const src = ctx.createBufferSource();
+      src.buffer = buf;
+      src.playbackRate.value = 0.88;
+      const t0 = ctx.currentTime;
+      const dur = buf.duration / 0.88;
+      src.detune.setValueAtTime(0, t0);
+      src.detune.linearRampToValueAtTime(150, t0 + dur * 0.35);
+      src.detune.linearRampToValueAtTime(-90, t0 + dur * 0.7);
+      src.detune.linearRampToValueAtTime(0, t0 + dur);
+
+      const vib = ctx.createOscillator();
+      const vibG = ctx.createGain();
+      vib.frequency.value = 5.2;
+      vibG.gain.value = 16;
+      vib.connect(vibG).connect(src.detune);
+
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(0.0001, t0);
+      g.gain.linearRampToValueAtTime(0.85, t0 + 0.28);
+      g.gain.setValueAtTime(0.85, Math.max(t0 + 0.32, t0 + dur - 0.38));
+      g.gain.linearRampToValueAtTime(0.0001, t0 + dur);
+
+      if (raceVocalPan) {
+        raceVocalPan.pan.setTargetAtTime(raceLyricCursor % 2 === 0 ? -0.38 : 0.38, t0, 0.2);
+      }
+
+      src.connect(g).connect(bgmVocalBus);
+      activeRaceLyricSrc = src;
+      activeRaceLyricGain = g;
+      src.onended = () => {
+        if (activeRaceLyricSrc === src) {
+          activeRaceLyricSrc = null;
+          activeRaceLyricGain = null;
+        }
+        try { vib.stop(); } catch {}
+      };
+      vib.start(t0);
+      src.start(t0);
+    } catch {}
+  }
+
   // Karplus-Strong Physical Waveguide Plucked String Generator (Caches realistic plucked string buffers)
   const stringBufferCache = new Map();
   function getKarplusStrongBuffer(freq, style = 'zither') {
@@ -879,10 +1108,18 @@ export function createRaceAudio({ onSpeak = null } = {}) {
   let tickCount = 0;
 
   function duckBgm(duck) {
+    if (duck) {
+      stopRaceBackgroundLyric();
+    }
     if (ctx.state === 'running') {
       const isStory = currentItem?.kind === 'story';
       const target = bgmMuted ? 0 : duck ? (isStory ? 0.27 : 0.18) : 0.40;
       bgmGain.gain.setTargetAtTime(target, ctx.currentTime, 0.16);
+      bgmVocalBus.gain.setTargetAtTime(
+        bgmMuted || !bgmVocalEnabled ? 0.0001 : duck ? (isStory ? bgmVocalVolume * 0.25 : 0.0001) : bgmVocalVolume,
+        ctx.currentTime,
+        duck ? 0.04 : 0.22
+      );
     }
   }
 
@@ -943,6 +1180,13 @@ export function createRaceAudio({ onSpeak = null } = {}) {
           playDanBau(freq, t, durSec, 0.10);
           playAcousticPluck(freq, t, 0.20, 'zither');
         }
+        // 4. Soft Background Vocal Choir & Regional Sung Lyric Phrase ("Nhạc Có Lời Nhỏ Nhẹ")
+        if (bgmVocalEnabled && (stepInBar === 0 || stepInBar === 4 || inst === 'both')) {
+          playRaceFormantVocal(freq, t, durSec, 0.048);
+        }
+        if (bgmVocalEnabled && !speaking && speechQueue.length === 0 && stepInBar === 0) {
+          preloadAndPlayRaceLyric();
+        }
       }
 
       noteCursor++;
@@ -974,6 +1218,8 @@ export function createRaceAudio({ onSpeak = null } = {}) {
 
   function joinChime() {
     if (!enabled) return;
+    lastRaceSfxAt = Date.now();
+    stopRaceBackgroundLyric();
     const t = ctx.currentTime;
     playAcousticPluck(N.C5, t, 0.18, 'zither');
     playAcousticPluck(N.E5, t + 0.07, 0.16, 'zither');
@@ -981,6 +1227,8 @@ export function createRaceAudio({ onSpeak = null } = {}) {
 
   function boostSfx(tier = 1) {
     if (!enabled) return;
+    lastRaceSfxAt = Date.now();
+    stopRaceBackgroundLyric();
     const t = ctx.currentTime;
     if (tier >= 3) {
       for (const [i, f] of [N.G4, N.C5, N.E5].entries()) {
@@ -1229,11 +1477,16 @@ export function createRaceAudio({ onSpeak = null } = {}) {
       }
       onSpeak?.('', false, '', gender);
 
-      // Immediately read waiting participant events if any; otherwise resume next story sentence when idle
+      // Immediately read waiting participant events if any; otherwise allow a soft sung lyric interlude before next story sentence
       if (speechQueue.length > 0) {
         nextFlushTimer = setTimeout(flushSpeech, 110);
       } else {
-        nextFlushTimer = setTimeout(queueNextStoryNow, 620);
+        if (bgmVocalEnabled) {
+          setTimeout(() => {
+            if (!speaking && speechQueue.length === 0) preloadAndPlayRaceLyric();
+          }, 180);
+        }
+        nextFlushTimer = setTimeout(queueNextStoryNow, bgmVocalEnabled ? 3600 : 620);
       }
     };
 
@@ -1397,6 +1650,17 @@ export function createRaceAudio({ onSpeak = null } = {}) {
           if (speechQueue[i].kind === 'comment') speechQueue.splice(i, 1);
         }
       }
+    },
+    setBgmVocal(on, vol) {
+      if (on !== undefined) bgmVocalEnabled = Boolean(on);
+      if (Number.isFinite(Number(vol))) {
+        bgmVocalVolume = Math.max(0, Math.min(0.45, Number(vol)));
+      }
+      if (!bgmVocalEnabled) stopRaceBackgroundLyric();
+      duckBgm(speaking);
+    },
+    getBgmVocalConfig() {
+      return { enabled: bgmVocalEnabled, volume: bgmVocalVolume };
     },
     setEnabled(_on) {
       if (isPreviewIframe) return;

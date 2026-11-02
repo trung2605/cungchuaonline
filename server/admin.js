@@ -267,6 +267,166 @@ export async function startAdmin({ port = 8788, host = '127.0.0.1', password, ct
     return { ...autoFxState };
   }
 
+  // ============================================================================
+  // SMART AUTO-DEMO BALANCER ALGORITHM (Tự Động Cân Bằng Người Dùng Thật & Mẫu)
+  // Checks active real users vs. target threshold; turns ON demo proportionally
+  // when real users are too few, and automatically turns OFF demo when enough!
+  // ============================================================================
+  let autoBalanceTimer = null;
+  const autoBalanceState = {
+    enabled: Boolean(ctx.initialAutoBalance?.enabled ?? false),
+    targetRealUsers: Math.max(1, Math.min(100, Number(ctx.initialAutoBalance?.targetRealUsers) || 8)),
+    maxDemoRate: Math.max(0.02, Math.min(10, Number(ctx.initialAutoBalance?.maxDemoRate) || 0.20)),
+    giftRatio: Math.max(0, Math.min(0.85, Number(ctx.initialAutoBalance?.giftRatio ?? 0.12))),
+    prayerRatio: Math.max(0.1, Math.min(0.95, Number(ctx.initialAutoBalance?.prayerRatio ?? 0.70))),
+    lastAction: 'Chờ kiểm tra',
+    lastCheckedAt: null,
+  };
+
+  function isRealStageActor(a) {
+    if (!a) return false;
+    const id = String(a.id || '');
+    if (id.startsWith('bot_') || id.startsWith('seed_') || id.startsWith('ceremony_') || id.startsWith('sample_')) {
+      return false;
+    }
+    return Boolean(a.src && a.src !== 'mock' && a.src !== 'seed');
+  }
+
+  function evaluateAutoBalance(applyToDemo = false) {
+    const actorsList = stage.snapshot() || [];
+    let realActive = 0;
+    let demoActive = 0;
+    for (const a of actorsList) {
+      if (isRealStageActor(a)) realActive++;
+      else demoActive++;
+    }
+    const totalActive = realActive + demoActive;
+    const target = Math.max(1, autoBalanceState.targetRealUsers);
+    const deficit = Math.max(0, target - realActive);
+    const realCoveragePct = Math.min(100, Math.round((realActive / target) * 100));
+    const effectiveTotal = realActive + Math.min(deficit, demoActive);
+    const balanceIndex = Math.min(100, Math.round((effectiveTotal / target) * 100));
+
+    let recommendedDemoOn = false;
+    let recommendedRate = 0;
+    let statusCode = 'optimal_real';
+    let statusLabel = `Đủ người thật (${realActive}/${target}) — Tự động TẮT chạy mẫu`;
+
+    if (realActive < target) {
+      const deficitRatio = deficit / target;
+      recommendedDemoOn = true;
+      recommendedRate = Math.max(0.03, Math.round(autoBalanceState.maxDemoRate * deficitRatio * 100) / 100);
+      statusCode = realActive === 0 ? 'full_assist' : 'partial_assist';
+      statusLabel =
+        realActive === 0
+          ? `Vắng người thật (0/${target}) — Tự động BẬT mẫu (${recommendedRate}/s)`
+          : `Thiếu người thật (${realActive}/${target}) — Tự động bù mẫu (${recommendedRate}/s)`;
+    }
+
+    if (applyToDemo && autoBalanceState.enabled) {
+      autoBalanceState.lastCheckedAt = new Date().toLocaleTimeString('vi-VN', { hour12: false });
+      const curDemo = demo.state();
+      if (!recommendedDemoOn) {
+        if (curDemo.on) {
+          demo.stop();
+          autoBalanceState.lastAction = `Đã TẮT mẫu vì đủ ${realActive}/${target} người thật`;
+        } else {
+          autoBalanceState.lastAction = `Giữ TẮT mẫu (${realActive}/${target} người thật)`;
+        }
+      } else {
+        const curRate = Number(curDemo.rate) || 0;
+        if (!curDemo.on || Math.abs(curRate - recommendedRate) >= 0.03) {
+          if (demo.configure) {
+            demo.configure({
+              rate: recommendedRate,
+              giftRatio: autoBalanceState.giftRatio,
+              prayerRatio: autoBalanceState.prayerRatio,
+            });
+          }
+          demo.start(recommendedRate, {
+            giftRatio: autoBalanceState.giftRatio,
+            prayerRatio: autoBalanceState.prayerRatio,
+          });
+          autoBalanceState.lastAction = `Đã BẬT mẫu ${recommendedRate}/s (Thiếu ${deficit} người thật)`;
+        } else {
+          autoBalanceState.lastAction = `Đang bù mẫu ${curRate}/s (${realActive}/${target} người thật)`;
+        }
+      }
+    }
+
+    return {
+      enabled: autoBalanceState.enabled,
+      targetRealUsers: target,
+      maxDemoRate: autoBalanceState.maxDemoRate,
+      giftRatio: autoBalanceState.giftRatio,
+      prayerRatio: autoBalanceState.prayerRatio,
+      realActive,
+      demoActive,
+      totalActive,
+      deficit,
+      realCoveragePct,
+      balanceIndex,
+      recommendedDemoOn,
+      recommendedRate,
+      statusCode,
+      statusLabel,
+      lastAction: autoBalanceState.lastAction,
+      lastCheckedAt: autoBalanceState.lastCheckedAt,
+    };
+  }
+
+  function startAutoBalanceLoop() {
+    if (autoBalanceTimer) clearInterval(autoBalanceTimer);
+    if (!autoBalanceState.enabled) return;
+    evaluateAutoBalance(true);
+    autoBalanceTimer = setInterval(() => {
+      if (autoBalanceState.enabled) evaluateAutoBalance(true);
+    }, 3000);
+  }
+
+  function stopAutoBalanceLoop() {
+    if (autoBalanceTimer) {
+      clearInterval(autoBalanceTimer);
+      autoBalanceTimer = null;
+    }
+  }
+
+  if (autoBalanceState.enabled) {
+    startAutoBalanceLoop();
+  }
+
+  function configureAutoBalance(body = {}) {
+    if (body.targetRealUsers !== undefined) {
+      const t = Number(body.targetRealUsers);
+      if (!Number.isFinite(t) || t < 1 || t > 150) throw bad('Ngưỡng người thật mục tiêu phải từ 1 đến 150');
+      autoBalanceState.targetRealUsers = Math.round(t);
+    }
+    if (body.maxDemoRate !== undefined) {
+      const r = Number(body.maxDemoRate);
+      if (!Number.isFinite(r) || r < 0.01 || r > 50) throw bad('Tốc độ mẫu tối đa phải từ 0.01 đến 50');
+      autoBalanceState.maxDemoRate = Math.round(r * 100) / 100;
+    }
+    if (body.giftRatio !== undefined) {
+      const g = Number(body.giftRatio);
+      if (Number.isFinite(g) && g >= 0 && g <= 0.9) autoBalanceState.giftRatio = g;
+    }
+    if (body.prayerRatio !== undefined) {
+      const p = Number(body.prayerRatio);
+      if (Number.isFinite(p) && p >= 0.1 && p <= 0.95) autoBalanceState.prayerRatio = p;
+    }
+    if (body.enabled !== undefined) {
+      autoBalanceState.enabled = Boolean(body.enabled);
+      if (autoBalanceState.enabled) {
+        startAutoBalanceLoop();
+      } else {
+        stopAutoBalanceLoop();
+      }
+    } else if (autoBalanceState.enabled) {
+      evaluateAutoBalance(true);
+    }
+    return evaluateAutoBalance(false);
+  }
+
   const routes = {
     'GET /': (req, res) =>
       fs.readFile(PAGE, (err, html) =>
@@ -281,6 +441,7 @@ export async function startAdmin({ port = 8788, host = '127.0.0.1', password, ct
       scene: pipeline.snapshot().scene,
       stayConfig: stage.getStayConfig?.() ?? { stayMinutes: 5 },
       autoFx: { ...autoFxState },
+      autoBalance: evaluateAutoBalance(false),
       demo: demo.state(),
       demoConfig: demo.config?.() ?? { on: demo.state().on, rate: demo.state().rate ?? 3, giftRatio: 0.08, prayerRatio: 0.65 },
       actors: stage.snapshot(),
@@ -323,11 +484,16 @@ export async function startAdmin({ port = 8788, host = '127.0.0.1', password, ct
     },
 
     'POST /api/scene': async req => {
-      const { theme, sound, readComments, stayMinutes, bgmTrack } = await readJson(req);
+      const { theme, sound, readComments, stayMinutes, bgmTrack, bgmVocal, bgmVocalVolume } = await readJson(req);
       if (theme !== undefined && !THEMES.includes(theme)) throw bad(`theme phải là ${THEMES.join('/')}`);
       if (sound !== undefined && typeof sound !== 'boolean') throw bad('sound phải là boolean');
       if (readComments !== undefined && typeof readComments !== 'boolean') throw bad('readComments phải là boolean');
       if (bgmTrack !== undefined && (typeof bgmTrack !== 'string' || !bgmTrack.trim())) throw bad('bgmTrack không hợp lệ');
+      if (bgmVocal !== undefined && typeof bgmVocal !== 'boolean') throw bad('bgmVocal phải là boolean');
+      if (bgmVocalVolume !== undefined) {
+        const v = Number(bgmVocalVolume);
+        if (!Number.isFinite(v) || v < 0 || v > 0.5) throw bad('bgmVocalVolume phải từ 0 đến 0.5');
+      }
       if (stayMinutes !== undefined) {
         const mins = Number(stayMinutes);
         if (!Number.isFinite(mins) || mins < 0.5 || mins > 180) throw bad('stayMinutes phải từ 0.5 đến 180 phút');
@@ -338,6 +504,8 @@ export async function startAdmin({ port = 8788, host = '127.0.0.1', password, ct
         ...(sound !== undefined && { sound }),
         ...(readComments !== undefined && { readComments }),
         ...(bgmTrack !== undefined && { bgmTrack: bgmTrack.trim(), bgmSeq: Date.now() }),
+        ...(bgmVocal !== undefined && { bgmVocal }),
+        ...(bgmVocalVolume !== undefined && { bgmVocalVolume: Number(bgmVocalVolume) }),
       });
       broadcast(msgs);
       await ctx.saveSceneConfig?.();
@@ -368,11 +536,21 @@ export async function startAdmin({ port = 8788, host = '127.0.0.1', password, ct
       const { on, rate = 0.25, giftRatio, prayerRatio } = await readJson(req);
       if (typeof on !== 'boolean') throw bad('on phải là boolean');
       if (!(Number.isFinite(rate) && rate >= 0.01 && rate <= 50)) throw bad('rate phải từ 0.01 đến 50');
+      // Manual demo toggle pauses auto-balance unless explicitly re-enabled
+      stopAutoBalanceLoop();
+      autoBalanceState.enabled = false;
       if (demo.configure) demo.configure({ rate, giftRatio, prayerRatio });
       if (on) demo.start(rate, { giftRatio, prayerRatio });
       else demo.stop();
       await ctx.saveSceneConfig?.();
-      return { demo: demo.state(), demoConfig: demo.config?.() };
+      return { demo: demo.state(), demoConfig: demo.config?.(), autoBalance: evaluateAutoBalance(false) };
+    },
+
+    'POST /api/auto-balance': async req => {
+      const body = await readJson(req);
+      const autoBalance = configureAutoBalance(body);
+      await ctx.saveSceneConfig?.();
+      return { ok: true, autoBalance, demo: demo.state(), demoConfig: demo.config?.() };
     },
 
     'POST /api/test-event': async req => {
@@ -487,6 +665,7 @@ export async function startAdmin({ port = 8788, host = '127.0.0.1', password, ct
     port: real,
     close: () => {
       stopAutoFx();
+      stopAutoBalanceLoop();
       return new Promise(r => server.close(() => r()));
     },
   };

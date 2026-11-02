@@ -153,6 +153,9 @@ function handleMsg(msg) {
       hud.setActiveCount(runners.count());
       if (msg.scene?.sound !== undefined) audio.setEnabled(msg.scene.sound);
       if (msg.scene?.readComments !== undefined) syncCommentTtsBtn(Boolean(msg.scene.readComments));
+      if (msg.scene?.bgmVocal !== undefined || msg.scene?.bgmVocalVolume !== undefined) {
+        audio.setBgmVocal?.(msg.scene.bgmVocal, msg.scene.bgmVocalVolume);
+      }
       break;
     case 'spawn':
       runners.addOrUpdate(msg.runner);
@@ -247,6 +250,9 @@ function handleMsg(msg) {
     case 'scene':
       if (msg.scene?.sound !== undefined) audio.setEnabled(msg.scene.sound);
       if (msg.scene?.readComments !== undefined) syncCommentTtsBtn(Boolean(msg.scene.readComments));
+      if (msg.scene?.bgmVocal !== undefined || msg.scene?.bgmVocalVolume !== undefined) {
+        audio.setBgmVocal?.(msg.scene.bgmVocal, msg.scene.bgmVocalVolume);
+      }
       break;
   }
 }

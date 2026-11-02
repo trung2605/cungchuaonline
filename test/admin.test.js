@@ -30,6 +30,10 @@ before(async () => {
       saveLists: async l => { saved.lists = structuredClone(l); },
       saveBlocked: async b => { saved.blocked = [...b]; },
       demo: { start: r => { demoRate = r; }, stop: () => { demoRate = null; }, state: () => ({ on: demoRate !== null, rate: demoRate }) },
+      autoBalance: {
+        state: () => ({ enabled: true, targetRealUsers: 8, maxDemoRate: 0.22, realActive: stage.snapshot().filter(a => a.src !== 'mock').length, demoActive: 0, balanceScore: 100 }),
+        configure: cfg => ({ enabled: Boolean(cfg.enabled ?? true), targetRealUsers: Number(cfg.targetRealUsers || 8), maxDemoRate: Number(cfg.maxDemoRate || 0.22) }),
+      },
     },
   });
   base = `http://127.0.0.1:${admin.port}`;
@@ -155,4 +159,20 @@ test('POST /api/test-event, /api/kick, /api/history/clear, /api/tiktok-user', as
   assert.equal((await call('POST', '/api/history/clear', {})).status, 200);
   assert.equal((await call('POST', '/api/tiktok-user', { user: '@adidaphat20266' })).status, 200);
   assert.equal((await call('POST', '/api/tiktok-user', { user: 'bad user!' })).status, 400);
+});
+
+test('POST /api/auto-balance and /api/scene bgmVocal controls', async () => {
+  const abRes = await call('POST', '/api/auto-balance', { enabled: true, targetRealUsers: 12, maxDemoRate: 0.35 });
+  assert.equal(abRes.status, 200);
+  const abJson = await abRes.json();
+  assert.equal(abJson.autoBalance.enabled, true);
+  assert.equal(abJson.autoBalance.targetRealUsers, 12);
+  assert.equal(abJson.autoBalance.maxDemoRate, 0.35);
+
+  sent.length = 0;
+  const scRes = await call('POST', '/api/scene', { bgmVocal: true, bgmVocalVolume: 0.18 });
+  assert.equal(scRes.status, 200);
+  const scJson = await scRes.json();
+  assert.equal(scJson.scene.bgmVocal, true);
+  assert.equal(scJson.scene.bgmVocalVolume, 0.18);
 });

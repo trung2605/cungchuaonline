@@ -408,6 +408,119 @@ function initApexCharts() {
     grid: { borderColor: '#f1f5f9' },
   });
   charts.duaTopRacers.render();
+
+  // 8. System Balance Chart: Real Users vs Demo Users vs Target Threshold
+  if ($('chartSystemBalance')) {
+    charts.systemBalance = new ApexCharts($('chartSystemBalance'), {
+      chart: { type: 'bar', height: 140, fontFamily: baseFont, toolbar: { show: false } },
+      colors: ['#059669', '#d97706', '#2563eb'],
+      plotOptions: { bar: { horizontal: true, borderRadius: 0, barHeight: '72%' } },
+      dataLabels: { enabled: true, formatter: v => fmtNum(v), style: { fontSize: '10.5px', fontWeight: 700 } },
+      series: [
+        { name: 'Người thật', data: [0, 0] },
+        { name: 'Mẫu bù tự động', data: [0, 0] },
+        { name: 'Ngưỡng đủ', data: [8, 8] },
+      ],
+      xaxis: { categories: ['Chùa 3D (:8787)', 'Xuyên Việt (:8789)'], labels: { style: { colors: '#64748b', fontSize: '10.5px' } } },
+      grid: { borderColor: '#f1f5f9', padding: { top: -10, bottom: -8 } },
+      legend: { position: 'top', horizontalAlign: 'right', fontSize: '11px', fontWeight: 700 },
+    });
+    charts.systemBalance.render();
+  }
+}
+
+// ============================================================================
+// INTERACTIVE STUDIO ROTARY KNOBS ENGINE (Drag, Mouse Wheel & -/+ Step Buttons)
+// ============================================================================
+const activeDraggingKnobs = new Set();
+
+function formatKnobValue(val, step, unit) {
+  const decimals = String(step).includes('.') ? String(step).split('.')[1].length : 0;
+  return `${Number(val).toFixed(decimals)}${unit || ''}`;
+}
+
+function setKnobVisual(knobId, rawVal) {
+  const dial = document.querySelector(`.rotary-dial[data-knob-id="${knobId}"]`);
+  if (!dial) return;
+  const min = Number(dial.dataset.min) || 0;
+  const max = Number(dial.dataset.max) || 100;
+  const step = Number(dial.dataset.step) || 1;
+  const unit = dial.dataset.unit || '';
+  const color = dial.dataset.color || '#2563eb';
+  const clamped = Math.max(min, Math.min(max, Number(rawVal) || min));
+  const snapped = Math.round(clamped / step) * step;
+  const pct = max > min ? ((snapped - min) / (max - min)) * 100 : 0;
+  const deg = -135 + (pct / 100) * 270;
+
+  dial.dataset.value = String(snapped);
+  dial.style.setProperty('--knob-pct', `${pct.toFixed(1)}%`);
+  dial.style.setProperty('--knob-deg', `${deg.toFixed(1)}deg`);
+  dial.style.setProperty('--knob-color', color);
+
+  const readout = dial.querySelector('.rotary-readout');
+  if (readout) {
+    readout.textContent = formatKnobValue(snapped, step, unit);
+  }
+  return snapped;
+}
+
+function initRotaryKnobs(onKnobCommit) {
+  document.querySelectorAll('.rotary-dial[data-knob-id]').forEach(dial => {
+    const knobId = dial.dataset.knobId;
+    setKnobVisual(knobId, dial.dataset.value);
+
+    // 1. Vertical/Horizontal Dragging
+    dial.addEventListener('pointerdown', e => {
+      e.preventDefault();
+      dial.setPointerCapture(e.pointerId);
+      activeDraggingKnobs.add(knobId);
+      const startY = e.clientY;
+      const startVal = Number(dial.dataset.value) || 0;
+      const min = Number(dial.dataset.min) || 0;
+      const max = Number(dial.dataset.max) || 100;
+      const range = max - min;
+
+      const onMove = ev => {
+        const dy = startY - ev.clientY;
+        const nextVal = startVal + (dy / 110) * range;
+        setKnobVisual(knobId, nextVal);
+      };
+      const onUp = () => {
+        activeDraggingKnobs.delete(knobId);
+        dial.removeEventListener('pointermove', onMove);
+        dial.removeEventListener('pointerup', onUp);
+        dial.removeEventListener('pointercancel', onUp);
+        onKnobCommit(knobId, Number(dial.dataset.value));
+      };
+      dial.addEventListener('pointermove', onMove);
+      dial.addEventListener('pointerup', onUp);
+      dial.addEventListener('pointercancel', onUp);
+    });
+
+    // 2. Mouse Wheel Rotation
+    dial.addEventListener('wheel', e => {
+      e.preventDefault();
+      const step = Number(dial.dataset.step) || 1;
+      const cur = Number(dial.dataset.value) || 0;
+      const dir = e.deltaY < 0 ? 1 : -1;
+      const next = setKnobVisual(knobId, cur + dir * step);
+      onKnobCommit(knobId, next);
+    }, { passive: false });
+  });
+
+  // 3. Fine Step Buttons (- / +)
+  document.querySelectorAll('[data-knob-step]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const knobId = btn.dataset.knobStep;
+      const dir = Number(btn.dataset.dir) || 1;
+      const dial = document.querySelector(`.rotary-dial[data-knob-id="${knobId}"]`);
+      if (!dial) return;
+      const step = Number(dial.dataset.step) || 1;
+      const cur = Number(dial.dataset.value) || 0;
+      const next = setKnobVisual(knobId, cur + dir * step);
+      onKnobCommit(knobId, next);
+    });
+  });
 }
 
 function computeViewMetrics(state) {
@@ -552,6 +665,26 @@ function updateAllCharts(state, vm) {
   charts.duaTopRacers.updateSeries([
     { name: 'Quãng đường (m)', data: topRacers.length ? topRacers.map(r => r.distanceM) : [0] },
   ], false);
+
+  // 8. System Balance Chart (Real Users vs Demo Users vs Target Threshold)
+  if (charts.systemBalance) {
+    const chuaData = state.games?.['cung-chua-online']?.data || {};
+    const duaData = state.games?.['cuoc-dua-ky-thu']?.data || {};
+    const chuaAb = chuaData.autoBalance || {};
+    const duaAb = duaData.autoBalance || {};
+    const chuaReal = chuaAb.realActive ?? (chuaData.actors || []).filter(a => a.src !== 'mock').length;
+    const chuaDemo = chuaAb.demoActive ?? (chuaData.actors || []).filter(a => a.src === 'mock').length;
+    const chuaTarget = chuaAb.targetRealUsers || 8;
+    const duaReal = duaAb.realActive ?? (duaData.runners || []).filter(r => r.src !== 'mock').length;
+    const duaDemo = duaAb.demoActive ?? (duaData.runners || []).filter(r => r.src === 'mock').length;
+    const duaTarget = duaAb.targetRealUsers || 8;
+
+    charts.systemBalance.updateSeries([
+      { name: 'Người thật', data: [chuaReal, duaReal] },
+      { name: 'Mẫu bù tự động', data: [chuaDemo, duaDemo] },
+      { name: 'Ngưỡng đủ', data: [chuaTarget, duaTarget] },
+    ], false);
+  }
 }
 
 // ============================================================================
@@ -714,6 +847,114 @@ function renderAll(state) {
   if ($('chuaAutoFxEmotion') && document.activeElement !== $('chuaAutoFxEmotion') && autoFx.withEmotion !== undefined) {
     $('chuaAutoFxEmotion').checked = Boolean(autoFx.withEmotion);
   }
+  if ($('masterAutoFxSwitch')) {
+    $('masterAutoFxSwitch').checked = Boolean(autoFx.on);
+  }
+  if ($('masterReadCommentsSwitch')) {
+    $('masterReadCommentsSwitch').checked = readCommentsOn;
+  }
+
+  // Sync Soft Background Sung Vocal / Lyric Layer state & knobs
+  const chuaVocalOn = chua.scene?.bgmVocal !== false;
+  const duaVocalOn = dua.scene?.bgmVocal !== false;
+  const chuaVocalPct = Math.round((Number(chua.scene?.bgmVocalVolume ?? 0.16) || 0.16) * 100);
+  const duaVocalPct = Math.round((Number(dua.scene?.bgmVocalVolume ?? 0.15) || 0.15) * 100);
+  if ($('chuaVocalToggle')) $('chuaVocalToggle').checked = chuaVocalOn;
+  if ($('duaVocalToggle')) $('duaVocalToggle').checked = duaVocalOn;
+  if ($('masterBgmVocalToggle')) $('masterBgmVocalToggle').checked = chuaVocalOn && duaVocalOn;
+
+  if (!activeDraggingKnobs.has('chuaVocalVol')) setKnobVisual('chuaVocalVol', chuaVocalPct);
+  if (!activeDraggingKnobs.has('duaVocalVol')) setKnobVisual('duaVocalVol', duaVocalPct);
+  if (!activeDraggingKnobs.has('masterVocalVol')) setKnobVisual('masterVocalVol', chuaVocalPct);
+  if (!activeDraggingKnobs.has('masterStayMins')) setKnobVisual('masterStayMins', chuaStayMins);
+
+  // Sync Smart Auto-Balancer (Real Users vs Demo Users) & System Balance Meters
+  const chuaAb = chua.autoBalance || {
+    enabled: false,
+    targetRealUsers: 8,
+    maxDemoRate: 0.22,
+    realActive: (chua.actors || []).filter(a => a.src !== 'mock').length,
+    demoActive: (chua.actors || []).filter(a => a.src === 'mock').length,
+    balanceScore: 100,
+    reason: 'Đang kiểm tra người dùng thực tế',
+  };
+  const duaAb = dua.autoBalance || {
+    enabled: false,
+    targetRealUsers: 8,
+    maxDemoRate: 0.22,
+    realActive: (dua.runners || []).filter(r => r.src !== 'mock').length,
+    demoActive: (dua.runners || []).filter(r => r.src === 'mock').length,
+    balanceScore: 100,
+    reason: 'Đang kiểm tra lữ khách thực tế',
+  };
+
+  const totalRealActive = (chuaAb.realActive || 0) + (duaAb.realActive || 0);
+  const totalDemoActive = (chuaAb.demoActive || 0) + (duaAb.demoActive || 0);
+  const totalTargetReal = (chuaAb.targetRealUsers || 8) + (duaAb.targetRealUsers || 8);
+  const totalActivePopulation = Math.max(1, totalRealActive + totalDemoActive, totalTargetReal);
+  const masterRealBarPct = Math.min(100, Math.round((totalRealActive / totalActivePopulation) * 100));
+  const masterDemoBarPct = Math.min(100 - masterRealBarPct, Math.round((totalDemoActive / totalActivePopulation) * 100));
+  const avgBalanceScore = Math.round(((chuaAb.balanceScore ?? 100) + (duaAb.balanceScore ?? 100)) / 2);
+  const anyAutoBalanceOn = Boolean(chuaAb.enabled || duaAb.enabled);
+
+  if ($('masterBalanceScoreBadge')) {
+    $('masterBalanceScoreBadge').className = `badge ${avgBalanceScore >= 80 ? 'emerald' : avgBalanceScore >= 50 ? 'gold' : 'rose'}`;
+    $('masterBalanceScoreBadge').textContent = `⚖️ Độ Cân Bằng: ${avgBalanceScore}%`;
+  }
+  if ($('masterAutoBalanceModeBadge')) {
+    $('masterAutoBalanceModeBadge').className = `badge ${anyAutoBalanceOn ? 'brand' : ''}`;
+    $('masterAutoBalanceModeBadge').textContent = anyAutoBalanceOn ? '🤖 Auto-Balance: ĐANG BẬT' : '🤖 Auto-Balance: TẮT (Thủ công)';
+  }
+  if ($('masterBalanceSummaryText')) {
+    $('masterBalanceSummaryText').textContent = `Người thật: ${totalRealActive} · Mẫu bù: ${totalDemoActive} / Ngưỡng đủ: ${totalTargetReal}`;
+  }
+  if ($('masterRealActiveCount')) $('masterRealActiveCount').textContent = String(totalRealActive);
+  if ($('masterDemoActiveCount')) $('masterDemoActiveCount').textContent = String(totalDemoActive);
+  if ($('masterBalanceRealBar')) $('masterBalanceRealBar').style.width = `${masterRealBarPct}%`;
+  if ($('masterBalanceDemoBar')) $('masterBalanceDemoBar').style.width = `${masterDemoBarPct}%`;
+  if ($('masterAutoBalanceReasonText')) {
+    $('masterAutoBalanceReasonText').textContent = chuaAb.reason || duaAb.reason || 'Hệ thống cân bằng ổn định';
+  }
+  if ($('masterAutoBalanceToggle')) $('masterAutoBalanceToggle').checked = anyAutoBalanceOn;
+  if ($('chuaAutoBalanceToggle')) $('chuaAutoBalanceToggle').checked = Boolean(chuaAb.enabled);
+  if ($('duaAutoBalanceToggle')) $('duaAutoBalanceToggle').checked = Boolean(duaAb.enabled);
+
+  // Per-Game Balance Bars (Chùa 3D & Đi Bộ Xuyên Việt 3D)
+  const chuaPop = Math.max(1, (chuaAb.realActive || 0) + (chuaAb.demoActive || 0), chuaAb.targetRealUsers || 8);
+  const chuaRealPct = Math.min(100, Math.round(((chuaAb.realActive || 0) / chuaPop) * 100));
+  const chuaDemoPct = Math.min(100 - chuaRealPct, Math.round(((chuaAb.demoActive || 0) / chuaPop) * 100));
+  if ($('chuaBalanceBadge')) {
+    $('chuaBalanceBadge').className = `badge ${(chuaAb.balanceScore ?? 100) >= 80 ? 'emerald' : 'gold'}`;
+    $('chuaBalanceBadge').textContent = `⚖️ Cân bằng: ${chuaAb.balanceScore ?? 100}%`;
+  }
+  if ($('chuaBalanceDetailText')) {
+    $('chuaBalanceDetailText').textContent = `Người thật: ${chuaAb.realActive || 0} / Ngưỡng đủ: ${chuaAb.targetRealUsers || 8} · Mẫu bù: ${chuaAb.demoActive || 0}`;
+  }
+  if ($('chuaBalanceRealBar')) $('chuaBalanceRealBar').style.width = `${chuaRealPct}%`;
+  if ($('chuaBalanceDemoBar')) $('chuaBalanceDemoBar').style.width = `${chuaDemoPct}%`;
+
+  const duaPop = Math.max(1, (duaAb.realActive || 0) + (duaAb.demoActive || 0), duaAb.targetRealUsers || 8);
+  const duaRealPct = Math.min(100, Math.round(((duaAb.realActive || 0) / duaPop) * 100));
+  const duaDemoPct = Math.min(100 - duaRealPct, Math.round(((duaAb.demoActive || 0) / duaPop) * 100));
+  if ($('duaBalanceBadge')) {
+    $('duaBalanceBadge').className = `badge ${(duaAb.balanceScore ?? 100) >= 80 ? 'emerald' : 'gold'}`;
+    $('duaBalanceBadge').textContent = `⚖️ Cân bằng: ${duaAb.balanceScore ?? 100}%`;
+  }
+  if ($('duaBalanceDetailText')) {
+    $('duaBalanceDetailText').textContent = `Người thật: ${duaAb.realActive || 0} / Ngưỡng đủ: ${duaAb.targetRealUsers || 8} · Mẫu bù: ${duaAb.demoActive || 0}`;
+  }
+  if ($('duaBalanceRealBar')) $('duaBalanceRealBar').style.width = `${duaRealPct}%`;
+  if ($('duaBalanceDemoBar')) $('duaBalanceDemoBar').style.width = `${duaDemoPct}%`;
+
+  // Sync Rotary Knobs for Auto-Balance & Demo Rates
+  if (!activeDraggingKnobs.has('masterTargetReal')) setKnobVisual('masterTargetReal', chuaAb.targetRealUsers || 8);
+  if (!activeDraggingKnobs.has('masterMaxDemoRate')) setKnobVisual('masterMaxDemoRate', chuaAb.maxDemoRate || 0.22);
+  if (!activeDraggingKnobs.has('chuaTargetReal')) setKnobVisual('chuaTargetReal', chuaAb.targetRealUsers || 8);
+  if (!activeDraggingKnobs.has('duaTargetReal')) setKnobVisual('duaTargetReal', duaAb.targetRealUsers || 8);
+  if (!activeDraggingKnobs.has('chuaDemoRateKnob')) setKnobVisual('chuaDemoRateKnob', chua.demo?.rate || 0.15);
+  if (!activeDraggingKnobs.has('chuaDemoGiftKnob')) setKnobVisual('chuaDemoGiftKnob', Math.round((chua.demo?.giftRatio ?? 0.12) * 100));
+  if (!activeDraggingKnobs.has('duaDemoRateKnob')) setKnobVisual('duaDemoRateKnob', dua.demo?.rate || 0.15);
+  if (!activeDraggingKnobs.has('duaDemoGiftKnob')) setKnobVisual('duaDemoGiftKnob', Math.round((dua.demo?.giftRatio ?? 0.15) * 100));
 
   // Hydrate Chua Lists once so we don't overwrite user edits while typing
   if (!chuaListsHydrated && chua.lists) {
@@ -891,6 +1132,127 @@ window.addEventListener('DOMContentLoaded', () => {
   if (window.lucide) window.lucide.createIcons();
   initApexCharts();
   initAnimateUiInteractions();
+
+  // Interactive Studio Rotary Knobs (Drag, Wheel, and -/+ Step Buttons)
+  initRotaryKnobs(async (knobId, val) => {
+    if (knobId === 'masterTargetReal') {
+      await gameAction('all', '/api/auto-balance', { targetRealUsers: Math.round(val) });
+      showToast(`🎯 Đã đặt ngưỡng người thật đủ = ${Math.round(val)} người (Đủ ngưỡng tự động tắt mẫu)!`);
+    } else if (knobId === 'masterMaxDemoRate') {
+      const rate = Number(val.toFixed(2));
+      await gameAction('all', '/api/auto-balance', { maxDemoRate: rate });
+      showToast(`⚡ Đã đặt tốc độ bù mẫu tối đa = ${rate}/s!`);
+    } else if (knobId === 'masterVocalVol') {
+      const vol = Number((val / 100).toFixed(2));
+      await gameAction('all', '/api/scene', { bgmVocal: true, bgmVocalVolume: vol });
+      showToast(`🎤 Đã chỉnh âm lượng nhạc có lời nhỏ nhẹ (2 Game) = ${Math.round(val)}%!`);
+    } else if (knobId === 'masterStayMins') {
+      const mins = Math.max(0.5, Math.min(180, Number(val)));
+      await gameAction('all', '/api/stay-time', { stayMinutes: mins });
+      showToast(`⏳ Đã cập nhật thời gian nhân vật ở lại = ${mins} phút!`);
+    } else if (knobId === 'chuaVocalVol') {
+      const vol = Number((val / 100).toFixed(2));
+      await gameAction('cung-chua-online', '/api/scene', { bgmVocal: true, bgmVocalVolume: vol });
+      showToast(`🎤 Đã chỉnh âm lượng nhạc có lời Chùa 3D = ${Math.round(val)}%!`);
+    } else if (knobId === 'duaVocalVol') {
+      const vol = Number((val / 100).toFixed(2));
+      await gameAction('cuoc-dua-ky-thu', '/api/scene', { bgmVocal: true, bgmVocalVolume: vol });
+      showToast(`🎤 Đã chỉnh âm lượng nhạc có lời Xuyên Việt 3D = ${Math.round(val)}%!`);
+    } else if (knobId === 'chuaTargetReal') {
+      await gameAction('cung-chua-online', '/api/auto-balance', { targetRealUsers: Math.round(val) });
+      showToast(`🎯 Ngưỡng người thật Chùa 3D = ${Math.round(val)} người!`);
+    } else if (knobId === 'duaTargetReal') {
+      await gameAction('cuoc-dua-ky-thu', '/api/auto-balance', { targetRealUsers: Math.round(val) });
+      showToast(`🎯 Ngưỡng người thật Xuyên Việt 3D = ${Math.round(val)} người!`);
+    } else if (knobId === 'chuaDemoRateKnob') {
+      const rate = Number(val.toFixed(2));
+      if ($('chuaDemoRate')) $('chuaDemoRate').value = rate;
+      await gameAction('cung-chua-online', '/api/demo', { on: true, rate, giftRatio: (Number($('chuaDemoGiftPct')?.value) || 12) / 100 });
+      showToast(`⚡ Tần suất mẫu Chùa 3D = ${rate}/s!`);
+    } else if (knobId === 'chuaDemoGiftKnob') {
+      const pct = Math.round(val);
+      if ($('chuaDemoGiftPct')) $('chuaDemoGiftPct').value = pct;
+      await gameAction('cung-chua-online', '/api/demo', { on: true, rate: Number($('chuaDemoRate')?.value) || 0.15, giftRatio: pct / 100 });
+      showToast(`🎁 Tỷ lệ quà mẫu Chùa 3D = ${pct}%!`);
+    } else if (knobId === 'duaDemoRateKnob') {
+      const rate = Number(val.toFixed(2));
+      if ($('duaDemoRate')) $('duaDemoRate').value = rate;
+      await gameAction('cuoc-dua-ky-thu', '/api/demo', { on: true, rate, giftRatio: (Number($('duaDemoGiftPct')?.value) || 15) / 100 });
+      showToast(`⚡ Tần suất mẫu Xuyên Việt 3D = ${rate}/s!`);
+    } else if (knobId === 'duaDemoGiftKnob') {
+      const pct = Math.round(val);
+      if ($('duaDemoGiftPct')) $('duaDemoGiftPct').value = pct;
+      await gameAction('cuoc-dua-ky-thu', '/api/demo', { on: true, rate: Number($('duaDemoRate')?.value) || 0.15, giftRatio: pct / 100 });
+      showToast(`🎁 Tỷ lệ quà mẫu Xuyên Việt 3D = ${pct}%!`);
+    }
+    await pollState();
+  });
+
+  // Studio UI Toggle Switches for Smart Auto-Balance & Soft Sung Vocals
+  $('masterAutoBalanceToggle')?.addEventListener('change', async e => {
+    const enabled = Boolean(e.target.checked);
+    await gameAction('all', '/api/auto-balance', { enabled });
+    showToast(
+      enabled
+        ? '🤖 Đã BẬT thuật toán tự động cân bằng Người thật & Mẫu cho cả 2 Game!'
+        : '🤖 Đã TẮT thuật toán tự động cân bằng (Chuyển về điều khiển mẫu thủ công)!'
+    );
+    await pollState();
+  });
+
+  $('chuaAutoBalanceToggle')?.addEventListener('change', async e => {
+    const enabled = Boolean(e.target.checked);
+    await gameAction('cung-chua-online', '/api/auto-balance', { enabled });
+    showToast(enabled ? '🤖 Đã BẬT tự động cân bằng người thật & mẫu (Chùa 3D)!' : '🤖 Đã TẮT tự động cân bằng (Chùa 3D)!');
+    await pollState();
+  });
+
+  $('duaAutoBalanceToggle')?.addEventListener('change', async e => {
+    const enabled = Boolean(e.target.checked);
+    await gameAction('cuoc-dua-ky-thu', '/api/auto-balance', { enabled });
+    showToast(enabled ? '🤖 Đã BẬT tự động cân bằng người thật & mẫu (Xuyên Việt 3D)!' : '🤖 Đã TẮT tự động cân bằng (Xuyên Việt 3D)!');
+    await pollState();
+  });
+
+  $('masterBgmVocalToggle')?.addEventListener('change', async e => {
+    const bgmVocal = Boolean(e.target.checked);
+    await gameAction('all', '/api/scene', { bgmVocal });
+    showToast(
+      bgmVocal
+        ? '🎤 Đã BẬT nhạc nền có lời nhỏ nhẹ (Tự ngắt tức thì khi có giọng đọc / chuông)!'
+        : '🎵 Đã chuyển sang chế độ chỉ phát nhạc cụ không lời!'
+    );
+    await pollState();
+  });
+
+  $('chuaVocalToggle')?.addEventListener('change', async e => {
+    const bgmVocal = Boolean(e.target.checked);
+    await gameAction('cung-chua-online', '/api/scene', { bgmVocal });
+    showToast(bgmVocal ? '🎤 Đã BẬT nhạc có lời nhỏ nhẹ Chùa 3D!' : '🎵 Đã TẮT nhạc có lời Chùa 3D (Chỉ phát nhạc cụ)!');
+    await pollState();
+  });
+
+  $('duaVocalToggle')?.addEventListener('change', async e => {
+    const bgmVocal = Boolean(e.target.checked);
+    await gameAction('cuoc-dua-ky-thu', '/api/scene', { bgmVocal });
+    showToast(bgmVocal ? '🎤 Đã BẬT nhạc quê hương có lời nhỏ nhẹ Xuyên Việt 3D!' : '🎵 Đã TẮT nhạc có lời Xuyên Việt 3D!');
+    await pollState();
+  });
+
+  $('masterReadCommentsSwitch')?.addEventListener('change', async e => {
+    const readComments = Boolean(e.target.checked);
+    await gameAction('all', '/api/scene', { readComments });
+    showToast(readComments ? '🗣️ Đã BẬT giọng AI đọc bình luận (2 Game)!' : '🔇 Đã TẮT đọc bình luận (2 Game)!');
+    await pollState();
+  });
+
+  $('masterAutoFxSwitch')?.addEventListener('change', async e => {
+    const on = Boolean(e.target.checked);
+    const intervalSec = Math.max(5, Math.min(600, Number($('chuaAutoFxSec')?.value) || 25));
+    await gameAction('cung-chua-online', '/api/auto-fx', { on, intervalSec, withEmotion: true });
+    showToast(on ? `✨ Đã BẬT tự động Random hiệu ứng Chánh Điện mỗi ~${intervalSec}s!` : '✨ Đã TẮT tự động Random hiệu ứng Chánh Điện!');
+    await pollState();
+  });
 
   // Initial route from hash (#master, #chua, #dua)
   if (window.location.hash) switchMainTab(window.location.hash, false);

@@ -430,6 +430,238 @@ export function createAudio({ onSpeak = null } = {}) {
   dryBus.connect(bgmFilter);
   dryBus.connect(templeReverb);
 
+  // ==========================================================================
+  // SOFT BACKGROUND SUNG LYRIC & FORMANT VOCAL CHOIR LAYER ("Nhạc Có Lời Nhỏ")
+  // Stereo-panned, warm low-passed (1600Hz), and lushly reverberated so it sounds
+  // like a gentle background singer and NEVER conflicts with center TTS or bells!
+  // ==========================================================================
+  let bgmVocalEnabled = true;
+  let bgmVocalVolume = 0.15; // 15% soft background singing level
+  let activeLyricSrc = null;
+  let activeLyricGain = null;
+  let lastLyricAt = 0;
+  let lyricCursor = 0;
+  let lastSfxAt = 0;
+  const lyricBufferCache = new Map();
+
+  const bgmVocalBus = ctx.createGain();
+  bgmVocalBus.gain.value = bgmVocalVolume;
+
+  const vocalLowpass = ctx.createBiquadFilter();
+  vocalLowpass.type = 'lowpass';
+  vocalLowpass.frequency.value = 1600;
+  vocalLowpass.Q.value = 0.65;
+
+  const vocalWarmth = ctx.createBiquadFilter();
+  vocalWarmth.type = 'peaking';
+  vocalWarmth.frequency.value = 380;
+  vocalWarmth.gain.value = 2.5;
+
+  const vocalPanner = ctx.createStereoPanner ? ctx.createStereoPanner() : null;
+  if (vocalPanner) {
+    vocalPanner.pan.value = -0.36;
+    bgmVocalBus.connect(vocalWarmth).connect(vocalLowpass).connect(vocalPanner);
+    vocalPanner.connect(bgmFilter);
+    vocalPanner.connect(templeReverb);
+  } else {
+    bgmVocalBus.connect(vocalWarmth).connect(vocalLowpass);
+    vocalLowpass.connect(bgmFilter);
+    vocalLowpass.connect(templeReverb);
+  }
+
+  const TEMPLE_SONG_LYRICS = {
+    buddha_vinahouse_remix: [
+      'Nam mô A Di Đà Phật, tâm an vạn sự an lành',
+      'Hoa sen nở ngát hương đời, ánh đạo vàng chiếu muôn nơi',
+      'Nguyện cầu gia đạo bình an, phước lộc cát tường như ý',
+    ],
+    dai_bi_trap_remix: [
+      'Án ma ni bát minh hồng, từ bi cứu khổ độ mê',
+      'Nam mô Đại Bi Quan Thế Âm Bồ Tát',
+      'Ngàn mắt ngàn tay soi sáng nhân gian, tâm thành ứng hiện',
+    ],
+    co_phong_dan_tranh_remix: [
+      'Tiếng đàn tranh ngân bên mái chùa xưa, gió đưa hương trầm thanh tịnh',
+      'Một cõi đi về, lòng người nhẹ tựa áng mây bay',
+      'Sen nở trong tâm, rũ bỏ muộn phiền nhân thế',
+    ],
+    deep_house_chanh_dien: [
+      'Nam mô Bổn Sư Thích Ca Mâu Ni Phật',
+      'Cửa thiền rộng mở từ bi, tâm sáng giữa đất trời',
+      'Chuông chùa ngân vang, đem bình yên về khắp muôn nhà',
+    ],
+    handpan_lien_hoa: [
+      'Sen trắng tinh khôi giữa dòng đời, tâm tịnh giữa đất trời bao la',
+      'Lắng nghe tiếng chuông ngân, an nhiên trong từng hơi thở',
+    ],
+    tay_tang_mat_tong: [
+      'Án ma ni bát minh hồng, trí tuệ từ bi viên mãn',
+      'Nam mô Dược Sư Lưu Ly Quang Vương Phật',
+    ],
+    cyber_zen_synthwave: [
+      'Hào quang Phật pháp chiếu soi muôn phương, tâm sáng như trăng rằm',
+      'Nam mô A Di Đà Phật, vạn điều tốt lành hội tụ',
+    ],
+    vu_dieu_hoan_hy_edm: [
+      'Hoan hỷ công đức vô lượng, chúc đại chúng vạn sự cát tường',
+      'Nam mô A Di Đà Phật, phúc lộc thọ khang ninh',
+    ],
+    quan_am_lofi_chill: [
+      'Nam mô Quan Thế Âm Bồ Tát, giọt nước cành dương mát dịu tâm hồn',
+      'Đêm thanh tịnh nghe tiếng chuông chùa, bình yên về khắp muôn nhà',
+    ],
+    duoc_su_jazz_lounge: [
+      'Nam mô Dược Sư Lưu Ly Quang Vương Phật, thân tâm thường an lạc',
+      'Nguyện cầu sức khỏe bình an, tiêu trừ bệnh tật tai ương',
+    ],
+    zen_singing_bowl: [
+      'Hít vào tâm tĩnh lặng, thở ra miệng mỉm cười',
+      'Nam mô Bổn Sư Thích Ca Mâu Ni Phật',
+    ],
+    nhac_thien_ngon_gio: [
+      'Trăng soi bóng cổ tự, tiếng sáo trúc ngân vang giữa mây ngàn',
+      'Tâm an thì vạn sự an, lòng thanh thản đón bình yên',
+    ],
+  };
+
+  function stopTempleBackgroundLyric() {
+    if (activeLyricGain && ctx.state === 'running') {
+      try {
+        activeLyricGain.gain.setTargetAtTime(0.0001, ctx.currentTime, 0.035);
+      } catch {}
+    }
+    if (activeLyricSrc) {
+      const s = activeLyricSrc;
+      activeLyricSrc = null;
+      setTimeout(() => {
+        try { s.stop(); } catch {}
+      }, 120);
+    }
+  }
+
+  // Synthesizes soft human vowel formants ("Aaa" / "Ooo" / "Uuu") singing with the melody
+  const VOWEL_FORMANTS = [
+    [720, 1180, 2540], // "Aaa"
+    [460, 880, 2420],  // "Ooo"
+    [350, 720, 2350],  // "Uuu"
+  ];
+  function playFormantVocalChoir(freq, start, durSec, vol = 0.055) {
+    if (!enabled || !zenRunning || !bgmVocalEnabled || speaking || ctx.state !== 'running' || freq <= 0) return;
+    const vowel = VOWEL_FORMANTS[Math.floor(tickCount / 4) % VOWEL_FORMANTS.length];
+    const srcOsc = ctx.createOscillator();
+    const subOsc = ctx.createOscillator();
+    const vib = ctx.createOscillator();
+    const vibG = ctx.createGain();
+
+    srcOsc.type = 'sawtooth';
+    subOsc.type = 'triangle';
+    const singFreq = freq > 480 ? freq * 0.5 : freq;
+    srcOsc.frequency.setValueAtTime(singFreq * 0.992, start);
+    srcOsc.frequency.exponentialRampToValueAtTime(singFreq, start + 0.08);
+    subOsc.frequency.setValueAtTime(singFreq * 0.5, start);
+
+    vib.frequency.setValueAtTime(5.2, start);
+    vibG.gain.setValueAtTime(singFreq * 0.009, start);
+    vib.connect(vibG);
+    vibG.connect(srcOsc.frequency);
+    vibG.connect(subOsc.frequency);
+
+    const env = ctx.createGain();
+    const totalDur = Math.max(0.45, durSec * 1.35);
+    env.gain.setValueAtTime(0.0001, start);
+    env.gain.linearRampToValueAtTime(vol, start + 0.1);
+    env.gain.exponentialRampToValueAtTime(0.0001, start + totalDur);
+
+    for (const [idx, fHz] of vowel.entries()) {
+      const bp = ctx.createBiquadFilter();
+      bp.type = 'bandpass';
+      bp.frequency.setValueAtTime(fHz, start);
+      bp.Q.value = 4.2 + idx * 1.2;
+      const fg = ctx.createGain();
+      fg.gain.value = idx === 0 ? 1.0 : idx === 1 ? 0.55 : 0.25;
+      srcOsc.connect(bp);
+      subOsc.connect(bp);
+      bp.connect(fg).connect(env);
+    }
+
+    env.connect(bgmVocalBus);
+    srcOsc.start(start);
+    subOsc.start(start);
+    vib.start(start);
+    srcOsc.stop(start + totalDur + 0.05);
+    subOsc.stop(start + totalDur + 0.05);
+    vib.stop(start + totalDur + 0.05);
+  }
+
+  async function preloadAndPlayTempleLyric(song) {
+    if (!enabled || !zenRunning || !bgmVocalEnabled || speaking || speechQueue.length > 0) return;
+    const now = Date.now();
+    if (activeLyricSrc || now - lastLyricAt < 8500 || now - lastSfxAt < 1800) return;
+    const lines = TEMPLE_SONG_LYRICS[song.id] || TEMPLE_SONG_LYRICS.buddha_vinahouse_remix;
+    if (!lines || !lines.length) return;
+    const text = lines[lyricCursor++ % lines.length];
+    lastLyricAt = now;
+
+    try {
+      let buf = lyricBufferCache.get(text);
+      if (!buf) {
+        const res = await fetch(`/tts?q=${encodeURIComponent(text)}`);
+        if (!res.ok) return;
+        const arr = await res.arrayBuffer();
+        if (!arr.byteLength) return;
+        buf = await ctx.decodeAudioData(arr.slice(0));
+        if (lyricBufferCache.size > 28) {
+          const oldest = lyricBufferCache.keys().next().value;
+          lyricBufferCache.delete(oldest);
+        }
+        lyricBufferCache.set(text, buf);
+      }
+      // Double-check nobody started speaking while fetching
+      if (!enabled || !zenRunning || !bgmVocalEnabled || speaking || speechQueue.length > 0 || Date.now() - lastSfxAt < 1200) {
+        return;
+      }
+      const src = ctx.createBufferSource();
+      src.buffer = buf;
+      // Slow lyrical singing cadence + gentle melodic pitch contour & vibrato
+      src.playbackRate.value = 0.87;
+      const t0 = ctx.currentTime;
+      const dur = buf.duration / 0.87;
+      src.detune.setValueAtTime(0, t0);
+      src.detune.linearRampToValueAtTime(140, t0 + dur * 0.35);
+      src.detune.linearRampToValueAtTime(-80, t0 + dur * 0.7);
+      src.detune.linearRampToValueAtTime(0, t0 + dur);
+
+      const vib = ctx.createOscillator();
+      const vibG = ctx.createGain();
+      vib.frequency.value = 5.1;
+      vibG.gain.value = 16; // +/- 16 cents soft singing vibrato
+      vib.connect(vibG).connect(src.detune);
+
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(0.0001, t0);
+      g.gain.linearRampToValueAtTime(0.85, t0 + 0.32);
+      g.gain.setValueAtTime(0.85, Math.max(t0 + 0.35, t0 + dur - 0.45));
+      g.gain.linearRampToValueAtTime(0.0001, t0 + dur);
+
+      if (vocalPanner) {
+        vocalPanner.pan.setTargetAtTime(lyricCursor % 2 === 0 ? -0.35 : 0.35, t0, 0.2);
+      }
+
+      src.connect(g).connect(bgmVocalBus);
+      activeLyricSrc = src;
+      activeLyricGain = g;
+      src.onended = () => {
+        if (activeLyricSrc === src) {
+          activeLyricSrc = null;
+          activeLyricGain = null;
+        }
+        try { vib.stop(); } catch {}
+      };
+      vib.start(t0);
+      src.start(t0);
+    } catch {}
+  }
+
   // Karplus-Strong Physical String Waveguide Cache (Đàn Tranh & Guitar Nylon)
   const ksCache = new Map();
   function getKsBuffer(freq, style = 'zither') {
@@ -709,6 +941,15 @@ export function createAudio({ onSpeak = null } = {}) {
             }
           }
         }
+        // 4. Soft Background Vocal Layer (Formant Choir + Sung Poetic Lyric Verses when no main TTS/SFX is active)
+        if (bgmVocalEnabled && !speaking && speechQueue.length === 0) {
+          if (stepInBar === 0 || stepInBar === 4 || inst === 'both') {
+            playFormantVocalChoir(freq, t, durSec, 0.052);
+          }
+          if (stepInBar === 0 && Date.now() - lastSfxAt > 1800) {
+            preloadAndPlayTempleLyric(song);
+          }
+        }
       }
 
       noteCursor++;
@@ -739,8 +980,16 @@ export function createAudio({ onSpeak = null } = {}) {
 
   function duckMusic(duck) {
     music.volume = duck ? 0.10 : 0.28;
+    if (duck) {
+      stopTempleBackgroundLyric();
+    }
     if (ctx.state === 'running') {
       zenGain.gain.setTargetAtTime(duck ? 0.10 : 0.34, ctx.currentTime, 0.12);
+      bgmVocalBus.gain.setTargetAtTime(
+        duck || !bgmVocalEnabled ? 0.0001 : bgmVocalVolume,
+        ctx.currentTime,
+        duck ? 0.04 : 0.25
+      );
     }
   }
 
@@ -898,6 +1147,8 @@ export function createAudio({ onSpeak = null } = {}) {
   // Tier 0: Khánh / chuông gia trì (clear, bright high-pitched singing bowl chime)
   function chime() {
     if (!enabled) return;
+    lastSfxAt = Date.now();
+    stopTempleBackgroundLyric();
     const t = ctx.currentTime;
     for (const [r, a, d] of [[1, 0.24, 2.4], [2.756, 0.14, 1.8], [5.404, 0.07, 1.1]]) {
       tone(528 * r, t, d, a);
@@ -907,6 +1158,8 @@ export function createAudio({ onSpeak = null } = {}) {
   // Tier 1: Chuông chùa ấm (warm mid-pitched temple bell)
   function mediumBell() {
     if (!enabled) return;
+    lastSfxAt = Date.now();
+    stopTempleBackgroundLyric();
     const t = ctx.currentTime;
     for (const [r, a] of [[1, 0.3], [2.0, 0.16], [2.76, 0.15], [5.4, 0.08]]) {
       tone(294 * r, t, 3.8 / Math.sqrt(r), a);
@@ -916,6 +1169,8 @@ export function createAudio({ onSpeak = null } = {}) {
   // Tier 2: Đại hồng chung (deep, resonant grand temple bell)
   function bell() {
     if (!enabled) return;
+    lastSfxAt = Date.now();
+    stopTempleBackgroundLyric();
     const t = ctx.currentTime;
     for (const [r, a] of [[0.5, 0.25], [1, 0.38], [2.76, 0.18], [5.4, 0.1], [8.93, 0.05]]) {
       tone(196 * r, t, 5.5 / Math.sqrt(Math.max(1, r)), a);
@@ -1044,6 +1299,23 @@ export function createAudio({ onSpeak = null } = {}) {
         }
       }
       return this.getMusicLabel();
+    },
+    setBgmVocal(on, vol) {
+      if (on !== undefined) bgmVocalEnabled = Boolean(on);
+      if (Number.isFinite(Number(vol))) {
+        bgmVocalVolume = Math.max(0, Math.min(0.45, Number(vol)));
+      }
+      if (!bgmVocalEnabled) stopTempleBackgroundLyric();
+      if (ctx.state === 'running') {
+        bgmVocalBus.gain.setTargetAtTime(
+          speaking || !bgmVocalEnabled ? 0.0001 : bgmVocalVolume,
+          ctx.currentTime,
+          0.1
+        );
+      }
+    },
+    getBgmVocalConfig() {
+      return { enabled: bgmVocalEnabled, volume: bgmVocalVolume };
     },
     setEnabled(_on) {
       // Sound is permanently enabled on main livestream display (never turns off)

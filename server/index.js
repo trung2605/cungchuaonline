@@ -253,6 +253,7 @@ if (!password) {
       password,
       ctx: {
         pipeline, stage, lists, blocked, stats, counters, status, demo, ingest,
+        initialAutoBalance: { enabled: true, targetRealUsers: 8, maxDemoRate: 0.20, giftRatio: 0.12, prayerRatio: 0.70 },
         broadcast: m => srv.broadcast(m),
         saveLists: l => saveLists(l),
         saveBlocked: b => saveBlocked(b),

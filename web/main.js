@@ -207,6 +207,9 @@ function run(cmds, now) {
           audio.setMusicTrack?.(c.scene.bgmTrack, c.scene.bgmSeq ?? null);
           syncChuaBgmBtn();
         }
+        if (c.scene.bgmVocal !== undefined || c.scene.bgmVocalVolume !== undefined) {
+          audio.setBgmVocal?.(c.scene.bgmVocal, c.scene.bgmVocalVolume);
+        }
         break;
       case 'hud':
         hud.handle(c.msg);
