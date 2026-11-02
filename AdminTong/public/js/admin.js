@@ -4,12 +4,90 @@ const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const fmtNum = n => Number(n || 0).toLocaleString('vi-VN');
 
+// ============================================================================
+// ANIMATE-UI MOTION ENGINE (Counting Numbers, Stagger Cascade, Spotlight, Ripple)
+// ============================================================================
+const kpiNumericState = new Map();
+
+function animateKpiValue(id, targetValue, suffix = '') {
+  const el = $(id);
+  if (!el) return;
+  const nextVal = Math.round(Number(targetValue) || 0);
+  const prevVal = kpiNumericState.get(id);
+
+  if (prevVal === undefined) {
+    kpiNumericState.set(id, nextVal);
+    el.textContent = fmtNum(nextVal) + suffix;
+    return;
+  }
+  if (prevVal === nextVal) return;
+
+  kpiNumericState.set(id, nextVal);
+  el.classList.remove('au-num-pop');
+  void el.offsetWidth;
+  el.classList.add('au-num-pop');
+
+  const startVal = prevVal;
+  const diff = nextVal - startVal;
+  const duration = 380;
+  const t0 = performance.now();
+
+  const step = now => {
+    const p = Math.min(1, (now - t0) / duration);
+    const eased = 1 - Math.pow(1 - p, 3);
+    const cur = Math.round(startVal + diff * eased);
+    el.textContent = fmtNum(cur) + suffix;
+    if (p < 1) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
+
+function triggerStaggerCascade(rootEl) {
+  if (!rootEl) return;
+  const items = rootEl.querySelectorAll('.control-hub-card, .kpi-card, .game-sim-bar, .card, .fx-tile, .biome-btn');
+  items.forEach((item, idx) => {
+    item.style.setProperty('--au-idx', String(Math.min(idx, 14)));
+    item.classList.remove('au-stagger-item');
+    void item.offsetWidth;
+    item.classList.add('au-stagger-item');
+  });
+}
+
+function initAnimateUiInteractions() {
+  // 1. Cursor-tracking spotlight on interactive cards & tiles
+  document.addEventListener('pointermove', e => {
+    const card = e.target.closest('.kpi-card, .control-hub-card, .fx-tile, .biome-btn');
+    if (!card) return;
+    const rect = card.getBoundingClientRect();
+    card.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
+    card.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
+  }, { passive: true });
+
+  // 2. Tactile click ripple on buttons, pills, tiles & nav items
+  document.addEventListener('pointerdown', e => {
+    const btn = e.target.closest('.btn, .preset-pill, .fx-tile, .biome-btn, .sub-tab-btn, .main-tab-btn');
+    if (!btn) return;
+    const rect = btn.getBoundingClientRect();
+    const ripple = document.createElement('span');
+    ripple.className = 'au-ripple';
+    ripple.style.left = `${e.clientX - rect.left}px`;
+    ripple.style.top = `${e.clientY - rect.top}px`;
+    btn.appendChild(ripple);
+    setTimeout(() => ripple.remove(), 580);
+  });
+
+  // Initial stagger reveal on active view
+  triggerStaggerCascade(document.querySelector('.main-tab-view.active'));
+}
+
 // Toast Notification
 let toastTimer = null;
 function showToast(msg, ok = true) {
   const el = $('toast');
   if (!el) return;
   el.textContent = msg;
+  el.className = 'toast';
+  void el.offsetWidth;
   el.className = `toast show ${ok ? 'ok' : 'err'}`;
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => el.classList.remove('show'), 3800);
@@ -96,6 +174,7 @@ function switchMainTab(mainTab, toggleExpandIfSame = false) {
   });
 
   updateBreadcrumb(target, subId);
+  triggerStaggerCascade($(`main-view-${target}`));
 
   if (history.replaceState) {
     history.replaceState(null, '', `#${target}`);
@@ -114,7 +193,9 @@ function switchSubTab(parentTab, subTabId) {
   const container = $(`main-view-${cleanParent}`);
   if (container) {
     container.querySelectorAll('.sub-tab-panel').forEach(panel => {
-      panel.classList.toggle('active', panel.id === `sub-${subTabId}`);
+      const isActive = panel.id === `sub-${subTabId}`;
+      panel.classList.toggle('active', isActive);
+      if (isActive) triggerStaggerCascade(panel);
     });
   }
 
@@ -514,31 +595,31 @@ function renderAll(state) {
   $('navBadgeDua').textContent = `${vm.duaRunners.length} đua`;
   $('navBadgeGifts').textContent = `${fmtNum(vm.giftRecordsCount)} quà`;
 
-  // Tab 1: Overview KPIs
-  $('kpiRealDiamonds').textContent = fmtNum(vm.totalDiamonds);
+  // Tab 1: Overview KPIs (Animated Counting Numbers)
+  animateKpiValue('kpiRealDiamonds', vm.totalDiamonds);
   $('kpiRealGifts').textContent = `${fmtNum(vm.totalGiftsCount)} phần quà (${modeNote})`;
-  $('kpiChuaNamo').textContent = fmtNum(vm.chuaNamo);
+  animateKpiValue('kpiChuaNamo', vm.chuaNamo);
   $('kpiChuaSub').textContent = `${vm.chuaActors.length} đang quỳ · ${fmtNum(vm.chuaBows)} lạy`;
-  $('kpiDuaDist').textContent = `${fmtNum(vm.duaDistM)} m`;
+  animateKpiValue('kpiDuaDist', vm.duaDistM, ' m');
   $('kpiDuaSub').textContent = `${vm.duaRunners.length} đang chạy · ${fmtNum(vm.duaLikes)} tim`;
-  $('kpiViewers').textContent = fmtNum(Math.max(chua.stats?.viewersCurrent || 0, dua.stats?.viewers || 0));
+  animateKpiValue('kpiViewers', Math.max(chua.stats?.viewersCurrent || 0, dua.stats?.viewers || 0));
   $('kpiViewersPeak').textContent = `Đỉnh phiên: ${fmtNum(Math.max(chua.stats?.viewersPeak || 0, dua.stats?.viewersPeak || 0))}`;
-  $('kpiChuaDiamonds').textContent = fmtNum(vm.chuaDiamonds);
-  $('kpiDuaDiamonds').textContent = fmtNum(vm.duaDiamonds);
+  animateKpiValue('kpiChuaDiamonds', vm.chuaDiamonds);
+  animateKpiValue('kpiDuaDiamonds', vm.duaDiamonds);
   $('kpiMongoSync').textContent = mongo.connected ? 'Cloud Active' : 'Local JSON';
   $('kpiMongoSub').textContent = mongo.lastSyncAt
     ? `Đồng bộ: ${new Date(mongo.lastSyncAt).toLocaleTimeString('vi-VN', { hour12: false })}`
     : 'Sẵn sàng lưu trữ';
 
-  // Tab 2: Cúng Chùa Online KPIs & Panel
+  // Tab 2: Cúng Chùa Online KPIs & Panel (Animated Counting Numbers)
   if ($('chuaKpiNamo')) {
-    $('chuaKpiNamo').textContent = fmtNum(vm.chuaNamo);
+    animateKpiValue('chuaKpiNamo', vm.chuaNamo);
     $('chuaKpiNamoSub').textContent = modeNote;
-    $('chuaKpiBows').textContent = fmtNum(vm.chuaBows);
+    animateKpiValue('chuaKpiBows', vm.chuaBows);
     $('chuaKpiBowersSub').textContent = `${fmtNum(vm.chuaBowers)} Phật tử (${modeNote})`;
-    $('chuaKpiDiamonds').textContent = fmtNum(vm.chuaDiamonds);
+    animateKpiValue('chuaKpiDiamonds', vm.chuaDiamonds);
     $('chuaKpiGiftsSub').textContent = modeNote;
-    $('chuaKpiActors').textContent = fmtNum(vm.chuaActors.length);
+    animateKpiValue('chuaKpiActors', vm.chuaActors.length);
     $('chuaKpiActorsSub').textContent = showMockData ? 'Gồm cả nhân vật mẫu' : 'Chỉ nhân vật người thật';
   }
 
@@ -663,15 +744,15 @@ function renderAll(state) {
     `).join('')
     : '<tr><td colspan="2" style="text-align:center;color:var(--text-muted)">Không có UID nào bị chặn</td></tr>';
 
-  // Tab 3: Cuộc Đua Kỳ Thú KPIs & Panel
+  // Tab 3: Cuộc Đua Kỳ Thú KPIs & Panel (Animated Counting Numbers)
   if ($('duaKpiDist')) {
-    $('duaKpiDist').textContent = `${fmtNum(vm.duaDistM)} m`;
+    animateKpiValue('duaKpiDist', vm.duaDistM, ' m');
     $('duaKpiBiomeSub').textContent = dua.stats?.currentBiome?.name || 'Vịnh Hạ Long & Phố Cổ';
-    $('duaKpiRunners').textContent = fmtNum(vm.duaRunners.length);
+    animateKpiValue('duaKpiRunners', vm.duaRunners.length);
     $('duaKpiRacersSub').textContent = `${fmtNum(vm.duaUniqueRacers)} tổng tay đua (${modeNote})`;
-    $('duaKpiDiamonds').textContent = fmtNum(vm.duaDiamonds);
+    animateKpiValue('duaKpiDiamonds', vm.duaDiamonds);
     $('duaKpiDiamondsSub').textContent = modeNote;
-    $('duaKpiLikes').textContent = fmtNum(vm.duaLikes);
+    animateKpiValue('duaKpiLikes', vm.duaLikes);
     $('duaKpiChatsSub').textContent = `${fmtNum(vm.duaChats)} bình luận (${modeNote})`;
   }
 
@@ -795,6 +876,7 @@ async function pollState() {
 window.addEventListener('DOMContentLoaded', () => {
   if (window.lucide) window.lucide.createIcons();
   initApexCharts();
+  initAnimateUiInteractions();
 
   // Initial route from hash (#master, #chua, #dua)
   if (window.location.hash) switchMainTab(window.location.hash, false);
