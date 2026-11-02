@@ -998,7 +998,7 @@ function buildSculptedKarstMountain(radius = 2.6, height = 7.2, rockColor = 0x3b
 }
 
 // ============================================================================
-// 12 VIETNAMESE REGIONAL ROADSIDE DIORAMA SCENES
+// 12 VIETNAMESE REGIONAL ROADSIDE DIORAMA SCENES (DETAILED 3D ARCHITECTURE)
 // ============================================================================
 function buildRoadsideScene(biomeId, side, variant, animList, provBaseIdx = 0) {
   const g = new THREE.Group();
@@ -1015,151 +1015,431 @@ function buildRoadsideScene(biomeId, side, variant, animList, provBaseIdx = 0) {
   }
 
   if (biomeId === 'vn_hagiang') {
-    // Hà Giang: 3D Sculpted Limestone Karst Peak + Cascading Cliff Waterfall + Cột Cờ Đỏ Sao Vàng
-    const peak = buildSculptedKarstMountain(2.5, 7.0 + (variant % 3) * 1.6, 0x3b4d54, 0x274e3b, variant + (side > 0 ? 10 : 0));
-    peak.position.set(side * 4.2, 0, 0);
-    if (variant % 3 === 1) {
+    // 1. HÀ GIANG: Hộ Lan Đèo Mã Pí Lèng + Nhà Trình Tường Đá + Núi Đá Tai Mèo + Cột Cờ Lũng Cú Mini
+    const railGroup = new THREE.Group();
+    const steelMat = new THREE.MeshStandardMaterial({ color: 0xe2e8f0, metalness: 0.68, roughness: 0.32 });
+    const postMat = new THREE.MeshStandardMaterial({ color: 0xdc2626, roughness: 0.5 });
+    const beam = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.24, 5.2), steelMat);
+    beam.position.set(-side * 0.12, 0.52, 0);
+    railGroup.add(beam);
+    for (const zPost of [-2.0, 0, 2.0]) {
+      const p = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.055, 0.72, 8), postMat);
+      p.position.set(-side * 0.14, 0.36, zPost);
+      railGroup.add(p);
+    }
+    g.add(railGroup);
+
+    // Sculpted Limestone Karst Peak + Cascading Cliff Waterfall
+    const peak = buildSculptedKarstMountain(2.6, 7.4 + (variant % 3) * 1.6, 0x3b4d54, 0x274e3b, variant + (side > 0 ? 10 : 0));
+    peak.position.set(side * 4.4, 0, -0.3);
+    if (variant % 2 === 1) {
       peak.add(build3DWaterfall(side, phaseOffset, animList));
     }
     g.add(peak);
 
     if (variant % 2 === 0) {
-      const flag = buildVietnamFlagPole(4.0, animList, phaseOffset);
-      flag.position.set(side * 1.15, 0, -0.4);
+      // Traditional Ha Giang "Nhà Trình Tường" (Yellow Rammed-Earth House with Stone Fence & Yin-Yang Roof)
+      const houseGrp = new THREE.Group();
+      houseGrp.position.set(side * 2.45, 0, 0.4);
+      const stoneWall = new THREE.Mesh(
+        new THREE.BoxGeometry(2.1, 0.65, 0.25),
+        new THREE.MeshStandardMaterial({ map: mossStoneTex, roughness: 0.9 })
+      );
+      stoneWall.position.set(-side * 0.65, 0.32, 0.85);
+      houseGrp.add(stoneWall);
+
+      const earthBody = new THREE.Mesh(
+        new THREE.BoxGeometry(1.95, 1.65, 1.75),
+        new THREE.MeshStandardMaterial({ map: heritageWallTex, color: 0xd97706, roughness: 0.85 })
+      );
+      earthBody.position.y = 0.82;
+      houseGrp.add(earthBody);
+
+      const roof = new THREE.Mesh(
+        new THREE.ConeGeometry(1.75, 0.95, 4),
+        new THREE.MeshStandardMaterial({ map: yinYangRoofTex, color: 0x57534e, roughness: 0.75 })
+      );
+      roof.rotation.y = Math.PI / 4;
+      roof.position.y = 2.05;
+      houseGrp.add(roof);
+      g.add(houseGrp);
+
+      const flag = buildVietnamFlagPole(4.2, animList, phaseOffset);
+      flag.position.set(side * 0.95, 0, -0.8);
       g.add(flag);
     }
   } else if (biomeId === 'vn_sapa') {
-    // Sa Pa: Golden Stepped Rice Terraces + Spinning Bamboo Waterwheel (Cối Nước Tây Bắc) + Waterfall
+    // 2. SA PA: Ruộng Bậc Thang Mù Cang Chải 5 Tầng + Nhà Sàn Gỗ Tây Bắc + Cối Nước Tre 12 Nang
     const terraceGroup = new THREE.Group();
-    const goldRiceMat = new THREE.MeshStandardMaterial({ color: 0xeab308, roughness: 0.72, flatShading: true });
-    const greenRiceMat = new THREE.MeshStandardMaterial({ color: 0x65a30d, roughness: 0.78, flatShading: true });
-    for (let step = 0; step < 4; step++) {
+    const goldRiceMat = new THREE.MeshStandardMaterial({ color: 0xeab308, roughness: 0.68, flatShading: true });
+    const greenRiceMat = new THREE.MeshStandardMaterial({ color: 0x65a30d, roughness: 0.75, flatShading: true });
+    const waterMirrorMat = new THREE.MeshStandardMaterial({ color: 0x7dd3fc, metalness: 0.75, roughness: 0.15 });
+    for (let step = 0; step < 5; step++) {
+      const rTop = 2.8 - step * 0.44;
       const slab = new THREE.Mesh(
-        new THREE.CylinderGeometry(2.6 - step * 0.45, 2.8 - step * 0.45, 0.55, 12),
+        new THREE.CylinderGeometry(rTop, rTop + 0.18, 0.52, 14),
         step % 2 === 0 ? goldRiceMat : greenRiceMat
       );
-      slab.position.set(side * 3.6, step * 0.58 + 0.28, 0);
+      slab.position.set(side * 3.8, step * 0.54 + 0.26, -0.2);
       terraceGroup.add(slab);
+
+      // Gleaming water-mirror paddy rim on each terrace step
+      const mirrorRim = new THREE.Mesh(new THREE.CylinderGeometry(rTop * 0.92, rTop * 0.92, 0.04, 14), waterMirrorMat);
+      mirrorRim.position.set(side * 3.8, step * 0.54 + 0.53, -0.2);
+      terraceGroup.add(mirrorRim);
     }
     g.add(terraceGroup);
 
-    // Spinning Bamboo Waterwheel (Cối nước tre Tây Bắc)
-    const wheel = new THREE.Mesh(
-      new THREE.TorusGeometry(0.95, 0.08, 8, 16),
-      new THREE.MeshStandardMaterial({ color: 0x854d0e, roughness: 0.8 })
-    );
-    wheel.position.set(side * 1.55, 1.15, 0.5);
-    wheel.rotation.y = Math.PI / 2;
-    g.add(wheel);
+    if (variant % 2 === 0) {
+      // Detailed Northwest Wooden Stilt House (Nhà Sàn Gỗ Tây Bắc trên 6 cột gỗ + mái Khau Cút)
+      const stilt = new THREE.Group();
+      stilt.position.set(side * 2.35, 0, 0.6);
+      const woodMat = new THREE.MeshStandardMaterial({ color: 0x5c3a21, roughness: 0.8 });
+      for (const px of [-0.7, 0, 0.7]) {
+        for (const pz of [-0.55, 0.55]) {
+          const post = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.08, 1.15, 6), woodMat);
+          post.position.set(px, 0.57, pz);
+          stilt.add(post);
+        }
+      }
+      const cabin = new THREE.Mesh(
+        new THREE.BoxGeometry(1.85, 1.15, 1.45),
+        new THREE.MeshStandardMaterial({ map: heritageWallTex, color: 0x92400e, roughness: 0.75 })
+      );
+      cabin.position.y = 1.65;
+      stilt.add(cabin);
+      const thatchRoof = new THREE.Mesh(
+        new THREE.ConeGeometry(1.68, 1.15, 4),
+        new THREE.MeshStandardMaterial({ map: yinYangRoofTex, color: 0x713f12, roughness: 0.85 })
+      );
+      thatchRoof.rotation.y = Math.PI / 4;
+      thatchRoof.position.y = 2.75;
+      stilt.add(thatchRoof);
+      g.add(stilt);
+    }
+
+    // Detailed Spinning Bamboo Waterwheel (Cối Nước Tây Bắc có nan tre & ống trúc múc nước)
+    const wheelGroup = new THREE.Group();
+    wheelGroup.position.set(side * 1.45, 1.25, -0.4);
+    const bambooMat = new THREE.MeshStandardMaterial({ color: 0xa16207, roughness: 0.7 });
+    const rim = new THREE.Mesh(new THREE.TorusGeometry(1.05, 0.065, 8, 20), bambooMat);
+    rim.rotation.y = Math.PI / 2;
+    wheelGroup.add(rim);
+    for (let sp = 0; sp < 8; sp++) {
+      const a = (sp * Math.PI) / 4;
+      const spoke = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 2.1, 6), bambooMat);
+      spoke.rotation.x = a;
+      wheelGroup.add(spoke);
+      const bucket = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.32, 6), bambooMat);
+      bucket.position.set(0, Math.cos(a) * 1.02, Math.sin(a) * 1.02);
+      bucket.rotation.z = Math.PI / 2;
+      wheelGroup.add(bucket);
+    }
+    g.add(wheelGroup);
     animList.push(t => {
-      wheel.rotation.x = t * 1.2 + phaseOffset;
+      wheelGroup.rotation.x = t * 1.25 + phaseOffset;
     });
   } else if (biomeId === 'vn_halong') {
-    // Vịnh Hạ Long: 3D Sculpted Emerald Limestone Karst + Red-Sail Wooden Junk Boat + Hòn Trống Mái
-    const karst = buildSculptedKarstMountain(2.8, 7.8 + (variant % 2) * 1.4, 0x26544e, 0x1b6344, variant + 20);
-    karst.position.set(side * 4.8, -0.2, -0.6);
+    // 3. VỊNH HẠ LONG: Đảo Đá Vôi + Hòn Trống Mái 3D + Du Thuyền Buồm Cánh Dơi 3 Cánh
+    const karst = buildSculptedKarstMountain(2.9, 8.2 + (variant % 2) * 1.5, 0x26544e, 0x1b6344, variant + 20);
+    karst.position.set(side * 4.9, -0.2, -0.7);
     g.add(karst);
 
+    if (variant % 2 === 0) {
+      // Iconic 3D Hòn Trống Mái (Twin Kissing Rooster & Hen Limestone Islets rising from emerald water)
+      const trongMai = new THREE.Group();
+      trongMai.position.set(side * 2.55, -0.1, -0.6);
+      const rockMat = new THREE.MeshStandardMaterial({
+        map: mossStoneTex,
+        color: 0x335c57,
+        roughness: 0.85,
+        flatShading: true,
+      });
+      const rooster = new THREE.Mesh(new THREE.ConeGeometry(0.68, 2.65, 7), rockMat);
+      rooster.rotation.x = Math.PI;
+      rooster.rotation.z = 0.22;
+      rooster.position.set(-0.42, 1.25, 0);
+      trongMai.add(rooster);
+
+      const hen = new THREE.Mesh(new THREE.ConeGeometry(0.62, 2.35, 7), rockMat);
+      hen.rotation.x = Math.PI;
+      hen.rotation.z = -0.24;
+      hen.position.set(0.42, 1.12, 0.15);
+      trongMai.add(hen);
+
+      const foam = new THREE.Mesh(
+        new THREE.RingGeometry(0.65, 1.25, 16),
+        new THREE.MeshBasicMaterial({ color: 0xa7f3d0, transparent: true, opacity: 0.48, side: THREE.DoubleSide })
+      );
+      foam.rotation.x = -Math.PI / 2;
+      foam.position.y = 0.15;
+      trongMai.add(foam);
+      g.add(trongMai);
+    }
+
+    // Detailed Ha Long Wooden Junk Cruise Boat with 2-Deck Lit Cabin & 2 Ribbed Scarlet Batwing Sails
     const boat = new THREE.Group();
-    boat.position.set(side * 2.1, 0.35, 0.4);
-    const hull = new THREE.Mesh(
-      new THREE.BoxGeometry(0.95, 0.45, 2.4),
-      new THREE.MeshStandardMaterial({ color: 0x6e3b1e, roughness: 0.7 })
-    );
+    boat.position.set(side * 1.95, 0.32, 0.65);
+    const hullMat = new THREE.MeshStandardMaterial({ color: 0x5c2d16, roughness: 0.65 });
+    const hull = new THREE.Mesh(new THREE.BoxGeometry(1.05, 0.48, 2.85), hullMat);
     boat.add(hull);
-    const sail = new THREE.Mesh(
-      new THREE.BoxGeometry(0.08, 1.85, 1.35),
-      new THREE.MeshStandardMaterial({ color: 0xd92b1c, emissive: 0x4a0802, roughness: 0.5 })
+    const cabin = new THREE.Mesh(
+      new THREE.BoxGeometry(0.82, 0.55, 1.45),
+      new THREE.MeshStandardMaterial({ map: heritageWallTex, roughness: 0.6 })
     );
-    sail.position.set(0, 1.35, 0.1);
-    boat.add(sail);
+    cabin.position.set(0, 0.48, -0.1);
+    boat.add(cabin);
+
+    const sailMat = new THREE.MeshStandardMaterial({
+      color: 0xd92b1c,
+      emissive: 0x7f1d1d,
+      emissiveIntensity: 0.45,
+      roughness: 0.48,
+      side: THREE.DoubleSide,
+    });
+    for (const [sz, sh, sw] of [
+      [0.45, 2.05, 1.35],
+      [-0.65, 1.55, 1.05],
+    ]) {
+      const mast = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.04, sh + 0.5, 6), hullMat);
+      mast.position.set(0, sh * 0.5 + 0.3, sz);
+      boat.add(mast);
+      const sail = new THREE.Mesh(new THREE.BoxGeometry(0.06, sh, sw), sailMat);
+      sail.position.set(0, sh * 0.5 + 0.45, sz);
+      sail.rotation.y = 0.18 * side;
+      boat.add(sail);
+    }
     g.add(boat);
     animList.push(t => {
-      boat.position.y = 0.35 + Math.sin(t * 1.6 + phaseOffset) * 0.14;
+      boat.position.y = 0.32 + Math.sin(t * 1.6 + phaseOffset) * 0.14;
       boat.rotation.z = Math.sin(t * 1.3 + phaseOffset) * 0.08;
     });
   } else if (biomeId === 'vn_hanoi') {
-    // Hà Nội: Tháp Rùa / Khuê Văn Các Textured Pavilion + Autumn Gold Foliage + Vermilion Bridge Posts
-    const pavilion = new THREE.Group();
-    pavilion.position.set(side * 3.1, 0, 0);
-    const stoneBase = new THREE.Mesh(
-      new THREE.BoxGeometry(2.3, 1.5, 2.3),
-      new THREE.MeshStandardMaterial({ map: heritageWallTex, roughness: 0.72 })
+    // 4. HÀ NỘI: Lan Can Cầu Thê Húc Đỏ Son + Khuê Văn Các (Cửa Sổ Mặt Trời) + Tháp Rùa Hồ Gươm
+    const railGroup = new THREE.Group();
+    const vermilionMat = new THREE.MeshStandardMaterial({ color: 0xb91c1c, roughness: 0.42 });
+    const goldMat = new THREE.MeshStandardMaterial({ color: 0xfacc15, emissive: 0xa16207, emissiveIntensity: 0.4, metalness: 0.6, roughness: 0.3 });
+    const topRail = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.12, 5.8), vermilionMat);
+    topRail.position.set(-side * 0.12, 1.15, 0);
+    railGroup.add(topRail);
+    const midRail = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.08, 5.8), vermilionMat);
+    midRail.position.set(-side * 0.12, 0.65, 0);
+    railGroup.add(midRail);
+
+    for (const zp of [-2.2, 0, 2.2]) {
+      const post = new THREE.Mesh(new THREE.BoxGeometry(0.22, 1.55, 0.22), vermilionMat);
+      post.position.set(-side * 0.12, 0.78, zp);
+      railGroup.add(post);
+      const lotusCap = new THREE.Mesh(new THREE.SphereGeometry(0.16, 10, 10), goldMat);
+      lotusCap.position.set(-side * 0.12, 1.65, zp);
+      railGroup.add(lotusCap);
+    }
+    g.add(railGroup);
+
+    // Khuê Văn Các (Constellation of Literature Pavilion with Circular Sun Window & 4 Stilts)
+    const khueVan = new THREE.Group();
+    khueVan.position.set(side * 3.15, 0, 0);
+    const stonePedestal = new THREE.Mesh(
+      new THREE.BoxGeometry(2.5, 0.55, 2.5),
+      new THREE.MeshStandardMaterial({ color: 0xd6d3d1, roughness: 0.8 })
     );
-    stoneBase.position.y = 0.75;
-    pavilion.add(stoneBase);
+    stonePedestal.position.y = 0.28;
+    khueVan.add(stonePedestal);
+
+    for (const px of [-0.85, 0.85]) {
+      for (const pz of [-0.85, 0.85]) {
+        const pillar = new THREE.Mesh(new THREE.BoxGeometry(0.24, 1.25, 0.24), vermilionMat);
+        pillar.position.set(px, 1.15, pz);
+        khueVan.add(pillar);
+      }
+    }
+    const upperPavilion = new THREE.Mesh(
+      new THREE.BoxGeometry(2.05, 1.15, 2.05),
+      new THREE.MeshStandardMaterial({ color: 0x991b1b, roughness: 0.55 })
+    );
+    upperPavilion.position.y = 2.3;
+    khueVan.add(upperPavilion);
+
+    // Iconic Golden Circular Sun Window ("Cửa Sổ Mặt Trời Khuê Văn Các")
+    const sunWin = new THREE.Mesh(new THREE.TorusGeometry(0.36, 0.055, 8, 18), goldMat);
+    sunWin.rotation.y = Math.PI / 2;
+    sunWin.position.set(-side * 1.04, 2.3, 0);
+    khueVan.add(sunWin);
+
     for (let tier = 0; tier < 2; tier++) {
       const roof = new THREE.Mesh(
-        new THREE.ConeGeometry(2.15 - tier * 0.4, 0.72, 4),
-        new THREE.MeshStandardMaterial({ map: yinYangRoofTex, roughness: 0.58 })
+        new THREE.ConeGeometry(2.25 - tier * 0.42, 0.72, 4),
+        new THREE.MeshStandardMaterial({ map: yinYangRoofTex, roughness: 0.55 })
       );
       roof.rotation.y = Math.PI / 4;
-      roof.position.y = 1.72 + tier * 0.85;
-      pavilion.add(roof);
+      roof.position.y = 2.95 + tier * 0.78;
+      khueVan.add(roof);
     }
-    g.add(pavilion);
-
-    // Vermilion red Thê Húc bridge post with glowing golden lantern
-    const post = new THREE.Mesh(
-      new THREE.BoxGeometry(0.22, 1.8, 0.22),
-      new THREE.MeshStandardMaterial({ color: 0xb91c1c, roughness: 0.5 })
-    );
-    post.position.set(side * 0.35, 0.9, 0);
-    g.add(post);
-    const orb = new THREE.Mesh(
-      new THREE.SphereGeometry(0.18, 10, 10),
-      new THREE.MeshBasicMaterial({ color: 0xfde047 })
-    );
-    orb.position.set(side * 0.35, 1.92, 0);
-    g.add(orb);
+    g.add(khueVan);
   } else if (biomeId === 'vn_ninhbinh') {
-    // Ninh Bình: Bái Đính Stupa Tower + Sculpted Karst + Giant Blooming Pink Lotus on Emerald Water
+    // 5. NINH BÌNH: Bảo Tháp Bái Đính + Thuyền Đò Tràng An (Người Chèo Đò Nón Lá) + Đầm Sen Hồng 8 Cánh
     const stupa = new THREE.Group();
-    stupa.position.set(side * 3.4, 0, 0);
-    const bodyMat = new THREE.MeshStandardMaterial({ map: chamBrickTex, roughness: 0.65 });
-    const roofMat = new THREE.MeshStandardMaterial({ color: 0xfbbf24, metalness: 0.45, roughness: 0.32 });
-    for (let i = 0; i < 4; i++) {
-      const s = 1.65 - i * 0.22;
-      const y = i * 1.25;
-      const b = new THREE.Mesh(new THREE.CylinderGeometry(s * 0.65, s * 0.7, 1.05, 8), bodyMat);
-      b.position.y = y + 0.52;
+    stupa.position.set(side * 3.55, 0, -0.2);
+    const bodyMat = new THREE.MeshStandardMaterial({ map: chamBrickTex, roughness: 0.62 });
+    const roofMat = new THREE.MeshStandardMaterial({ color: 0xfbbf24, metalness: 0.5, roughness: 0.28 });
+    for (let i = 0; i < 5; i++) {
+      const s = 1.72 - i * 0.22;
+      const y = i * 1.18;
+      const b = new THREE.Mesh(new THREE.CylinderGeometry(s * 0.65, s * 0.7, 1.02, 8), bodyMat);
+      b.position.y = y + 0.51;
       stupa.add(b);
-      const r = new THREE.Mesh(new THREE.ConeGeometry(s * 0.85, 0.52, 8), roofMat);
-      r.position.y = y + 1.15;
+      const r = new THREE.Mesh(new THREE.ConeGeometry(s * 0.88, 0.5, 8), roofMat);
+      r.position.y = y + 1.12;
       stupa.add(r);
     }
+    const spire = new THREE.Mesh(new THREE.ConeGeometry(0.16, 1.2, 8), roofMat);
+    spire.position.y = 5 * 1.18 + 0.5;
+    stupa.add(spire);
     g.add(stupa);
 
-    // Giant Blooming Lotus Flower near water edge
-    const lotus = new THREE.Mesh(
-      new THREE.ConeGeometry(0.55, 0.42, 8),
-      new THREE.MeshStandardMaterial({ color: 0xf472b6, emissive: 0x831843, roughness: 0.5 })
+    // Multi-Petal 3D Pink Lotus Flower + Green Lily Pad on the water edge
+    const lotusGroup = new THREE.Group();
+    lotusGroup.position.set(side * 1.15, 0.12, -0.8);
+    const pad = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.68, 0.68, 0.04, 14),
+      new THREE.MeshStandardMaterial({ color: 0x15803d, roughness: 0.8 })
     );
-    lotus.rotation.x = Math.PI;
-    lotus.position.set(side * 1.5, 0.25, 0.6);
-    g.add(lotus);
+    lotusGroup.add(pad);
+    const petalMat = new THREE.MeshStandardMaterial({ color: 0xf472b6, emissive: 0x9d174d, emissiveIntensity: 0.3, roughness: 0.45 });
+    for (let p = 0; p < 8; p++) {
+      const a = (p * Math.PI) / 4;
+      const petal = new THREE.Mesh(new THREE.ConeGeometry(0.18, 0.48, 5), petalMat);
+      petal.position.set(Math.cos(a) * 0.24, 0.2, Math.sin(a) * 0.24);
+      petal.rotation.z = -Math.cos(a) * 0.55;
+      petal.rotation.x = Math.sin(a) * 0.55;
+      lotusGroup.add(petal);
+    }
+    const stamen = new THREE.Mesh(new THREE.SphereGeometry(0.16, 8, 8), roofMat);
+    stamen.position.y = 0.22;
+    lotusGroup.add(stamen);
+    g.add(lotusGroup);
+
+    // Trang An Rowing Sampan Boat with Conical-Hat Rower (Đò Tràng An & Người Chèo Đò Nón Lá)
+    if (variant % 2 === 0) {
+      const sampan = new THREE.Group();
+      sampan.position.set(side * 1.85, 0.18, 0.85);
+      const hull = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.38, 0.28, 2.2, 8),
+        new THREE.MeshStandardMaterial({ color: 0x78350f, roughness: 0.75 })
+      );
+      hull.rotation.x = Math.PI / 2;
+      hull.scale.set(1.1, 1.0, 0.45);
+      sampan.add(hull);
+
+      // Rower with Ao Ba Ba & White Non La conical hat
+      const rowerTorso = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.12, 0.15, 0.52, 8),
+        new THREE.MeshStandardMaterial({ color: 0x92400e })
+      );
+      rowerTorso.position.set(0, 0.38, -0.55);
+      sampan.add(rowerTorso);
+      const nonLa = new THREE.Mesh(
+        new THREE.ConeGeometry(0.32, 0.2, 12),
+        new THREE.MeshStandardMaterial({ color: 0xfef3c7, roughness: 0.6 })
+      );
+      nonLa.position.set(0, 0.74, -0.55);
+      sampan.add(nonLa);
+      g.add(sampan);
+      animList.push(t => {
+        sampan.position.y = 0.18 + Math.sin(t * 1.7 + phaseOffset) * 0.08;
+        sampan.rotation.z = Math.sin(t * 1.3 + phaseOffset) * 0.05;
+      });
+    }
   } else if (biomeId === 'vn_hue') {
-    // Cố Đô Huế: Imperial Ngọ Môn Pavilion with Heritage Texture + Royal Golden Roof
+    // 6. CỐ ĐÔ HUẾ: Lầu Ngũ Phụng Ngọ Môn 2 Tầng Mái Hoàng Lưu Ly + Thuyền Rồng Sông Hương + Đèn Lồng Tím
     const citadel = new THREE.Group();
-    citadel.position.set(side * 3.2, 0, 0);
-    const wall = new THREE.Mesh(
-      new THREE.BoxGeometry(2.6, 1.85, 2.2),
-      new THREE.MeshStandardMaterial({ map: heritageWallTex, color: 0xd97706, roughness: 0.75 })
+    citadel.position.set(side * 3.35, 0, 0);
+    const battlement = new THREE.Mesh(
+      new THREE.BoxGeometry(2.8, 1.65, 2.4),
+      new THREE.MeshStandardMaterial({ map: chamBrickTex, color: 0x78350f, roughness: 0.82 })
     );
-    wall.position.y = 0.92;
-    citadel.add(wall);
-    const palaceRoof = new THREE.Mesh(
-      new THREE.ConeGeometry(2.35, 1.15, 4),
-      new THREE.MeshStandardMaterial({ map: yinYangRoofTex, color: 0xeab308, emissive: 0x422006, metalness: 0.45, roughness: 0.35 })
+    battlement.position.y = 0.82;
+    citadel.add(battlement);
+
+    // Arched Imperial Brass-Studded Gate Doorway
+    const gateArch = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.48, 0.48, 2.46, 12),
+      new THREE.MeshStandardMaterial({ color: 0x450a0a, roughness: 0.7 })
     );
-    palaceRoof.rotation.y = Math.PI / 4;
-    palaceRoof.position.y = 2.4;
-    citadel.add(palaceRoof);
+    gateArch.rotation.z = Math.PI / 2;
+    gateArch.position.set(0, 0.65, 0);
+    citadel.add(gateArch);
+
+    // Red-and-Gold Lầu Ngũ Phụng Colonnade + 2-Tiered Imperial Yellow Glazed Roofs
+    const pavilion = new THREE.Mesh(
+      new THREE.BoxGeometry(2.2, 1.1, 1.9),
+      new THREE.MeshStandardMaterial({ map: heritageWallTex, color: 0xb91c1c, roughness: 0.6 })
+    );
+    pavilion.position.y = 2.15;
+    citadel.add(pavilion);
+
+    const royalRoofMat = new THREE.MeshStandardMaterial({
+      map: yinYangRoofTex,
+      color: 0xfacc15,
+      emissive: 0x713f12,
+      emissiveIntensity: 0.35,
+      metalness: 0.5,
+      roughness: 0.3,
+    });
+    for (let t = 0; t < 2; t++) {
+      const roof = new THREE.Mesh(new THREE.ConeGeometry(2.45 - t * 0.45, 0.85, 4), royalRoofMat);
+      roof.rotation.y = Math.PI / 4;
+      roof.position.y = 2.85 + t * 0.75;
+      citadel.add(roof);
+    }
     g.add(citadel);
+
+    // Royal Purple Silk Lantern on Gold Pillar along the road edge
+    const lPost = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.05, 0.06, 2.8, 8),
+      new THREE.MeshStandardMaterial({ color: 0xca8a04, metalness: 0.6, roughness: 0.3 })
+    );
+    lPost.position.set(side * 0.25, 1.4, 0.6);
+    g.add(lPost);
+    const purpleLantern = new THREE.Mesh(
+      new THREE.SphereGeometry(0.26, 12, 10),
+      new THREE.MeshStandardMaterial({ color: 0xc084fc, emissive: 0x9333ea, emissiveIntensity: 1.1 })
+    );
+    purpleLantern.scale.set(1, 1.3, 1);
+    purpleLantern.position.set(side * 0.25, 2.65, 0.6);
+    g.add(purpleLantern);
   } else if (biomeId === 'vn_danang') {
-    // Đà Nẵng Cầu Vàng: Giant Mossy Stone Hand (Bàn Tay Đá Khổng Lồ) with Craggy Moss Texture
+    // 7. ĐÀ NẴNG CẦU VÀNG: Lan Can Cầu Vàng Mạ Vàng + Bồn Hoa Nữ Hoàng Xanh + Bàn Tay Đá Khổng Lồ Đỡ Cầu
+    const bridgeEdge = new THREE.Group();
+    const goldRailMat = new THREE.MeshStandardMaterial({
+      color: 0xfacc15,
+      emissive: 0x854d0e,
+      emissiveIntensity: 0.35,
+      metalness: 0.85,
+      roughness: 0.18,
+    });
+    const handrail = new THREE.Mesh(new THREE.CylinderGeometry(0.065, 0.065, 5.8, 10), goldRailMat);
+    handrail.rotation.x = Math.PI / 2;
+    handrail.position.set(-side * 0.14, 1.12, 0);
+    bridgeEdge.add(handrail);
+
+    for (const zp of [-2.2, -0.7, 0.7, 2.2]) {
+      const baluster = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 1.12, 8), goldRailMat);
+      baluster.position.set(-side * 0.14, 0.56, zp);
+      bridgeEdge.add(baluster);
+    }
+    // Continuous Purple Lobelia Flower Planter Box along the Golden Bridge deck edge
+    const planter = new THREE.Mesh(
+      new THREE.BoxGeometry(0.38, 0.28, 5.6),
+      new THREE.MeshStandardMaterial({ color: 0x7e22ce, roughness: 0.75 })
+    );
+    planter.position.set(-side * 0.05, 0.18, 0);
+    bridgeEdge.add(planter);
+    g.add(bridgeEdge);
+
+    // Sculpted Multi-Jointed Giant Mossy Stone Hand (Bàn Tay Đá Khổng Lồ Đỡ Cầu Vàng)
     const handGroup = new THREE.Group();
-    handGroup.position.set(side * 0.55, -0.45, 0);
+    handGroup.position.set(side * 0.62, -0.55, 0);
     const stoneMat = new THREE.MeshStandardMaterial({
       map: mossStoneTex,
       color: 0x9ca3af,
@@ -1168,57 +1448,103 @@ function buildRoadsideScene(biomeId, side, variant, animList, provBaseIdx = 0) {
     });
     const mossMat = new THREE.MeshStandardMaterial({ color: 0x4d7c0f, roughness: 0.85, flatShading: true });
 
-    // Giant Forearm & Sculpted Palm rising from the clouds right under the bridge edge
-    const palm = new THREE.Mesh(new THREE.DodecahedronGeometry(1.35, 1), stoneMat);
-    palm.scale.set(1.35, 1.65, 1.25);
-    palm.position.y = 0.65;
+    // Sculpted Forearm & Wrist emerging from swirling cloud puffs
+    const forearm = new THREE.Mesh(new THREE.CylinderGeometry(0.95, 1.25, 2.4, 9), stoneMat);
+    forearm.position.set(side * 0.45, -0.35, 0);
+    forearm.rotation.z = side * 0.32;
+    handGroup.add(forearm);
+
+    const palm = new THREE.Mesh(new THREE.DodecahedronGeometry(1.42, 1), stoneMat);
+    palm.scale.set(1.4, 1.55, 1.3);
+    palm.position.y = 0.72;
     handGroup.add(palm);
 
-    // 5 Giant Sculpted Stone Fingers curling up right beside the golden bridge railing
-    for (let f = 0; f < 5; f++) {
-      const zOff = (f - 2) * 0.36;
-      const fingerH = f === 2 ? 2.65 : f === 1 || f === 3 ? 2.35 : 1.85;
-      const finger = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.28, fingerH, 8), stoneMat);
-      finger.position.set(-side * 0.45, 1.95 + fingerH * 0.34, zOff);
-      finger.rotation.z = side * 0.25;
+    // Opposable Stone Thumb curving inward toward the bridge rail
+    const thumb = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.36, 1.65, 8), stoneMat);
+    thumb.position.set(-side * 0.85, 1.55, 1.05);
+    thumb.rotation.set(-0.35, 0, -side * 0.48);
+    handGroup.add(thumb);
+
+    // 4 Multi-Jointed Sculpted Stone Fingers curling up beside the golden railing
+    for (let f = 0; f < 4; f++) {
+      const zOff = (f - 1.5) * 0.48 - 0.15;
+      const fingerH = f === 1 ? 2.85 : f === 2 ? 2.65 : 2.15;
+      const finger = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.31, fingerH, 8), stoneMat);
+      finger.position.set(-side * 0.38, 1.95 + fingerH * 0.35, zOff);
+      finger.rotation.z = side * 0.28;
       handGroup.add(finger);
 
-      const mossCap = new THREE.Mesh(new THREE.DodecahedronGeometry(0.24, 1), mossMat);
-      mossCap.position.set(-side * 0.38, 1.95 + fingerH * 0.7, zOff);
+      // Distal fingertip phalange curving inward over the bridge
+      const tip = new THREE.Mesh(new THREE.DodecahedronGeometry(0.28, 1), stoneMat);
+      tip.position.set(-side * 0.68, 1.95 + fingerH * 0.78, zOff);
+      handGroup.add(tip);
+
+      const mossCap = new THREE.Mesh(new THREE.DodecahedronGeometry(0.25, 1), mossMat);
+      mossCap.scale.set(1.2, 0.65, 1.2);
+      mossCap.position.set(-side * 0.62, 2.08 + fingerH * 0.82, zOff);
       handGroup.add(mossCap);
     }
     g.add(handGroup);
   } else if (biomeId === 'vn_hoian' || biomeId === 'vietnam') {
-    // Phố Cổ Hội An: Ancient Yellow Heritage House with Lattice Windows & Yin-Yang Tile Roof + Silk Lanterns
+    // 8. PHỐ CỔ HỘI AN: Nhà Cổ 2 Tầng Ban Công Gỗ + Giàn Hoa Giấy Đỏ Hồng + Đèn Lồng Lụa Đủ Màu
+    const houseGrp = new THREE.Group();
+    houseGrp.position.set(side * 2.95, 0, 0);
     const house = new THREE.Mesh(
-      new THREE.BoxGeometry(2.8, 3.3, 2.5),
-      new THREE.MeshStandardMaterial({ map: heritageWallTex, roughness: 0.68 })
+      new THREE.BoxGeometry(2.8, 3.4, 2.6),
+      new THREE.MeshStandardMaterial({ map: heritageWallTex, roughness: 0.66 })
     );
-    house.position.set(side * 2.9, 1.65, 0);
+    house.position.y = 1.7;
     house.castShadow = true;
-    g.add(house);
+    houseGrp.add(house);
+
+    // Upper Wooden Balcony & Veranda Eave facing the street
+    const balcony = new THREE.Mesh(
+      new THREE.BoxGeometry(0.45, 0.42, 2.55),
+      new THREE.MeshStandardMaterial({ color: 0x4a2210, roughness: 0.75 })
+    );
+    balcony.position.set(-side * 1.45, 1.95, 0);
+    houseGrp.add(balcony);
+
     const roof = new THREE.Mesh(
-      new THREE.ConeGeometry(2.45, 1.32, 4),
-      new THREE.MeshStandardMaterial({ map: yinYangRoofTex, roughness: 0.6 })
+      new THREE.ConeGeometry(2.5, 1.35, 4),
+      new THREE.MeshStandardMaterial({ map: yinYangRoofTex, roughness: 0.58 })
     );
     roof.rotation.y = Math.PI / 4;
-    roof.position.set(side * 2.9, 3.85, 0);
-    g.add(roof);
+    roof.position.y = 3.92;
+    houseGrp.add(roof);
 
+    // Cascading 3D Magenta Bougainvillea ("Giàn Hoa Giấy Hội An") spilling over the balcony
+    const bougMat = new THREE.MeshStandardMaterial({
+      color: 0xe11d48,
+      emissive: 0x881337,
+      emissiveIntensity: 0.35,
+      roughness: 0.6,
+      flatShading: true,
+    });
+    for (let b = 0; b < 4; b++) {
+      const bloom = new THREE.Mesh(new THREE.DodecahedronGeometry(0.34, 1), bougMat);
+      bloom.position.set(-side * 1.55, 2.25 - (b % 2) * 0.28, (b - 1.5) * 0.55);
+      houseGrp.add(bloom);
+    }
+    g.add(houseGrp);
+
+    // Bamboo Pole + Pair of Multi-Colored Hoi An Silk Lanterns
     const pole = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.06, 0.08, 3.5, 8),
+      new THREE.CylinderGeometry(0.06, 0.08, 3.7, 8),
       new THREE.MeshStandardMaterial({ color: 0x4a2210 })
     );
-    pole.position.set(side * 0.28, 1.75, 0);
+    pole.position.set(side * 0.26, 1.85, 0);
     g.add(pole);
+
     const lanternPivot = new THREE.Group();
-    lanternPivot.position.set(side * 0.28, 3.35, 0);
-    const lCol = variant % 2 === 0 ? 0xff2a1a : 0xffaa00;
+    lanternPivot.position.set(side * 0.26, 3.55, 0);
+    const lanternColors = [0xff2a1a, 0xffaa00, 0x10b981, 0xc084fc];
+    const lCol = lanternColors[variant % lanternColors.length];
     const lantern = new THREE.Mesh(
       new THREE.SphereGeometry(0.32, 12, 10),
-      new THREE.MeshStandardMaterial({ color: lCol, emissive: lCol, emissiveIntensity: 1.2 })
+      new THREE.MeshStandardMaterial({ color: lCol, emissive: lCol, emissiveIntensity: 1.25 })
     );
-    lantern.scale.set(1, 1.25, 1);
+    lantern.scale.set(1, 1.28, 1);
     lantern.position.y = -0.35;
     lanternPivot.add(lantern);
     g.add(lanternPivot);
@@ -1226,123 +1552,236 @@ function buildRoadsideScene(biomeId, side, variant, animList, provBaseIdx = 0) {
       lanternPivot.rotation.z = Math.sin(t * 2.0 + phaseOffset) * 0.16;
     });
   } else if (biomeId === 'vn_dalat') {
-    // Đà Lạt & Tây Nguyên: Towering Pine Trees + Lam Vien Artichoke Glass Bud + Waterfall
+    // 9. ĐÀ LẠT & TÂY NGUYÊN: Rừng Thông 3 Lá + Nụ Hoa Atiso Xoắn Ốc + Nhà Rông Tây Nguyên Mái Vút Cao
     for (let p = 0; p < 2; p++) {
       const pine = new THREE.Group();
       pine.position.set(side * (2.2 + p * 1.6), 0, (p - 0.5) * 1.4);
       const trunk = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.14, 0.22, 2.6, 8),
+        new THREE.CylinderGeometry(0.14, 0.22, 2.7, 8),
         new THREE.MeshStandardMaterial({ color: 0x5c3a21 })
       );
-      trunk.position.y = 1.3;
+      trunk.position.y = 1.35;
       pine.add(trunk);
       const needleMat = new THREE.MeshStandardMaterial({ color: 0x14532d, roughness: 0.82, flatShading: true });
-      for (let layer = 0; layer < 3; layer++) {
-        const cone = new THREE.Mesh(new THREE.ConeGeometry(1.35 - layer * 0.28, 1.6, 9), needleMat);
-        cone.position.y = 2.4 + layer * 1.05;
+      for (let layer = 0; layer < 4; layer++) {
+        const cone = new THREE.Mesh(new THREE.ConeGeometry(1.4 - layer * 0.26, 1.5, 9), needleMat);
+        cone.position.y = 2.3 + layer * 0.95;
         pine.add(cone);
       }
       g.add(pine);
     }
     if (variant % 2 === 0) {
-      // Iconic Green Artichoke Dome of Da Lat Lam Vien Square (Nụ Hoa Atiso Đà Lạt)
-      const artichoke = new THREE.Mesh(
-        new THREE.ConeGeometry(1.25, 2.6, 12, 3),
-        new THREE.MeshStandardMaterial({ color: 0x10b981, emissive: 0x064e3b, metalness: 0.35, roughness: 0.25 })
+      // Detailed Helical Glass Artichoke Bud of Lam Vien Square (Nụ Hoa Atiso Đà Lạt)
+      const artichokeGrp = new THREE.Group();
+      artichokeGrp.position.set(side * 3.15, 0, 0.2);
+      const glassMat = new THREE.MeshStandardMaterial({
+        color: 0x10b981,
+        emissive: 0x059669,
+        emissiveIntensity: 0.45,
+        metalness: 0.45,
+        roughness: 0.2,
+        flatShading: true,
+      });
+      for (let tier = 0; tier < 3; tier++) {
+        const budTier = new THREE.Mesh(
+          new THREE.ConeGeometry(1.32 - tier * 0.28, 1.45, 10),
+          glassMat
+        );
+        budTier.position.y = 0.72 + tier * 0.85;
+        budTier.rotation.y = tier * 0.4;
+        artichokeGrp.add(budTier);
+      }
+      g.add(artichokeGrp);
+    } else {
+      // Towering Central Highlands "Nhà Rông Tây Nguyên" on stilts with giant axe-blade roof
+      const nhaRong = new THREE.Group();
+      nhaRong.position.set(side * 3.45, 0, -0.2);
+      const woodMat = new THREE.MeshStandardMaterial({ color: 0x5c3a21, roughness: 0.8 });
+      const body = new THREE.Mesh(new THREE.BoxGeometry(1.9, 1.1, 2.2), woodMat);
+      body.position.y = 1.2;
+      nhaRong.add(body);
+      const axeRoof = new THREE.Mesh(
+        new THREE.ConeGeometry(1.55, 4.2, 4),
+        new THREE.MeshStandardMaterial({ map: yinYangRoofTex, color: 0x92400e, roughness: 0.82 })
       );
-      artichoke.position.set(side * 3.2, 1.3, 0);
-      g.add(artichoke);
-    } else if (variant % 3 === 0) {
-      const wf = build3DWaterfall(side, phaseOffset, animList);
-      wf.position.set(side * 3.4, 0, -0.5);
-      g.add(wf);
+      axeRoof.scale.set(0.65, 1.0, 1.35);
+      axeRoof.position.y = 3.75;
+      nhaRong.add(axeRoof);
+      g.add(nhaRong);
     }
   } else if (biomeId === 'vn_nhatrang') {
-    // Nha Trang: Ancient Red-Brick Po Nagar Cham Tower (Tháp Bà Ponagar) with Carved Brick Texture + Coconut Palms
+    // 10. NHA TRANG: Tháp Bà Ponagar Champa Điêu Khắc + Rặng Dừa Biển + Dù Nghỉ Dưỡng Bãi Cát
     if (variant % 2 === 0) {
       const cham = new THREE.Group();
-      cham.position.set(side * 3.3, 0, 0);
-      const brickMat = new THREE.MeshStandardMaterial({ map: chamBrickTex, roughness: 0.7 });
+      cham.position.set(side * 3.35, 0, 0);
+      const brickMat = new THREE.MeshStandardMaterial({ map: chamBrickTex, roughness: 0.68 });
+      const goldTipMat = new THREE.MeshStandardMaterial({ color: 0xfbbf24, metalness: 0.5, roughness: 0.3 });
+
       for (let tier = 0; tier < 3; tier++) {
-        const w = 1.85 - tier * 0.42;
-        const h = 1.55 - tier * 0.2;
+        const w = 1.95 - tier * 0.44;
+        const h = 1.6 - tier * 0.22;
         const block = new THREE.Mesh(new THREE.BoxGeometry(w, h, w), brickMat);
-        block.position.y = tier * 1.35 + h / 2;
+        block.position.y = tier * 1.38 + h / 2;
         cham.add(block);
+
+        // Corner terracotta sandstone finials on each tier
+        for (const cx of [-1, 1]) {
+          for (const cz of [-1, 1]) {
+            const finial = new THREE.Mesh(new THREE.ConeGeometry(0.14, 0.42, 4), brickMat);
+            finial.position.set(cx * (w * 0.46), tier * 1.38 + h + 0.18, cz * (w * 0.46));
+            cham.add(finial);
+          }
+        }
       }
+      // Carved Vestibule Gate (Mandapa Entrance) facing the road
+      const vestibule = new THREE.Mesh(new THREE.BoxGeometry(0.85, 1.35, 0.95), brickMat);
+      vestibule.position.set(-side * 1.15, 0.68, 0);
+      cham.add(vestibule);
+
+      const pinnacle = new THREE.Mesh(new THREE.ConeGeometry(0.28, 0.85, 6), goldTipMat);
+      pinnacle.position.y = 4.35;
+      cham.add(pinnacle);
       g.add(cham);
     } else {
-      // Swaying Coastal Coconut Palm Tree with Multi-Frond Canopy
+      // Swaying Coastal Coconut Palm Tree + White Beach Parasol
       const palm = new THREE.Group();
-      palm.position.set(side * 2.1, 0, 0);
+      palm.position.set(side * 2.15, 0, 0);
       const trunk = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.12, 0.2, 3.8, 8),
+        new THREE.CylinderGeometry(0.12, 0.22, 3.9, 8),
         new THREE.MeshStandardMaterial({ color: 0x784e28 })
       );
-      trunk.position.y = 1.9;
-      trunk.rotation.z = -side * 0.14;
+      trunk.position.y = 1.95;
+      trunk.rotation.z = -side * 0.15;
       palm.add(trunk);
-      const crownMat = new THREE.MeshStandardMaterial({ color: 0x16a34a, roughness: 0.68, flatShading: true });
-      for (let frond = 0; frond < 5; frond++) {
-        const leaf = new THREE.Mesh(new THREE.ConeGeometry(0.42, 1.65, 5), crownMat);
-        const ang = (frond * Math.PI * 2) / 5;
-        leaf.position.set(-side * 0.26 + Math.cos(ang) * 0.55, 3.75, Math.sin(ang) * 0.55);
-        leaf.rotation.z = Math.cos(ang) * 0.85;
-        leaf.rotation.x = Math.sin(ang) * 0.85;
+      const crownMat = new THREE.MeshStandardMaterial({ color: 0x16a34a, roughness: 0.65, flatShading: true });
+      for (let frond = 0; frond < 6; frond++) {
+        const leaf = new THREE.Mesh(new THREE.ConeGeometry(0.42, 1.75, 5), crownMat);
+        const ang = (frond * Math.PI * 2) / 6;
+        leaf.position.set(-side * 0.28 + Math.cos(ang) * 0.58, 3.85, Math.sin(ang) * 0.58);
+        leaf.rotation.z = Math.cos(ang) * 0.88;
+        leaf.rotation.x = Math.sin(ang) * 0.88;
         palm.add(leaf);
       }
       g.add(palm);
     }
   } else if (biomeId === 'vn_saigon') {
-    // TP.HCM: Illuminated Curtain-Wall Skyscraper + Spire
-    const h = 5.4 + (variant % 3) * 1.8;
-    const tower = new THREE.Mesh(
-      new THREE.BoxGeometry(2.3, h, 2.3),
-      new THREE.MeshStandardMaterial({
-        map: skyscraperGlassTex,
-        emissive: 0x1e3a8a,
-        emissiveMap: skyscraperGlassTex,
-        emissiveIntensity: 0.55,
-        metalness: 0.72,
-        roughness: 0.2,
-      })
-    );
-    tower.position.set(side * 3.7, h / 2, 0);
-    g.add(tower);
-
-    const spire = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.05, 0.25, 2.2, 8),
-      new THREE.MeshBasicMaterial({ color: 0x60a5fa })
-    );
-    spire.position.set(side * 3.7, h + 1.1, 0);
-    g.add(spire);
+    // 11. TP.HCM: Tháp Landmark 81 Đa Khối Bậc Thang & Tháp Đồng Hồ Chợ Bến Thành
+    const towerMat = new THREE.MeshStandardMaterial({
+      map: skyscraperGlassTex,
+      emissive: 0x1e3a8a,
+      emissiveMap: skyscraperGlassTex,
+      emissiveIntensity: 0.62,
+      metalness: 0.78,
+      roughness: 0.18,
+    });
+    if (variant % 2 === 0) {
+      // Multi-Bundled Stepped Supertall Skyscraper (Landmark 81 Inspired)
+      const lmGroup = new THREE.Group();
+      lmGroup.position.set(side * 3.85, 0, 0);
+      const bundles = [
+        [0, 0, 1.15, 7.6],
+        [-0.75, 0.55, 0.82, 5.8],
+        [0.75, -0.55, 0.82, 5.2],
+        [-0.75, -0.55, 0.78, 4.4],
+        [0.75, 0.55, 0.78, 6.4],
+      ];
+      for (const [bx, bz, bw, bh] of bundles) {
+        const col = new THREE.Mesh(new THREE.BoxGeometry(bw, bh, bw), towerMat);
+        col.position.set(bx, bh / 2, bz);
+        lmGroup.add(col);
+      }
+      const spire = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.04, 0.18, 2.4, 8),
+        new THREE.MeshBasicMaterial({ color: 0x38bdf8 })
+      );
+      spire.position.set(0, 7.6 + 1.2, 0);
+      lmGroup.add(spire);
+      g.add(lmGroup);
+    } else {
+      // Iconic Ben Thanh Market Clock Tower (Tháp Đồng Hồ Chợ Bến Thành)
+      const benThanh = new THREE.Group();
+      benThanh.position.set(side * 3.35, 0, 0);
+      const hall = new THREE.Mesh(
+        new THREE.BoxGeometry(2.6, 1.85, 2.4),
+        new THREE.MeshStandardMaterial({ map: heritageWallTex, color: 0xfef08a, roughness: 0.7 })
+      );
+      hall.position.y = 0.92;
+      benThanh.add(hall);
+      const clockTower = new THREE.Mesh(
+        new THREE.BoxGeometry(1.35, 2.2, 1.35),
+        new THREE.MeshStandardMaterial({ color: 0xfef3c7, roughness: 0.65 })
+      );
+      clockTower.position.y = 2.65;
+      benThanh.add(clockTower);
+      const clockFace = new THREE.Mesh(
+        new THREE.CircleGeometry(0.38, 16),
+        new THREE.MeshBasicMaterial({ color: 0xffffff })
+      );
+      clockFace.rotation.y = -side * (Math.PI / 2);
+      clockFace.position.set(-side * 0.69, 3.05, 0);
+      benThanh.add(clockFace);
+      const pyramidRoof = new THREE.Mesh(
+        new THREE.ConeGeometry(1.15, 0.85, 4),
+        new THREE.MeshStandardMaterial({ map: yinYangRoofTex, roughness: 0.55 })
+      );
+      pyramidRoof.rotation.y = Math.PI / 4;
+      pyramidRoof.position.y = 4.15;
+      benThanh.add(pyramidRoof);
+      g.add(benThanh);
+    }
   } else if (biomeId === 'vn_mientay') {
-    // Miền Tây: Cai Rang Floating Market Fruit Boat (Ghe Chợ Nổi Cây Bẹo Trái Cây) right beside the wooden bridge
+    // 12. MIỀN TÂY: Ghe Bầu Chợ Nổi Cái Răng (Mắt Ghe + Mui Ghe + Cây Bẹo + Thương Hồ Nón Lá) & Rặng Dừa Nước
     const boat = new THREE.Group();
-    boat.position.set(side * 0.95, 0.18, 0);
+    boat.position.set(side * 1.15, 0.18, 0);
     const hull = new THREE.Mesh(
-      new THREE.BoxGeometry(1.1, 0.44, 2.75),
-      new THREE.MeshStandardMaterial({ color: 0x78350f, roughness: 0.75 })
+      new THREE.BoxGeometry(1.15, 0.46, 2.95),
+      new THREE.MeshStandardMaterial({ color: 0x78350f, roughness: 0.72 })
     );
     boat.add(hull);
-    // Colorful mounds of tropical fruits (watermelon, mango, pineapple) on deck
+
+    // Traditional Red & White Mekong Boat Eyes ("Mắt Ghe Miền Tây") at the bow
+    const eyeMat = new THREE.MeshBasicMaterial({ color: 0xef4444 });
+    for (const ex of [-0.59, 0.59]) {
+      const eye = new THREE.Mesh(new THREE.SphereGeometry(0.09, 8, 8), eyeMat);
+      eye.position.set(ex, 0.1, 1.15);
+      boat.add(eye);
+    }
+
+    // Arched Wooden Cabin ("Mui Ghe") at the stern
+    const cabin = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.52, 0.52, 1.15, 10, 1, false, 0, Math.PI),
+      new THREE.MeshStandardMaterial({ color: 0x92400e, roughness: 0.78 })
+    );
+    cabin.rotation.x = Math.PI / 2;
+    cabin.position.set(0, 0.22, -0.65);
+    boat.add(cabin);
+
+    // Colorful mounds of tropical fruits (watermelon, mango, pineapple, dragonfruit) on deck
     const fruitCols = [0x16a34a, 0xfacc15, 0xef4444, 0xf97316];
     for (let f = 0; f < 4; f++) {
       const mound = new THREE.Mesh(
-        new THREE.DodecahedronGeometry(0.3, 1),
-        new THREE.MeshStandardMaterial({ color: fruitCols[(variant + f) % fruitCols.length], roughness: 0.6 })
+        new THREE.DodecahedronGeometry(0.28, 1),
+        new THREE.MeshStandardMaterial({ color: fruitCols[(variant + f) % fruitCols.length], roughness: 0.55 })
       );
-      mound.position.set((f % 2 - 0.5) * 0.36, 0.34, (Math.floor(f / 2) - 0.5) * 0.78);
+      mound.position.set((f % 2 - 0.5) * 0.36, 0.36, 0.15 + (Math.floor(f / 2) - 0.5) * 0.65);
       boat.add(mound);
     }
-    // Iconic "Cây Bẹo" bamboo pole advertising fruits at the bow
+
+    // Iconic "Cây Bẹo" bamboo pole with hanging sample fruits at the bow
     const cayBeo = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.028, 0.038, 2.4, 6),
+      new THREE.CylinderGeometry(0.028, 0.038, 2.55, 6),
       new THREE.MeshStandardMaterial({ color: 0xca8a04 })
     );
-    cayBeo.position.set(0, 1.2, 1.0);
-    cayBeo.rotation.x = 0.2;
+    cayBeo.position.set(0, 1.3, 1.15);
+    cayBeo.rotation.x = 0.22;
     boat.add(cayBeo);
+    const hangingFruit = new THREE.Mesh(
+      new THREE.DodecahedronGeometry(0.16, 1),
+      new THREE.MeshStandardMaterial({ color: 0xfacc15, emissive: 0xa16207, emissiveIntensity: 0.3 })
+    );
+    hangingFruit.position.set(0, 2.25, 1.35);
+    boat.add(hangingFruit);
+
     g.add(boat);
     animList.push(t => {
       boat.position.y = 0.18 + Math.sin(t * 1.8 + phaseOffset) * 0.11;
@@ -1617,23 +2056,287 @@ function processPanorama25D(img) {
   return { mainTex, midTex, depthGrid };
 }
 
-function buildHorizonLandmark(biomeId) {
-  // Keep the center horizon (-17 <= x <= +17) completely open so the 3D road
-  // visually connects directly into the curved 3D panoramic landmark!
+function buildHorizonLandmark(biomeId, animList) {
+  // Builds bespoke 3D Mid-Horizon Landmark Monuments (z = -30 .. -45) flanking the road corridor
+  // while keeping the center vanishing point open so the 3D road merges into the curved panorama!
   const g = new THREE.Group();
   g.position.set(0, 0, -44);
 
   const pal = BIOME_PALETTES[biomeId] || BIOME_PALETTES.vn_hagiang;
   for (const [x, h, r, seed] of [
-    [-23, 12.5, 4.8, 11],
-    [-18.5, 9.2, 3.8, 22],
-    [18.5, 9.6, 3.9, 33],
-    [23, 13.0, 5.0, 44],
+    [-23, 12.8, 4.9, 11],
+    [-18.5, 9.4, 3.9, 22],
+    [18.5, 9.8, 4.0, 33],
+    [23, 13.2, 5.1, 44],
   ]) {
     const karst = buildSculptedKarstMountain(r, h, pal.ground, pal.hillColor || 0x2b593c, seed);
     karst.position.set(x, -1.2, -3);
     g.add(karst);
   }
+
+  // Volumetric Horizon Mist Cushion over the road-to-panorama junction (z = -47 .. -52)
+  for (let m = 0; m < 3; m++) {
+    const cushion = new THREE.Mesh(
+      new THREE.PlaneGeometry(28 + m * 6, 4.8),
+      new THREE.MeshBasicMaterial({
+        map: mistStrataTex,
+        color: pal.sun || 0xffe299,
+        transparent: true,
+        opacity: 0.22 - m * 0.05,
+        depthWrite: false,
+      })
+    );
+    cushion.position.set((m - 1) * 3.5, 0.85 + m * 0.45, -3.5 - m * 1.5);
+    g.add(cushion);
+  }
+
+  if (biomeId === 'vn_hagiang') {
+    // Monumental 3D Cột Cờ Quốc Gia Lũng Cú atop Mount Rồng (Octagonal Stone Tower + Giant Flag)
+    const lungCu = new THREE.Group();
+    lungCu.position.set(-11.5, 0, 7);
+    const mount = buildSculptedKarstMountain(3.4, 6.2, 0x3b4d54, 0x274e3b, 77);
+    lungCu.add(mount);
+    const basePedestal = new THREE.Mesh(
+      new THREE.CylinderGeometry(1.35, 1.55, 1.4, 8),
+      new THREE.MeshStandardMaterial({ map: chamBrickTex, color: 0x9ca3af, roughness: 0.75 })
+    );
+    basePedestal.position.y = 6.0;
+    lungCu.add(basePedestal);
+    const towerShaft = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.68, 0.92, 4.2, 8),
+      new THREE.MeshStandardMaterial({ map: mossStoneTex, color: 0xd6d3d1, roughness: 0.7 })
+    );
+    towerShaft.position.y = 8.6;
+    lungCu.add(towerShaft);
+    const topFlag = buildVietnamFlagPole(3.4, animList, 0.5);
+    topFlag.position.y = 10.6;
+    lungCu.add(topFlag);
+    g.add(lungCu);
+  } else if (biomeId === 'vn_sapa') {
+    // 3D Cáp Treo Fansipan (Overhead Steel Cable + Moving 3D Cable Car Cabins gliding across the valley!)
+    const cableSys = new THREE.Group();
+    cableSys.position.set(0, 10.5, 12);
+    const cableLine = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.03, 0.03, 38, 6),
+      new THREE.MeshBasicMaterial({ color: 0x475569 })
+    );
+    cableLine.rotation.z = Math.PI / 2 - 0.12;
+    cableSys.add(cableLine);
+
+    const cabinMat = new THREE.MeshStandardMaterial({ color: 0xdc2626, emissive: 0x7f1d1d, emissiveIntensity: 0.35, metalness: 0.5, roughness: 0.25 });
+    const glassMat = new THREE.MeshBasicMaterial({ color: 0xe0f2fe });
+    for (let c = 0; c < 2; c++) {
+      const cabinGrp = new THREE.Group();
+      const hanger = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 1.1, 6), cableLine.material);
+      hanger.position.y = -0.55;
+      cabinGrp.add(hanger);
+      const box = new THREE.Mesh(new THREE.BoxGeometry(1.25, 0.95, 0.85), cabinMat);
+      box.position.y = -1.1;
+      cabinGrp.add(box);
+      const win = new THREE.Mesh(new THREE.BoxGeometry(1.05, 0.45, 0.88), glassMat);
+      win.position.y = -1.05;
+      cabinGrp.add(win);
+      cableSys.add(cabinGrp);
+      if (animList) {
+        animList.push(t => {
+          const u = ((t * 0.09 + c * 0.5) % 1) * 2 - 1; // -1 .. +1
+          cabinGrp.position.set(u * 15, u * 1.8, 0);
+          cabinGrp.rotation.z = Math.sin(t * 2.2 + c) * 0.05;
+        });
+      }
+    }
+    g.add(cableSys);
+  } else if (biomeId === 'vn_halong') {
+    // Giant 3D Hòn Trống Mái & Limestone Arch on the Bay Horizon
+    for (const side of [-1, 1]) {
+      const archIsle = buildSculptedKarstMountain(3.4, 9.5, 0x1e4e48, 0x155e3f, side > 0 ? 88 : 99);
+      archIsle.position.set(side * 12.5, -0.5, 6);
+      g.add(archIsle);
+    }
+  } else if (biomeId === 'vn_hanoi') {
+    // Monumental 3D Tháp Rùa Hồ Gươm (3-Tiered Turtle Tower on a Green Lake Mound)
+    const thapRua = new THREE.Group();
+    thapRua.position.set(-10.8, 0, 8);
+    const island = new THREE.Mesh(
+      new THREE.CylinderGeometry(3.2, 3.8, 0.85, 16),
+      new THREE.MeshStandardMaterial({ color: 0x15803d, roughness: 0.85 })
+    );
+    island.position.y = 0.35;
+    thapRua.add(island);
+    const wallMat = new THREE.MeshStandardMaterial({ map: heritageWallTex, color: 0xd6b88d, roughness: 0.72 });
+    const roofMat = new THREE.MeshStandardMaterial({ map: yinYangRoofTex, roughness: 0.55 });
+    for (let tier = 0; tier < 3; tier++) {
+      const w = 2.4 - tier * 0.52;
+      const h = 1.45 - tier * 0.22;
+      const yBase = 0.75 + tier * 1.32;
+      const body = new THREE.Mesh(new THREE.BoxGeometry(w, h, w * 0.82), wallMat);
+      body.position.y = yBase + h / 2;
+      thapRua.add(body);
+      const roof = new THREE.Mesh(new THREE.ConeGeometry(w * 0.78, 0.52, 4), roofMat);
+      roof.rotation.y = Math.PI / 4;
+      roof.position.y = yBase + h + 0.22;
+      thapRua.add(roof);
+    }
+    g.add(thapRua);
+  } else if (biomeId === 'vn_ninhbinh') {
+    // 3D Đỉnh Ngọa Long Hang Múa (Limestone Peak with Coiling White Stone Dragon & Watchtower)
+    const hangMua = new THREE.Group();
+    hangMua.position.set(-12.2, 0, 6);
+    const peak = buildSculptedKarstMountain(3.8, 10.2, 0x3f4e4f, 0x166534, 61);
+    hangMua.add(peak);
+    const dragonMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, emissive: 0x475569, emissiveIntensity: 0.25, roughness: 0.5 });
+    for (let s = 0; s < 8; s++) {
+      const seg = new THREE.Mesh(new THREE.SphereGeometry(0.38 - s * 0.025, 8, 8), dragonMat);
+      seg.position.set(Math.sin(s * 0.55) * (2.2 - s * 0.22), 2.5 + s * 0.92, 1.6 - s * 0.18);
+      hangMua.add(seg);
+    }
+    g.add(hangMua);
+  } else if (biomeId === 'vn_hue') {
+    // 3D Cầu Trường Tiền 6 Vài 12 Nhịp (Glowing Royal Purple-Gold Parabolic Steel Truss Arches)
+    const truongTien = new THREE.Group();
+    truongTien.position.set(11.5, 0.5, 8);
+    const trussMat = new THREE.MeshStandardMaterial({
+      color: 0xe2e8f0,
+      emissive: 0x9333ea,
+      emissiveIntensity: 0.55,
+      metalness: 0.8,
+      roughness: 0.2,
+    });
+    for (let a = 0; a < 3; a++) {
+      const arch = new THREE.Mesh(
+        new THREE.TorusGeometry(2.1, 0.14, 8, 18, Math.PI),
+        trussMat
+      );
+      arch.position.set(0, 0.2, (a - 1) * 4.2);
+      arch.rotation.y = Math.PI / 2;
+      truongTien.add(arch);
+    }
+    g.add(truongTien);
+  } else if (biomeId === 'vn_danang') {
+    // 3D Cầu Rồng Đà Nẵng (Undulating Golden Steel Dragon Arch breathing Fire Orbs!)
+    const dragonBridge = new THREE.Group();
+    dragonBridge.position.set(11.8, 1.2, 7);
+    const goldDragonMat = new THREE.MeshStandardMaterial({
+      color: 0xfacc15,
+      emissive: 0xd97706,
+      emissiveIntensity: 0.65,
+      metalness: 0.75,
+      roughness: 0.22,
+    });
+    for (let s = 0; s < 10; s++) {
+      const seg = new THREE.Mesh(new THREE.SphereGeometry(0.48, 10, 10), goldDragonMat);
+      seg.position.set(0, Math.sin(s * 0.7) * 1.45 + 1.5, (s - 4.5) * 1.15);
+      dragonBridge.add(seg);
+    }
+    const fireOrb = new THREE.Mesh(
+      new THREE.SphereGeometry(0.65, 12, 12),
+      new THREE.MeshBasicMaterial({ color: 0xf97316 })
+    );
+    fireOrb.position.set(-0.6, 2.4, 5.8);
+    dragonBridge.add(fireOrb);
+    if (animList) {
+      animList.push(t => {
+        fireOrb.scale.setScalar(0.8 + Math.sin(t * 6.0) * 0.35);
+      });
+    }
+    g.add(dragonBridge);
+  } else if (biomeId === 'vn_hoian' || biomeId === 'vietnam') {
+    // 3D Chùa Cầu Hội An (Iconic Japanese Covered Bridge with Arched Stone Piers & Tiled Pavilion)
+    const chuaCau = new THREE.Group();
+    chuaCau.position.set(-10.5, 0, 8);
+    const bridgeDeck = new THREE.Mesh(
+      new THREE.BoxGeometry(5.6, 1.1, 2.6),
+      new THREE.MeshStandardMaterial({ map: heritageWallTex, color: 0xd97706, roughness: 0.7 })
+    );
+    bridgeDeck.position.y = 1.1;
+    chuaCau.add(bridgeDeck);
+    const pagoda = new THREE.Mesh(
+      new THREE.BoxGeometry(4.8, 1.65, 2.3),
+      new THREE.MeshStandardMaterial({ map: heritageWallTex, roughness: 0.65 })
+    );
+    pagoda.position.y = 2.45;
+    chuaCau.add(pagoda);
+    const roof = new THREE.Mesh(
+      new THREE.ConeGeometry(3.8, 1.45, 4),
+      new THREE.MeshStandardMaterial({ map: yinYangRoofTex, roughness: 0.58 })
+    );
+    roof.rotation.y = Math.PI / 4;
+    roof.position.y = 3.9;
+    chuaCau.add(roof);
+    g.add(chuaCau);
+  } else if (biomeId === 'vn_dalat') {
+    // Giant 3D Bông Hoa Dã Quỳ Vàng & Nụ Atiso Quảng Trường Lâm Viên
+    const daQuy = new THREE.Group();
+    daQuy.position.set(-10.8, 0, 8);
+    const yellowGlassMat = new THREE.MeshStandardMaterial({
+      color: 0xfacc15,
+      emissive: 0xca8a04,
+      emissiveIntensity: 0.5,
+      metalness: 0.4,
+      roughness: 0.25,
+      flatShading: true,
+    });
+    const dome = new THREE.Mesh(new THREE.DodecahedronGeometry(2.6, 1), yellowGlassMat);
+    dome.position.y = 2.2;
+    daQuy.add(dome);
+    g.add(daQuy);
+  } else if (biomeId === 'vn_nhatrang') {
+    // 3D Trụ Cáp Treo Vượt Biển Vinpearl (Over-Sea Eiffel-Style Illuminated Lattice Tower)
+    const vinTower = new THREE.Group();
+    vinTower.position.set(11.8, 0, 7);
+    const towerMat = new THREE.MeshStandardMaterial({
+      color: 0xf8fafc,
+      emissive: 0x38bdf8,
+      emissiveIntensity: 0.45,
+      metalness: 0.7,
+      roughness: 0.25,
+    });
+    const lowerA = new THREE.Mesh(new THREE.ConeGeometry(2.2, 5.5, 4, 1, true), towerMat);
+    lowerA.position.y = 2.75;
+    lowerA.rotation.y = Math.PI / 4;
+    vinTower.add(lowerA);
+    const upperA = new THREE.Mesh(new THREE.ConeGeometry(1.1, 5.2, 4), towerMat);
+    upperA.position.y = 7.8;
+    upperA.rotation.y = Math.PI / 4;
+    vinTower.add(upperA);
+    const crossArm = new THREE.Mesh(new THREE.BoxGeometry(3.8, 0.25, 0.25), towerMat);
+    crossArm.position.y = 9.2;
+    vinTower.add(crossArm);
+    g.add(vinTower);
+  } else if (biomeId === 'vn_saigon') {
+    // 3D Cầu Ba Son (Thủ Thiêm 2 Asymmetric Cable-Stayed Arch Pylon)
+    const baSon = new THREE.Group();
+    baSon.position.set(-11.2, 0, 7);
+    const pylonMat = new THREE.MeshStandardMaterial({
+      color: 0xf8fafc,
+      emissive: 0x38bdf8,
+      emissiveIntensity: 0.55,
+      metalness: 0.75,
+      roughness: 0.2,
+    });
+    const pylon = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.65, 11.5, 10), pylonMat);
+    pylon.position.y = 5.5;
+    pylon.rotation.z = -0.18;
+    baSon.add(pylon);
+    g.add(baSon);
+  } else if (biomeId === 'vn_mientay') {
+    // 3D Biểu Tượng Con Tàu Đất Mũi Cà Mau (GPS 0001 Monument Ship with Giant White Sail & Flag)
+    const datMui = new THREE.Group();
+    datMui.position.set(-10.8, 0, 8);
+    const whiteMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.5 });
+    const shipHull = new THREE.Mesh(new THREE.BoxGeometry(2.2, 1.4, 5.2), whiteMat);
+    shipHull.position.y = 0.7;
+    datMui.add(shipHull);
+    const giantSail = new THREE.Mesh(new THREE.ConeGeometry(2.1, 6.2, 4), whiteMat);
+    giantSail.scale.set(0.35, 1.0, 1.2);
+    giantSail.position.set(0, 4.2, 0.4);
+    datMui.add(giantSail);
+    const flag = buildVietnamFlagPole(3.6, animList, 0.3);
+    flag.position.set(0, 1.4, 2.2);
+    datMui.add(flag);
+    g.add(datMui);
+  }
+
   return g;
 }
 
@@ -1878,10 +2581,13 @@ export function buildRaceWorld(scene) {
       const bx = basePositions[idx];
       const bz = basePositions[idx + 2];
       const pose = getTrailPose(bz, activeTrailScrollDist, activeTrailBiomeId);
-      // Perspective taper toward the distant landmark so the road naturally merges into the horizon
-      const taper = 1 - 0.34 * Math.pow(pose.t || 0, 1.45);
+      const t = pose.t || 0;
+      // Perspective taper + soft horizon crest dip at the far 15% so the road melts into the 3D landmark
+      const horizonTail = t > 0.85 ? (t - 0.85) / 0.15 : 0;
+      const taper = (1 - 0.36 * Math.pow(t, 1.45)) * (1 - horizonTail * 0.35);
+      const horizonDip = horizonTail * horizonTail * 0.65;
       arr[idx] = bx * taper + pose.x;
-      arr[idx + 1] = pose.y;
+      arr[idx + 1] = pose.y - horizonDip;
       arr[idx + 2] = bz;
     }
     pos.needsUpdate = true;
