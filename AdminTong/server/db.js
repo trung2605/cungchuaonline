@@ -94,10 +94,15 @@ export function createDatabase({
     workLogs: [...INITIAL_WORK_LOGS],
     giftCatalog: DEFAULT_GIFT_CATALOG.map(g => ({ ...g })),
     runtimeSettings: {
+      schemaVersion: 2,
       chuaAutoBalanceEnabled: false,
       chuaDemoOn: false,
+      chuaDemoRate: 0.15,
+      chuaDemoGiftRatio: 0.12,
       duaAutoBalanceEnabled: false,
       duaDemoOn: false,
+      duaDemoRate: 0.15,
+      duaDemoGiftRatio: 0.15,
     },
   };
 
@@ -144,7 +149,7 @@ export function createDatabase({
         }
         state.giftCatalog = [...map.values()].sort((a, b) => a.diamonds - b.diamonds);
       }
-      if (raw.runtimeSettings && typeof raw.runtimeSettings === 'object') {
+      if (raw.runtimeSettings && typeof raw.runtimeSettings === 'object' && raw.runtimeSettings.schemaVersion === 2) {
         state.runtimeSettings = { ...state.runtimeSettings, ...raw.runtimeSettings };
       }
     }
@@ -187,12 +192,19 @@ export function createDatabase({
       mongoStatus.error = null;
       mongoStatus.lastSyncAt = new Date(now()).toISOString();
 
-      // Load persisted runtime settings from MongoDB if present
+      // Load persisted runtime settings from MongoDB if present (only schemaVersion === 2; migrate older records to clean false)
       try {
         const savedSettings = await db.collection('settings').findOne({ _id: 'runtime_settings' });
-        if (savedSettings && typeof savedSettings === 'object') {
+        if (savedSettings && typeof savedSettings === 'object' && savedSettings.schemaVersion === 2) {
           const { _id, ...rest } = savedSettings;
           state.runtimeSettings = { ...state.runtimeSettings, ...rest };
+          saveLocal();
+        } else {
+          await db.collection('settings').updateOne(
+            { _id: 'runtime_settings' },
+            { $set: { ...state.runtimeSettings, updatedAt: now() } },
+            { upsert: true }
+          );
           saveLocal();
         }
       } catch {}
@@ -447,6 +459,17 @@ export function createDatabase({
   async function resetAllData() {
     state.gifts.length = 0;
     state.events.length = 0;
+    state.runtimeSettings = {
+      schemaVersion: 2,
+      chuaAutoBalanceEnabled: false,
+      chuaDemoOn: false,
+      chuaDemoRate: 0.15,
+      chuaDemoGiftRatio: 0.12,
+      duaAutoBalanceEnabled: false,
+      duaDemoOn: false,
+      duaDemoRate: 0.15,
+      duaDemoGiftRatio: 0.15,
+    };
     saveLocal();
     if (storeFile) {
       try {
@@ -465,6 +488,11 @@ export function createDatabase({
         await Promise.all([
           db.collection('gifts').deleteMany({}),
           db.collection('events').deleteMany({}),
+          db.collection('settings').updateOne(
+            { _id: 'runtime_settings' },
+            { $set: { ...state.runtimeSettings, updatedAt: now() } },
+            { upsert: true }
+          ),
         ]);
         mongoStatus.lastSyncAt = new Date(now()).toISOString();
       } catch {}
@@ -476,15 +504,35 @@ export function createDatabase({
     return { ...state.runtimeSettings };
   }
 
-  function updateRuntimeSettings(patch = {}) {
+  async function updateRuntimeSettings(patch = {}) {
     if (!patch || typeof patch !== 'object') return getRuntimeSettings();
-    state.runtimeSettings = { ...state.runtimeSettings, ...patch };
+    state.runtimeSettings = { ...state.runtimeSettings, ...patch, schemaVersion: 2 };
     saveLocal();
     if (db) {
-      db.collection('settings')
-        .updateOne({ _id: 'runtime_settings' }, { $set: { ...state.runtimeSettings, updatedAt: now() } }, { upsert: true })
-        .catch(() => {});
+      try {
+        await db.collection('settings').updateOne(
+          { _id: 'runtime_settings' },
+          { $set: { ...state.runtimeSettings, updatedAt: now() } },
+          { upsert: true }
+        );
+      } catch {}
     }
+    return getRuntimeSettings();
+  }
+
+  let lastSettingsPullAt = 0;
+  async function pullRuntimeSettingsFromMongo(force = false) {
+    if (!db) return getRuntimeSettings();
+    const t = now();
+    if (!force && t - lastSettingsPullAt < 1200) return getRuntimeSettings();
+    lastSettingsPullAt = t;
+    try {
+      const savedSettings = await db.collection('settings').findOne({ _id: 'runtime_settings' });
+      if (savedSettings && typeof savedSettings === 'object' && savedSettings.schemaVersion === 2) {
+        const { _id, ...rest } = savedSettings;
+        state.runtimeSettings = { ...state.runtimeSettings, ...rest, schemaVersion: 2 };
+      }
+    } catch {}
     return getRuntimeSettings();
   }
 
@@ -501,6 +549,7 @@ export function createDatabase({
     summary,
     getRuntimeSettings,
     updateRuntimeSettings,
+    pullRuntimeSettingsFromMongo,
     saveLocal,
     close: async () => {
       saveLocal();

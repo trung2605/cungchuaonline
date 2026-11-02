@@ -457,9 +457,15 @@ async function initUnifiedRuntime() {
       },
       saveSceneConfig: async patch => {
         if (patch?.autoBalance || patch?.demo) {
-          db.updateRuntimeSettings?.({
+          await db.updateRuntimeSettings?.({
             ...(patch.autoBalance ? { chuaAutoBalanceEnabled: Boolean(patch.autoBalance.enabled) } : {}),
-            ...(patch.demo ? { chuaDemoOn: Boolean(patch.demo.on) } : {}),
+            ...(patch.demo
+              ? {
+                  chuaDemoOn: Boolean(patch.demo.on),
+                  ...(Number.isFinite(patch.demo.rate) ? { chuaDemoRate: Number(patch.demo.rate) } : {}),
+                  ...(Number.isFinite(patch.demo.giftRatio) ? { chuaDemoGiftRatio: Number(patch.demo.giftRatio) } : {}),
+                }
+              : {}),
           });
         }
       },
@@ -496,9 +502,15 @@ async function initUnifiedRuntime() {
       broadcast: broadcastDua,
       saveSceneConfig: async patch => {
         if (patch?.autoBalance || patch?.demo) {
-          db.updateRuntimeSettings?.({
+          await db.updateRuntimeSettings?.({
             ...(patch.autoBalance ? { duaAutoBalanceEnabled: Boolean(patch.autoBalance.enabled) } : {}),
-            ...(patch.demo ? { duaDemoOn: Boolean(patch.demo.on) } : {}),
+            ...(patch.demo
+              ? {
+                  duaDemoOn: Boolean(patch.demo.on),
+                  ...(Number.isFinite(patch.demo.rate) ? { duaDemoRate: Number(patch.demo.rate) } : {}),
+                  ...(Number.isFinite(patch.demo.giftRatio) ? { duaDemoGiftRatio: Number(patch.demo.giftRatio) } : {}),
+                }
+              : {}),
           });
         }
       },
@@ -527,6 +539,28 @@ async function initUnifiedRuntime() {
       duaAdmin.stepAutoBalance?.();
     }
   }
+
+  async function syncAndStep() {
+    try {
+      const rtSettings = await db.pullRuntimeSettingsFromMongo?.();
+      if (rtSettings) {
+        chuaAdmin.syncExternalState?.({
+          autoBalanceEnabled: Boolean(rtSettings.chuaAutoBalanceEnabled),
+          demoOn: Boolean(rtSettings.chuaDemoOn),
+          demoRate: rtSettings.chuaDemoRate,
+          demoGiftRatio: rtSettings.chuaDemoGiftRatio,
+        });
+        duaAdmin.syncExternalState?.({
+          autoBalanceEnabled: Boolean(rtSettings.duaAutoBalanceEnabled),
+          demoOn: Boolean(rtSettings.duaDemoOn),
+          demoRate: rtSettings.duaDemoRate,
+          demoGiftRatio: rtSettings.duaDemoGiftRatio,
+        });
+      }
+    } catch {}
+    stepSimulationsIfNeeded();
+  }
+
   const bgInterval = setInterval(stepSimulationsIfNeeded, 1000);
   bgInterval.unref?.();
 
@@ -553,6 +587,7 @@ async function initUnifiedRuntime() {
     getDuaSnapshot,
     duaEventBuf,
     stepSimulationsIfNeeded,
+    syncAndStep,
     async close() {
       chuaDemo.stop();
       duaDemo.stop();
@@ -587,7 +622,7 @@ export async function closeUnifiedRuntime() {
 // ============================================================================
 export default async function handler(req, res) {
   const rt = await getRuntime();
-  rt.stepSimulationsIfNeeded();
+  await rt.syncAndStep();
 
   const rawUrl = req.url || '/';
   const [urlPath, queryString] = rawUrl.split('?');

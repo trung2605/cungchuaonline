@@ -496,19 +496,9 @@ function initRotaryKnobs(onKnobCommit) {
       dial.addEventListener('pointerup', onUp);
       dial.addEventListener('pointercancel', onUp);
     });
-
-    // 2. Mouse Wheel Rotation
-    dial.addEventListener('wheel', e => {
-      e.preventDefault();
-      const step = Number(dial.dataset.step) || 1;
-      const cur = Number(dial.dataset.value) || 0;
-      const dir = e.deltaY < 0 ? 1 : -1;
-      const next = setKnobVisual(knobId, cur + dir * step);
-      onKnobCommit(knobId, next);
-    }, { passive: false });
   });
 
-  // 3. Fine Step Buttons (- / +)
+  // 2. Fine Step Buttons (- / +) — No mouse wheel listener so page scrolling never triggers knobs!
   document.querySelectorAll('[data-knob-step]').forEach(btn => {
     btn.addEventListener('click', () => {
       const knobId = btn.dataset.knobStep;
@@ -1167,23 +1157,43 @@ window.addEventListener('DOMContentLoaded', () => {
     } else if (knobId === 'chuaDemoRateKnob') {
       const rate = Number(val.toFixed(2));
       if ($('chuaDemoRate')) $('chuaDemoRate').value = rate;
-      await gameAction('cung-chua-online', '/api/demo', { on: true, rate, giftRatio: (Number($('chuaDemoGiftPct')?.value) || 12) / 100 });
-      showToast(`⚡ Tần suất mẫu Chùa 3D = ${rate}/s!`);
+      const isRunning = Boolean(lastStateCache?.games?.['cung-chua-online']?.data?.demo?.on);
+      if (isRunning) {
+        await gameAction('cung-chua-online', '/api/demo', { on: true, rate, giftRatio: (Number($('chuaDemoGiftPct')?.value) || 12) / 100 });
+      } else {
+        await gameAction('cung-chua-online', '/api/auto-balance', { maxDemoRate: rate });
+      }
+      showToast(`⚡ Tần suất mẫu Chùa 3D = ${rate}/s (${isRunning ? 'Đang chạy' : 'Đã lưu cấu hình'})!`);
     } else if (knobId === 'chuaDemoGiftKnob') {
       const pct = Math.round(val);
       if ($('chuaDemoGiftPct')) $('chuaDemoGiftPct').value = pct;
-      await gameAction('cung-chua-online', '/api/demo', { on: true, rate: Number($('chuaDemoRate')?.value) || 0.15, giftRatio: pct / 100 });
-      showToast(`🎁 Tỷ lệ quà mẫu Chùa 3D = ${pct}%!`);
+      const isRunning = Boolean(lastStateCache?.games?.['cung-chua-online']?.data?.demo?.on);
+      if (isRunning) {
+        await gameAction('cung-chua-online', '/api/demo', { on: true, rate: Number($('chuaDemoRate')?.value) || 0.15, giftRatio: pct / 100 });
+      } else {
+        await gameAction('cung-chua-online', '/api/auto-balance', { giftRatio: pct / 100 });
+      }
+      showToast(`🎁 Tỷ lệ quà mẫu Chùa 3D = ${pct}% (${isRunning ? 'Đang chạy' : 'Đã lưu cấu hình'})!`);
     } else if (knobId === 'duaDemoRateKnob') {
       const rate = Number(val.toFixed(2));
       if ($('duaDemoRate')) $('duaDemoRate').value = rate;
-      await gameAction('cuoc-dua-ky-thu', '/api/demo', { on: true, rate, giftRatio: (Number($('duaDemoGiftPct')?.value) || 15) / 100 });
-      showToast(`⚡ Tần suất mẫu Xuyên Việt 3D = ${rate}/s!`);
+      const isRunning = Boolean(lastStateCache?.games?.['cuoc-dua-ky-thu']?.data?.demo?.on);
+      if (isRunning) {
+        await gameAction('cuoc-dua-ky-thu', '/api/demo', { on: true, rate, giftRatio: (Number($('duaDemoGiftPct')?.value) || 15) / 100 });
+      } else {
+        await gameAction('cuoc-dua-ky-thu', '/api/auto-balance', { maxDemoRate: rate });
+      }
+      showToast(`⚡ Tần suất mẫu Xuyên Việt 3D = ${rate}/s (${isRunning ? 'Đang chạy' : 'Đã lưu cấu hình'})!`);
     } else if (knobId === 'duaDemoGiftKnob') {
       const pct = Math.round(val);
       if ($('duaDemoGiftPct')) $('duaDemoGiftPct').value = pct;
-      await gameAction('cuoc-dua-ky-thu', '/api/demo', { on: true, rate: Number($('duaDemoRate')?.value) || 0.15, giftRatio: pct / 100 });
-      showToast(`🎁 Tỷ lệ quà mẫu Xuyên Việt 3D = ${pct}%!`);
+      const isRunning = Boolean(lastStateCache?.games?.['cuoc-dua-ky-thu']?.data?.demo?.on);
+      if (isRunning) {
+        await gameAction('cuoc-dua-ky-thu', '/api/demo', { on: true, rate: Number($('duaDemoRate')?.value) || 0.15, giftRatio: pct / 100 });
+      } else {
+        await gameAction('cuoc-dua-ky-thu', '/api/auto-balance', { giftRatio: pct / 100 });
+      }
+      showToast(`🎁 Tỷ lệ quà mẫu Xuyên Việt 3D = ${pct}% (${isRunning ? 'Đang chạy' : 'Đã lưu cấu hình'})!`);
     }
     await pollState();
   });

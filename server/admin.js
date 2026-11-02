@@ -395,7 +395,7 @@ export async function startAdmin({ port = 8788, host = '127.0.0.1', password, ct
     const leaveMsgs = stage.purgeMockActors?.() ?? [];
     stats.clearLogs?.();
     if (leaveMsgs.length) {
-      broadcast([...leaveMsgs, { t: 'demoPurged' }, pipeline.snapshot()]);
+      broadcast([...leaveMsgs, { t: 'demoPurged' }]);
     } else {
       broadcast([{ t: 'demoPurged' }]);
     }
@@ -681,7 +681,37 @@ export async function startAdmin({ port = 8788, host = '127.0.0.1', password, ct
   return {
     port: real,
     stepAutoBalance: () => {
-      if (autoBalanceState.enabled) evaluateAutoBalance(true);
+      if (autoBalanceState.enabled) {
+        evaluateAutoBalance(true);
+      } else if (!demo.state().on) {
+        const hasMock = (stage.snapshot() || []).some(a => !isRealStageActor(a));
+        if (hasMock) purgeMockFromStage();
+      }
+    },
+    syncExternalState: ({ autoBalanceEnabled, demoOn, demoRate, demoGiftRatio } = {}) => {
+      if (autoBalanceEnabled !== undefined && Boolean(autoBalanceEnabled) !== autoBalanceState.enabled) {
+        autoBalanceState.enabled = Boolean(autoBalanceEnabled);
+        if (autoBalanceState.enabled) {
+          startAutoBalanceLoop();
+        } else {
+          stopAutoBalanceLoop();
+          if (!demoOn) {
+            demo.stop?.();
+            purgeMockFromStage();
+          }
+        }
+      }
+      if (!autoBalanceState.enabled && demoOn !== undefined) {
+        if (demoOn) {
+          if (!demo.state().on) {
+            demo.start(Number(demoRate) || 0.15, { giftRatio: Number(demoGiftRatio) || 0.12 });
+          }
+        } else {
+          if (demo.state().on) demo.stop?.();
+          const hasMock = (stage.snapshot() || []).some(a => !isRealStageActor(a));
+          if (hasMock) purgeMockFromStage();
+        }
+      }
     },
     getAutoBalance: () => evaluateAutoBalance(false),
     close: () => {

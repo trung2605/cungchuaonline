@@ -113,3 +113,50 @@ test('TC-04.25 giftOffering & TTS formatting with combo count and name cleaning'
   assert.equal(formatTtsThanks({ name: 'Minh', offering: 'dâng đèn hoa đăng', repeat: 2 }), 'Cảm ơn Minh đã dâng 2 ngọn đèn hoa đăng');
   assert.equal(formatTtsThanks({ name: 'user1234567', offering: 'phát tâm công đức', repeat: 1 }), 'Cảm ơn Phật tử đã phát tâm công đức');
 });
+
+test('TC-04.26 real TikTok LIVE viewer queue flow (join -> prayer chat -> re-enter after TTL -> like entry)', () => {
+  const clock = { t: 0 };
+  const stage = new Stage({ now: () => clock.t });
+  const rules = createBowRules({ stage, lists, now: () => clock.t, allowAllRealChat: true });
+
+  // 1. Real viewer joins livestream -> spawns in temple
+  const joinOut = rules.handle({ kind: 'join', src: 'tiktok', uid: 'u_real_1', name: 'Nguyễn Văn An', ts: 0 });
+  assert.equal(joinOut.length, 1);
+  assert.equal(joinOut[0].t, 'spawn');
+  assert.equal(joinOut[0].actor.intent, 'Cầu Bình An');
+
+  // Duplicate join while already in hall does not double-bow
+  assert.deepEqual(rules.handle({ kind: 'join', src: 'tiktok', uid: 'u_real_1', name: 'Nguyễn Văn An', ts: 1000 }), []);
+
+  // 2. Real viewer comments a prayer 10s later -> updates intent to Cầu Tài Lộc and bows at seat
+  clock.t = 10_000;
+  const chatOut = rules.handle({
+    kind: 'chat',
+    src: 'tiktok',
+    uid: 'u_real_1',
+    name: 'Nguyễn Văn An',
+    text: 'Nam mô cầu tài lộc bình an',
+    ts: 10_000,
+  });
+  assert.deepEqual(kinds(chatOut), ['bow', 'say']);
+  assert.equal(stage.snapshot()[0].intent, 'Cầu Tài Lộc');
+
+  // 3. After TTL expires (at 71s), real viewer comments again -> immediately re-enters hall without 10-min block
+  clock.t = 75_000;
+  stage.tick();
+  assert.equal(stage.has('u_real_1'), false);
+  const reenterOut = rules.handle({
+    kind: 'chat',
+    src: 'tiktok',
+    uid: 'u_real_1',
+    name: 'Nguyễn Văn An',
+    text: 'A Di Đà Phật',
+    ts: 75_000,
+  });
+  assert.deepEqual(kinds(reenterOut), ['spawn', 'say']);
+
+  // 4. Real viewer who taps Likes without joining/chatting first also enters the hall
+  const likeOut = rules.handle({ kind: 'like', src: 'tiktok', uid: 'u_real_2', name: 'Trần Thị Bình', count: 5, ts: 76_000 });
+  assert.equal(likeOut.length, 1);
+  assert.equal(likeOut[0].t, 'spawn');
+});

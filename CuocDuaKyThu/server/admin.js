@@ -464,7 +464,37 @@ export async function startRaceAdmin({ port = 8790, host = '127.0.0.1', password
   return {
     port: real,
     stepAutoBalance: () => {
-      if (autoBalanceState.enabled) evaluateAutoBalance(true);
+      if (autoBalanceState.enabled) {
+        evaluateAutoBalance(true);
+      } else if (!demo.state().on) {
+        const hasMock = (stage.snapshot() || []).some(r => !isRealStageRunner(r));
+        if (hasMock) purgeMockFromStage();
+      }
+    },
+    syncExternalState: ({ autoBalanceEnabled, demoOn, demoRate, demoGiftRatio } = {}) => {
+      if (autoBalanceEnabled !== undefined && Boolean(autoBalanceEnabled) !== autoBalanceState.enabled) {
+        autoBalanceState.enabled = Boolean(autoBalanceEnabled);
+        if (autoBalanceState.enabled) {
+          startAutoBalanceLoop();
+        } else {
+          stopAutoBalanceLoop();
+          if (!demoOn) {
+            demo.stop?.();
+            purgeMockFromStage();
+          }
+        }
+      }
+      if (!autoBalanceState.enabled && demoOn !== undefined) {
+        if (demoOn) {
+          if (!demo.state().on) {
+            demo.start(Number(demoRate) || 0.15, { giftRatio: Number(demoGiftRatio) || 0.15 });
+          }
+        } else {
+          if (demo.state().on) demo.stop?.();
+          const hasMock = (stage.snapshot() || []).some(r => !isRealStageRunner(r));
+          if (hasMock) purgeMockFromStage();
+        }
+      }
     },
     getAutoBalance: () => evaluateAutoBalance(false),
     close: () => {

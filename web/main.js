@@ -50,7 +50,7 @@ if (!low) {
   scene.environment = pmremGenerator.fromScene(new RoomEnvironment(), 0.04).texture;
   scene.environmentIntensity = 0.45;
 }
-// BR-07.1: AI Auto-Director Multi-Angle & Special-Target Focus Camera System
+// Fixed Sanctuary Master Camera (no panning / angle switching)
 const camera = new THREE.PerspectiveCamera(50, W / H, 0.1, 120);
 const CAM = new THREE.Vector3(0, 12, 21), LOOK = new THREE.Vector3(0, 1.2, -4);
 camera.position.copy(CAM);
@@ -59,41 +59,8 @@ camera.lookAt(LOOK);
 const coupletL = document.getElementById('couplet-l');
 const coupletR = document.getElementById('couplet-r');
 
-const TEMPLE_CAM_MODES = [
-  'sanctuary_master',
-  'vip_worshipper_focus',
-  'front_reverse_worshippers',
-  'diag_left_pillars',
-  'diag_right_bell',
-  'altar_devotion_zoom',
-  'buddha_sacred_low',
-  'high_crane_mandala',
-];
-
-const templeDirector = {
-  mode: 'sanctuary_master',
-  modeUntil: performance.now() + 7500,
-  focusActorId: null,
-  focusPriorityUntil: 0,
-  sideSign: 1,
-  curPos: CAM.clone(),
-  curLook: LOOK.clone(),
-  curFov: 50,
-  curRoll: 0,
-  targetPos: CAM.clone(),
-  targetLook: LOOK.clone(),
-  targetFov: 50,
-  targetRoll: 0,
-};
-
-function triggerTempleCameraFocus(mode, actorId = null, holdMs = 6000, priority = false) {
-  const now = performance.now();
-  if (!priority && now < templeDirector.focusPriorityUntil) return;
-  templeDirector.mode = mode;
-  templeDirector.modeUntil = now + holdMs;
-  if (priority) templeDirector.focusPriorityUntil = now + holdMs * 0.85;
-  if (actorId) templeDirector.focusActorId = actorId;
-  templeDirector.sideSign = Math.random() < 0.5 ? -1 : 1;
+function triggerTempleCameraFocus() {
+  // Camera panning disabled — keep steady sanctuary master perspective
 }
 
 const composer = new EffectComposer(renderer);
@@ -321,132 +288,16 @@ const fpsEl = document.getElementById('fps');
 if (params.get('fps') === '1') fpsEl.style.display = 'block';
 let frames = 0, fpsT = performance.now(), last = performance.now();
 
-function updateTempleCamera(poses, now, dt) {
-  if (now >= templeDirector.modeUntil) {
-    // Pick a new random broadcast angle without repeating the current one
-    const candidates = TEMPLE_CAM_MODES.filter(m => m !== templeDirector.mode);
-    const nextMode = candidates[Math.floor(Math.random() * candidates.length)] || 'sanctuary_master';
-    templeDirector.mode = nextMode;
-    templeDirector.modeUntil = now + 7000 + Math.random() * 3200;
-    templeDirector.sideSign = Math.random() < 0.5 ? -1 : 1;
-    const best = actors.getCameraFocusActor?.(poses, now);
-    templeDirector.focusActorId = best ? best.id : null;
-  }
-
-  // Resolve special target worshipper position (or fallback to best active worshipper / altar center)
-  let focusTarget = templeDirector.focusActorId ? actors.getPos?.(templeDirector.focusActorId) : null;
-  if (!focusTarget) {
-    focusTarget = actors.getCameraFocusActor?.(poses, now) || { x: 0, y: 0, z: -5.2, tier: 0 };
-  }
-
-  const tSec = now / 1000;
-  const breathX = Math.sin(tSec * 0.55) * 0.22;
-  const breathY = Math.cos(tSec * 0.42) * 0.1;
-  const breathZ = Math.sin(tSec * 0.38) * 0.25;
-  const side = templeDirector.sideSign || 1;
-
-  const tx = THREE.MathUtils.clamp(focusTarget.x || 0, -5.2, 5.2);
-  const tz = THREE.MathUtils.clamp(focusTarget.z ?? -4.5, -7.2, 6.5);
-
-  switch (templeDirector.mode) {
-    case 'vip_worshipper_focus': {
-      // Dynamic diagonal medium close-up on the special worshipper (donor / speaker / altar devotee)
-      const camSide = tx >= 0 ? -1 : 1;
-      templeDirector.targetPos.set(
-        THREE.MathUtils.clamp(tx + camSide * 2.55 + breathX * 0.6, -5.8, 5.8),
-        2.35 + breathY * 0.5,
-        THREE.MathUtils.clamp(tz + 4.1 + breathZ * 0.5, -1.5, 13.5)
-      );
-      templeDirector.targetLook.set(tx * 0.85, 1.18, tz - 1.35);
-      templeDirector.targetFov = 39;
-      templeDirector.targetRoll = camSide * 0.009;
-      break;
-    }
-    case 'front_reverse_worshippers': {
-      // Front-Reverse angle from near the Altar looking back (+Z) at the faces & joined hands of worshippers
-      const revX = THREE.MathUtils.clamp(tx * 0.45 + side * 1.9 + breathX * 0.5, -4.2, 4.2);
-      const lookZ = THREE.MathUtils.clamp(tz, -4.5, 2.8);
-      templeDirector.targetPos.set(revX, 2.65 + breathY * 0.5, -6.15 + breathZ * 0.3);
-      templeDirector.targetLook.set(tx * 0.65, 1.08, lookZ);
-      templeDirector.targetFov = 42;
-      templeDirector.targetRoll = -side * 0.008;
-      break;
-    }
-    case 'diag_left_pillars': {
-      // 45° Diagonal Steadicam from the Left Golden Pillars across the congregation toward the Altar
-      templeDirector.targetPos.set(-5.6 + breathX, 4.85 + breathY, 9.4 + breathZ);
-      templeDirector.targetLook.set(0.35, 2.05, -7.2);
-      templeDirector.targetFov = 44;
-      templeDirector.targetRoll = 0.012;
-      break;
-    }
-    case 'diag_right_bell': {
-      // 45° Diagonal Steadicam from the Right (Đại Hồng Chung side) sweeping across the red carpet
-      templeDirector.targetPos.set(5.6 + breathX, 4.65 + breathY, 8.9 + breathZ);
-      templeDirector.targetLook.set(-0.35, 2.1, -7.4);
-      templeDirector.targetFov = 43;
-      templeDirector.targetRoll = -0.012;
-      break;
-    }
-    case 'altar_devotion_zoom': {
-      // Telephoto zoom into the Altar, glowing Censer, and the 3 Altar Worshippers bowing
-      templeDirector.targetPos.set(breathX * 0.7, 4.8 + breathY * 0.6, 7.6 + breathZ * 0.6);
-      templeDirector.targetLook.set(tx * 0.35, 1.85, -7.6);
-      templeDirector.targetFov = 38;
-      templeDirector.targetRoll = 0;
-      break;
-    }
-    case 'buddha_sacred_low': {
-      // Low-angle sacred crane on the red carpet looking up past the censer toward the Golden Buddha
-      templeDirector.targetPos.set(side * 0.85 + breathX * 0.5, 2.15 + breathY * 0.4, 2.9 + breathZ * 0.5);
-      templeDirector.targetLook.set(0, 3.35, -9.2);
-      templeDirector.targetFov = 43;
-      templeDirector.targetRoll = 0;
-      break;
-    }
-    case 'high_crane_mandala': {
-      // High Drone / Overhead Crane sweeping above the symmetrical temple hall
-      templeDirector.targetPos.set(side * 3.1 + breathX, 13.6 + breathY, 15.8 + breathZ);
-      templeDirector.targetLook.set(0, 0.95, -4.6);
-      templeDirector.targetFov = 52;
-      templeDirector.targetRoll = -side * 0.01;
-      break;
-    }
-    case 'sanctuary_master':
-    default: {
-      // Classic Master Shot with gentle orbit sway
-      const sway = Math.sin(now / 14000 * Math.PI * 2) * 1.15;
-      templeDirector.targetPos.set(sway, 12 + breathY, 21 + breathZ);
-      templeDirector.targetLook.set(0, 1.2, -4);
-      templeDirector.targetFov = 50;
-      templeDirector.targetRoll = 0;
-      break;
-    }
-  }
-
-  // Smooth spring-like exponential damping for broadcast-grade camera motion
-  const posAlpha = Math.min(1, dt * 1.85);
-  const lookAlpha = Math.min(1, dt * 2.4);
-  const fovAlpha = Math.min(1, dt * 2.1);
-
-  templeDirector.curPos.lerp(templeDirector.targetPos, posAlpha);
-  templeDirector.curLook.lerp(templeDirector.targetLook, lookAlpha);
-  templeDirector.curFov += (templeDirector.targetFov - templeDirector.curFov) * fovAlpha;
-  templeDirector.curRoll += (templeDirector.targetRoll - templeDirector.curRoll) * posAlpha;
-
-  camera.position.copy(templeDirector.curPos);
-  camera.lookAt(templeDirector.curLook);
-  camera.rotation.z += templeDirector.curRoll + Math.sin(tSec * 0.9) * 0.004;
-  if (Math.abs(camera.fov - templeDirector.curFov) > 0.02) {
-    camera.fov = templeDirector.curFov;
+function updateTempleCamera() {
+  camera.position.copy(CAM);
+  camera.lookAt(LOOK);
+  camera.rotation.z = 0;
+  if (Math.abs(camera.fov - 50) > 0.02) {
+    camera.fov = 50;
     camera.updateProjectionMatrix();
   }
-
-  // Fade 2D couplets when camera leaves the master perspective so they never overlap close-up 3D angles
-  const showCouplets = templeDirector.mode === 'sanctuary_master' && templeDirector.curPos.distanceTo(CAM) < 4.2;
-  const coupletOpacity = showCouplets ? '1' : '0';
-  if (coupletL && coupletL.style.opacity !== coupletOpacity) coupletL.style.opacity = coupletOpacity;
-  if (coupletR && coupletR.style.opacity !== coupletOpacity) coupletR.style.opacity = coupletOpacity;
+  if (coupletL && coupletL.style.opacity !== '1') coupletL.style.opacity = '1';
+  if (coupletR && coupletR.style.opacity !== '1') coupletR.style.opacity = '1';
 }
 
 renderer.setAnimationLoop(() => {

@@ -80,7 +80,16 @@ export function createBowRules({ stage, lists, stats = null, now = Date.now, coo
       }
       if (e.kind === 'join') {
         // Real viewers joining the livestream immediately enter the 3D hall and are welcomed by name
-        if (e.src && e.src !== 'mock') {
+        if (e.src && e.src !== 'mock' && !stage.has(e.uid)) {
+          return granted(1, stage.enter(e.uid, cleanName(e.name, lists), 0, 1, {
+            src: e.src,
+          }));
+        }
+        return [];
+      }
+      if (e.kind === 'like') {
+        // Real viewers tapping likes who are not yet in the hall also enter and queue to bow
+        if (allowAllRealChat && e.src && e.src !== 'mock' && !stage.has(e.uid)) {
           return granted(1, stage.enter(e.uid, cleanName(e.name, lists), 0, 1, {
             src: e.src,
           }));
@@ -94,8 +103,11 @@ export function createBowRules({ stage, lists, stats = null, now = Date.now, coo
       const last = lastFree.get(e.uid);
       const isReal = Boolean(e.src && e.src !== 'mock');
       const bubble = cleanBubble(e.text, lists);
+      const effectiveCooldown = allowAllRealChat && isReal
+        ? (stage.has(e.uid) ? 5_000 : 0)
+        : cooldownMs;
       // Real viewers who write ANY non-sensitive comment (when allowAllRealChat is enabled) or anyone matching trigger words enter the hall
-      if ((isTrigger(e.text, lists) || (allowAllRealChat && isReal && bubble)) && (last === undefined || t - last >= cooldownMs)) {
+      if ((isTrigger(e.text, lists) || (allowAllRealChat && isReal && bubble)) && (last === undefined || t - last >= effectiveCooldown)) {
         lastFree.set(e.uid, t);
         out.push(...granted(1, stage.enter(e.uid, cleanName(e.name, lists), 0, 1, {
           intent: detectIntent(e.text, lists) ?? undefined,
