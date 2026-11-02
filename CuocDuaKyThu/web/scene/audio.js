@@ -527,6 +527,114 @@ function createMaleStretchedBuffer(ctx, srcBuf, stretch = 1.21) {
   return outBuf;
 }
 
+function pcmToWavBlobUrl(samples, sampleRate = 24000) {
+  const numSamples = samples.length;
+  const buffer = new ArrayBuffer(44 + numSamples * 2);
+  const view = new DataView(buffer);
+  const writeStr = (off, s) => {
+    for (let i = 0; i < s.length; i++) view.setUint8(off + i, s.charCodeAt(i));
+  };
+  writeStr(0, 'RIFF');
+  view.setUint32(4, 36 + numSamples * 2, true);
+  writeStr(8, 'WAVE');
+  writeStr(12, 'fmt ');
+  view.setUint32(16, 16, true);
+  view.setUint16(20, 1, true);
+  view.setUint16(22, 1, true);
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, sampleRate * 2, true);
+  view.setUint16(32, 2, true);
+  view.setUint16(34, 16, true);
+  writeStr(36, 'data');
+  view.setUint32(40, numSamples * 2, true);
+  let offset = 44;
+  for (let i = 0; i < numSamples; i++) {
+    const s = Math.max(-1, Math.min(1, samples[i]));
+    view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7fff, true);
+    offset += 2;
+  }
+  const blob = new Blob([buffer], { type: 'audio/wav' });
+  return URL.createObjectURL(blob);
+}
+
+function audioBufferToWavBlobUrl(buf, rateScale = 1.0, gainScale = 1.0) {
+  const input = buf.getChannelData(0);
+  const inLen = input.length;
+  const outLen = Math.max(1, Math.floor(inLen / rateScale));
+  const out = new Float32Array(outLen);
+  for (let i = 0; i < outLen; i++) {
+    const pos = i * rateScale;
+    const idx = Math.floor(pos);
+    const frac = pos - idx;
+    const s0 = input[idx] || 0;
+    const s1 = input[Math.min(inLen - 1, idx + 1)] || 0;
+    out[i] = (s0 + (s1 - s0) * frac) * gainScale;
+  }
+  return pcmToWavBlobUrl(out, buf.sampleRate);
+}
+
+const songWavUrlCache = new Map();
+function getSongWavBlobUrl(song) {
+  if (!song || typeof Blob === 'undefined' || typeof URL === 'undefined' || !URL.createObjectURL) return '';
+  let url = songWavUrlCache.get(song.id);
+  if (url) return url;
+  const sr = 24000;
+  const stepSec = (song.stepMs || 280) / 1000;
+  let totalBeats = 0;
+  for (const [, beats] of song.notes) totalBeats += Math.max(1, beats);
+  const totalSec = Math.max(6, Math.min(24, totalBeats * stepSec));
+  const totalSamples = Math.floor(sr * totalSec);
+  const mix = new Float32Array(totalSamples);
+
+  let cursorSec = 0;
+  let stepIdx = 0;
+  for (const [freq, beats] of song.notes) {
+    const durBeats = Math.max(1, beats);
+    const startSample = Math.floor(cursorSec * sr);
+    const bassFreq = song.bassRoots?.[Math.floor(stepIdx / 4) % song.bassRoots.length] || 130.81;
+
+    if (freq > 0 && startSample < totalSamples) {
+      const period = Math.max(8, Math.round(sr / freq));
+      const ring = new Float32Array(period);
+      let prev = 0;
+      for (let i = 0; i < period; i++) {
+        const n = Math.random() * 2 - 1;
+        prev = prev * 0.35 + n * 0.65;
+        ring[i] = (prev * 0.55 + Math.sin((2 * Math.PI * i) / period) * 0.45) * 0.32;
+      }
+      const pluckLen = Math.min(totalSamples - startSample, Math.floor(sr * 2.0));
+      let p = 0;
+      let lastV = 0;
+      for (let i = 0; i < pluckLen; i++) {
+        const cur = ring[p];
+        mix[startSample + i] += cur;
+        const nextP = (p + 1) % period;
+        const avg = 0.52 * cur + 0.48 * ring[nextP];
+        ring[p] = (avg * 0.88 + lastV * 0.12) * 0.9955;
+        lastV = cur;
+        p = nextP;
+      }
+    }
+
+    if (stepIdx % 2 === 0 && startSample < totalSamples) {
+      const padLen = Math.min(totalSamples - startSample, Math.floor(sr * stepSec * 2.2));
+      for (let i = 0; i < padLen; i++) {
+        const t = i / sr;
+        const env = Math.sin((Math.PI * i) / padLen) * 0.085;
+        mix[startSample + i] += (Math.sin(2 * Math.PI * bassFreq * t) + 0.5 * Math.sin(2 * Math.PI * bassFreq * 1.5 * t)) * env;
+      }
+    }
+
+    cursorSec += durBeats * stepSec;
+    stepIdx += durBeats;
+    if (cursorSec >= totalSec) break;
+  }
+
+  url = pcmToWavBlobUrl(mix, sr);
+  songWavUrlCache.set(song.id, url);
+  return url;
+}
+
 export function createRaceAudio({ onSpeak = null } = {}) {
   const isPreviewIframe = (() => {
     try { return new URLSearchParams(location.search).get('preview') === '1'; } catch { return false; }
@@ -535,19 +643,66 @@ export function createRaceAudio({ onSpeak = null } = {}) {
   const ctx = new AudioContext();
   const master = ctx.createGain();
   master.connect(ctx.destination);
-  // Route WebAudio through a live <audio> media element as well so TikTok LIVE Studio / OBS CEF
-  // "Link" sources that only capture HTMLMediaElement streams receive 100% of the sound!
+
+  // Create real DOM <audio> elements attached to document.body so TikTok LIVE Studio "Link" (CEF)
+  // and OBS Browser Sources capture 100% of both BGM and Dual-Voice TTS via standard HTMLMediaElement!
   let mediaStreamEl = null;
-  if (!isPreviewIframe && typeof ctx.createMediaStreamDestination === 'function' && typeof Audio !== 'undefined') {
+  let bgmAudioEl = null;
+  let voiceAudioEl = null;
+  let activeVoiceBlobUrl = null;
+
+  if (!isPreviewIframe && typeof document !== 'undefined') {
     try {
-      const streamDest = ctx.createMediaStreamDestination();
-      master.connect(streamDest);
-      mediaStreamEl = new Audio();
-      mediaStreamEl.srcObject = streamDest.stream;
-      mediaStreamEl.volume = 1.0;
-      mediaStreamEl.muted = false;
-      mediaStreamEl.play().catch(() => {});
+      bgmAudioEl = document.createElement('audio');
+      bgmAudioEl.loop = true;
+      bgmAudioEl.autoplay = true;
+      bgmAudioEl.playsInline = true;
+      bgmAudioEl.volume = 0.34;
+      bgmAudioEl.style.display = 'none';
+      document.body?.appendChild(bgmAudioEl);
+
+      voiceAudioEl = document.createElement('audio');
+      voiceAudioEl.autoplay = true;
+      voiceAudioEl.playsInline = true;
+      voiceAudioEl.volume = 1.0;
+      voiceAudioEl.style.display = 'none';
+      document.body?.appendChild(voiceAudioEl);
+
+      if (typeof ctx.createMediaStreamDestination === 'function') {
+        const streamDest = ctx.createMediaStreamDestination();
+        master.connect(streamDest);
+        mediaStreamEl = document.createElement('audio');
+        mediaStreamEl.autoplay = true;
+        mediaStreamEl.playsInline = true;
+        mediaStreamEl.srcObject = streamDest.stream;
+        mediaStreamEl.volume = 1.0;
+        mediaStreamEl.style.display = 'none';
+        document.body?.appendChild(mediaStreamEl);
+        mediaStreamEl.play().catch(() => {});
+      }
     } catch {}
+  }
+
+  function syncHtmlBgmTrack() {
+    if (!bgmAudioEl || isPreviewIframe || bgmMuted || !enabled) return;
+    const song = VN_SONGS[currentSongIdx % VN_SONGS.length];
+    const wavUrl = getSongWavBlobUrl(song);
+    if (wavUrl && bgmAudioEl.dataset.songId !== song.id) {
+      bgmAudioEl.dataset.songId = song.id;
+      bgmAudioEl.src = wavUrl;
+    }
+    // If WebAudio ctx is running, keep HTML5 BGM at 0.22 for CEF capture; if ctx is suspended, HTML5 BGM carries 0.42!
+    const baseVol = ctx.state === 'running' ? 0.22 : 0.42;
+    bgmAudioEl.volume = speaking ? baseVol * 0.38 : baseVol;
+    if (bgmAudioEl.paused) {
+      // Muted-first autoplay trick to bypass Chromium autoplay restrictions when possible
+      bgmAudioEl.play().catch(() => {
+        bgmAudioEl.muted = true;
+        bgmAudioEl.play().then(() => {
+          bgmAudioEl.muted = false;
+        }).catch(() => {});
+      });
+    }
   }
 
   let enabled = !isPreviewIframe;
@@ -1129,9 +1284,13 @@ export function createRaceAudio({ onSpeak = null } = {}) {
     if (duck) {
       stopRaceBackgroundLyric();
     }
+    const isStory = currentItem?.kind === 'story';
+    if (bgmAudioEl && !isPreviewIframe) {
+      const htmlTarget = bgmMuted ? 0 : duck ? (isStory ? 0.18 : 0.12) : (ctx.state === 'running' ? 0.24 : 0.42);
+      bgmAudioEl.volume = Math.max(0, Math.min(1, htmlTarget));
+    }
     if (ctx.state === 'running') {
-      const isStory = currentItem?.kind === 'story';
-      const target = bgmMuted ? 0 : duck ? (isStory ? 0.27 : 0.18) : 0.40;
+      const target = bgmMuted ? 0 : duck ? (isStory ? 0.24 : 0.15) : 0.34;
       bgmGain.gain.setTargetAtTime(target, ctx.currentTime, 0.16);
       bgmVocalBus.gain.setTargetAtTime(
         bgmMuted || !bgmVocalEnabled ? 0.0001 : duck ? (isStory ? bgmVocalVolume * 0.25 : 0.0001) : bgmVocalVolume,
@@ -1229,7 +1388,9 @@ export function createRaceAudio({ onSpeak = null } = {}) {
   }
 
   function startBg() {
-    if (bgRunning || !enabled) return;
+    if (!enabled) return;
+    syncHtmlBgmTrack();
+    if (bgRunning) return;
     bgRunning = true;
     tickBg();
   }
@@ -1325,6 +1486,17 @@ export function createRaceAudio({ onSpeak = null } = {}) {
         currentVoiceSrc.disconnect();
       } catch {}
       currentVoiceSrc = null;
+    }
+    if (voiceAudioEl) {
+      try {
+        voiceAudioEl.onended = null;
+        voiceAudioEl.onerror = null;
+        voiceAudioEl.pause();
+      } catch {}
+    }
+    if (activeVoiceBlobUrl) {
+      try { URL.revokeObjectURL(activeVoiceBlobUrl); } catch {}
+      activeVoiceBlobUrl = null;
     }
     if (usingBrowserSpeech && typeof speechSynthesis !== 'undefined') {
       try { speechSynthesis.cancel(); } catch {}
@@ -1484,6 +1656,14 @@ export function createRaceAudio({ onSpeak = null } = {}) {
       clearTimeout(watchdog);
       watchdog = null;
       currentVoiceSrc = null;
+      if (voiceAudioEl) {
+        voiceAudioEl.onended = null;
+        voiceAudioEl.onerror = null;
+      }
+      if (activeVoiceBlobUrl) {
+        try { URL.revokeObjectURL(activeVoiceBlobUrl); } catch {}
+        activeVoiceBlobUrl = null;
+      }
       currentItem = null;
       usingBrowserSpeech = false;
       speaking = false;
@@ -1512,18 +1692,51 @@ export function createRaceAudio({ onSpeak = null } = {}) {
         return;
       }
       const isMale = gender === 'male';
+      const targetBuf = isMale ? maleBuf : femaleBuf;
+      const rateScale = isMale ? 0.95 : 1.22;
+      const gainScale = isMale ? 1.22 : 1.08;
+
+      // Primary path: play via real DOM <audio> element (`voiceAudioEl`) using in-memory WAV Blob URL
+      // so TikTok LIVE Studio "Link" (CEF) and OBS Browser Sources capture 100% of the voice stream!
+      if (voiceAudioEl && typeof URL !== 'undefined' && URL.createObjectURL) {
+        try {
+          if (activeVoiceBlobUrl) {
+            try { URL.revokeObjectURL(activeVoiceBlobUrl); } catch {}
+          }
+          activeVoiceBlobUrl = audioBufferToWavBlobUrl(targetBuf, rateScale, gainScale);
+          voiceAudioEl.src = activeVoiceBlobUrl;
+          voiceAudioEl.volume = 1.0;
+          voiceAudioEl.muted = false;
+          voiceAudioEl.onended = done;
+          voiceAudioEl.onerror = done;
+
+          duckBgm(true);
+          if (item.kind === 'gift') boostSfx(item.tier || 1);
+          else if (item.kind === 'join' || item.kind === 'comment') joinChime();
+          onSpeak?.(item.text, true, item.kind || 'interactive', gender);
+
+          await voiceAudioEl.play();
+          return;
+        } catch {
+          // If HTML5 <audio>.play() rejected, fall through to WebAudio or speechSynthesis
+          voiceAudioEl.onended = null;
+          voiceAudioEl.onerror = null;
+        }
+      }
+
+      if (ctx.state !== 'running') {
+        throw new Error('AudioContext suspended');
+      }
+
       const src = ctx.createBufferSource();
-      src.buffer = isMale ? maleBuf : femaleBuf;
-      // Male uses WSOLA 0.97x buffer played at 0.95x rate -> ~1.22x brisk speed with warm baritone pitch!
-      // Female uses original neural buffer at 1.22x rate -> brisk, lively broadcast female voice!
-      src.playbackRate.value = isMale ? 0.95 : 1.22;
+      src.buffer = targetBuf;
+      src.playbackRate.value = rateScale;
       const g = ctx.createGain();
-      g.gain.value = isMale ? 1.22 : 1.08;
+      g.gain.value = gainScale;
       src.connect(g).connect(isMale ? maleVoiceChain : femaleVoiceChain);
       currentVoiceSrc = src;
       src.onended = done;
 
-      // Synchronize BGM ducking, SFX chime/fanfare, and subtitle display at the EXACT start of voice playback!
       duckBgm(true);
       if (item.kind === 'gift') boostSfx(item.tier || 1);
       else if (item.kind === 'join' || item.kind === 'comment') joinChime();
@@ -1569,6 +1782,7 @@ export function createRaceAudio({ onSpeak = null } = {}) {
       master.gain.value = 1;
       if (ctx.state !== 'running') ctx.resume().catch(() => {});
       if (mediaStreamEl && mediaStreamEl.paused) mediaStreamEl.play().catch(() => {});
+      syncHtmlBgmTrack();
       if (!bgRunning) startBg();
       if (!speaking && speechQueue.length === 0 && !nextFlushTimer) {
         queueNextStoryNow();
@@ -1579,6 +1793,9 @@ export function createRaceAudio({ onSpeak = null } = {}) {
   return {
     get suspended() {
       return ctx.state !== 'running';
+    },
+    get needsInteraction() {
+      return ctx.state !== 'running' && (!bgmAudioEl || bgmAudioEl.paused || bgmAudioEl.muted);
     },
     get readComments() {
       return readComments;
@@ -1593,6 +1810,7 @@ export function createRaceAudio({ onSpeak = null } = {}) {
       startBg();
       currentSongIdx = (currentSongIdx + 1) % VN_SONGS.length;
       noteCursor = 0;
+      syncHtmlBgmTrack();
       duckBgm(speaking);
       return this.getBgmLabel();
     },
@@ -1630,6 +1848,7 @@ export function createRaceAudio({ onSpeak = null } = {}) {
       if (idx !== -1 && idx !== currentSongIdx) {
         currentSongIdx = idx;
         noteCursor = 0;
+        syncHtmlBgmTrack();
       }
       return this.getBgmLabel();
     },
@@ -1653,6 +1872,14 @@ export function createRaceAudio({ onSpeak = null } = {}) {
       master.gain.value = 1;
       ctx.resume().catch(() => {});
       if (mediaStreamEl && mediaStreamEl.paused) mediaStreamEl.play().catch(() => {});
+      if (bgmAudioEl) {
+        bgmAudioEl.muted = false;
+        syncHtmlBgmTrack();
+      }
+      if (voiceAudioEl && voiceAudioEl.paused && voiceAudioEl.src) {
+        voiceAudioEl.muted = false;
+        voiceAudioEl.play().catch(() => {});
+      }
       startBg();
       if (!speaking && speechQueue.length === 0) {
         queueNextStoryNow();

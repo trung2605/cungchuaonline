@@ -96,10 +96,21 @@ composer.addPass(bloomPass);
 composer.addPass(new OutputPass());
 
 const soundBtn = document.getElementById('sound');
-if (soundBtn) soundBtn.style.display = 'none';
 const commentTtsBtn = document.getElementById('toggle-comment-tts');
 const bgmBtn = document.getElementById('toggle-bgm');
 let liveWs = null;
+
+function syncSoundBtn() {
+  if (!soundBtn) return;
+  soundBtn.style.display = audio.needsInteraction ? 'block' : 'none';
+}
+if (soundBtn) {
+  soundBtn.addEventListener('click', () => {
+    audio.unlock();
+    syncSoundBtn();
+  });
+}
+setInterval(syncSoundBtn, 600);
 
 function syncBgmBtn() {
   if (!bgmBtn || !audio.getBgmLabel) return;
@@ -114,10 +125,12 @@ function syncCommentTtsBtn(on) {
 
 // Auto-unlock audio by default on load and on any interaction
 audio.unlock();
+setTimeout(syncSoundBtn, 900);
 const autoUnlock = () => {
-  if (audio.suspended) audio.unlock();
+  audio.unlock();
+  syncSoundBtn();
 };
-for (const ev of ['pointerdown', 'pointermove', 'mousemove', 'touchstart', 'keydown', 'wheel', 'focus']) {
+for (const ev of ['pointerdown', 'pointermove', 'mousemove', 'touchstart', 'keydown', 'wheel', 'focus', 'click']) {
   addEventListener(ev, autoUnlock, { passive: true });
 }
 
