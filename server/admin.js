@@ -391,6 +391,16 @@ export async function startAdmin({ port = 8788, host = '127.0.0.1', password, ct
     }
   }
 
+  function purgeMockFromStage() {
+    const leaveMsgs = stage.purgeMockActors?.() ?? [];
+    stats.clearLogs?.();
+    if (leaveMsgs.length) {
+      broadcast([...leaveMsgs, { t: 'demoPurged' }, pipeline.snapshot()]);
+    } else {
+      broadcast([{ t: 'demoPurged' }]);
+    }
+  }
+
   if (autoBalanceState.enabled) {
     startAutoBalanceLoop();
   }
@@ -420,6 +430,9 @@ export async function startAdmin({ port = 8788, host = '127.0.0.1', password, ct
         startAutoBalanceLoop();
       } else {
         stopAutoBalanceLoop();
+        demo.stop?.();
+        purgeMockFromStage();
+        autoBalanceState.lastAction = 'Đã TẮT Auto-Balance & dọn sạch nhân vật mẫu';
       }
     } else if (autoBalanceState.enabled) {
       evaluateAutoBalance(true);
@@ -540,16 +553,20 @@ export async function startAdmin({ port = 8788, host = '127.0.0.1', password, ct
       stopAutoBalanceLoop();
       autoBalanceState.enabled = false;
       if (demo.configure) demo.configure({ rate, giftRatio, prayerRatio });
-      if (on) demo.start(rate, { giftRatio, prayerRatio });
-      else demo.stop();
-      await ctx.saveSceneConfig?.();
+      if (on) {
+        demo.start(rate, { giftRatio, prayerRatio });
+      } else {
+        demo.stop();
+        purgeMockFromStage();
+      }
+      await ctx.saveSceneConfig?.({ autoBalance: { ...autoBalanceState }, demo: demo.state() });
       return { demo: demo.state(), demoConfig: demo.config?.(), autoBalance: evaluateAutoBalance(false) };
     },
 
     'POST /api/auto-balance': async req => {
       const body = await readJson(req);
       const autoBalance = configureAutoBalance(body);
-      await ctx.saveSceneConfig?.();
+      await ctx.saveSceneConfig?.({ autoBalance: { ...autoBalanceState }, demo: demo.state() });
       return { ok: true, autoBalance, demo: demo.state(), demoConfig: demo.config?.() };
     },
 
@@ -663,6 +680,10 @@ export async function startAdmin({ port = 8788, host = '127.0.0.1', password, ct
 
   return {
     port: real,
+    stepAutoBalance: () => {
+      if (autoBalanceState.enabled) evaluateAutoBalance(true);
+    },
+    getAutoBalance: () => evaluateAutoBalance(false),
     close: () => {
       stopAutoFx();
       stopAutoBalanceLoop();

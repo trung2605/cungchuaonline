@@ -93,6 +93,12 @@ export function createDatabase({
     events: [], // newest first, capped at 1000 locally
     workLogs: [...INITIAL_WORK_LOGS],
     giftCatalog: DEFAULT_GIFT_CATALOG.map(g => ({ ...g })),
+    runtimeSettings: {
+      chuaAutoBalanceEnabled: false,
+      chuaDemoOn: false,
+      duaAutoBalanceEnabled: false,
+      duaDemoOn: false,
+    },
   };
 
   let client = null;
@@ -138,6 +144,9 @@ export function createDatabase({
         }
         state.giftCatalog = [...map.values()].sort((a, b) => a.diamonds - b.diamonds);
       }
+      if (raw.runtimeSettings && typeof raw.runtimeSettings === 'object') {
+        state.runtimeSettings = { ...state.runtimeSettings, ...raw.runtimeSettings };
+      }
     }
   } catch {}
 
@@ -177,6 +186,16 @@ export function createDatabase({
       mongoStatus.connected = true;
       mongoStatus.error = null;
       mongoStatus.lastSyncAt = new Date(now()).toISOString();
+
+      // Load persisted runtime settings from MongoDB if present
+      try {
+        const savedSettings = await db.collection('settings').findOne({ _id: 'runtime_settings' });
+        if (savedSettings && typeof savedSettings === 'object') {
+          const { _id, ...rest } = savedSettings;
+          state.runtimeSettings = { ...state.runtimeSettings, ...rest };
+          saveLocal();
+        }
+      } catch {}
 
       // Sync existing local records to MongoDB
       await syncToMongo();
@@ -453,6 +472,22 @@ export function createDatabase({
     return true;
   }
 
+  function getRuntimeSettings() {
+    return { ...state.runtimeSettings };
+  }
+
+  function updateRuntimeSettings(patch = {}) {
+    if (!patch || typeof patch !== 'object') return getRuntimeSettings();
+    state.runtimeSettings = { ...state.runtimeSettings, ...patch };
+    saveLocal();
+    if (db) {
+      db.collection('settings')
+        .updateOne({ _id: 'runtime_settings' }, { $set: { ...state.runtimeSettings, updatedAt: now() } }, { upsert: true })
+        .catch(() => {});
+    }
+    return getRuntimeSettings();
+  }
+
   return {
     connectMongo,
     syncToMongo,
@@ -464,6 +499,8 @@ export function createDatabase({
     clearGiftHistory,
     resetAllData,
     summary,
+    getRuntimeSettings,
+    updateRuntimeSettings,
     saveLocal,
     close: async () => {
       saveLocal();

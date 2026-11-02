@@ -265,6 +265,11 @@ async function initUnifiedRuntime() {
   let stopChuaDemo = null;
   let chuaDemoCfg = { rate: null, giftRatio: 0.14, prayerRatio: 0.72 };
   const chuaDemo = {
+    configure(opts = {}) {
+      if (Number.isFinite(opts.rate) && opts.rate >= 0.01 && opts.rate <= 50) chuaDemoCfg.rate = opts.rate;
+      if (Number.isFinite(opts.giftRatio) && opts.giftRatio >= 0 && opts.giftRatio <= 0.9) chuaDemoCfg.giftRatio = opts.giftRatio;
+      if (Number.isFinite(opts.prayerRatio) && opts.prayerRatio >= 0.1 && opts.prayerRatio <= 0.95) chuaDemoCfg.prayerRatio = opts.prayerRatio;
+    },
     start(r, opts = {}) {
       stopChuaDemo?.();
       chuaDemoCfg = {
@@ -276,6 +281,7 @@ async function initUnifiedRuntime() {
         rate: r,
         giftRatio: chuaDemoCfg.giftRatio,
         prayerRatio: chuaDemoCfg.prayerRatio,
+        jitter: true,
       });
     },
     stop() {
@@ -289,98 +295,48 @@ async function initUnifiedRuntime() {
       giftRatio: chuaDemoCfg.giftRatio,
       prayerRatio: chuaDemoCfg.prayerRatio,
     }),
+    config: () => ({ on: stopChuaDemo !== null, ...chuaDemoCfg }),
   };
-
-  const chuaAutoBalanceCfg = {
-    enabled: true,
-    targetRealUsers: 8,
-    minDemoRate: 0.06,
-    maxDemoRate: 0.22,
-    lastAction: 'init',
-    reason: 'Đang theo dõi lượng Phật tử thực tế',
-  };
-
-  function evaluateChuaAutoBalance() {
-    const snap = chuaStage.snapshot();
-    const realActive = snap.filter(a => a.src !== 'mock').length;
-    const demoActive = snap.filter(a => a.src === 'mock').length;
-    const target = Math.max(1, chuaAutoBalanceCfg.targetRealUsers);
-    const deficit = Math.max(0, target - realActive);
-    const balanceScore = Math.min(100, Math.round(((realActive + demoActive) / target) * 100));
-
-    if (!chuaAutoBalanceCfg.enabled) {
-      return { ...chuaAutoBalanceCfg, realActive, demoActive, deficit, balanceScore };
-    }
-    if (realActive >= target) {
-      if (stopChuaDemo !== null) {
-        chuaDemo.stop();
-        chuaAutoBalanceCfg.lastAction = 'auto_stopped_demo';
-      }
-      chuaAutoBalanceCfg.reason = `Đủ người thật (${realActive}/${target}) -> Đã tự tắt chạy mẫu`;
-    } else {
-      const ratio = deficit / target;
-      const recRate = Number(
-        (chuaAutoBalanceCfg.minDemoRate + ratio * (chuaAutoBalanceCfg.maxDemoRate - chuaAutoBalanceCfg.minDemoRate)).toFixed(2)
-      );
-      if (stopChuaDemo === null || Math.abs((chuaDemoCfg.rate || 0) - recRate) >= 0.04) {
-        chuaDemo.start(recRate);
-        chuaAutoBalanceCfg.lastAction = 'auto_started_demo';
-      }
-      chuaAutoBalanceCfg.reason = `Thiếu ${deficit} người thật (${realActive}/${target}) -> Tự bù mẫu ${recRate}/s`;
-    }
-    return { ...chuaAutoBalanceCfg, realActive, demoActive, deficit, balanceScore };
-  }
-
-  let chuaAutoFxTimer = null;
-  const chuaAutoFxState = { on: false, intervalSec: 25, withEmotion: true, lastPreset: null };
-  const CHUA_AUTO_FX_PRESETS = ['bell_halo', 'lotus_rain', 'golden_rain', 'dharma_wheel', 'lantern_festival', 'buddha_aura', 'peach_blossom', 'sacred_lamps', 'incense_cloud'];
-  const CHUA_AUTO_EMOTIONS = ['Nam Mô A Di Đà Phật 🙏', 'Cầu Gia Đạo Bình An 🪷', 'Cầu Tài Lộc Hanh Thông ✨', 'Tâm An Vạn Sự An 🌸'];
-
-  function configureChuaAutoFx({ on, intervalSec, withEmotion } = {}) {
-    if (typeof intervalSec === 'number' && Number.isFinite(intervalSec)) {
-      chuaAutoFxState.intervalSec = Math.max(5, Math.min(600, Math.round(intervalSec)));
-    }
-    if (typeof withEmotion === 'boolean') chuaAutoFxState.withEmotion = withEmotion;
-    if (typeof on === 'boolean') chuaAutoFxState.on = on;
-    if (chuaAutoFxTimer) {
-      clearInterval(chuaAutoFxTimer);
-      chuaAutoFxTimer = null;
-    }
-    if (chuaAutoFxState.on) {
-      chuaAutoFxTimer = setInterval(() => {
-        const preset = CHUA_AUTO_FX_PRESETS[Math.floor(Math.random() * CHUA_AUTO_FX_PRESETS.length)];
-        chuaAutoFxState.lastPreset = preset;
-        const out = [{ t: 'fx', kind: preset === 'bell_halo' ? 'bell' : preset === 'lotus_rain' ? 'lotus' : preset === 'sacred_lamps' ? 'lamp' : preset === 'incense_cloud' ? 'smoke' : preset, power: 8 }];
-        if (chuaAutoFxState.withEmotion) {
-          const text = CHUA_AUTO_EMOTIONS[Math.floor(Math.random() * CHUA_AUTO_EMOTIONS.length)];
-          for (const a of chuaStage.snapshot().slice(0, 14)) {
-            out.push({ t: 'say', id: a.id, text, ms: 6500 });
-          }
-        }
-        broadcastChua(out);
-      }, chuaAutoFxState.intervalSec * 1000);
-    }
-    return { ...chuaAutoFxState };
-  }
 
   let currentTiktokUser = (process.env.TIKTOK_USER || 'adidaphat20266').trim().replace(/^@/, '');
   const chuaStatus = { tiktok: 'off', tikfinity: 'off', tiktokUser: currentTiktokUser };
-  let stopChuaTiktok = null;
+  const duaStatus = { tiktok: 'off', tikfinity: 'off', tiktokUser: currentTiktokUser };
+  let tiktokAdapter = null;
+  let TikTokLiveConnection = null;
 
-  function connectChuaTiktok(user) {
-    stopChuaTiktok?.();
-    currentTiktokUser = user;
-    chuaStatus.tiktokUser = user;
-    if (!user) return;
-    stopChuaTiktok = startTiktok({
-      user,
-      map: mapTiktok,
-      ingest: ingestChua,
-      onStatus: s => {
-        chuaStatus.tiktok = s;
-        chuaStats.setSource('tiktok', s);
-      },
-    });
+  async function connectTiktokChannel(user) {
+    const clean = String(user || '').trim().replace(/^@/, '');
+    currentTiktokUser = clean;
+    chuaStatus.tiktokUser = clean;
+    duaStatus.tiktokUser = clean;
+    tiktokAdapter?.stop?.();
+    tiktokAdapter = null;
+    if (!clean) return { user: clean, status: 'off' };
+    try {
+      if (!TikTokLiveConnection) {
+        ({ TikTokLiveConnection } = await import('tiktok-live-connector'));
+      }
+      tiktokAdapter = startTiktok(
+        clean,
+        e => {
+          ingestChua(e);
+          ingestDua(e);
+        },
+        {
+          signApiKey: process.env.EULER_KEY || undefined,
+          Connection: TikTokLiveConnection,
+          map: mapTiktok,
+          onStatus: s => {
+            chuaStatus.tiktok = s;
+            duaStatus.tiktok = s;
+            chuaStats.setSource?.('tiktok', s);
+          },
+          keepAlive: true,
+          staleMs: 40_000,
+        }
+      );
+    } catch {}
+    return { user: clean, status: chuaStatus.tiktok || 'connecting' };
   }
 
   // 3. Initialize Game 2: Hành Trình Đi Bộ Xuyên Việt 3D Engine
@@ -390,7 +346,6 @@ async function initUnifiedRuntime() {
     baseSpeedMps: 1.35,
     stayMinutes: Number(process.env.STAY_MINUTES || 5),
   });
-  const duaStatus = { tiktok: 'off', tikfinity: 'off', tiktokUser: currentTiktokUser };
   const duaRules = createRaceRules({ stage: duaStage, lists, status: duaStatus });
   let duaScene = { sound: true, readComments: true, bgmVocal: true, bgmVocalVolume: 0.15 };
 
@@ -462,90 +417,16 @@ async function initUnifiedRuntime() {
     config: () => ({ on: stopDuaDemo !== null, ...duaDemoCfg }),
   };
 
-  const duaAutoBalanceCfg = {
-    enabled: true,
-    targetRealUsers: 8,
-    minDemoRate: 0.06,
-    maxDemoRate: 0.22,
-    lastAction: 'init',
-    reason: 'Đang theo dõi lượng lữ khách thực tế',
+  const savedRt = db.getRuntimeSettings?.() || {
+    chuaAutoBalanceEnabled: false,
+    chuaDemoOn: false,
+    duaAutoBalanceEnabled: false,
+    duaDemoOn: false,
   };
-
-  function evaluateDuaAutoBalance() {
-    const snap = duaStage.snapshot();
-    const realActive = snap.filter(r => r.src !== 'mock').length;
-    const demoActive = snap.filter(r => r.src === 'mock').length;
-    const target = Math.max(1, duaAutoBalanceCfg.targetRealUsers);
-    const deficit = Math.max(0, target - realActive);
-    const balanceScore = Math.min(100, Math.round(((realActive + demoActive) / target) * 100));
-
-    if (!duaAutoBalanceCfg.enabled) {
-      return { ...duaAutoBalanceCfg, realActive, demoActive, deficit, balanceScore };
-    }
-    if (realActive >= target) {
-      if (stopDuaDemo !== null) {
-        duaDemo.stop();
-        duaAutoBalanceCfg.lastAction = 'auto_stopped_demo';
-      }
-      duaAutoBalanceCfg.reason = `Đủ người thật (${realActive}/${target}) -> Đã tự tắt chạy mẫu`;
-    } else {
-      const ratio = deficit / target;
-      const recRate = Number(
-        (duaAutoBalanceCfg.minDemoRate + ratio * (duaAutoBalanceCfg.maxDemoRate - duaAutoBalanceCfg.minDemoRate)).toFixed(2)
-      );
-      if (stopDuaDemo === null || Math.abs((duaDemoCfg.rate || 0) - recRate) >= 0.04) {
-        duaDemo.start(recRate);
-        duaAutoBalanceCfg.lastAction = 'auto_started_demo';
-      }
-      duaAutoBalanceCfg.reason = `Thiếu ${deficit} người thật (${realActive}/${target}) -> Tự bù mẫu ${recRate}/s`;
-    }
-    return { ...duaAutoBalanceCfg, realActive, demoActive, deficit, balanceScore };
-  }
-
-  // Seed initial characters so the 3D scene is immediately lively on cold boot
-  evaluateChuaAutoBalance();
-  evaluateDuaAutoBalance();
-  for (let i = 0; i < 4; i++) {
-    ingestChua({
-      kind: 'chat',
-      src: 'mock',
-      uid: `seed_chua_${i + 1}`,
-      name: ['Phật Tử Minh Tâm', 'An Nhiên Cát Tường', 'Thiện Đức', 'Thanh Liên'][i],
-      text: ['Nam mô A Di Đà Phật cầu bình an', 'Con thành tâm lễ Phật cầu sức khỏe', 'Cầu gia đạo bình an vạn sự lành', 'Nam mô Quan Thế Âm Bồ Tát'][i],
-      ts: Date.now(),
-    });
-    ingestDua({
-      kind: 'chat',
-      src: 'mock',
-      uid: `seed_dua_${i + 1}`,
-      name: ['Lữ Khách Minh Quân', 'Ngọc Ánh Xuyên Việt', 'Hoàng Long', 'Thảo Nguyên'][i],
-      text: ['Việt Nam quê hương mình đẹp quá!', 'Cùng khám phá 63 tỉnh thành nào!', 'Cố lên đoàn xuyên Việt ơi!', 'Tự hào non sông gấm vóc Việt Nam!'][i],
-      ts: Date.now(),
-    });
-  }
-
-  // Periodic background tick (runs while instance is warm)
-  let lastTickAt = Date.now();
-  function stepSimulationsIfNeeded() {
-    const now = Date.now();
-    if (now - lastTickAt >= 900) {
-      lastTickAt = now;
-      const chuaMsgs = chuaPipeline.tick(now);
-      if (chuaMsgs.length) broadcastChua(chuaMsgs);
-      const duaMsgs = duaStage.tick(now);
-      if (duaMsgs.length) broadcastDua(duaMsgs);
-      evaluateChuaAutoBalance();
-      evaluateDuaAutoBalance();
-    }
-  }
-  const bgInterval = setInterval(stepSimulationsIfNeeded, 1000);
-  bgInterval.unref?.();
 
   // Connect TikTok LIVE in background if configured on Vercel
   if (currentTiktokUser && process.env.VERCEL === '1') {
-    try {
-      connectChuaTiktok(currentTiktokUser);
-    } catch {}
+    connectTiktokChannel(currentTiktokUser).catch(() => {});
   }
 
   // 4. Start internal Admin HTTP Loopback Servers on ephemeral ports (127.0.0.1:0)
@@ -561,6 +442,7 @@ async function initUnifiedRuntime() {
       stats: chuaStats,
       counters: chuaCounters,
       status: chuaStatus,
+      ingest: ingestChua,
       broadcast: broadcastChua,
       saveLists: async l => {
         try { await saveLists(l, path.join(tmpDir, 'chua-lists')); } catch {}
@@ -568,25 +450,23 @@ async function initUnifiedRuntime() {
       saveBlocked: async b => {
         try { await saveBlocked(b, path.join(tmpDir, 'chua-lists')); } catch {}
       },
+      saveSceneConfig: async patch => {
+        if (patch?.autoBalance || patch?.demo) {
+          db.updateRuntimeSettings?.({
+            ...(patch.autoBalance ? { chuaAutoBalanceEnabled: Boolean(patch.autoBalance.enabled) } : {}),
+            ...(patch.demo ? { chuaDemoOn: Boolean(patch.demo.on) } : {}),
+          });
+        }
+      },
       demo: chuaDemo,
-      autoBalance: {
-        state: () => evaluateChuaAutoBalance(),
-        configure: ({ enabled, targetRealUsers, maxDemoRate } = {}) => {
-          if (typeof enabled === 'boolean') chuaAutoBalanceCfg.enabled = enabled;
-          if (typeof targetRealUsers === 'number' && Number.isFinite(targetRealUsers)) {
-            chuaAutoBalanceCfg.targetRealUsers = Math.max(1, Math.min(100, Math.round(targetRealUsers)));
-          }
-          if (typeof maxDemoRate === 'number' && Number.isFinite(maxDemoRate)) {
-            chuaAutoBalanceCfg.maxDemoRate = Math.max(0.05, Math.min(5, Number(maxDemoRate)));
-          }
-          return evaluateChuaAutoBalance();
-        },
+      initialAutoBalance: {
+        enabled: Boolean(savedRt.chuaAutoBalanceEnabled),
+        targetRealUsers: 8,
+        maxDemoRate: 0.20,
+        giftRatio: 0.12,
+        prayerRatio: 0.70,
       },
-      autoFx: {
-        state: () => ({ ...chuaAutoFxState }),
-        configure: cfg => configureChuaAutoFx(cfg),
-      },
-      switchTiktokUser: user => connectChuaTiktok(user),
+      setTiktokUser: user => connectTiktokChannel(user),
     },
   });
 
@@ -601,9 +481,22 @@ async function initUnifiedRuntime() {
       blocked,
       status: duaStatus,
       demo: duaDemo,
-      initialAutoBalance: { enabled: true, targetRealUsers: 8, maxDemoRate: 0.22, giftRatio: 0.16 },
+      initialAutoBalance: {
+        enabled: Boolean(savedRt.duaAutoBalanceEnabled),
+        targetRealUsers: 8,
+        maxDemoRate: 0.22,
+        giftRatio: 0.16,
+      },
       ingest: ingestDua,
       broadcast: broadcastDua,
+      saveSceneConfig: async patch => {
+        if (patch?.autoBalance || patch?.demo) {
+          db.updateRuntimeSettings?.({
+            ...(patch.autoBalance ? { duaAutoBalanceEnabled: Boolean(patch.autoBalance.enabled) } : {}),
+            ...(patch.demo ? { duaDemoOn: Boolean(patch.demo.on) } : {}),
+          });
+        }
+      },
       getScene: () => duaScene,
       setScene: s => (duaScene = { ...duaScene, ...s }),
       getConfig: () => ({
@@ -611,12 +504,26 @@ async function initUnifiedRuntime() {
         maxActors: Number(process.env.RACE_MAX_RUNNERS || 120),
         tikfinityWs: process.env.TIKFINITY_WS || '',
       }),
-      setTiktokUser: async user => {
-        duaStatus.tiktokUser = user;
-        return { user, status: duaStatus.tiktok };
-      },
+      setTiktokUser: user => connectTiktokChannel(user),
     },
   });
+
+  // Periodic background tick (runs while instance is warm)
+  let lastTickAt = Date.now();
+  function stepSimulationsIfNeeded() {
+    const now = Date.now();
+    if (now - lastTickAt >= 900) {
+      lastTickAt = now;
+      const chuaMsgs = chuaPipeline.tick(now);
+      if (chuaMsgs.length) broadcastChua(chuaMsgs);
+      const duaMsgs = duaStage.tick(now);
+      if (duaMsgs.length) broadcastDua(duaMsgs);
+      chuaAdmin.stepAutoBalance?.();
+      duaAdmin.stepAutoBalance?.();
+    }
+  }
+  const bgInterval = setInterval(stepSimulationsIfNeeded, 1000);
+  bgInterval.unref?.();
 
   const masterAdmin = await startMasterAdmin({
     port: 0,
@@ -644,9 +551,8 @@ async function initUnifiedRuntime() {
     async close() {
       chuaDemo.stop();
       duaDemo.stop();
-      stopChuaTiktok?.();
+      tiktokAdapter?.stop?.();
       clearInterval(bgInterval);
-      if (chuaAutoFxTimer) clearInterval(chuaAutoFxTimer);
       await Promise.all([
         masterAdmin.close().catch(() => {}),
         chuaAdmin.close().catch(() => {}),

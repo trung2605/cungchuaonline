@@ -165,6 +165,12 @@ export async function startRaceAdmin({ port = 8790, host = '127.0.0.1', password
     }
   }
 
+  function purgeMockFromStage() {
+    const msgs = stage.purgeMockRunners?.() ?? [];
+    rules.clearLogs?.();
+    if (msgs.length) broadcast(msgs);
+  }
+
   if (autoBalanceState.enabled) {
     startAutoBalanceLoop();
   }
@@ -190,6 +196,9 @@ export async function startRaceAdmin({ port = 8790, host = '127.0.0.1', password
         startAutoBalanceLoop();
       } else {
         stopAutoBalanceLoop();
+        demo.stop?.();
+        purgeMockFromStage();
+        autoBalanceState.lastAction = 'Đã TẮT Auto-Balance & dọn sạch nhân vật mẫu';
       }
     } else if (autoBalanceState.enabled) {
       evaluateAutoBalance(true);
@@ -271,14 +280,20 @@ export async function startRaceAdmin({ port = 8790, host = '127.0.0.1', password
       if (typeof on !== 'boolean') throw bad('on phải là boolean');
       stopAutoBalanceLoop();
       autoBalanceState.enabled = false;
-      if (on) demo.start(rate, { giftRatio });
-      else demo.stop();
+      if (on) {
+        demo.start(rate, { giftRatio });
+      } else {
+        demo.stop();
+        purgeMockFromStage();
+      }
+      await ctx.saveSceneConfig?.({ autoBalance: { ...autoBalanceState }, demo: demo.state() });
       return { demo: demo.state(), demoConfig: demo.config(), autoBalance: evaluateAutoBalance(false) };
     },
 
     'POST /api/auto-balance': async req => {
       const body = await readJson(req);
       const autoBalance = configureAutoBalance(body);
+      await ctx.saveSceneConfig?.({ autoBalance: { ...autoBalanceState }, demo: demo.state() });
       return { ok: true, autoBalance, demo: demo.state(), demoConfig: demo.config() };
     },
 
@@ -448,6 +463,10 @@ export async function startRaceAdmin({ port = 8790, host = '127.0.0.1', password
 
   return {
     port: real,
+    stepAutoBalance: () => {
+      if (autoBalanceState.enabled) evaluateAutoBalance(true);
+    },
+    getAutoBalance: () => evaluateAutoBalance(false),
     close: () => {
       stopAutoBalanceLoop();
       return new Promise(r => server.close(() => r()));

@@ -71,3 +71,57 @@ test('TC-VERCEL-02: Unified Vercel handler serves /api/state, /api/chua/poll, /a
   const pollChua1 = await (await fetch(`${base}/api/chua/poll?since=${pollChua0.seq}`)).json();
   assert.ok(pollChua1.messages.length > 0);
 });
+
+test('TC-VERCEL-03: Turning off Auto-Balance or Demo immediately stops demo, purges mock runners/actors, and stays off across ticks', async () => {
+  // 1. Enable Auto-Balance on both games -> should start demo
+  await fetch(`${base}/api/game-action`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({
+      game: 'all',
+      method: 'POST',
+      endpoint: '/api/auto-balance',
+      payload: { enabled: true },
+    }),
+  });
+  // Spawn a mock test runner
+  await fetch(`${base}/api/game-action`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({
+      game: 'cuoc-dua-ky-thu',
+      method: 'POST',
+      endpoint: '/api/test-event',
+      payload: { action: 'join', name: 'MockBot1', src: 'mock' },
+    }),
+  });
+
+  const stOn = await (await fetch(`${base}/api/state`)).json();
+  assert.equal(stOn.games['cuoc-dua-ky-thu'].data.autoBalance.enabled, true);
+  assert.equal(stOn.games['cuoc-dua-ky-thu'].data.demo.on, true);
+  assert.ok(stOn.games['cuoc-dua-ky-thu'].data.runners.length >= 1);
+
+  // 2. Turn OFF Auto-Balance -> must stop demo AND purge all mock runners immediately
+  await fetch(`${base}/api/game-action`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({
+      game: 'all',
+      method: 'POST',
+      endpoint: '/api/auto-balance',
+      payload: { enabled: false },
+    }),
+  });
+
+  // Wait > 1000ms and poll to trigger stepSimulationsIfNeeded()
+  await new Promise(r => setTimeout(r, 1100));
+  await fetch(`${base}/api/dua/poll?since=0`);
+
+  const stOff = await (await fetch(`${base}/api/state`)).json();
+  assert.equal(stOff.games['cuoc-dua-ky-thu'].data.autoBalance.enabled, false);
+  assert.equal(stOff.games['cuoc-dua-ky-thu'].data.demo.on, false);
+  assert.equal(stOff.games['cuoc-dua-ky-thu'].data.runners.filter(r => r.src === 'mock').length, 0);
+  assert.equal(stOff.games['cung-chua-online'].data.autoBalance.enabled, false);
+  assert.equal(stOff.games['cung-chua-online'].data.demo.on, false);
+  assert.equal(stOff.games['cung-chua-online'].data.actors.filter(a => a.src === 'mock').length, 0);
+});

@@ -581,6 +581,10 @@ export class RaceStage {
       giftChest: this.getGiftChest(),
       runners: [...this.runners.values()].map(r => ({
         id: r.id,
+        name: r.name,
+        skin: r.skin,
+        lane: r.lane,
+        cheer: r.cheer,
         src: r.src || 'tiktok',
         distanceM: Math.round(r.distanceM),
         speedMult: r.speedMult,
@@ -614,6 +618,55 @@ export class RaceStage {
     if (!this.runners.has(uid)) return [];
     this.runners.delete(uid);
     return [{ t: 'leave', id: uid }];
+  }
+
+  isMockRunner(r, uid = '') {
+    const id = String(uid || r?.id || '');
+    if (id.startsWith('bot_') || id.startsWith('seed_') || id.startsWith('ceremony_') || id.startsWith('sample_')) {
+      return true;
+    }
+    return r?.src === 'mock' || r?.src === 'seed';
+  }
+
+  purgeMockRunners() {
+    const out = [];
+    for (const [uid, r] of [...this.runners.entries()]) {
+      if (this.isMockRunner(r, uid)) {
+        this.runners.delete(uid);
+        out.push({ t: 'leave', id: uid });
+      }
+    }
+    for (const [uid, st] of [...this.statsByUid.entries()]) {
+      if (this.isMockRunner(st, uid)) {
+        this.statsByUid.delete(uid);
+      }
+    }
+    if (this.runners.size === 0) {
+      this.worldDistanceM = this.realWorldDistanceM || 0;
+    }
+    out.push({ t: 'demoPurged' });
+    out.push({
+      t: 'worldTick',
+      worldDistanceM: Math.round(this.worldDistanceM),
+      biome: this.currentBiome(),
+      board: this.board(12, false),
+      giftChest: this.getGiftChest(),
+      runners: [...this.runners.values()].map(r => ({
+        id: r.id,
+        name: r.name,
+        skin: r.skin,
+        lane: r.lane,
+        cheer: r.cheer,
+        src: r.src || 'tiktok',
+        distanceM: Math.round(r.distanceM),
+        speedMult: r.speedMult,
+        tier: r.tier,
+        boostTier: r.boostTier,
+        diamonds: r.diamonds,
+        regionalItem: r.regionalItem || null,
+      })),
+    });
+    return out;
   }
 
   clearAll() {

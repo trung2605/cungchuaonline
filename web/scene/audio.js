@@ -1303,6 +1303,9 @@ export function createAudio({ onSpeak = null } = {}) {
     getBgmVocalConfig() {
       return { enabled: bgmVocalEnabled, volume: bgmVocalVolume };
     },
+    purgeMockSpeech() {
+      purgeQueuedBots();
+    },
     setEnabled(_on) {
       // Sound is permanently enabled on main livestream display (never turns off)
       if (isPreviewIframe) return;

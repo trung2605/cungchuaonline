@@ -204,6 +204,9 @@ function handleMsg(msg) {
       runners.remove(msg.id);
       hud.setActiveCount(runners.count());
       break;
+    case 'demoPurged':
+      audio.purgeMockSpeech?.();
+      break;
     case 'say': {
       runners.say(msg.id, msg.text, msg.ms);
       const isReal = msg.id && !String(msg.id).startsWith('bot_') && !String(msg.id).startsWith('seed_');

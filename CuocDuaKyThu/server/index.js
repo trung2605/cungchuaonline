@@ -196,7 +196,7 @@ if (password) {
         blocked,
         status,
         demo,
-        initialAutoBalance: { enabled: true, targetRealUsers: 8, maxDemoRate: 0.25, giftRatio: 0.14 },
+        initialAutoBalance: { enabled: Boolean(args.mock), targetRealUsers: 8, maxDemoRate: 0.25, giftRatio: 0.14 },
         ingest,
         broadcast: m => srv.broadcast(m),
         getScene: () => scene,

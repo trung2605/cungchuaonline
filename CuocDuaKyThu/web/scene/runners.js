@@ -826,12 +826,21 @@ export function createRunners(scene) {
       }, ms);
     },
     syncTick(runnersList = [], board = []) {
+      const activeIds = new Set(runnersList.map(r => r.id));
+      for (const id of [...live.keys()]) {
+        if (!activeIds.has(id)) remove(id);
+      }
+
       const rankMap = new Map();
       board.forEach((b, i) => rankMap.set(b.uid, i + 1));
 
       const nowTs = performance.now();
       for (const item of runnersList) {
-        const e = live.get(item.id);
+        let e = live.get(item.id);
+        if (!e && item.name) {
+          this.addOrUpdate(item);
+          e = live.get(item.id);
+        }
         if (!e) continue;
         Object.assign(e.runner, item);
         e.rank = rankMap.get(item.id) || null;

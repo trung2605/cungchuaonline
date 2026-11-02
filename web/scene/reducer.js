@@ -64,6 +64,8 @@ export function applyMsg(world, msg, now) {
     }
     case 'scene':
       return [{ op: 'scene', scene: msg.scene }];
+    case 'demoPurged':
+      return [{ op: 'demoPurged' }];
     case 'counter':
     case 'banner':
     case 'donor':

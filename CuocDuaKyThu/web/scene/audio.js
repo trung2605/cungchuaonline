@@ -1911,6 +1911,13 @@ export function createRaceAudio({ onSpeak = null } = {}) {
     getBgmVocalConfig() {
       return { enabled: bgmVocalEnabled, volume: bgmVocalVolume };
     },
+    purgeMockSpeech() {
+      for (let i = speechQueue.length - 1; i >= 0; i--) {
+        if (!speechQueue[i].isReal && speechQueue[i].kind !== 'story') {
+          speechQueue.splice(i, 1);
+        }
+      }
+    },
     setEnabled(_on) {
       if (isPreviewIframe) return;
       enabled = true;

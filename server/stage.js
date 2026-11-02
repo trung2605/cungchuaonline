@@ -141,6 +141,25 @@ export class Stage {
     return this.actors.has(uid) ? [this.#remove(uid)] : [];
   }
 
+  isMockActor(a, uid = '') {
+    const id = String(uid || a?.id || '');
+    if (id.startsWith('bot_') || id.startsWith('seed_') || id.startsWith('ceremony_') || id.startsWith('sample_')) {
+      return true;
+    }
+    return a?.src === 'mock' || a?.src === 'seed';
+  }
+
+  purgeMockActors() {
+    const out = [];
+    for (const [uid, a] of [...this.actors.entries()]) {
+      if (this.isMockActor(a, uid)) {
+        out.push(this.#remove(uid));
+        this.diamondsByUid.delete(uid);
+      }
+    }
+    return out;
+  }
+
   clearAll() {
     const out = [];
     for (const uid of [...this.actors.keys()]) {

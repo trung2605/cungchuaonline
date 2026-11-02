@@ -174,6 +174,7 @@ function run(cmds, now) {
         }
         break;
       case 'remove': actors.remove(c.id); break;
+      case 'demoPurged': audio.purgeMockSpeech?.(); break;
       case 'say': {
         actors.say(c.id, c.text, c.ms);
         const isReal = c.id && !String(c.id).startsWith('bot_') && !String(c.id).startsWith('seed_');
