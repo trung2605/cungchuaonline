@@ -644,9 +644,40 @@ export function createRaceAudio({ onSpeak = null } = {}) {
   const master = ctx.createGain();
   master.connect(ctx.destination);
 
-  // Create real DOM <audio> elements attached to document.body so TikTok LIVE Studio "Link" (CEF)
-  // and OBS Browser Sources capture 100% of both BGM and Dual-Voice TTS via standard HTMLMediaElement!
-  let mediaStreamEl = null;
+  // Single-instance cross-tab audio mutex so if multiple tabs of /dua/ or /chua/ are open,
+  // only the most recently active tab plays audio (zero cross-tab echo/doubling!).
+  const tabId = `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+  let mutedByOtherTab = false;
+  let audioMutexChannel = null;
+  if (!isPreviewIframe && typeof BroadcastChannel !== 'undefined') {
+    try {
+      audioMutexChannel = new BroadcastChannel('cungchua_audio_active_tab');
+      audioMutexChannel.onmessage = ev => {
+        if (ev.data?.type === 'CLAIM_AUDIO' && ev.data.tabId !== tabId) {
+          mutedByOtherTab = true;
+          master.gain.value = 0;
+          if (bgmAudioEl && !bgmAudioEl.paused) bgmAudioEl.pause();
+          if (voiceAudioEl && !voiceAudioEl.paused) voiceAudioEl.pause();
+        }
+      };
+      // Claim audio on load if visible
+      if (typeof document === 'undefined' || document.visibilityState === 'visible') {
+        audioMutexChannel.postMessage({ type: 'CLAIM_AUDIO', tabId });
+      }
+      if (typeof window !== 'undefined') {
+        const claimSelf = () => {
+          if (mutedByOtherTab) {
+            mutedByOtherTab = false;
+            master.gain.value = 1;
+          }
+          audioMutexChannel?.postMessage({ type: 'CLAIM_AUDIO', tabId });
+        };
+        window.addEventListener('focus', claimSelf, { passive: true });
+        window.addEventListener('pointerdown', claimSelf, { passive: true });
+      }
+    } catch {}
+  }
+
   let bgmAudioEl = null;
   let voiceAudioEl = null;
   let activeVoiceBlobUrl = null;
@@ -655,53 +686,39 @@ export function createRaceAudio({ onSpeak = null } = {}) {
     try {
       bgmAudioEl = document.createElement('audio');
       bgmAudioEl.loop = true;
-      bgmAudioEl.autoplay = true;
       bgmAudioEl.playsInline = true;
       bgmAudioEl.volume = 0.34;
       bgmAudioEl.style.display = 'none';
       document.body?.appendChild(bgmAudioEl);
 
       voiceAudioEl = document.createElement('audio');
-      voiceAudioEl.autoplay = true;
       voiceAudioEl.playsInline = true;
       voiceAudioEl.volume = 1.0;
       voiceAudioEl.style.display = 'none';
       document.body?.appendChild(voiceAudioEl);
-
-      if (typeof ctx.createMediaStreamDestination === 'function') {
-        const streamDest = ctx.createMediaStreamDestination();
-        master.connect(streamDest);
-        mediaStreamEl = document.createElement('audio');
-        mediaStreamEl.autoplay = true;
-        mediaStreamEl.playsInline = true;
-        mediaStreamEl.srcObject = streamDest.stream;
-        mediaStreamEl.volume = 1.0;
-        mediaStreamEl.style.display = 'none';
-        document.body?.appendChild(mediaStreamEl);
-        mediaStreamEl.play().catch(() => {});
-      }
     } catch {}
   }
 
   function syncHtmlBgmTrack() {
-    if (!bgmAudioEl || isPreviewIframe || bgmMuted || !enabled) return;
+    if (!bgmAudioEl || isPreviewIframe || bgmMuted || !enabled || mutedByOtherTab) {
+      if (bgmAudioEl && !bgmAudioEl.paused) bgmAudioEl.pause();
+      return;
+    }
+    // IMPORTANT: Never play bgmAudioEl and WebAudio ctx BGM at the same time (prevents double-playing/echo)!
+    // When WebAudio ctx is running, pause bgmAudioEl completely. Only use bgmAudioEl if ctx is suspended!
+    if (ctx.state === 'running') {
+      if (!bgmAudioEl.paused) bgmAudioEl.pause();
+      return;
+    }
     const song = VN_SONGS[currentSongIdx % VN_SONGS.length];
     const wavUrl = getSongWavBlobUrl(song);
     if (wavUrl && bgmAudioEl.dataset.songId !== song.id) {
       bgmAudioEl.dataset.songId = song.id;
       bgmAudioEl.src = wavUrl;
     }
-    // If WebAudio ctx is running, keep HTML5 BGM at 0.22 for CEF capture; if ctx is suspended, HTML5 BGM carries 0.42!
-    const baseVol = ctx.state === 'running' ? 0.22 : 0.42;
-    bgmAudioEl.volume = speaking ? baseVol * 0.38 : baseVol;
+    bgmAudioEl.volume = speaking ? 0.14 : 0.36;
     if (bgmAudioEl.paused) {
-      // Muted-first autoplay trick to bypass Chromium autoplay restrictions when possible
-      bgmAudioEl.play().catch(() => {
-        bgmAudioEl.muted = true;
-        bgmAudioEl.play().then(() => {
-          bgmAudioEl.muted = false;
-        }).catch(() => {});
-      });
+      bgmAudioEl.play().catch(() => {});
     }
   }
 
@@ -802,29 +819,28 @@ export function createRaceAudio({ onSpeak = null } = {}) {
   bgmWarmFilter.frequency.value = 3800;
   bgmWarmFilter.connect(bgmGain);
 
-  // True 2.5-second Stereo Concert Hall Convolution Reverb
+  // Subtle 1.0-second Acoustic Studio Ambience (Crisp, non-echoey!)
   const hallReverb = ctx.createConvolver();
   hallReverb.buffer = (() => {
     const sr = ctx.sampleRate;
-    const len = Math.floor(sr * 2.5);
+    const len = Math.floor(sr * 1.0);
     const ir = ctx.createBuffer(2, len, sr);
     for (let ch = 0; ch < 2; ch++) {
       const d = ir.getChannelData(ch);
       let lp = 0;
       for (let i = 0; i < len; i++) {
         const t = i / sr;
-        const env = Math.exp(-t * 2.35) * (1 - Math.exp(-t * 28));
+        const env = Math.exp(-t * 4.5) * (1 - Math.exp(-t * 35));
         const raw = (Math.random() * 2 - 1) * env;
-        // Warm low-pass damping inside hall
         lp = lp * 0.72 + raw * 0.28;
-        d[i] = lp * 0.42;
+        d[i] = lp * 0.28;
       }
     }
     return ir;
   })();
 
   const reverbWet = ctx.createGain();
-  reverbWet.gain.value = 0.48;
+  reverbWet.gain.value = 0.10;
   hallReverb.connect(reverbWet);
   reverbWet.connect(bgmWarmFilter);
 
@@ -943,12 +959,9 @@ export function createRaceAudio({ onSpeak = null } = {}) {
     [450, 870, 2410],  // "Ooo"
     [340, 710, 2340],  // "Uuu"
   ];
-  function playRaceFormantVocal(freq, start, durSec, vol = 0.048) {
-    if (!enabled || bgmMuted || !bgmVocalEnabled || ctx.state !== 'running' || freq <= 0) return;
-    // When MC is speaking an interactive participant event, keep formant choir silent;
-    // when MC is reading story, keep formant choir at a very soft instrumental pad whisper (35% of normal).
-    if (speaking && currentItem?.kind !== 'story') return;
-    const effVol = speaking ? vol * 0.32 : vol;
+  function playRaceFormantVocal(freq, start, durSec, vol = 0.042) {
+    if (!enabled || bgmMuted || !bgmVocalEnabled || speaking || ctx.state !== 'running' || freq <= 0) return;
+    const effVol = vol;
     const vowel = RACE_VOWEL_FORMANTS[Math.floor(tickCount / 4) % RACE_VOWEL_FORMANTS.length];
     const srcOsc = ctx.createOscillator();
     const subOsc = ctx.createOscillator();
@@ -1285,15 +1298,14 @@ export function createRaceAudio({ onSpeak = null } = {}) {
       stopRaceBackgroundLyric();
     }
     const isStory = currentItem?.kind === 'story';
-    if (bgmAudioEl && !isPreviewIframe) {
-      const htmlTarget = bgmMuted ? 0 : duck ? (isStory ? 0.18 : 0.12) : (ctx.state === 'running' ? 0.24 : 0.42);
-      bgmAudioEl.volume = Math.max(0, Math.min(1, htmlTarget));
+    if (bgmAudioEl && !isPreviewIframe && ctx.state !== 'running') {
+      bgmAudioEl.volume = bgmMuted || mutedByOtherTab ? 0 : duck ? (isStory ? 0.16 : 0.10) : 0.36;
     }
     if (ctx.state === 'running') {
-      const target = bgmMuted ? 0 : duck ? (isStory ? 0.24 : 0.15) : 0.34;
+      const target = bgmMuted ? 0 : duck ? (isStory ? 0.22 : 0.14) : 0.34;
       bgmGain.gain.setTargetAtTime(target, ctx.currentTime, 0.16);
       bgmVocalBus.gain.setTargetAtTime(
-        bgmMuted || !bgmVocalEnabled ? 0.0001 : duck ? (isStory ? bgmVocalVolume * 0.25 : 0.0001) : bgmVocalVolume,
+        bgmMuted || !bgmVocalEnabled || duck ? 0.0001 : bgmVocalVolume,
         ctx.currentTime,
         duck ? 0.04 : 0.22
       );
@@ -1686,9 +1698,13 @@ export function createRaceAudio({ onSpeak = null } = {}) {
     watchdog = setTimeout(done, 14_000);
 
     try {
+      if (mutedByOtherTab) {
+        done();
+        return;
+      }
       if (ctx.state !== 'running') await ctx.resume().catch(() => {});
       const { femaleBuf, maleBuf } = await fetchAndDecodeDualVoiceTts(item.text);
-      if (!enabled || mySeq !== activeSpeechSeq || currentItem !== item) {
+      if (!enabled || mutedByOtherTab || mySeq !== activeSpeechSeq || currentItem !== item) {
         return;
       }
       const isMale = gender === 'male';
@@ -1696,53 +1712,48 @@ export function createRaceAudio({ onSpeak = null } = {}) {
       const rateScale = isMale ? 0.95 : 1.22;
       const gainScale = isMale ? 1.22 : 1.08;
 
-      // Primary path: play via real DOM <audio> element (`voiceAudioEl`) using in-memory WAV Blob URL
-      // so TikTok LIVE Studio "Link" (CEF) and OBS Browser Sources capture 100% of the voice stream!
+      // If WebAudio ctx is running, play ONLY on WebAudio EQ chain (crisp, zero echo/doubling)
+      if (ctx.state === 'running') {
+        if (voiceAudioEl && !voiceAudioEl.paused) voiceAudioEl.pause();
+        const src = ctx.createBufferSource();
+        src.buffer = targetBuf;
+        src.playbackRate.value = rateScale;
+        const g = ctx.createGain();
+        g.gain.value = gainScale;
+        src.connect(g).connect(isMale ? maleVoiceChain : femaleVoiceChain);
+        currentVoiceSrc = src;
+        src.onended = done;
+
+        duckBgm(true);
+        if (item.kind === 'gift') boostSfx(item.tier || 1);
+        else if (item.kind === 'join' || item.kind === 'comment') joinChime();
+        onSpeak?.(item.text, true, item.kind || 'interactive', gender);
+
+        src.start();
+        return;
+      }
+
+      // Fallback ONLY when WebAudio ctx is suspended (e.g., inside CEF Link before click):
+      // play via DOM <audio> element (`voiceAudioEl`) using in-memory WAV Blob URL
       if (voiceAudioEl && typeof URL !== 'undefined' && URL.createObjectURL) {
-        try {
-          if (activeVoiceBlobUrl) {
-            try { URL.revokeObjectURL(activeVoiceBlobUrl); } catch {}
-          }
-          activeVoiceBlobUrl = audioBufferToWavBlobUrl(targetBuf, rateScale, gainScale);
-          voiceAudioEl.src = activeVoiceBlobUrl;
-          voiceAudioEl.volume = 1.0;
-          voiceAudioEl.muted = false;
-          voiceAudioEl.onended = done;
-          voiceAudioEl.onerror = done;
-
-          duckBgm(true);
-          if (item.kind === 'gift') boostSfx(item.tier || 1);
-          else if (item.kind === 'join' || item.kind === 'comment') joinChime();
-          onSpeak?.(item.text, true, item.kind || 'interactive', gender);
-
-          await voiceAudioEl.play();
-          return;
-        } catch {
-          // If HTML5 <audio>.play() rejected, fall through to WebAudio or speechSynthesis
-          voiceAudioEl.onended = null;
-          voiceAudioEl.onerror = null;
+        if (activeVoiceBlobUrl) {
+          try { URL.revokeObjectURL(activeVoiceBlobUrl); } catch {}
         }
+        activeVoiceBlobUrl = audioBufferToWavBlobUrl(targetBuf, rateScale, gainScale);
+        voiceAudioEl.src = activeVoiceBlobUrl;
+        voiceAudioEl.volume = 1.0;
+        voiceAudioEl.muted = false;
+        voiceAudioEl.onended = done;
+        voiceAudioEl.onerror = done;
+
+        duckBgm(true);
+        onSpeak?.(item.text, true, item.kind || 'interactive', gender);
+
+        await voiceAudioEl.play();
+        return;
       }
 
-      if (ctx.state !== 'running') {
-        throw new Error('AudioContext suspended');
-      }
-
-      const src = ctx.createBufferSource();
-      src.buffer = targetBuf;
-      src.playbackRate.value = rateScale;
-      const g = ctx.createGain();
-      g.gain.value = gainScale;
-      src.connect(g).connect(isMale ? maleVoiceChain : femaleVoiceChain);
-      currentVoiceSrc = src;
-      src.onended = done;
-
-      duckBgm(true);
-      if (item.kind === 'gift') boostSfx(item.tier || 1);
-      else if (item.kind === 'join' || item.kind === 'comment') joinChime();
-      onSpeak?.(item.text, true, item.kind || 'interactive', gender);
-
-      src.start();
+      throw new Error('AudioContext suspended');
     } catch {
       if (mySeq !== activeSpeechSeq || currentItem !== item) return;
       if (typeof speechSynthesis !== 'undefined') {
@@ -1776,12 +1787,11 @@ export function createRaceAudio({ onSpeak = null } = {}) {
   });
 
   setInterval(() => {
-    if (!isPreviewIframe) {
+    if (!isPreviewIframe && !mutedByOtherTab) {
       enabled = true;
       bgmMuted = false;
       master.gain.value = 1;
       if (ctx.state !== 'running') ctx.resume().catch(() => {});
-      if (mediaStreamEl && mediaStreamEl.paused) mediaStreamEl.play().catch(() => {});
       syncHtmlBgmTrack();
       if (!bgRunning) startBg();
       if (!speaking && speechQueue.length === 0 && !nextFlushTimer) {
@@ -1867,18 +1877,15 @@ export function createRaceAudio({ onSpeak = null } = {}) {
     },
     unlock() {
       if (isPreviewIframe) return;
+      mutedByOtherTab = false;
+      audioMutexChannel?.postMessage({ type: 'CLAIM_AUDIO', tabId });
       enabled = true;
       bgmMuted = false;
       master.gain.value = 1;
       ctx.resume().catch(() => {});
-      if (mediaStreamEl && mediaStreamEl.paused) mediaStreamEl.play().catch(() => {});
       if (bgmAudioEl) {
         bgmAudioEl.muted = false;
         syncHtmlBgmTrack();
-      }
-      if (voiceAudioEl && voiceAudioEl.paused && voiceAudioEl.src) {
-        voiceAudioEl.muted = false;
-        voiceAudioEl.play().catch(() => {});
       }
       startBg();
       if (!speaking && speechQueue.length === 0) {

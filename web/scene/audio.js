@@ -333,20 +333,6 @@ export function createAudio({ onSpeak = null } = {}) {
   const ctx = new AudioContext();
   const master = ctx.createGain();
   master.connect(ctx.destination);
-  // Route WebAudio through a live <audio> media element as well so TikTok LIVE Studio / OBS CEF
-  // "Link" sources that only capture HTMLMediaElement streams receive 100% of the sound!
-  let mediaStreamEl = null;
-  if (!isPreviewIframe && typeof ctx.createMediaStreamDestination === 'function' && typeof Audio !== 'undefined') {
-    try {
-      const streamDest = ctx.createMediaStreamDestination();
-      master.connect(streamDest);
-      mediaStreamEl = new Audio();
-      mediaStreamEl.srcObject = streamDest.stream;
-      mediaStreamEl.volume = 1.0;
-      mediaStreamEl.muted = false;
-      mediaStreamEl.play().catch(() => {});
-    } catch {}
-  }
   const music = new Audio('assets/audio/music.mp3');
   music.loop = true;
   music.volume = 0.32;
@@ -435,7 +421,7 @@ export function createAudio({ onSpeak = null } = {}) {
   })();
 
   const reverbWet = ctx.createGain();
-  reverbWet.gain.value = 0.46;
+  reverbWet.gain.value = 0.12;
   templeReverb.connect(reverbWet);
   reverbWet.connect(bgmFilter);
 
@@ -1198,7 +1184,6 @@ export function createAudio({ onSpeak = null } = {}) {
     enabled = true;
     master.gain.value = 1;
     if (ctx.state !== 'running') ctx.resume().catch(() => {});
-    if (mediaStreamEl && mediaStreamEl.paused) mediaStreamEl.play().catch(() => {});
     if (!zenRunning) playMusic();
   }
   if (typeof document !== 'undefined') {
@@ -1215,7 +1200,6 @@ export function createAudio({ onSpeak = null } = {}) {
       enabled = true;
       master.gain.value = 1;
       ctx.resume().catch(() => {});
-      if (mediaStreamEl && mediaStreamEl.paused) mediaStreamEl.play().catch(() => {});
       playMusic();
       refreshViVoice();
     },
