@@ -1,4 +1,9 @@
 import * as THREE from 'three';
+import gsap from 'gsap';
+import { createNoise2D, createNoise3D } from 'simplex-noise';
+
+const noise2D = createNoise2D();
+const noise3D = createNoise3D();
 
 const VN_PROVINCES_63 = [
   { code: 1, name: 'Hà Giang', biomeId: 'vn_hagiang' },
@@ -94,36 +99,36 @@ let activeTrailScrollDist = 0;
 // directly toward the orientation & focal point of the landmark in each region's panorama!
 const BIOME_TRAIL_DIRECTORS = {
   // Hà Giang: Climbs upward-left toward Cột Cờ Lũng Cú on the peak, overlooking Nho Quế canyon on right
-  vn_hagiang: { targetX: -3.8, targetY: 3.4, fgX: 0.25, waveAmpX: 0.72, waveFreqZ: 0.065, waveAmpY: 0.14, skyPanX: 6.5, skyPanY: 13.8 },
-  // Sa Pa: Curves & climbs along the golden terraced rice slopes on the left-center mountain ridge
-  vn_sapa: { targetX: -4.4, targetY: 2.9, fgX: 0.35, waveAmpX: 0.65, waveFreqZ: 0.058, waveAmpY: 0.16, skyPanX: 9.5, skyPanY: 13.6 },
-  // Vịnh Hạ Long: Sweeps rightward along the emerald bay channel between limestone karst islands
-  vn_halong: { targetX: 3.6, targetY: 0.7, fgX: -0.25, waveAmpX: 0.58, waveFreqZ: 0.052, waveAmpY: 0.04, skyPanX: -4.5, skyPanY: 13.2 },
-  // Hà Nội: Vermilion Thê Húc wooden bridge arches over Hồ Gươm from right-foreground toward Tháp Rùa on left-center
-  vn_hanoi: { targetX: -3.6, targetY: 1.1, fgX: 0.55, waveAmpX: 0.38, waveFreqZ: 0.045, archBumpY: 0.52, skyPanX: -4.5, skyPanY: 13.2 },
-  // Ninh Bình: Winds along the Tràng An river valley into the karst mountain pass on left-center
-  vn_ninhbinh: { targetX: -3.1, targetY: 1.4, fgX: 0.2, waveAmpX: 0.68, waveFreqZ: 0.06, waveAmpY: 0.04, skyPanX: 5.5, skyPanY: 13.5 },
-  // Cố Đô Huế: Diagonal Imperial Bát Tràng brick avenue leading straight up-left toward Ngọ Môn Gate
-  vn_hue: { targetX: -4.2, targetY: 2.5, fgX: 0.45, waveAmpX: 0.28, waveFreqZ: 0.04, waveAmpY: 0.03, skyPanX: 11.5, skyPanY: 13.4, hasImperialGate: true },
+  vn_hagiang: { targetX: -3.6, targetY: 3.4, fgX: 0.25, waveAmpX: 0.72, waveFreqZ: 0.065, waveAmpY: 0.14, skyPanX: 4.5, skyPanY: 12.6, terrainMode: 'mountain' },
+  // Sa Pa: Curves & climbs along golden terraced rice slopes toward Fansipan Buddha peak on right-center
+  vn_sapa: { targetX: 3.6, targetY: 3.1, fgX: -0.35, waveAmpX: 0.65, waveFreqZ: 0.058, waveAmpY: 0.16, skyPanX: -4.2, skyPanY: 12.5, terrainMode: 'terrace' },
+  // Vịnh Hạ Long: Sweeps rightward along the emerald bay channel toward Hòn Trống Mái in center
+  vn_halong: { targetX: 2.6, targetY: 0.7, fgX: -0.25, waveAmpX: 0.58, waveFreqZ: 0.052, waveAmpY: 0.04, skyPanX: 0.0, skyPanY: 12.4, terrainMode: 'water' },
+  // Hà Nội: Vermilion Thê Húc wooden bridge arches over Hồ Gươm from right-foreground toward Tháp Rùa on center-left
+  vn_hanoi: { targetX: -3.0, targetY: 1.1, fgX: 0.55, waveAmpX: 0.38, waveFreqZ: 0.045, archBumpY: 0.52, skyPanX: -4.8, skyPanY: 12.4, terrainMode: 'water' },
+  // Ninh Bình: Winds along the Tràng An river valley into the karst water cave & Bái Đính Pagoda on upper-right
+  vn_ninhbinh: { targetX: -2.2, targetY: 1.4, fgX: 0.25, waveAmpX: 0.68, waveFreqZ: 0.06, waveAmpY: 0.04, skyPanX: -2.8, skyPanY: 12.6, terrainMode: 'valley' },
+  // Cố Đô Huế: Diagonal Imperial Bát Tràng brick avenue leading toward Ngọ Môn Gate on left & Trường Tiền on right
+  vn_hue: { targetX: -3.4, targetY: 2.0, fgX: 0.45, waveAmpX: 0.28, waveFreqZ: 0.04, waveAmpY: 0.03, skyPanX: 3.5, skyPanY: 12.5, hasImperialGate: false, terrainMode: 'water' },
   // Đà Nẵng: Sweeps diagonally from foreground-left upward-right along Cầu Vàng's giant stone hands toward Cầu Rồng
-  vn_danang: { targetX: 4.8, targetY: 3.8, fgX: -0.65, waveAmpX: 0.38, waveFreqZ: 0.046, archBumpY: 0.35, skyPanX: 1.5, skyPanY: 13.6 },
-  // Hội An: Gentle lantern-lit riverside curve toward the right-center along the glowing Hoài River
-  vn_hoian: { targetX: 3.9, targetY: 1.0, fgX: -0.3, waveAmpX: 0.52, waveFreqZ: 0.055, waveAmpY: 0.03, skyPanX: -9.5, skyPanY: 13.2 },
-  // Đà Lạt: Winds & climbs upward-left through misty pine hills toward the Green Artichoke Bud at Quảng Trường Lâm Viên
-  vn_dalat: { targetX: -4.0, targetY: 3.1, fgX: 0.3, waveAmpX: 0.68, waveFreqZ: 0.062, waveAmpY: 0.16, skyPanX: 10.5, skyPanY: 13.6 },
+  vn_danang: { targetX: 4.4, targetY: 3.6, fgX: -0.65, waveAmpX: 0.38, waveFreqZ: 0.046, archBumpY: 0.35, skyPanX: 0.0, skyPanY: 12.6, terrainMode: 'mountain' },
+  // Hội An: Gentle lantern-lit riverside curve toward Chùa Cầu in the center along the glowing Hoài River
+  vn_hoian: { targetX: 2.0, targetY: 1.0, fgX: -0.3, waveAmpX: 0.52, waveFreqZ: 0.055, waveAmpY: 0.03, skyPanX: -0.8, skyPanY: 12.4, terrainMode: 'water' },
+  // Đà Lạt: Winds & climbs through misty pine hills & wildflowers toward Lâm Viên Artichoke Bud on right-center
+  vn_dalat: { targetX: 3.2, targetY: 2.8, fgX: -0.3, waveAmpX: 0.68, waveFreqZ: 0.062, waveAmpY: 0.16, skyPanX: -4.2, skyPanY: 12.5, terrainMode: 'mountain' },
   // Nha Trang: Curves rightward along the white-sand turquoise bay toward Tháp Bà Ponagar on the headland
-  vn_nhatrang: { targetX: 4.3, targetY: 1.4, fgX: -0.35, waveAmpX: 0.55, waveFreqZ: 0.052, waveAmpY: 0.04, skyPanX: -10.5, skyPanY: 13.2 },
+  vn_nhatrang: { targetX: 3.8, targetY: 1.4, fgX: -0.35, waveAmpX: 0.55, waveFreqZ: 0.052, waveAmpY: 0.04, skyPanX: -5.8, skyPanY: 12.4, terrainMode: 'water' },
   // Sài Gòn: Sweeps from Bến Nhà Rồng on foreground-left diagonally rightward toward Bitexco & Landmark 81
-  vn_saigon: { targetX: 3.6, targetY: 1.9, fgX: -0.5, waveAmpX: 0.32, waveFreqZ: 0.042, waveAmpY: 0.03, skyPanX: 1.0, skyPanY: 13.5 },
+  vn_saigon: { targetX: 3.6, targetY: 1.9, fgX: -0.5, waveAmpX: 0.32, waveFreqZ: 0.042, waveAmpY: 0.03, skyPanX: 0.5, skyPanY: 12.6, terrainMode: 'water' },
   // Miền Tây: Rustic wooden bridge winds diagonally upward-left across Cái Răng Floating Market toward Đất Mũi Cà Mau Sail Monument
-  vn_mientay: { targetX: -3.9, targetY: 1.7, fgX: 0.35, waveAmpX: 0.62, waveFreqZ: 0.064, waveAmpY: 0.07, skyPanX: 4.5, skyPanY: 13.3 },
+  vn_mientay: { targetX: -3.6, targetY: 1.7, fgX: 0.35, waveAmpX: 0.62, waveFreqZ: 0.064, waveAmpY: 0.07, skyPanX: 2.5, skyPanY: 12.5, terrainMode: 'water' },
   // Fallback / World Biomes
-  vietnam: { targetX: 3.2, targetY: 1.0, fgX: -0.2, waveAmpX: 0.55, waveFreqZ: 0.052, skyPanX: 0, skyPanY: 13.4 },
-  japan: { targetX: -3.0, targetY: 1.8, fgX: 0.3, waveAmpX: 0.45, waveFreqZ: 0.048, archBumpY: 0.4, skyPanX: 0, skyPanY: 13.4 },
-  egypt: { targetX: 3.4, targetY: 2.2, fgX: -0.3, waveAmpX: 0.65, waveFreqZ: 0.058, skyPanX: 0, skyPanY: 13.4 },
-  france: { targetX: -3.2, targetY: 1.6, fgX: 0.3, waveAmpX: 0.35, waveFreqZ: 0.042, skyPanX: 0, skyPanY: 13.4 },
-  usa: { targetX: 4.0, targetY: 2.8, fgX: -0.4, waveAmpX: 0.42, waveFreqZ: 0.045, skyPanX: 0, skyPanY: 13.4 },
-  cosmos: { targetX: -3.8, targetY: 3.2, fgX: 0.3, waveAmpX: 0.6, waveFreqZ: 0.055, skyPanX: 0, skyPanY: 13.4 },
+  vietnam: { targetX: 3.2, targetY: 1.0, fgX: -0.2, waveAmpX: 0.55, waveFreqZ: 0.052, skyPanX: 0, skyPanY: 12.5, terrainMode: 'water' },
+  japan: { targetX: -3.0, targetY: 1.8, fgX: 0.3, waveAmpX: 0.45, waveFreqZ: 0.048, archBumpY: 0.4, skyPanX: 0, skyPanY: 12.5, terrainMode: 'mountain' },
+  egypt: { targetX: 3.4, targetY: 2.2, fgX: -0.3, waveAmpX: 0.65, waveFreqZ: 0.058, skyPanX: 0, skyPanY: 12.5, terrainMode: 'mountain' },
+  france: { targetX: -3.2, targetY: 1.6, fgX: 0.3, waveAmpX: 0.35, waveFreqZ: 0.042, skyPanX: 0, skyPanY: 12.5, terrainMode: 'valley' },
+  usa: { targetX: 4.0, targetY: 2.8, fgX: -0.4, waveAmpX: 0.42, waveFreqZ: 0.045, skyPanX: 0, skyPanY: 12.5, terrainMode: 'mountain' },
+  cosmos: { targetX: -3.8, targetY: 3.2, fgX: 0.3, waveAmpX: 0.6, waveFreqZ: 0.055, skyPanX: 0, skyPanY: 12.5, terrainMode: 'mountain' },
 };
 
 function evalTrailCoord(z, s, cfg) {
@@ -156,86 +161,97 @@ const BIOME_PALETTES = {
     skyTop: 0x1a2e3b,
     fog: 0x2b4452,
     ground: 0x1e3b2f,
+    hillColor: 0x2f5241,
     lane: 0xd94e34,
     sun: 0xffdf9e,
-    skyImg: '/assets/sky_vn_highlands.jpg',
+    skyImg: '/assets/sky_vn_hagiang.jpg',
   },
   vn_sapa: {
     skyTop: 0x243322,
     fog: 0x3b4d2e,
     ground: 0x4a5d23,
+    hillColor: 0xa17c1b,
     lane: 0xe0a945,
     sun: 0xffe49e,
-    skyImg: '/assets/sky_vn_highlands.jpg',
+    skyImg: '/assets/sky_vn_sapa.jpg',
   },
   vn_halong: {
     skyTop: 0x10323d,
     fog: 0x1a4b57,
     ground: 0x0c4a52,
+    hillColor: 0x166970,
     lane: 0xd4a86a,
     sun: 0xffe6a8,
-    skyImg: '/assets/sky_vietnam.jpg',
+    skyImg: '/assets/sky_vn_halong.jpg',
   },
   vn_hanoi: {
     skyTop: 0x2b211b,
     fog: 0x3d2e24,
     ground: 0x153d33,
+    hillColor: 0x285e4d,
     lane: 0xc92a1d,
     sun: 0xffd98a,
-    skyImg: '/assets/sky_vn_hanoi_ninhbinh.jpg',
+    skyImg: '/assets/sky_vn_hanoi.jpg',
   },
   vn_ninhbinh: {
     skyTop: 0x182e28,
     fog: 0x26443b,
     ground: 0x174236,
+    hillColor: 0x4d6b2b,
     lane: 0xb89f72,
     sun: 0xf7dca1,
-    skyImg: '/assets/sky_vn_hanoi_ninhbinh.jpg',
+    skyImg: '/assets/sky_vn_ninhbinh.jpg',
   },
   vn_hue: {
     skyTop: 0x261d33,
     fog: 0x3a2b4d,
-    ground: 0x233830,
+    ground: 0x1c2838,
+    hillColor: 0x312e54,
     lane: 0xd99b38,
     sun: 0xffd28a,
-    skyImg: '/assets/sky_vn_hue_danang.jpg',
+    skyImg: '/assets/sky_vn_hue.jpg',
   },
   vn_danang: {
     skyTop: 0x1d2d44,
     fog: 0x2e4566,
     ground: 0x243b54,
+    hillColor: 0x2f5244,
     lane: 0xffc745,
     sun: 0xfff0b8,
-    skyImg: '/assets/sky_vn_hue_danang.jpg',
+    skyImg: '/assets/sky_vn_danang.jpg',
   },
   vn_hoian: {
-    skyTop: 0x2b1e16,
-    fog: 0x422d1d,
-    ground: 0x1b3336,
+    skyTop: 0x141824,
+    fog: 0x242838,
+    ground: 0x122630,
+    hillColor: 0x2d3a45,
     lane: 0xe8a338,
     sun: 0xffd478,
-    skyImg: '/assets/sky_vietnam.jpg',
+    skyImg: '/assets/sky_vn_hoian.jpg',
   },
   vn_dalat: {
     skyTop: 0x1b2d2a,
     fog: 0x2c4742,
     ground: 0x1e3b2b,
+    hillColor: 0x2b593c,
     lane: 0x9eb872,
     sun: 0xffe8b5,
-    skyImg: '/assets/sky_vn_dalat_nhatrang.jpg',
+    skyImg: '/assets/sky_vn_dalat.jpg',
   },
   vn_nhatrang: {
     skyTop: 0x0e3854,
     fog: 0x195375,
     ground: 0x0a5c75,
+    hillColor: 0x14829c,
     lane: 0xf2d294,
     sun: 0xfff2b8,
-    skyImg: '/assets/sky_vn_dalat_nhatrang.jpg',
+    skyImg: '/assets/sky_vn_nhatrang.jpg',
   },
   vn_saigon: {
     skyTop: 0x1c2238,
     fog: 0x2d3554,
     ground: 0x1b2438,
+    hillColor: 0x3b2d4a,
     lane: 0x60a5fa,
     sun: 0xffcf87,
     skyImg: '/assets/sky_vn_saigon.jpg',
@@ -243,7 +259,8 @@ const BIOME_PALETTES = {
   vn_mientay: {
     skyTop: 0x242b1a,
     fog: 0x3b4428,
-    ground: 0x3d4d26,
+    ground: 0x2d442b,
+    hillColor: 0x4d6628,
     lane: 0xc28e46,
     sun: 0xffdb8c,
     skyImg: '/assets/sky_vn_mientay.jpg',
@@ -700,6 +717,56 @@ function buildVietnamFlagPole(height = 3.6, animList, phaseOffset = 0) {
   return g;
 }
 
+// Builds a 3D Simplex-Noise sculpted limestone karst mountain with natural crags, vegetation cap & mist halo
+function buildSculptedKarstMountain(radius = 2.6, height = 7.2, rockColor = 0x3b4d54, foliageColor = 0x22543d, seed = 1) {
+  const g = new THREE.Group();
+  const geo = new THREE.ConeGeometry(radius, height, 14, 7);
+  const pos = geo.attributes.position;
+  for (let i = 0; i < pos.count; i++) {
+    const vx = pos.getX(i);
+    const vy = pos.getY(i);
+    const vz = pos.getZ(i);
+    const hNorm = (vy + height / 2) / height;
+    const n = noise3D(vx * 0.55 + seed * 3.1, vy * 0.45, vz * 0.55 + seed * 1.7);
+    const cragScale = 1 + n * 0.28 * (1 - hNorm * 0.35);
+    pos.setXYZ(i, vx * cragScale, vy + n * 0.32 * hNorm, vz * cragScale);
+  }
+  geo.computeVertexNormals();
+
+  const rockMat = new THREE.MeshStandardMaterial({
+    color: rockColor,
+    roughness: 0.86,
+    metalness: 0.08,
+    flatShading: true,
+  });
+  const mainPeak = new THREE.Mesh(geo, rockMat);
+  mainPeak.position.y = height / 2 - 0.3;
+  mainPeak.castShadow = true;
+  mainPeak.receiveShadow = true;
+  g.add(mainPeak);
+
+  // Secondary natural sub-peak for multi-dimensional silhouette
+  const subH = height * 0.62;
+  const subGeo = new THREE.ConeGeometry(radius * 0.68, subH, 10, 5);
+  const subMesh = new THREE.Mesh(subGeo, rockMat);
+  subMesh.position.set(radius * 0.45 * (seed % 2 === 0 ? 1 : -1), subH / 2 - 0.3, -0.55);
+  g.add(subMesh);
+
+  // Lush foliage canopy clusters clinging to the karst slopes
+  const vegMat = new THREE.MeshStandardMaterial({ color: foliageColor, roughness: 0.82 });
+  for (let c = 0; c < 3; c++) {
+    const bush = new THREE.Mesh(new THREE.DodecahedronGeometry(radius * (0.34 - c * 0.05), 1), vegMat);
+    bush.scale.set(1.25, 0.68, 1.15);
+    bush.position.set(
+      Math.cos(c * 2.1 + seed) * radius * 0.38,
+      height * (0.28 + c * 0.22),
+      Math.sin(c * 2.1 + seed) * radius * 0.32
+    );
+    g.add(bush);
+  }
+  return g;
+}
+
 // ============================================================================
 // 12 VIETNAMESE REGIONAL ROADSIDE DIORAMA SCENES
 // ============================================================================
@@ -718,12 +785,9 @@ function buildRoadsideScene(biomeId, side, variant, animList, provBaseIdx = 0) {
   }
 
   if (biomeId === 'vn_hagiang') {
-    // Hà Giang: Limestone Karst Peak + Cột Cờ Đỏ Sao Vàng + Tam Giác Mạch terraces
-    const peak = new THREE.Mesh(
-      new THREE.ConeGeometry(2.4, 6.8 + (variant % 3) * 1.5, 6),
-      new THREE.MeshStandardMaterial({ color: 0x3b4d54, roughness: 0.88 })
-    );
-    peak.position.set(side * 3.8, 3.2, 0);
+    // Hà Giang: 3D Sculpted Limestone Karst Peak + Cột Cờ Đỏ Sao Vàng + Tam Giác Mạch terraces
+    const peak = buildSculptedKarstMountain(2.5, 7.0 + (variant % 3) * 1.6, 0x3b4d54, 0x274e3b, variant + (side > 0 ? 10 : 0));
+    peak.position.set(side * 4.2, 0, 0);
     g.add(peak);
 
     if (variant % 2 === 0) {
@@ -758,12 +822,9 @@ function buildRoadsideScene(biomeId, side, variant, animList, provBaseIdx = 0) {
       wheel.rotation.x = t * 1.2 + phaseOffset;
     });
   } else if (biomeId === 'vn_halong') {
-    // Vịnh Hạ Long: Emerald Limestone Karst + Red-Sail Wooden Junk Boat + Hòn Trống Mái
-    const karst = new THREE.Mesh(
-      new THREE.ConeGeometry(2.7, 7.6, 7),
-      new THREE.MeshStandardMaterial({ color: 0x1b6358, roughness: 0.85 })
-    );
-    karst.position.set(side * 4.6, 3.4, -0.6);
+    // Vịnh Hạ Long: 3D Sculpted Emerald Limestone Karst + Red-Sail Wooden Junk Boat + Hòn Trống Mái
+    const karst = buildSculptedKarstMountain(2.8, 7.8 + (variant % 2) * 1.4, 0x26544e, 0x1b6344, variant + 20);
+    karst.position.set(side * 4.8, -0.2, -0.6);
     g.add(karst);
 
     const boat = new THREE.Group();
@@ -1173,43 +1234,91 @@ function buildSkyDragon() {
   };
 }
 
-function buildHorizonLandmark(biomeId, animList) {
-  // Keep the center horizon (-15 <= x <= +15) completely open so the 3D road
-  // visually connects directly into the Nano Banana panoramic landmark!
+// Procedural soft volumetric mist/cloud texture for multi-plane 3D atmospheric depth
+const mistStrataTex = canvasTex(256, 128, (g, w, h) => {
+  const grad = g.createRadialGradient(w / 2, h / 2, 4, w / 2, h / 2, w / 2);
+  grad.addColorStop(0, 'rgba(255, 252, 245, 0.36)');
+  grad.addColorStop(0.45, 'rgba(240, 248, 255, 0.18)');
+  grad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+  g.fillStyle = grad;
+  g.fillRect(0, 0, w, h);
+});
+
+// Builds a Curved 3D Panoramic Amphitheater Dome with Simplex-Noise 3D depth relief
+function createCurved3DPanoramaGeometry() {
+  const w = 96;
+  const h = 48;
+  const geo = new THREE.PlaneGeometry(w, h, 64, 32);
+  const pos = geo.attributes.position;
+  for (let i = 0; i < pos.count; i++) {
+    const vx = pos.getX(i);
+    const vy = pos.getY(i);
+    const u = vx / (w * 0.5); // -1 .. +1
+    const v = vy / (h * 0.5); // -1 .. +1
+    // Cylindrical amphitheater wrap-around curve so the flanks curve forward in 3D space
+    const curveZ = (1 - Math.cos(u * 1.05)) * 18.5;
+    // Vertical dome curvature at top sky
+    const domeZ = v > 0 ? Math.pow(v, 1.6) * 3.8 : 0;
+    // Natural 3D Simplex-Noise depth relief across mountain ridges & clouds
+    const reliefZ = noise2D(u * 3.6, v * 2.8) * 2.15 * (1 - Math.abs(u) * 0.3);
+    pos.setZ(i, curveZ + domeZ + reliefZ);
+  }
+  geo.computeVertexNormals();
+  return geo;
+}
+
+function buildHorizonLandmark(biomeId) {
+  // Keep the center horizon (-17 <= x <= +17) completely open so the 3D road
+  // visually connects directly into the curved 3D panoramic landmark!
   const g = new THREE.Group();
   g.position.set(0, 0, -44);
 
-  const sideMat = new THREE.MeshStandardMaterial({ color: 0x1e3f38, roughness: 0.85 });
-  for (const [x, h, r] of [[-22, 11, 4.5], [22, 12, 4.8]]) {
-    const m = new THREE.Mesh(new THREE.ConeGeometry(r, h, 7), sideMat);
-    m.position.set(x, h / 2 - 1.5, -4);
-    g.add(m);
+  const pal = BIOME_PALETTES[biomeId] || BIOME_PALETTES.vn_hagiang;
+  for (const [x, h, r, seed] of [
+    [-23, 12.5, 4.8, 11],
+    [-18.5, 9.2, 3.8, 22],
+    [18.5, 9.6, 3.9, 33],
+    [23, 13.0, 5.0, 44],
+  ]) {
+    const karst = buildSculptedKarstMountain(r, h, pal.ground, pal.hillColor || 0x2b593c, seed);
+    karst.position.set(x, -1.2, -3);
+    g.add(karst);
   }
   return g;
 }
 
 export function buildRaceWorld(scene) {
   scene.background = new THREE.Color(0x1a2e3b);
-  scene.fog = new THREE.FogExp2(0x2b4452, 0.0062);
+  scene.fog = new THREE.FogExp2(0x2b4452, 0.0056);
 
-  const hemi = new THREE.HemisphereLight(0xfff4e0, 0x1d3244, 1.6);
+  const hemi = new THREE.HemisphereLight(0xfff4e0, 0x1d3244, 1.65);
   scene.add(hemi);
 
-  const dir = new THREE.DirectionalLight(0xfff0cc, 1.95);
+  const dir = new THREE.DirectionalLight(0xfff0cc, 2.0);
   dir.position.set(8, 18, 12);
   dir.castShadow = true;
   scene.add(dir);
 
-  // Nano Banana Panoramic Sky Backdrop Plane on the distant horizon
+  // Preload all 12 dedicated Vietnamese Landmark Panoramas + World Fallbacks
   const texLoader = new THREE.TextureLoader();
   const skyTextures = {};
   for (const url of [
+    '/assets/sky_vn_hagiang.jpg',
+    '/assets/sky_vn_sapa.jpg',
+    '/assets/sky_vn_halong.jpg',
+    '/assets/sky_vn_hanoi.jpg',
+    '/assets/sky_vn_ninhbinh.jpg',
+    '/assets/sky_vn_hue.jpg',
+    '/assets/sky_vn_danang.jpg',
+    '/assets/sky_vn_hoian.jpg',
+    '/assets/sky_vn_dalat.jpg',
+    '/assets/sky_vn_nhatrang.jpg',
+    '/assets/sky_vn_saigon.jpg',
+    '/assets/sky_vn_mientay.jpg',
     '/assets/sky_vn_highlands.jpg',
     '/assets/sky_vn_hanoi_ninhbinh.jpg',
     '/assets/sky_vn_hue_danang.jpg',
     '/assets/sky_vn_dalat_nhatrang.jpg',
-    '/assets/sky_vn_saigon.jpg',
-    '/assets/sky_vn_mientay.jpg',
     '/assets/sky_vietnam.jpg',
     '/assets/sky_japan.jpg',
     '/assets/sky_egypt.jpg',
@@ -1218,17 +1327,62 @@ export function buildRaceWorld(scene) {
   ]) {
     const t = texLoader.load(url);
     t.colorSpace = THREE.SRGBColorSpace;
+    t.anisotropy = 4;
     skyTextures[url] = t;
   }
+
+  // Curved 3D Panoramic Amphitheater Dome + Secondary GSAP Cross-Fade Dome
+  const domeGeo = createCurved3DPanoramaGeometry();
   const skyMat = new THREE.MeshBasicMaterial({
-    map: skyTextures['/assets/sky_vn_highlands.jpg'],
+    map: skyTextures['/assets/sky_vn_hagiang.jpg'],
     fog: false,
     transparent: true,
-    opacity: 0.98,
+    opacity: 0.99,
   });
-  const skyBackdrop = new THREE.Mesh(new THREE.PlaneGeometry(114, 52), skyMat);
-  skyBackdrop.position.set(6.5, 13.8, -54);
+  const skyBackdrop = new THREE.Mesh(domeGeo, skyMat);
+  skyBackdrop.position.set(2.0, 14.2, -56);
   scene.add(skyBackdrop);
+
+  const skyFadeMat = new THREE.MeshBasicMaterial({
+    map: skyTextures['/assets/sky_vn_hagiang.jpg'],
+    fog: false,
+    transparent: true,
+    opacity: 0,
+    depthWrite: false,
+  });
+  const skyBackdropFade = new THREE.Mesh(domeGeo, skyFadeMat);
+  skyBackdropFade.position.set(2.0, 14.2, -55.8);
+  scene.add(skyBackdropFade);
+
+  // 6 Multi-Plane 3D Parallax Volumetric Mist & Cloud Strata bridging 3D world to panorama
+  const mistLayers = [];
+  const mistGroup = new THREE.Group();
+  scene.add(mistGroup);
+  for (let i = 0; i < 6; i++) {
+    const mMat = new THREE.MeshBasicMaterial({
+      map: mistStrataTex,
+      transparent: true,
+      opacity: 0.08 + (i % 3) * 0.03,
+      depthWrite: false,
+      blending: THREE.NormalBlending,
+    });
+    const mMesh = new THREE.Mesh(new THREE.PlaneGeometry(38 + i * 5, 6.5 + (i % 3) * 2.0), mMat);
+    const baseZ = -20 - i * 5.8;
+    const baseX = (i % 2 === 0 ? -1 : 1) * (13 + (i % 3) * 3.5);
+    const baseY = 1.2 + (i % 3) * 0.85;
+    mMesh.position.set(baseX, baseY, baseZ);
+    mistGroup.add(mMesh);
+    mistLayers.push({
+      mesh: mMesh,
+      mat: mMat,
+      baseX,
+      baseY,
+      baseZ,
+      speed: 0.22 + i * 0.07,
+      parallax: 0.25 + i * 0.12,
+      phase: i * 1.4,
+    });
+  }
 
   const sunOrb = new THREE.Sprite(
     new THREE.SpriteMaterial({ map: glowTex, color: 0xffe299, blending: THREE.AdditiveBlending, depthWrite: false })
@@ -1237,11 +1391,74 @@ export function buildRaceWorld(scene) {
   sunOrb.position.set(0, 14, -51);
   scene.add(sunOrb);
 
-  const groundMat = new THREE.MeshStandardMaterial({ color: 0x1e3b2f, roughness: 0.65, metalness: 0.18 });
-  const ground = new THREE.Mesh(new THREE.PlaneGeometry(160, 160), groundMat);
-  ground.rotation.x = -Math.PI / 2;
-  ground.position.set(0, -0.08, -20);
+  // ==========================================================================
+  // 3D SIMPLEX-NOISE SCULPTED VALLEY, HILLS & WATER TERRAIN MESH
+  // Undulates in 3D space on both sides while staying nestled under the road!
+  // ==========================================================================
+  const groundGeo = new THREE.PlaneGeometry(156, 114, 56, 52);
+  groundGeo.rotateX(-Math.PI / 2);
+  groundGeo.translate(0, -0.1, -18);
+  const baseGroundPos = Float32Array.from(groundGeo.attributes.position.array);
+  const groundColors = new Float32Array(groundGeo.attributes.position.count * 3);
+  groundGeo.setAttribute('color', new THREE.BufferAttribute(groundColors, 3));
+
+  const groundMat = new THREE.MeshStandardMaterial({
+    vertexColors: true,
+    roughness: 0.62,
+    metalness: 0.18,
+  });
+  const ground = new THREE.Mesh(groundGeo, groundMat);
+  ground.receiveShadow = true;
   scene.add(ground);
+
+  const cGroundLow = new THREE.Color(0x1e3b2f);
+  const cGroundHigh = new THREE.Color(0x2f5241);
+  const cTemp = new THREE.Color();
+
+  function deformTerrainValley(timeSec = 0) {
+    const pos = groundGeo.attributes.position;
+    const col = groundGeo.attributes.color;
+    const dirCfg = BIOME_TRAIL_DIRECTORS[activeTrailBiomeId] || BIOME_TRAIL_DIRECTORS.vn_hagiang;
+    const mode = dirCfg.terrainMode || 'mountain';
+    groundMat.roughness = mode === 'water' ? 0.28 : 0.72;
+    groundMat.metalness = mode === 'water' ? 0.42 : 0.12;
+
+    for (let i = 0; i < pos.count; i++) {
+      const idx = i * 3;
+      const gx = baseGroundPos[idx];
+      const gz = baseGroundPos[idx + 2];
+      const pose = getTrailPose(gz, activeTrailScrollDist, activeTrailBiomeId);
+      const distFromRoad = Math.abs(gx - pose.x);
+
+      // Smoothly clamp terrain beneath the road (|dx| <= 5.2), then sculpt 3D relief outward
+      const bankFactor = Math.max(0, Math.min(1, (distFromRoad - 5.2) / 14.0));
+      let yRelief = 0;
+      if (mode === 'water') {
+        // Gentle 3D water ripples near the trail + natural shoreline banks further out
+        const wave = Math.sin(gx * 0.45 + timeSec * 1.8 + gz * 0.25) * 0.12;
+        const outerHill = Math.pow(Math.max(0, (distFromRoad - 14) / 22), 1.4) * (2.8 + noise2D(gx * 0.06, gz * 0.06) * 1.8);
+        yRelief = bankFactor * (wave + outerHill);
+      } else if (mode === 'terrace') {
+        // Stepped 3D rice terrace tiers rising on both flanks
+        const rawH = bankFactor * (3.8 + (noise2D(gx * 0.055, gz * 0.055 - activeTrailScrollDist * 0.01) + 0.6) * 2.6);
+        yRelief = Math.floor(rawH * 1.6) / 1.6;
+      } else {
+        // Natural 3D undulating mountain valley & hills
+        const n1 = noise2D(gx * 0.05, gz * 0.05 - activeTrailScrollDist * 0.008);
+        const n2 = noise2D(gx * 0.12 + 7.3, gz * 0.12);
+        yRelief = Math.pow(bankFactor, 1.25) * (2.6 + (n1 * 0.7 + n2 * 0.3 + 0.55) * 3.8);
+      }
+
+      pos.array[idx + 1] = pose.y - 0.18 + yRelief;
+      const hBlend = Math.max(0, Math.min(1, yRelief / 4.5));
+      cTemp.copy(cGroundLow).lerp(cGroundHigh, hBlend);
+      col.array[idx] = cTemp.r;
+      col.array[idx + 1] = cTemp.g;
+      col.array[idx + 2] = cTemp.b;
+    }
+    pos.needsUpdate = true;
+    col.needsUpdate = true;
+  }
 
   // ==========================================================================
   // SUBDIVIDED DYNAMIC LANDMARK-DIRECTED WALKING TRAIL MESH
@@ -1307,6 +1524,8 @@ export function buildRaceWorld(scene) {
   scene.add(propsGroup);
   let horizonGroup = null;
   let currentBiomeId = '';
+  let baseSkyPanX = 2.0;
+  let baseSkyPanY = 14.2;
   const propRows = [];
   const gateRows = [];
   const animCallbacks = [];
@@ -1339,14 +1558,31 @@ export function buildRaceWorld(scene) {
     const dirCfg = BIOME_TRAIL_DIRECTORS[biomeId] || BIOME_TRAIL_DIRECTORS.vn_hagiang;
     scene.background.setHex(pal.skyTop);
     scene.fog.color.setHex(pal.fog);
-    groundMat.color.setHex(pal.ground);
+    cGroundLow.setHex(pal.ground);
+    cGroundHigh.setHex(pal.hillColor || pal.fog);
     sunOrb.material.color.setHex(pal.sun);
 
-    if (skyTextures[pal.skyImg]) {
-      skyMat.map = skyTextures[pal.skyImg];
-      skyMat.needsUpdate = true;
+    for (const m of mistLayers) {
+      m.mat.color.setHex(pal.sun);
     }
-    skyBackdrop.position.set(dirCfg.skyPanX ?? 0, dirCfg.skyPanY ?? 13.5, -54);
+
+    baseSkyPanX = dirCfg.skyPanX ?? 0;
+    baseSkyPanY = dirCfg.skyPanY ?? 13.8;
+
+    const nextTex = skyTextures[pal.skyImg] || skyTextures['/assets/sky_vn_hagiang.jpg'];
+    if (nextTex && skyMat.map !== nextTex) {
+      skyFadeMat.map = skyMat.map;
+      skyFadeMat.opacity = 0.95;
+      skyFadeMat.needsUpdate = true;
+
+      skyMat.map = nextTex;
+      skyMat.needsUpdate = true;
+
+      gsap.killTweensOf(skyFadeMat);
+      gsap.to(skyFadeMat, { opacity: 0, duration: 1.1, ease: 'power2.out' });
+    }
+    skyBackdrop.position.set(baseSkyPanX, baseSkyPanY, -56);
+    skyBackdropFade.position.set(baseSkyPanX, baseSkyPanY, -55.8);
 
     currentRoadTex = createBiomeTrailTexture(biomeId);
     roadMat.map = currentRoadTex;
@@ -1389,6 +1625,7 @@ export function buildRaceWorld(scene) {
     scene.add(horizonGroup);
 
     deformTrailGeometry();
+    deformTerrainValley(elapsed);
     updatePropRowsCurveAlignment();
   }
 
@@ -1418,7 +1655,21 @@ export function buildRaceWorld(scene) {
       }
 
       deformTrailGeometry();
+      deformTerrainValley(elapsed);
       updatePropRowsCurveAlignment();
+
+      // Multi-dimensional 3D Parallax Sway on the Curved Panorama Dome & Volumetric Mist Strata
+      const fgPose = getTrailPose(2, activeTrailScrollDist, activeTrailBiomeId);
+      const parallaxX = -fgPose.x * 0.45 + Math.sin(elapsed * 0.32) * 0.65;
+      const parallaxY = Math.cos(elapsed * 0.26) * 0.28;
+      skyBackdrop.position.x = baseSkyPanX + parallaxX;
+      skyBackdrop.position.y = baseSkyPanY + parallaxY;
+      skyBackdrop.rotation.y = -fgPose.angleY * 0.18 + Math.sin(elapsed * 0.22) * 0.015;
+
+      for (const m of mistLayers) {
+        m.mesh.position.x = m.baseX + Math.sin(elapsed * m.speed + m.phase) * 5.5 - fgPose.x * m.parallax;
+        m.mesh.position.y = m.baseY + Math.cos(elapsed * m.speed * 0.8 + m.phase) * 0.45;
+      }
 
       dragon.update(elapsed);
       cranes.update(elapsed);
