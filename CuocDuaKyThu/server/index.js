@@ -43,7 +43,7 @@ const stage = new RaceStage({
 });
 const rules = createRaceRules({ stage, lists });
 
-let scene = { sound: true, readComments: false };
+let scene = { sound: true, readComments: true };
 
 const getSnapshot = () => ({
   t: 'snapshot',

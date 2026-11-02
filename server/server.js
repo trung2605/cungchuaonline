@@ -71,7 +71,7 @@ export async function startServer({
     if (req.url.startsWith('/tts?')) {
       try {
         const u = new URL(req.url, 'http://localhost');
-        const q = (u.searchParams.get('q') || '').trim().slice(0, 200);
+        const q = (u.searchParams.get('q') || '').trim().slice(0, 240);
         if (!q) return notFound(res);
         let buf = ttsCache.get(q);
         if (!buf) {
@@ -80,7 +80,7 @@ export async function startServer({
           });
           if (!r.ok) return notFound(res);
           buf = Buffer.from(await r.arrayBuffer());
-          if (ttsCache.size >= 120) ttsCache.delete(ttsCache.keys().next().value);
+          if (ttsCache.size >= 350) ttsCache.delete(ttsCache.keys().next().value);
           ttsCache.set(q, buf);
         }
         res.writeHead(200, {

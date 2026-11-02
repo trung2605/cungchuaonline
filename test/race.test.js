@@ -4,7 +4,8 @@ import { RaceStage, BIOMES, raceGiftTier } from '../CuocDuaKyThu/server/raceStag
 import { createRaceRules } from '../CuocDuaKyThu/server/raceRules.js';
 import { startRaceAdmin } from '../CuocDuaKyThu/server/admin.js';
 import { startMockRace } from '../CuocDuaKyThu/server/mockRace.js';
-import { formatWelcomeSpeech, formatGiftBoostSpeech } from '../CuocDuaKyThu/web/scene/audio.js';
+import { formatWelcomeSpeech, formatGiftBoostSpeech, VN_SONGS, BIOME_PLAYLISTS } from '../CuocDuaKyThu/web/scene/audio.js';
+import { LANDMARK_STORIES, PROVINCE_STORIES } from '../CuocDuaKyThu/web/scene/storyScripts.js';
 
 const lists = { badwords: ['dm'], triggers: [], intents: {}, couplets: [] };
 
@@ -154,4 +155,28 @@ test('TC-RACE-06: startMockRace emits valid racing events', () => {
   t = 1000;
   stop();
   assert.equal(typeof stop, 'function');
+});
+
+test('TC-RACE-07: Multi-song regional jukebox & AI cultural storytelling cover all 12 landmarks and 63 provinces', () => {
+  assert.ok(VN_SONGS.length >= 20, 'should have at least 20 distinct Vietnamese songs');
+  const songIds = new Set(VN_SONGS.map(s => s.id));
+
+  for (const b of BIOMES) {
+    const playlist = BIOME_PLAYLISTS[b.id];
+    assert.ok(Array.isArray(playlist) && playlist.length >= 3, `biome ${b.id} should have a 3-song regional playlist`);
+    for (const sId of playlist) {
+      assert.ok(songIds.has(sId), `playlist song ${sId} for ${b.id} must exist in VN_SONGS`);
+    }
+
+    const stories = LANDMARK_STORIES[b.id];
+    assert.ok(Array.isArray(stories) && stories.length >= 14, `biome ${b.id} should have at least 14 cultural narration chapters`);
+    for (const line of stories) {
+      assert.ok(line.length >= 40 && line.length <= 210, `story line in ${b.id} must fit TTS length cleanly`);
+    }
+  }
+
+  for (let code = 1; code <= 63; code++) {
+    const provStory = PROVINCE_STORIES[code];
+    assert.ok(typeof provStory === 'string' && provStory.length >= 40 && provStory.length <= 210, `province ${code} must have a cultural narration line`);
+  }
 });

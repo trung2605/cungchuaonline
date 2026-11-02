@@ -91,7 +91,7 @@ function applyBiomeChange(biome, distM = 0) {
   if (bId && bId !== lastBiomeId) {
     lastBiomeId = bId;
     fx.setBiome?.(bId);
-    audio.setBiomeMusic?.(bId);
+    audio.setBiomeMusic?.(bId, biome);
     syncBgmBtn();
     // Smooth GSAP cinematic FOV breath on landmark change
     gsap.fromTo(
@@ -99,6 +99,8 @@ function applyBiomeChange(biome, distM = 0) {
       { fov: 50.8 },
       { fov: 48, duration: 1.35, ease: 'power2.out', onUpdate: () => camera.updateProjectionMatrix() }
     );
+  } else if (biome) {
+    audio.syncProvinceMilestone?.(biome);
   }
 }
 
