@@ -1252,7 +1252,7 @@ export function createRaceAudio({ onSpeak = null } = {}) {
         if (!res.ok) throw new Error('tts failed');
         const arr = await res.arrayBuffer();
         const femaleBuf = await ctx.decodeAudioData(arr);
-        const maleBuf = createMaleStretchedBuffer(ctx, femaleBuf, 1.21);
+        const maleBuf = createMaleStretchedBuffer(ctx, femaleBuf, 0.97);
         return { femaleBuf, maleBuf };
       })();
       p.catch(() => decodedTtsCache.delete(text));
@@ -1390,8 +1390,8 @@ export function createRaceAudio({ onSpeak = null } = {}) {
     if (!enabled || isPreviewIframe) return;
     if (speaking || speechQueue.length > 0 || nextFlushTimer) return;
     // Brief breath window after interactive speech finishes before resuming story
-    if (Date.now() - lastInteractiveDoneAt < 500) {
-      nextFlushTimer = setTimeout(queueNextStoryNow, 520);
+    if (Date.now() - lastInteractiveDoneAt < 180) {
+      nextFlushTimer = setTimeout(queueNextStoryNow, 190);
       return;
     }
 
@@ -1477,20 +1477,15 @@ export function createRaceAudio({ onSpeak = null } = {}) {
       }
       onSpeak?.('', false, '', gender);
 
-      // Immediately read waiting participant events if any; otherwise allow a soft sung lyric interlude before next story sentence
+      // Immediately read waiting participant events if any; otherwise resume story briskly
       if (speechQueue.length > 0) {
-        nextFlushTimer = setTimeout(flushSpeech, 110);
+        nextFlushTimer = setTimeout(flushSpeech, 70);
       } else {
-        if (bgmVocalEnabled) {
-          setTimeout(() => {
-            if (!speaking && speechQueue.length === 0) preloadAndPlayRaceLyric();
-          }, 180);
-        }
-        nextFlushTimer = setTimeout(queueNextStoryNow, bgmVocalEnabled ? 3600 : 620);
+        nextFlushTimer = setTimeout(queueNextStoryNow, 220);
       }
     };
 
-    watchdog = setTimeout(done, 18_000);
+    watchdog = setTimeout(done, 14_000);
 
     try {
       if (ctx.state !== 'running') await ctx.resume().catch(() => {});
@@ -1501,9 +1496,9 @@ export function createRaceAudio({ onSpeak = null } = {}) {
       const isMale = gender === 'male';
       const src = ctx.createBufferSource();
       src.buffer = isMale ? maleBuf : femaleBuf;
-      // Male uses WSOLA 1.21x stretched buffer played at 0.825x rate -> 1.00x natural speed with warm baritone pitch!
-      // Female uses original neural buffer at 1.01x rate -> crisp, bright female voice!
-      src.playbackRate.value = isMale ? 0.825 : 1.01;
+      // Male uses WSOLA 0.97x buffer played at 0.95x rate -> ~1.22x brisk speed with warm baritone pitch!
+      // Female uses original neural buffer at 1.22x rate -> brisk, lively broadcast female voice!
+      src.playbackRate.value = isMale ? 0.95 : 1.22;
       const g = ctx.createGain();
       g.gain.value = isMale ? 1.22 : 1.08;
       src.connect(g).connect(isMale ? maleVoiceChain : femaleVoiceChain);
@@ -1523,8 +1518,8 @@ export function createRaceAudio({ onSpeak = null } = {}) {
         usingBrowserSpeech = true;
         const u = new SpeechSynthesisUtterance(item.text);
         u.lang = 'vi-VN';
-        u.rate = 0.96;
-        u.pitch = gender === 'male' ? 0.78 : 1.12;
+        u.rate = 1.18;
+        u.pitch = gender === 'male' ? 0.82 : 1.12;
         u.onend = done;
         u.onerror = done;
         try {
@@ -1683,7 +1678,7 @@ export function createRaceAudio({ onSpeak = null } = {}) {
         recentJoinUid.set(uid, now);
       } else {
         const queuedInteractive = speechQueue.filter(x => x.kind !== 'story').length;
-        if (queuedInteractive >= 2 || now - lastMockJoinAt < 5500) return;
+        if (queuedInteractive >= 3 || now - lastMockJoinAt < 2800) return;
         lastMockJoinAt = now;
       }
 
@@ -1708,7 +1703,7 @@ export function createRaceAudio({ onSpeak = null } = {}) {
         recentCommentKey.set(dedupeKey, now);
       } else {
         const queuedInteractive = speechQueue.filter(x => x.kind !== 'story').length;
-        if (queuedInteractive >= 2 || now - lastMockCommentAt < 6000) return;
+        if (queuedInteractive >= 3 || now - lastMockCommentAt < 3200) return;
         lastMockCommentAt = now;
       }
 

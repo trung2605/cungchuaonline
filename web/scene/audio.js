@@ -1065,8 +1065,8 @@ export function createAudio({ onSpeak = null } = {}) {
     }
     const u = new SpeechSynthesisUtterance(text);
     u.lang = 'vi-VN';
-    u.rate = 0.85;
-    u.pitch = 0.96;
+    u.rate = 1.15;
+    u.pitch = 0.98;
     u.volume = 0.98;
     const v = viVoice || refreshViVoice();
     if (v) u.voice = v;
@@ -1100,7 +1100,7 @@ export function createAudio({ onSpeak = null } = {}) {
       speaking = false;
       duckMusic(false);
       onSpeak?.('', false);
-      setTimeout(flushSpeech, 320);
+      setTimeout(flushSpeech, 110);
     };
     currentDone = done;
 
@@ -1120,8 +1120,8 @@ export function createAudio({ onSpeak = null } = {}) {
       }
       const src = ctx.createBufferSource();
       src.buffer = audioBuf;
-      // Calm, dignified temple speech pace — dry & crisp (no artificial delay echo)
-      src.playbackRate.value = 0.96;
+      // Brisk, clear & natural temple broadcast pace — dry & crisp (no artificial delay echo)
+      src.playbackRate.value = 1.18;
       const voiceGain = ctx.createGain();
       voiceGain.gain.value = 1.15;
       src.connect(voiceGain);
@@ -1345,8 +1345,8 @@ export function createAudio({ onSpeak = null } = {}) {
         recentRealGreet.set(actor.id, now);
         recentNameGreet.set(nameKey, now);
       } else {
-        // Bots only speak when the hall is completely quiet (at most once every 18s)
-        if (speaking || speechQueue.length > 0 || now - lastPrayerSpeechAt < 18_000) {
+        // Bots speak when the hall is quiet (at most once every 7s)
+        if (speaking || speechQueue.length > 0 || now - lastPrayerSpeechAt < 7_000) {
           softBowl();
           return;
         }
@@ -1372,7 +1372,7 @@ export function createAudio({ onSpeak = null } = {}) {
       recentCommentSpeech.set(dedupeKey, now);
 
       if (!isReal) {
-        if (speaking || speechQueue.length > 0 || now - lastPrayerSpeechAt < 18_000) {
+        if (speaking || speechQueue.length > 0 || now - lastPrayerSpeechAt < 7_000) {
           softBowl();
           return;
         }
