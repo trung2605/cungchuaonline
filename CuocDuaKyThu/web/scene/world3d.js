@@ -145,12 +145,11 @@ function evalTrailCoord(z, s, cfg) {
   };
 }
 
-export function getTrailPose(z, scrollDist = activeTrailScrollDist, biomeId = activeTrailBiomeId) {
-  const s = scrollDist * 0.085;
+export function getTrailPose(z, _scrollDist = 0, biomeId = activeTrailBiomeId) {
   const cfg = BIOME_TRAIL_DIRECTORS[biomeId] || BIOME_TRAIL_DIRECTORS.vn_hagiang;
-  const cur = evalTrailCoord(z, s, cfg);
+  const cur = evalTrailCoord(z, 0, cfg);
   const dz = 0.6;
-  const nxt = evalTrailCoord(z - dz, s, cfg);
+  const nxt = evalTrailCoord(z - dz, 0, cfg);
   const dx = nxt.x - cur.x;
   const angleY = Math.atan2(dx, dz) * 0.65;
   return { x: cur.x, y: cur.y, angleY, t: cur.t };
@@ -1942,7 +1941,7 @@ const mistStrataTex = canvasTex(256, 128, (g, w, h) => {
 function createCurved3DPanoramaGeometry() {
   const w = 96;
   const h = 48;
-  const geo = new THREE.PlaneGeometry(w, h, 64, 32);
+  const geo = new THREE.PlaneGeometry(w, h, 32, 16);
   const pos = geo.attributes.position;
   for (let i = 0; i < pos.count; i++) {
     const vx = pos.getX(i);
@@ -1961,7 +1960,7 @@ function createCurved3DPanoramaGeometry() {
   return geo;
 }
 
-// Displaces the 65x33 vertices of `domeGeo` in 3D space using actual image luminance/saturation depth relief
+// Displaces the 33x17 vertices of `domeGeo` in 3D space using actual image luminance/saturation depth relief
 function applyPanoramaDepthRelief(domeGeo, baseDomeZ, depthGrid) {
   const pos = domeGeo.attributes.position;
   for (let i = 0; i < pos.count; i++) {
@@ -1973,12 +1972,11 @@ function applyPanoramaDepthRelief(domeGeo, baseDomeZ, depthGrid) {
 }
 
 // Processes a loaded AI Panorama Image into:
-// 1. Bottom-edge alpha-feathered main CanvasTexture (eliminates any horizontal horizon seam)
-// 2. 65x33 pixel-luminance/saturation 3D vertex relief grid (`depthGrid`)
-// 3. Midground 3D Parallax Cutout Texture (`midTex`) for multi-plane 2.5D/3D separation
+// 1. Bottom-edge alpha-feathered main CanvasTexture (768x432 lightweight VRAM footprint)
+// 2. 33x17 pixel-luminance/saturation 3D vertex relief grid (`depthGrid`)
 function processPanorama25D(img) {
-  const cw = 1024;
-  const ch = 576;
+  const cw = 768;
+  const ch = 432;
   const mainCanvas = document.createElement('canvas');
   mainCanvas.width = cw;
   mainCanvas.height = ch;
@@ -1999,11 +1997,12 @@ function processPanorama25D(img) {
 
   const mainTex = new THREE.CanvasTexture(mainCanvas);
   mainTex.colorSpace = THREE.SRGBColorSpace;
-  mainTex.anisotropy = 4;
+  mainTex.generateMipmaps = false;
+  mainTex.minFilter = THREE.LinearFilter;
 
-  // Sample 65x33 luminance & color-saturation grid to drive real 3D vertex relief on the dome
-  const segX = 64;
-  const segY = 32;
+  // Sample 33x17 luminance & color-saturation grid to drive real 3D vertex relief on the dome
+  const segX = 32;
+  const segY = 16;
   const sampleCanvas = document.createElement('canvas');
   sampleCanvas.width = segX + 1;
   sampleCanvas.height = segY + 1;
@@ -2022,39 +2021,13 @@ function processPanorama25D(img) {
       const b = pixels[p + 2] / 255;
       const lum = 0.299 * r + 0.587 * g + 0.114 * b;
       const sat = Math.max(r, g, b) - Math.min(r, g, b);
-      // Darker/saturated foreground mountains, towers, and bridges bulge forward (+Z up to +3.1m), bright sky recedes (-1.4m)
       const structureWeight = (1 - lum) * 0.72 + sat * 0.48;
       const lowerBias = vNorm < 0.35 ? 1.0 : Math.max(0.2, 1 - (vNorm - 0.35) * 1.1);
       depthGrid[idx] = (structureWeight - 0.38) * 4.4 * lowerBias;
     }
   }
 
-  // Build Midground 3D Parallax Cutout Layer (flanks & lower-midground silhouettes)
-  const midCanvas = document.createElement('canvas');
-  midCanvas.width = 512;
-  midCanvas.height = 288;
-  const mCtx = midCanvas.getContext('2d');
-  mCtx.drawImage(img, 0, 0, 512, 288);
-  const mImg = mCtx.getImageData(0, 0, 512, 288);
-  const md = mImg.data;
-  for (let y = 0; y < 288; y++) {
-    const yn = y / 288; // 0 top .. 1 bottom
-    const vMask = yn < 0.25 ? 0 : yn < 0.45 ? (yn - 0.25) / 0.2 : yn > 0.86 ? Math.max(0, (1 - yn) / 0.14) : 1;
-    for (let x = 0; x < 512; x++) {
-      const xn = (x / 512) * 2 - 1; // -1 .. +1
-      // Keep center road corridor transparent so only the 3D side flanks & silhouettes project forward
-      const sideMask = Math.max(0, Math.min(1, (Math.abs(xn) - 0.22) / 0.26));
-      const p = (y * 512 + x) * 4;
-      const lum = (md[p] * 0.299 + md[p + 1] * 0.587 + md[p + 2] * 0.114) / 255;
-      const silMask = Math.max(0, Math.min(1, (0.76 - lum) * 2.1));
-      md[p + 3] = Math.round(255 * vMask * sideMask * silMask * 0.58);
-    }
-  }
-  mCtx.putImageData(mImg, 0, 0);
-  const midTex = new THREE.CanvasTexture(midCanvas);
-  midTex.colorSpace = THREE.SRGBColorSpace;
-
-  return { mainTex, midTex, depthGrid };
+  return { mainTex, depthGrid };
 }
 
 function buildHorizonLandmark(biomeId, animList) {
@@ -2341,6 +2314,21 @@ function buildHorizonLandmark(biomeId, animList) {
   return g;
 }
 
+function disposeHierarchy(root) {
+  if (!root) return;
+  root.traverse(obj => {
+    if (obj.geometry && typeof obj.geometry.dispose === 'function') {
+      obj.geometry.dispose();
+    }
+    if (obj.material) {
+      const mats = Array.isArray(obj.material) ? obj.material : [obj.material];
+      for (const m of mats) {
+        if (m && typeof m.dispose === 'function') m.dispose();
+      }
+    }
+  });
+}
+
 export function buildRaceWorld(scene) {
   scene.background = new THREE.Color(0x1a2e3b);
   scene.fog = new THREE.FogExp2(0x2b4452, 0.0056);
@@ -2350,22 +2338,20 @@ export function buildRaceWorld(scene) {
 
   const dir = new THREE.DirectionalLight(0xfff0cc, 1.12);
   dir.position.set(8, 18, 12);
-  dir.castShadow = true;
+  dir.castShadow = false;
   scene.add(dir);
 
-  // Preload all 12 dedicated Vietnamese Landmark Panoramas + World Fallbacks
-  // and process each image into a 2.5D/3D multi-plane depth relief + feathered horizon + midground cutout
+  // Lazy-load ONLY the active biome's panorama on demand with a 2-texture LRU cache
+  // (prevents preloading 21 full-res panoramas & 42 offscreen canvases into RAM/VRAM!)
   const texLoader = new THREE.TextureLoader();
   const skyTextures = {};
-  const skyMidTextures = {};
   const skyDepthGrids = {};
+  const skyLoading = {};
+  const skyLruOrder = [];
 
-  // Curved 3D Panoramic Amphitheater Dome + Secondary GSAP Cross-Fade Dome + Midground 3D Parallax Layer
+  // Curved 3D Panoramic Amphitheater Dome + Secondary GSAP Cross-Fade Dome
   const domeGeo = createCurved3DPanoramaGeometry();
   const baseDomeZ = Float32Array.from(domeGeo.attributes.position.array);
-
-  const midGeo = createCurved3DPanoramaGeometry();
-  midGeo.scale(0.82, 0.82, 1.15);
 
   const skyMat = new THREE.MeshBasicMaterial({
     fog: false,
@@ -2386,79 +2372,73 @@ export function buildRaceWorld(scene) {
   skyBackdropFade.position.set(2.0, 14.2, -55.8);
   scene.add(skyBackdropFade);
 
-  // Midground 3D Parallax Cutout Layer (z = -43) that shifts at 1.85x parallax speed relative to the main dome!
-  const skyMidMat = new THREE.MeshBasicMaterial({
-    fog: false,
-    transparent: true,
-    opacity: 0.78,
-    depthWrite: false,
-  });
-  const skyMidground = new THREE.Mesh(midGeo, skyMidMat);
-  skyMidground.position.set(2.0, 11.4, -43);
-  scene.add(skyMidground);
-
-  for (const url of [
-    '/assets/sky_vn_hagiang.jpg',
-    '/assets/sky_vn_sapa.jpg',
-    '/assets/sky_vn_halong.jpg',
-    '/assets/sky_vn_hanoi.jpg',
-    '/assets/sky_vn_ninhbinh.jpg',
-    '/assets/sky_vn_hue.jpg',
-    '/assets/sky_vn_danang.jpg',
-    '/assets/sky_vn_hoian.jpg',
-    '/assets/sky_vn_dalat.jpg',
-    '/assets/sky_vn_nhatrang.jpg',
-    '/assets/sky_vn_saigon.jpg',
-    '/assets/sky_vn_mientay.jpg',
-    '/assets/sky_vn_highlands.jpg',
-    '/assets/sky_vn_hanoi_ninhbinh.jpg',
-    '/assets/sky_vn_hue_danang.jpg',
-    '/assets/sky_vn_dalat_nhatrang.jpg',
-    '/assets/sky_vietnam.jpg',
-    '/assets/sky_japan.jpg',
-    '/assets/sky_egypt.jpg',
-    '/assets/sky_europe.jpg',
-    '/assets/sky_world.jpg',
-  ]) {
-    const t = texLoader.load(url, loadedTex => {
-      if (loadedTex.image) {
-        const { mainTex, midTex, depthGrid } = processPanorama25D(loadedTex.image);
-        skyTextures[url] = mainTex;
-        skyMidTextures[url] = midTex;
-        skyDepthGrids[url] = depthGrid;
-        const activePal = BIOME_PALETTES[activeTrailBiomeId] || BIOME_PALETTES.vn_hagiang;
-        if (activePal.skyImg === url) {
-          skyMat.map = mainTex;
-          skyMat.needsUpdate = true;
-          skyMidMat.map = midTex;
-          skyMidMat.needsUpdate = true;
-          applyPanoramaDepthRelief(domeGeo, baseDomeZ, depthGrid);
+  function ensureSkyPanorama(url) {
+    if (!url) return null;
+    if (skyTextures[url]) {
+      const idx = skyLruOrder.indexOf(url);
+      if (idx !== -1) skyLruOrder.splice(idx, 1);
+      skyLruOrder.push(url);
+      return skyTextures[url];
+    }
+    if (skyLoading[url]) return null;
+    skyLoading[url] = true;
+    texLoader.load(
+      url,
+      loadedTex => {
+        delete skyLoading[url];
+        if (loadedTex.image) {
+          const { mainTex, depthGrid } = processPanorama25D(loadedTex.image);
+          loadedTex.dispose();
+          skyTextures[url] = mainTex;
+          skyDepthGrids[url] = depthGrid;
+          skyLruOrder.push(url);
+          while (skyLruOrder.length > 2) {
+            const evictUrl = skyLruOrder.shift();
+            if (evictUrl && skyTextures[evictUrl] && skyMat.map !== skyTextures[evictUrl] && skyFadeMat.map !== skyTextures[evictUrl]) {
+              skyTextures[evictUrl].dispose();
+              delete skyTextures[evictUrl];
+              delete skyDepthGrids[evictUrl];
+            }
+          }
+          const activePal = BIOME_PALETTES[activeTrailBiomeId] || BIOME_PALETTES.vn_hagiang;
+          if (activePal.skyImg === url) {
+            if (skyMat.map && skyMat.map !== mainTex) {
+              skyFadeMat.map = skyMat.map;
+              skyFadeMat.opacity = 0.9;
+              skyFadeMat.needsUpdate = true;
+              gsap.killTweensOf(skyFadeMat);
+              gsap.to(skyFadeMat, { opacity: 0, duration: 0.95, ease: 'power2.out' });
+            }
+            skyMat.map = mainTex;
+            skyMat.needsUpdate = true;
+            applyPanoramaDepthRelief(domeGeo, baseDomeZ, depthGrid);
+          }
         }
+      },
+      undefined,
+      () => {
+        delete skyLoading[url];
       }
-    });
-    t.colorSpace = THREE.SRGBColorSpace;
-    t.anisotropy = 4;
-    skyTextures[url] = t;
+    );
+    return null;
   }
-  skyMat.map = skyTextures['/assets/sky_vn_hagiang.jpg'];
-  skyFadeMat.map = skyTextures['/assets/sky_vn_hagiang.jpg'];
 
-  // 6 Multi-Plane 3D Parallax Volumetric Mist & Cloud Strata bridging 3D world to panorama
+  // 3 Multi-Plane 3D Parallax Volumetric Mist & Cloud Strata bridging 3D world to panorama
   const mistLayers = [];
   const mistGroup = new THREE.Group();
   scene.add(mistGroup);
-  for (let i = 0; i < 6; i++) {
+  for (let i = 0; i < 3; i++) {
     const mMat = new THREE.MeshBasicMaterial({
       map: mistStrataTex,
       transparent: true,
-      opacity: 0.08 + (i % 3) * 0.03,
+      opacity: 0.09 + i * 0.03,
       depthWrite: false,
       blending: THREE.NormalBlending,
     });
-    const mMesh = new THREE.Mesh(new THREE.PlaneGeometry(38 + i * 5, 6.5 + (i % 3) * 2.0), mMat);
-    const baseZ = -20 - i * 5.8;
-    const baseX = (i % 2 === 0 ? -1 : 1) * (13 + (i % 3) * 3.5);
-    const baseY = 1.2 + (i % 3) * 0.85;
+    const mMesh = new THREE.Mesh(new THREE.PlaneGeometry(40 + i * 8, 7.0 + i * 2.0), mMat);
+    const baseZ = -22 - i * 10.5;
+    const baseX = (i % 2 === 0 ? -1 : 1) * (13 + i * 3.5);
+    const baseY = 1.3 + i * 0.85;
     mMesh.position.set(baseX, baseY, baseZ);
     mistGroup.add(mMesh);
     mistLayers.push({
@@ -2467,8 +2447,8 @@ export function buildRaceWorld(scene) {
       baseX,
       baseY,
       baseZ,
-      speed: 0.22 + i * 0.07,
-      parallax: 0.25 + i * 0.12,
+      speed: 0.22 + i * 0.09,
+      parallax: 0.25 + i * 0.16,
       phase: i * 1.4,
     });
   }
@@ -2482,9 +2462,9 @@ export function buildRaceWorld(scene) {
 
   // ==========================================================================
   // 3D SIMPLEX-NOISE SCULPTED VALLEY, HILLS & WATER TERRAIN MESH
-  // Undulates in 3D space on both sides while staying nestled under the road!
+  // Computed once per biome change (zero per-frame CPU vertex deformation!)
   // ==========================================================================
-  const groundGeo = new THREE.PlaneGeometry(156, 114, 56, 52);
+  const groundGeo = new THREE.PlaneGeometry(156, 114, 28, 24);
   groundGeo.rotateX(-Math.PI / 2);
   groundGeo.translate(0, -0.1, -18);
   const baseGroundPos = Float32Array.from(groundGeo.attributes.position.array);
@@ -2497,14 +2477,14 @@ export function buildRaceWorld(scene) {
     metalness: 0.18,
   });
   const ground = new THREE.Mesh(groundGeo, groundMat);
-  ground.receiveShadow = true;
+  ground.receiveShadow = false;
   scene.add(ground);
 
   const cGroundLow = new THREE.Color(0x1e3b2f);
   const cGroundHigh = new THREE.Color(0x2f5241);
   const cTemp = new THREE.Color();
 
-  function deformTerrainValley(timeSec = 0) {
+  function deformTerrainValley() {
     const pos = groundGeo.attributes.position;
     const col = groundGeo.attributes.color;
     const dirCfg = BIOME_TRAIL_DIRECTORS[activeTrailBiomeId] || BIOME_TRAIL_DIRECTORS.vn_hagiang;
@@ -2516,24 +2496,21 @@ export function buildRaceWorld(scene) {
       const idx = i * 3;
       const gx = baseGroundPos[idx];
       const gz = baseGroundPos[idx + 2];
-      const pose = getTrailPose(gz, activeTrailScrollDist, activeTrailBiomeId);
+      const pose = getTrailPose(gz, 0, activeTrailBiomeId);
       const distFromRoad = Math.abs(gx - pose.x);
 
       // Smoothly clamp terrain beneath the road (|dx| <= 5.2), then sculpt 3D relief outward
       const bankFactor = Math.max(0, Math.min(1, (distFromRoad - 5.2) / 14.0));
       let yRelief = 0;
       if (mode === 'water') {
-        // Gentle 3D water ripples near the trail + natural shoreline banks further out
-        const wave = Math.sin(gx * 0.45 + timeSec * 1.8 + gz * 0.25) * 0.12;
+        const wave = Math.sin(gx * 0.45 + gz * 0.25) * 0.12;
         const outerHill = Math.pow(Math.max(0, (distFromRoad - 14) / 22), 1.4) * (2.8 + noise2D(gx * 0.06, gz * 0.06) * 1.8);
         yRelief = bankFactor * (wave + outerHill);
       } else if (mode === 'terrace') {
-        // Stepped 3D rice terrace tiers rising on both flanks
-        const rawH = bankFactor * (3.8 + (noise2D(gx * 0.055, gz * 0.055 - activeTrailScrollDist * 0.01) + 0.6) * 2.6);
+        const rawH = bankFactor * (3.8 + (noise2D(gx * 0.055, gz * 0.055) + 0.6) * 2.6);
         yRelief = Math.floor(rawH * 1.6) / 1.6;
       } else {
-        // Natural 3D undulating mountain valley & hills
-        const n1 = noise2D(gx * 0.05, gz * 0.05 - activeTrailScrollDist * 0.008);
+        const n1 = noise2D(gx * 0.05, gz * 0.05);
         const n2 = noise2D(gx * 0.12 + 7.3, gz * 0.12);
         yRelief = Math.pow(bankFactor, 1.25) * (2.6 + (n1 * 0.7 + n2 * 0.3 + 0.55) * 3.8);
       }
@@ -2555,11 +2532,10 @@ export function buildRaceWorld(scene) {
   // ==========================================================================
   const trailWidth = 9.2;
   const trailLength = 74;
-  const segX = 18;
-  const segZ = 84;
+  const segX = 10;
+  const segZ = 40;
   const roadGeo = new THREE.PlaneGeometry(trailWidth, trailLength, segX, segZ);
   roadGeo.rotateX(-Math.PI / 2);
-  // Shift Z so the trail spans from z = +21 (near camera) to z = -53 (right where it meets the landmark horizon)
   roadGeo.translate(0, 0, -16);
 
   const basePositions = Float32Array.from(roadGeo.attributes.position.array);
@@ -2573,7 +2549,7 @@ export function buildRaceWorld(scene) {
     envMapIntensity: 0.14,
   });
   const road = new THREE.Mesh(roadGeo, roadMat);
-  road.receiveShadow = true;
+  road.receiveShadow = false;
   scene.add(road);
 
   function deformTrailGeometry() {
@@ -2583,9 +2559,8 @@ export function buildRaceWorld(scene) {
       const idx = i * 3;
       const bx = basePositions[idx];
       const bz = basePositions[idx + 2];
-      const pose = getTrailPose(bz, activeTrailScrollDist, activeTrailBiomeId);
+      const pose = getTrailPose(bz, 0, activeTrailBiomeId);
       const t = pose.t || 0;
-      // Perspective taper + soft horizon crest dip at the far 15% so the road melts into the 3D landmark
       const horizonTail = t > 0.85 ? (t - 0.85) / 0.15 : 0;
       const taper = (1 - 0.36 * Math.pow(t, 1.45)) * (1 - horizonTail * 0.35);
       const horizonDip = horizonTail * horizonTail * 0.65;
@@ -2607,7 +2582,6 @@ export function buildRaceWorld(scene) {
     { mesh: buildSkyBalloon(0xdc2626, 0x991b1b), baseX: -14, baseY: 11.5, baseZ: -26, speed: 0.6, phase: 0.2 },
     { mesh: buildSkyBalloon(0xeab308, 0x854d0e), baseX: 15, baseY: 13.0, baseZ: -32, speed: 0.5, phase: 1.8 },
     { mesh: buildSkyBalloon(0x0ea5e9, 0x0369a1), baseX: -9, baseY: 15.2, baseZ: -38, speed: 0.55, phase: 3.4 },
-    { mesh: buildSkyBalloon(0x10b981, 0x047857), baseX: 11, baseY: 10.2, baseZ: -20, speed: 0.68, phase: 4.7 },
   ];
   for (const b of balloons) {
     b.mesh.position.set(b.baseX, b.baseY, b.baseZ);
@@ -2624,10 +2598,12 @@ export function buildRaceWorld(scene) {
   const gateRows = [];
   const animCallbacks = [];
   let elapsed = 0;
+  const PROP_ROW_COUNT = 7;
+  const PROP_ROW_SPACING = 8.8;
 
   function updatePropRowsCurveAlignment() {
     for (const row of propRows) {
-      const pose = getTrailPose(row.position.z, activeTrailScrollDist, activeTrailBiomeId);
+      const pose = getTrailPose(row.position.z, 0, activeTrailBiomeId);
       const taper = 1 - 0.28 * Math.pow(pose.t || 0, 1.4);
       row.position.x = pose.x;
       row.position.y = pose.y;
@@ -2636,7 +2612,7 @@ export function buildRaceWorld(scene) {
       if (row.children[1]) row.children[1].position.x = 4.55 * taper;
     }
     for (const gate of gateRows) {
-      const pose = getTrailPose(gate.position.z, activeTrailScrollDist, activeTrailBiomeId);
+      const pose = getTrailPose(gate.position.z, 0, activeTrailBiomeId);
       gate.position.x = pose.x;
       gate.position.y = pose.y;
       gate.rotation.y = pose.angleY * 0.55;
@@ -2663,28 +2639,22 @@ export function buildRaceWorld(scene) {
     baseSkyPanX = dirCfg.skyPanX ?? 0;
     baseSkyPanY = dirCfg.skyPanY ?? 13.8;
 
-    const nextTex = skyTextures[pal.skyImg] || skyTextures['/assets/sky_vn_hagiang.jpg'];
+    const nextTex = ensureSkyPanorama(pal.skyImg);
     if (nextTex && skyMat.map !== nextTex) {
       skyFadeMat.map = skyMat.map;
-      skyFadeMat.opacity = 0.95;
+      skyFadeMat.opacity = 0.9;
       skyFadeMat.needsUpdate = true;
 
       skyMat.map = nextTex;
       skyMat.needsUpdate = true;
 
       gsap.killTweensOf(skyFadeMat);
-      gsap.to(skyFadeMat, { opacity: 0, duration: 1.1, ease: 'power2.out' });
+      gsap.to(skyFadeMat, { opacity: 0, duration: 0.95, ease: 'power2.out' });
+      applyPanoramaDepthRelief(domeGeo, baseDomeZ, skyDepthGrids[pal.skyImg]);
     }
-    const nextMidTex = skyMidTextures[pal.skyImg];
-    if (nextMidTex) {
-      skyMidMat.map = nextMidTex;
-      skyMidMat.needsUpdate = true;
-    }
-    applyPanoramaDepthRelief(domeGeo, baseDomeZ, skyDepthGrids[pal.skyImg]);
 
     skyBackdrop.position.set(baseSkyPanX, baseSkyPanY, -56);
     skyBackdropFade.position.set(baseSkyPanX, baseSkyPanY, -55.8);
-    skyMidground.position.set(baseSkyPanX * 0.75, baseSkyPanY - 2.6, -43);
 
     currentRoadTex = createBiomeTrailTexture(biomeId);
     roadMat.map = currentRoadTex;
@@ -2695,16 +2665,20 @@ export function buildRaceWorld(scene) {
       worldCard.style.backgroundImage = `linear-gradient(180deg, rgba(26, 22, 18, .74), rgba(14, 12, 10, .86)), url('${pal.skyImg}')`;
     }
 
-    while (propsGroup.children.length) propsGroup.remove(propsGroup.children[0]);
+    while (propsGroup.children.length) {
+      const child = propsGroup.children[0];
+      propsGroup.remove(child);
+      disposeHierarchy(child);
+    }
     propRows.length = 0;
     gateRows.length = 0;
     animCallbacks.length = 0;
 
     const provStartIdx = Math.max(0, VN_PROVINCES_63.findIndex(p => p.biomeId === biomeId));
 
-    for (let i = 0; i < 11; i++) {
+    for (let i = 0; i < PROP_ROW_COUNT; i++) {
       const row = new THREE.Group();
-      row.position.z = 16 - i * 6.0;
+      row.position.z = 16 - i * PROP_ROW_SPACING;
       const leftProp = buildRoadsideScene(biomeId, -1, i, animCallbacks, provStartIdx);
       leftProp.position.x = -4.55;
       const rightProp = buildRoadsideScene(biomeId, 1, i + 1, animCallbacks, provStartIdx);
@@ -2714,7 +2688,6 @@ export function buildRaceWorld(scene) {
       propRows.push(row);
     }
 
-    // Only spawn an Imperial Gate in Cố Đô Huế so all natural/modern landmark horizons stay 100% unobstructed
     if (dirCfg.hasImperialGate) {
       const gate = buildHighwayGateway(biomeId);
       gate.position.z = -24;
@@ -2722,12 +2695,15 @@ export function buildRaceWorld(scene) {
       gateRows.push(gate);
     }
 
-    if (horizonGroup) scene.remove(horizonGroup);
+    if (horizonGroup) {
+      scene.remove(horizonGroup);
+      disposeHierarchy(horizonGroup);
+    }
     horizonGroup = buildHorizonLandmark(biomeId, animCallbacks);
     scene.add(horizonGroup);
 
     deformTrailGeometry();
-    deformTerrainValley(elapsed);
+    deformTerrainValley();
     updatePropRowsCurveAlignment();
   }
 
@@ -2746,7 +2722,7 @@ export function buildRaceWorld(scene) {
       for (const row of propRows) {
         row.position.z += scroll;
         if (row.position.z > 19) {
-          row.position.z -= 11 * 6.0;
+          row.position.z -= PROP_ROW_COUNT * PROP_ROW_SPACING;
         }
       }
       for (const gate of gateRows) {
@@ -2756,32 +2732,26 @@ export function buildRaceWorld(scene) {
         }
       }
 
-      deformTrailGeometry();
-      deformTerrainValley(elapsed);
       updatePropRowsCurveAlignment();
 
-      // Multi-dimensional 3D Parallax Sway on the Curved Panorama Dome, Midground Cutout & Mist Strata
-      const fgPose = getTrailPose(2, activeTrailScrollDist, activeTrailBiomeId);
-      const parallaxX = -fgPose.x * 0.45 + Math.sin(elapsed * 0.32) * 0.65;
-      const parallaxY = Math.cos(elapsed * 0.26) * 0.28;
+      // Gentle 3D Parallax Sway on the Curved Panorama Dome & Mist Strata
+      const fgPose = getTrailPose(2, 0, activeTrailBiomeId);
+      const parallaxX = -fgPose.x * 0.45 + Math.sin(elapsed * 0.32) * 0.45;
+      const parallaxY = Math.cos(elapsed * 0.26) * 0.2;
       skyBackdrop.position.x = baseSkyPanX + parallaxX;
       skyBackdrop.position.y = baseSkyPanY + parallaxY;
-      skyBackdrop.rotation.y = -fgPose.angleY * 0.18 + Math.sin(elapsed * 0.22) * 0.015;
-
-      skyMidground.position.x = baseSkyPanX * 0.75 + parallaxX * 1.85;
-      skyMidground.position.y = baseSkyPanY - 2.6 + parallaxY * 1.4;
-      skyMidground.rotation.y = -fgPose.angleY * 0.28 + Math.sin(elapsed * 0.22) * 0.022;
+      skyBackdrop.rotation.y = -fgPose.angleY * 0.18 + Math.sin(elapsed * 0.22) * 0.012;
 
       for (const m of mistLayers) {
-        m.mesh.position.x = m.baseX + Math.sin(elapsed * m.speed + m.phase) * 5.5 - fgPose.x * m.parallax;
-        m.mesh.position.y = m.baseY + Math.cos(elapsed * m.speed * 0.8 + m.phase) * 0.45;
+        m.mesh.position.x = m.baseX + Math.sin(elapsed * m.speed + m.phase) * 4.5 - fgPose.x * m.parallax;
+        m.mesh.position.y = m.baseY + Math.cos(elapsed * m.speed * 0.8 + m.phase) * 0.35;
       }
 
       dragon.update(elapsed);
       cranes.update(elapsed);
       for (const b of balloons) {
-        b.mesh.position.y = b.baseY + Math.sin(elapsed * b.speed + b.phase) * 0.85;
-        b.mesh.position.x = b.baseX + Math.cos(elapsed * b.speed * 0.6 + b.phase) * 1.3;
+        b.mesh.position.y = b.baseY + Math.sin(elapsed * b.speed + b.phase) * 0.75;
+        b.mesh.position.x = b.baseX + Math.cos(elapsed * b.speed * 0.6 + b.phase) * 1.1;
         b.mesh.rotation.y = elapsed * 0.3 + b.phase;
       }
       for (const fn of animCallbacks) fn(elapsed);

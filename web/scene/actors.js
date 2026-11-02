@@ -30,7 +30,7 @@ const lotusMat = std(0xf49ac0, { emissive: 0x3a0c1e, roughness: 0.5 });
 function part(geo, mat, parent, x = 0, y = 0) {
   const m = new THREE.Mesh(geo, mat);
   m.position.set(x, y, 0);
-  m.castShadow = true;
+  m.castShadow = false;
   parent.add(m);
   return m;
 }
@@ -233,6 +233,9 @@ export async function createActors(scene) {
     if (!e) return;
     clearTimeout(e.bubbleTimer);
     e.label.element.remove();
+    if (e.halo?.material && e.halo.material !== haloMat) {
+      e.halo.material.dispose();
+    }
     e.holder.removeFromParent();
     live.delete(id);
   }

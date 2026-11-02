@@ -14,6 +14,11 @@ import { createRaceAudio } from './scene/audio.js';
 import { createRaceHud } from './hud.js';
 
 const W = 1080, H = 1920;
+const urlParams = new URLSearchParams(location.search);
+const RENDER_SCALE = urlParams.get('hd') === '1' ? 1.0 : 0.67;
+const ENABLE_BLOOM = urlParams.get('bloom') === '1';
+const ENABLE_SHADOWS = urlParams.get('shadows') === '1';
+
 const stageEl = document.getElementById('stage');
 const fit = () => {
   const scale = Math.min(innerWidth / W, innerHeight / H);
@@ -23,11 +28,16 @@ addEventListener('resize', fit);
 fit();
 
 const canvas = document.getElementById('c');
-const renderer = new THREE.WebGLRenderer({ canvas, powerPreference: 'high-performance', antialias: true });
+const renderer = new THREE.WebGLRenderer({
+  canvas,
+  powerPreference: 'high-performance',
+  antialias: false,
+  stencil: false,
+});
 renderer.setPixelRatio(1);
-renderer.setSize(W, H, false);
-renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.setSize(Math.round(W * RENDER_SCALE), Math.round(H * RENDER_SCALE), false);
+renderer.shadowMap.enabled = ENABLE_SHADOWS;
+if (ENABLE_SHADOWS) renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 0.88;
 
@@ -38,6 +48,7 @@ const scene = new THREE.Scene();
 // PBR Image-Based Lighting (RoomEnvironment) calibrated so metallic landmarks gleam without overexposing the road
 const pmremGenerator = new THREE.PMREMGenerator(renderer);
 scene.environment = pmremGenerator.fromScene(new RoomEnvironment(), 0.04).texture;
+pmremGenerator.dispose();
 scene.environmentIntensity = 0.24;
 
 const camera = new THREE.PerspectiveCamera(48, W / H, 0.2, 120);
@@ -63,11 +74,15 @@ const audio = createRaceAudio({
   onSpeak: (text, on, kind, gender) => hud.showVoice(text, on, kind, gender),
 });
 
-const composer = new EffectComposer(renderer);
-composer.addPass(new RenderPass(scene, camera));
-const bloomPass = new UnrealBloomPass(new THREE.Vector2(W / 2, H / 2), 0.14, 0.28, 0.93);
-composer.addPass(bloomPass);
-composer.addPass(new OutputPass());
+let composer = null;
+let bloomPass = null;
+if (ENABLE_BLOOM) {
+  composer = new EffectComposer(renderer);
+  composer.addPass(new RenderPass(scene, camera));
+  bloomPass = new UnrealBloomPass(new THREE.Vector2(W / 2, H / 2), 0.14, 0.28, 0.93);
+  composer.addPass(bloomPass);
+  composer.addPass(new OutputPass());
+}
 
 const soundBtn = document.getElementById('sound');
 const commentTtsBtn = document.getElementById('toggle-comment-tts');
@@ -219,7 +234,9 @@ function handleMsg(msg) {
       break;
     case 'fx':
       fx.spawn(msg.kind, msg.power);
-      gsap.fromTo(bloomPass, { strength: 0.42 }, { strength: 0.22, duration: 1.4, ease: 'power2.out' });
+      if (bloomPass) {
+        gsap.fromTo(bloomPass, { strength: 0.42 }, { strength: 0.22, duration: 1.4, ease: 'power2.out' });
+      }
       if (msg.kind === 'warp' || msg.kind === 'turbo') {
         triggerRaceCameraFocus('low_hero_landmark', null, 5500, false);
       }
@@ -316,9 +333,16 @@ function updateRaceCamera() {
 }
 
 let prev = performance.now();
+const FRAME_INTERVAL_MS = 1000 / 30;
 function frame(now) {
   requestAnimationFrame(frame);
-  const dt = Math.min((now - prev) / 1000, 0.1);
+  if (document.hidden) {
+    prev = now;
+    return;
+  }
+  const elapsedMs = now - prev;
+  if (elapsedMs < FRAME_INTERVAL_MS) return;
+  const dt = Math.min(elapsedMs / 1000, 0.1);
   prev = now;
 
   updateRaceCamera(now, dt);
@@ -331,7 +355,8 @@ function frame(now) {
   world3d.update(dt, Math.min(1.38, 0.85 + (packSpeed - 1) * 0.1));
   fx.update(dt);
 
-  composer.render();
+  if (composer) composer.render();
+  else renderer.render(scene, camera);
   labelRenderer.render(scene, camera);
 }
 requestAnimationFrame(frame);

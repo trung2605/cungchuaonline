@@ -18,7 +18,10 @@ import { createHud } from './hud.js';
 
 const W = 1080, H = 1920;
 const params = new URLSearchParams(location.search);
-const low = params.get('quality') === 'low';
+const low = params.get('quality') !== 'high';
+const RENDER_SCALE = params.get('hd') === '1' ? 1.0 : 0.67;
+const ENABLE_BLOOM = params.get('bloom') === '1';
+const ENABLE_SHADOWS = params.get('shadows') === '1';
 const RECONNECT_MS = 2000;
 
 // Fit the fixed 1080x1920 stage into the window and center it horizontally/vertically.
@@ -34,11 +37,16 @@ const fit = () => {
 addEventListener('resize', fit);
 fit();
 
-const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('c'), antialias: !low });
+const renderer = new THREE.WebGLRenderer({
+  canvas: document.getElementById('c'),
+  powerPreference: 'high-performance',
+  antialias: false,
+  stencil: false,
+});
 renderer.setPixelRatio(1);
-renderer.setSize(W, H, false);
-renderer.shadowMap.enabled = !low;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.setSize(Math.round(W * RENDER_SCALE), Math.round(H * RENDER_SCALE), false);
+renderer.shadowMap.enabled = ENABLE_SHADOWS;
+if (ENABLE_SHADOWS) renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.15;
 const labels = new CSS2DRenderer({ element: document.getElementById('labels') });
@@ -48,6 +56,7 @@ const scene = new THREE.Scene();
 if (!low) {
   const pmremGenerator = new THREE.PMREMGenerator(renderer);
   scene.environment = pmremGenerator.fromScene(new RoomEnvironment(), 0.04).texture;
+  pmremGenerator.dispose();
   scene.environmentIntensity = 0.45;
 }
 // Fixed Sanctuary Master Camera (no panning / angle switching)
@@ -63,18 +72,19 @@ function triggerTempleCameraFocus() {
   // Camera panning disabled — keep steady sanctuary master perspective
 }
 
-const composer = new EffectComposer(renderer);
-composer.addPass(new RenderPass(scene, camera));
-// Bloom only on flames and lanterns: high threshold so gilt highlights stay crisp.
-const bloomPass = new UnrealBloomPass(new THREE.Vector2(W / 2, H / 2), 0.55, 0.5, 0.9);
-if (params.get('bloom') !== '0') composer.addPass(bloomPass);
-// Candlelit interiors fall off toward the frame edge; the vignette keeps the eye on the altar.
-const vignette = new ShaderPass(VignetteShader);
-// darkness mixes toward (1 - darkness): above 1 that color goes negative and tints the edges cyan.
-vignette.uniforms.offset.value = 1.1;
-vignette.uniforms.darkness.value = 1;
-composer.addPass(vignette);
-composer.addPass(new OutputPass());
+let composer = null;
+let bloomPass = null;
+if (ENABLE_BLOOM) {
+  composer = new EffectComposer(renderer);
+  composer.addPass(new RenderPass(scene, camera));
+  bloomPass = new UnrealBloomPass(new THREE.Vector2(W / 2, H / 2), 0.55, 0.5, 0.9);
+  composer.addPass(bloomPass);
+  const vignette = new ShaderPass(VignetteShader);
+  vignette.uniforms.offset.value = 1.1;
+  vignette.uniforms.darkness.value = 1;
+  composer.addPass(vignette);
+  composer.addPass(new OutputPass());
+}
 
 const hall = buildHall(scene, { low, renderer });
 const actors = await createActors(scene);
@@ -200,7 +210,9 @@ function run(cmds, now) {
           }
         }
         if (c.kind === 'bell' || c.kind === 'buddha_aura' || c.kind === 'golden_rain' || c.kind === 'dharma_wheel') {
-          gsap.fromTo(bloomPass, { strength: 0.82 }, { strength: 0.55, duration: 1.5, ease: 'power2.out' });
+          if (bloomPass) {
+            gsap.fromTo(bloomPass, { strength: 0.82 }, { strength: 0.55, duration: 1.5, ease: 'power2.out' });
+          }
           try {
             confetti({
               particleCount: 40,
@@ -300,9 +312,16 @@ function updateTempleCamera() {
   if (coupletR && coupletR.style.opacity !== '1') coupletR.style.opacity = '1';
 }
 
+const FRAME_INTERVAL_MS = 1000 / 30;
 renderer.setAnimationLoop(() => {
   const now = performance.now();
-  const dt = Math.min(0.1, (now - last) / 1000);
+  if (document.hidden) {
+    last = now;
+    return;
+  }
+  const elapsedMs = now - last;
+  if (elapsedMs < FRAME_INTERVAL_MS) return;
+  const dt = Math.min(0.1, elapsedMs / 1000);
   last = now;
 
   const { poses, removed } = stepWorld(world, now);
@@ -316,7 +335,8 @@ renderer.setAnimationLoop(() => {
   hall.update(now);
   fx.update(now, dt);
   updateTempleCamera(poses, now, dt);
-  composer.render();
+  if (composer) composer.render();
+  else renderer.render(scene, camera);
   labels.render(scene, camera);
 
   frames++;

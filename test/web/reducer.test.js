@@ -38,3 +38,17 @@ test('leave removes the actor once it reaches the door', () => {
   assert.deepEqual(stepWorld(w, 2100).removed, ['a']);
   assert.equal(w.actors.size, 0);
 });
+
+test('spawn on an already-occupied slot evicts the stale occupant and caps client actors at 60', () => {
+  const w = createWorld();
+  applyMsg(w, { t: 'spawn', actor: actor('stale_u', 25) }, 0);
+  const cmds = applyMsg(w, { t: 'spawn', actor: actor('fresh_u', 25) }, 10);
+  assert.ok(cmds.some(c => c.op === 'remove' && c.id === 'stale_u'));
+  assert.equal(w.actors.has('stale_u'), false);
+  assert.equal(w.actors.has('fresh_u'), true);
+
+  for (let i = 0; i < 75; i++) {
+    applyMsg(w, { t: 'spawn', actor: actor('bot_' + i, 30 + i) }, 20 + i);
+  }
+  assert.ok(w.actors.size <= 60);
+});

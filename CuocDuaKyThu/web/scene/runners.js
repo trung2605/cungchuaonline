@@ -728,6 +728,8 @@ export function createRunners(scene) {
     e.nameEl.className = 'label' + (activeTier >= 4 ? ' tier4' : activeTier === 3 ? ' tier3' : activeTier === 2 ? ' tier2' : activeTier === 1 ? ' tier1' : '');
   }
 
+  const MAX_CLIENT_RUNNERS = 32;
+
   function remove(id) {
     const e = live.get(id);
     if (!e) return;
@@ -737,9 +739,29 @@ export function createRunners(scene) {
     live.delete(id);
   }
 
+  function evictLowestPriorityRunner(incomingId) {
+    let victimId = null;
+    let lowestScore = Infinity;
+    for (const [id, e] of live.entries()) {
+      if (id === incomingId) continue;
+      const isMock = String(id).startsWith('bot_') || String(id).startsWith('seed_') || e.runner?.src === 'mock';
+      const activeTier = Math.max(e.runner?.tier || 0, e.runner?.boostTier || 0);
+      const score = (isMock ? 0 : 1000) + activeTier * 200 + (e.runner?.diamonds || 0) * 10 - (e.rank || 99);
+      if (score < lowestScore) {
+        lowestScore = score;
+        victimId = id;
+      }
+    }
+    if (victimId) remove(victimId);
+  }
+
   return {
     addOrUpdate(runner) {
+      if (!runner || !runner.id) return;
       let e = live.get(runner.id);
+      if (!e && live.size >= MAX_CLIENT_RUNNERS) {
+        evictLowestPriorityRunner(runner.id);
+      }
       if (!e) {
         const holder = new THREE.Group();
         const rig = buildRunnerRig(runner.skin, Math.max(runner.tier || 0, runner.boostTier || 0));

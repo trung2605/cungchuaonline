@@ -3,14 +3,50 @@ import { ALTAR } from './layout.js';
 import { AltarQueue, createActorState, step, pose, addBows, leave, move } from './actorFsm.js';
 
 export const MAX_BUBBLES = 12;
+export const MAX_CLIENT_ACTORS = 60;
 
 export function createWorld() {
   return { actors: new Map(), queue: new AltarQueue(), bubbles: [] }; // actors: id -> { actor, st }
 }
 
 function add(world, actor, now, idle) {
-  world.actors.set(actor.id, { actor: { ...actor }, st: createActorState(actor, { idle, now, queue: world.queue }) });
+  world.actors.set(actor.id, {
+    actor: { ...actor },
+    spawnedAt: now,
+    st: createActorState(actor, { idle, now, queue: world.queue }),
+  });
   return { op: 'add', actor: { ...actor }, idle };
+}
+
+function evictOverflowActors(world, out, incomingSlot) {
+  // 1. Evict any stale occupant still sitting on the same slot
+  if (incomingSlot !== undefined && incomingSlot !== null) {
+    for (const [id, entry] of world.actors) {
+      if (entry.actor.slot === incomingSlot) {
+        world.queue.release(id);
+        world.actors.delete(id);
+        out.push({ op: 'remove', id });
+      }
+    }
+  }
+  // 2. Hard cap client-side 3D actors to MAX_CLIENT_ACTORS so long live streams never accumulate 300+ actors
+  while (world.actors.size >= MAX_CLIENT_ACTORS) {
+    let victimId = null;
+    let lowestScore = Infinity;
+    for (const [id, entry] of world.actors) {
+      const isMock = String(id).startsWith('bot_') || String(id).startsWith('seed_') || entry.actor.src === 'mock';
+      const isIdle = entry.st?.phase === 'idle';
+      const score = (isMock ? 0 : 1000) + (isIdle ? 0 : 300) + (entry.actor.tier || 0) * 200 + (entry.actor.diamonds || 0) * 5;
+      if (score < lowestScore) {
+        lowestScore = score;
+        victimId = id;
+      }
+    }
+    if (!victimId) break;
+    world.queue.release(victimId);
+    world.actors.delete(victimId);
+    out.push({ op: 'remove', id: victimId });
+  }
 }
 
 export function applyMsg(world, msg, now) {
@@ -18,9 +54,10 @@ export function applyMsg(world, msg, now) {
   switch (msg.t) {
     case 'snapshot': {
       Object.assign(world, createWorld());
+      const cappedActors = (msg.actors || []).slice(-MAX_CLIENT_ACTORS);
       return [
         { op: 'reset' },
-        ...msg.actors.map(x => add(world, x, now, true)),
+        ...cappedActors.map(x => add(world, x, now, true)),
         { op: 'hud', msg: { t: 'counter', key: 'namo', value: msg.counters.namo } },
         { op: 'hud', msg: { t: 'counter', key: 'viewers', value: msg.counters.viewers } },
         { op: 'scene', scene: msg.scene },
@@ -35,6 +72,7 @@ export function applyMsg(world, msg, now) {
         world.actors.delete(msg.actor.id);
         out.push({ op: 'remove', id: msg.actor.id });
       }
+      evictOverflowActors(world, out, msg.actor.slot);
       return [...out, add(world, msg.actor, now, false)];
     }
     case 'bow':
