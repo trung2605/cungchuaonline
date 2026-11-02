@@ -701,24 +701,50 @@ export function createRaceAudio({ onSpeak = null } = {}) {
     } catch {}
   }
 
-  function syncHtmlBgmTrack() {
+const REAL_VN_SONG_TRACKS = {
+  trong_com: { mp3Url: '/assets/audio/tracks/danbau_langtoi.mp3', vocalMp3Url: '/assets/audio/tracks/quehuong_chanque.mp3' },
+  beo_dat: { mp3Url: '/assets/audio/tracks/danbau_lynguao.mp3', vocalMp3Url: '/assets/audio/tracks/quehuong_quanho.mp3' },
+  ly_cay_bong: { mp3Url: '/assets/audio/tracks/danbau_buoisang.mp3', vocalMp3Url: '/assets/audio/tracks/quehuong_aobaba.mp3' },
+  co_la: { mp3Url: '/assets/audio/tracks/danbau_langtoi.mp3', vocalMp3Url: '/assets/audio/tracks/quehuong_chanque.mp3' },
+  tay_bac: { mp3Url: '/assets/audio/tracks/cophong_suthanhhoa.mp3', vocalMp3Url: '/assets/audio/tracks/quehuong_chanque.mp3' },
+  luu_thuy: { mp3Url: '/assets/audio/tracks/cophong_nunhitinh.mp3', vocalMp3Url: '/assets/audio/tracks/quehuong_xuhue.mp3' },
+  tay_nguyen: { mp3Url: '/assets/audio/tracks/handpan_meditation.mp3', vocalMp3Url: '/assets/audio/tracks/quehuong_xuhue.mp3' },
+  hoa_thom: { mp3Url: '/assets/audio/tracks/danbau_lynguao.mp3', vocalMp3Url: '/assets/audio/tracks/quehuong_quanho.mp3' },
+  khen_ma_pi_leng: { mp3Url: '/assets/audio/tracks/cophong_suthanhhoa.mp3', vocalMp3Url: '/assets/audio/tracks/quehuong_chanque.mp3' },
+  mua_lua_sapa: { mp3Url: '/assets/audio/tracks/danbau_buoisang.mp3', vocalMp3Url: '/assets/audio/tracks/quehuong_chanque.mp3' },
+  nhip_cheo_ha_long: { mp3Url: '/assets/audio/tracks/danbau_lynguao.mp3', vocalMp3Url: '/assets/audio/tracks/quehuong_quanho.mp3' },
+  nguoi_oi_dung_ve: { mp3Url: '/assets/audio/tracks/danbau_lynguao.mp3', vocalMp3Url: '/assets/audio/tracks/quehuong_quanho.mp3' },
+  hat_xoan_co_do: { mp3Url: '/assets/audio/tracks/danbau_langtoi.mp3', vocalMp3Url: '/assets/audio/tracks/quehuong_chanque.mp3' },
+  nam_binh_song_huong: { mp3Url: '/assets/audio/tracks/cophong_nunhitinh.mp3', vocalMp3Url: '/assets/audio/tracks/quehuong_xuhue.mp3' },
+  ly_ngua_o_trung: { mp3Url: '/assets/audio/tracks/cophong_suthanhhoa.mp3', vocalMp3Url: '/assets/audio/tracks/quehuong_xuhue.mp3' },
+  dem_hoa_dang_hoian: { mp3Url: '/assets/audio/tracks/cophong_nunhitinh.mp3', vocalMp3Url: '/assets/audio/tracks/quehuong_xuhue.mp3' },
+  bai_choi_pho_co: { mp3Url: '/assets/audio/tracks/danbau_langtoi.mp3', vocalMp3Url: '/assets/audio/tracks/quehuong_xuhue.mp3' },
+  suong_thong_dalat: { mp3Url: '/assets/audio/tracks/handpan_meditation.mp3', vocalMp3Url: '/assets/audio/tracks/quehuong_xuhue.mp3' },
+  song_bien_ponagar: { mp3Url: '/assets/audio/tracks/handpan_agua.mp3', vocalMp3Url: '/assets/audio/tracks/quehuong_xuhue.mp3' },
+  da_co_phuong_nam: { mp3Url: '/assets/audio/tracks/danbau_buoisang.mp3', vocalMp3Url: '/assets/audio/tracks/quehuong_aobaba.mp3' },
+  ly_chieu_chieu: { mp3Url: '/assets/audio/tracks/danbau_buoisang.mp3', vocalMp3Url: '/assets/audio/tracks/quehuong_aobaba.mp3' },
+};
+
+  function getActiveRaceTrackUrl(song) {
+    const entry = REAL_VN_SONG_TRACKS[song?.id] || REAL_VN_SONG_TRACKS.trong_com;
+    if (bgmVocalEnabled && entry?.vocalMp3Url) return entry.vocalMp3Url;
+    return entry?.mp3Url || '/assets/audio/tracks/danbau_buoisang.mp3';
+  }
+
+  function syncHtmlBgmTrack(forceReload = false) {
     if (!bgmAudioEl || isPreviewIframe || bgmMuted || !enabled || mutedByOtherTab) {
       if (bgmAudioEl && !bgmAudioEl.paused) bgmAudioEl.pause();
       return;
     }
-    // IMPORTANT: Never play bgmAudioEl and WebAudio ctx BGM at the same time (prevents double-playing/echo)!
-    // When WebAudio ctx is running, pause bgmAudioEl completely. Only use bgmAudioEl if ctx is suspended!
-    if (ctx.state === 'running') {
-      if (!bgmAudioEl.paused) bgmAudioEl.pause();
-      return;
-    }
     const song = VN_SONGS[currentSongIdx % VN_SONGS.length];
-    const wavUrl = getSongWavBlobUrl(song);
-    if (wavUrl && bgmAudioEl.dataset.songId !== song.id) {
+    const targetUrl = getActiveRaceTrackUrl(song);
+    if (bgmAudioEl.dataset.trackUrl !== targetUrl || forceReload) {
+      bgmAudioEl.dataset.trackUrl = targetUrl;
       bgmAudioEl.dataset.songId = song.id;
-      bgmAudioEl.src = wavUrl;
+      bgmAudioEl.src = targetUrl;
     }
-    bgmAudioEl.volume = speaking ? 0.14 : 0.36;
+    const isStory = currentItem?.kind === 'story';
+    bgmAudioEl.volume = speaking ? (isStory ? 0.25 : 0.14) : 0.42;
     if (bgmAudioEl.paused) {
       bgmAudioEl.play().catch(() => {});
     }
@@ -1302,8 +1328,8 @@ export function createRaceAudio({ onSpeak = null } = {}) {
       stopRaceBackgroundLyric();
     }
     const isStory = currentItem?.kind === 'story';
-    if (bgmAudioEl && !isPreviewIframe && ctx.state !== 'running') {
-      bgmAudioEl.volume = bgmMuted || mutedByOtherTab ? 0 : duck ? (isStory ? 0.16 : 0.10) : 0.36;
+    if (bgmAudioEl && !isPreviewIframe) {
+      bgmAudioEl.volume = bgmMuted || mutedByOtherTab ? 0 : duck ? (isStory ? 0.25 : 0.14) : 0.42;
     }
     if (ctx.state === 'running') {
       const target = bgmMuted ? 0 : duck ? (isStory ? 0.22 : 0.14) : 0.34;
@@ -1321,7 +1347,12 @@ export function createRaceAudio({ onSpeak = null } = {}) {
     const song = VN_SONGS[currentSongIdx % VN_SONGS.length];
     let waitMs = song.stepMs;
 
-    if (enabled && !bgmMuted && ctx.state === 'running') {
+    const realMp3Playing = Boolean(bgmAudioEl && !bgmAudioEl.paused && bgmAudioEl.readyState >= 2 && !bgmAudioEl.error);
+    if (!realMp3Playing && enabled && !bgmMuted && !isPreviewIframe && !mutedByOtherTab) {
+      syncHtmlBgmTrack(false);
+    }
+
+    if (!realMp3Playing && enabled && !bgmMuted && ctx.state === 'running') {
       const t = ctx.currentTime;
       const [freq, beats, inst] = song.notes[noteCursor % song.notes.length];
       waitMs = song.stepMs * Math.max(1, beats);
@@ -1373,13 +1404,6 @@ export function createRaceAudio({ onSpeak = null } = {}) {
           playDanBau(freq, t, durSec, 0.10);
           playAcousticPluck(freq, t, 0.20, 'zither');
         }
-        // 4. Soft Background Vocal Choir & Regional Sung Lyric Phrase ("Nhạc Có Lời Nhỏ Nhẹ")
-        if (bgmVocalEnabled && (stepInBar === 0 || stepInBar === 4 || inst === 'both')) {
-          playRaceFormantVocal(freq, t, durSec, 0.048);
-        }
-        if (bgmVocalEnabled && !speaking && speechQueue.length === 0 && stepInBar === 0) {
-          preloadAndPlayRaceLyric();
-        }
       }
 
       noteCursor++;
@@ -1400,7 +1424,7 @@ export function createRaceAudio({ onSpeak = null } = {}) {
         }
       }
     }
-    bgTimer = setTimeout(tickBg, waitMs);
+    bgTimer = setTimeout(tickBg, realMp3Playing ? 1500 : waitMs);
   }
 
   function startBg() {
@@ -1903,6 +1927,7 @@ export function createRaceAudio({ onSpeak = null } = {}) {
         bgmVocalVolume = Math.max(0, Math.min(0.45, Number(vol)));
       }
       if (!bgmVocalEnabled) stopRaceBackgroundLyric();
+      syncHtmlBgmTrack(false);
       duckBgm(speaking);
     },
     getBgmVocalConfig() {

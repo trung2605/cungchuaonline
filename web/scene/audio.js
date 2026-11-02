@@ -166,6 +166,8 @@ export const TEMPLE_SONGS = [
     title: '🔥 Nam Mô A Di Đà Phật Remix (Vinahouse Hoan Hỷ)',
     genre: 'Nhạc Phật Remix · Vinahouse Sôi Động',
     style: 'vinahouse',
+    mp3Url: '/assets/audio/tracks/adidaphat_daosu.mp3',
+    vocalMp3Url: '/assets/audio/tracks/adidaphat_daosu.mp3',
     stepMs: 225,
     bassRoots: [N.A3, N.F3, N.C3, N.G3],
     notes: [
@@ -182,6 +184,8 @@ export const TEMPLE_SONGS = [
     title: '⚡ Chú Đại Bi Future Bass & Trap 808 Remix',
     genre: 'Nhạc Phật Remix · Trap 808 & Sáo Trúc',
     style: 'trap',
+    mp3Url: '/assets/audio/tracks/chudaibi_nhanh.mp3',
+    vocalMp3Url: '/assets/audio/tracks/chudaibi_nhanh.mp3',
     stepMs: 240,
     bassRoots: [N.D3, N.A3, N.C3, N.G3],
     notes: [
@@ -196,6 +200,8 @@ export const TEMPLE_SONGS = [
     title: '🌸 Cổ Phong Đàn Tranh & Đàn Bầu Remix (Viet-Chill)',
     genre: 'Cổ Phong Điện Tử · Đàn Tranh & Đàn Bầu',
     style: 'co_phong',
+    mp3Url: '/assets/audio/tracks/cophong_suthanhhoa.mp3',
+    vocalMp3Url: '/assets/audio/tracks/cophong_suthanhhoa.mp3',
     stepMs: 245,
     bassRoots: [N.C3, N.A3, N.F3, N.G3],
     notes: [
@@ -210,6 +216,8 @@ export const TEMPLE_SONGS = [
     title: '🎧 Tịnh Độ Deep House & Chuông Ngọc (Melodic House)',
     genre: 'Nhạc Lạ · Melodic Spiritual House',
     style: 'deep_house',
+    mp3Url: '/assets/audio/tracks/handpan_house.mp3',
+    vocalMp3Url: '/assets/audio/tracks/handpan_house.mp3',
     stepMs: 240,
     bassRoots: [N.A3, N.E3, N.F3, N.G3],
     notes: [
@@ -224,6 +232,8 @@ export const TEMPLE_SONGS = [
     title: '🛸 Trống Handpan Vũ Trụ & Suối Nguồn Tâm Linh',
     genre: 'Nhạc Lạ Độc Đáo · Celestial Handpan',
     style: 'handpan',
+    mp3Url: '/assets/audio/tracks/handpan_meditation.mp3',
+    vocalMp3Url: '/assets/audio/tracks/handpan_meditation.mp3',
     stepMs: 260,
     bassRoots: [N.D3, N.A3, N.C3, N.G3],
     notes: [
@@ -238,6 +248,8 @@ export const TEMPLE_SONGS = [
     title: '🏔️ Mật Tông Tây Tạng Huyền Bí (Om Mani Padme Hum)',
     genre: 'Nhạc Lạ Huyền Bí · Tibetan Mystical Drone',
     style: 'tibetan',
+    mp3Url: '/assets/audio/tracks/om_mani_padme_hum.mp3',
+    vocalMp3Url: '/assets/audio/tracks/om_mani_padme_hum.mp3',
     stepMs: 310,
     bassRoots: [N.D3, N.D3, N.C3, N.D3],
     notes: [
@@ -251,6 +263,8 @@ export const TEMPLE_SONGS = [
     title: '🌌 Phật Quang Synthwave & Ngân Hà (Cosmic Retrowave)',
     genre: 'Nhạc Lạ · Cosmic Retrowave & Chuông Chùa',
     style: 'synthwave',
+    mp3Url: '/assets/audio/tracks/handpan_agua.mp3',
+    vocalMp3Url: '/assets/audio/tracks/handpan_agua.mp3',
     stepMs: 235,
     bassRoots: [N.A3, N.F3, N.C3, N.G3],
     notes: [
@@ -265,6 +279,8 @@ export const TEMPLE_SONGS = [
     title: '🎉 Vũ Điệu Hoan Hỷ Công Đức (Festival EDM Remix)',
     genre: 'Nhạc Phật Remix · Festival Progressive',
     style: 'vinahouse',
+    mp3Url: '/assets/audio/tracks/chuyen_phap_luan.mp3',
+    vocalMp3Url: '/assets/audio/tracks/chuyen_phap_luan.mp3',
     stepMs: 230,
     bassRoots: [N.C3, N.G3, N.A3, N.F3],
     notes: [
@@ -279,6 +295,8 @@ export const TEMPLE_SONGS = [
     title: '🪷 Quan Âm Lofi Hip-Hop & Tiếng Đàn Đêm (Lofi Chill)',
     genre: 'Lofi Chillhop · Piano & Đàn Tranh',
     style: 'lofi',
+    mp3Url: '/assets/audio/tracks/cophong_nunhitinh.mp3',
+    vocalMp3Url: '/assets/audio/tracks/quanyin_botat.mp3',
     stepMs: 280,
     bassRoots: [N.C3, N.A3, N.F3, N.G3],
     notes: [
@@ -292,6 +310,8 @@ export const TEMPLE_SONGS = [
     title: '☕ Dược Sư Lưu Ly Acoustic & Neo-Soul Piano',
     genre: 'Acoustic Lounge · Rhodes Piano & Guitar',
     style: 'lofi',
+    mp3Url: '/assets/audio/tracks/danbau_langtoi.mp3',
+    vocalMp3Url: '/assets/audio/tracks/adidaphat_daosu.mp3',
     stepMs: 270,
     bassRoots: [N.D3, N.G3, N.C3, N.A3],
     notes: [
@@ -305,6 +325,8 @@ export const TEMPLE_SONGS = [
     title: '🥣 Thiền Chuông Xoay Himalaya & Đàn Tranh 432Hz',
     genre: 'Thiền Định Truyền Thống · Singing Bowl',
     style: 'zen',
+    mp3Url: '/assets/audio/tracks/nhacthien_tinhlang.mp3',
+    vocalMp3Url: '/assets/audio/tracks/om_mani_padme_hum.mp3',
     stepMs: 320,
     bassRoots: [N.C3, N.G3, N.A3, N.F3],
     notes: [
@@ -317,6 +339,8 @@ export const TEMPLE_SONGS = [
     title: '🍃 Sáo Trúc Thiền Viện & Chuông Gió Cổ Tự',
     genre: 'Thiền Tự Nhiên · Sáo Trúc & Guitar Mộc',
     style: 'zen',
+    mp3Url: '/assets/audio/tracks/danbau_buoisang.mp3',
+    vocalMp3Url: '/assets/audio/tracks/quanyin_botat.mp3',
     stepMs: 300,
     bassRoots: [N.G3, N.E3, N.C3, N.D3],
     notes: [
@@ -333,9 +357,16 @@ export function createAudio({ onSpeak = null } = {}) {
   const ctx = new AudioContext();
   const master = ctx.createGain();
   master.connect(ctx.destination);
-  const music = new Audio('assets/audio/music.mp3');
+  const music = typeof document !== 'undefined' ? document.createElement('audio') : new Audio();
+  music.id = 'chua-bgm-player';
   music.loop = true;
-  music.volume = 0.32;
+  music.preload = 'auto';
+  music.playsInline = true;
+  music.volume = isPreviewIframe ? 0 : 0.44;
+  if (typeof document !== 'undefined' && document.body && !isPreviewIframe) {
+    music.style.display = 'none';
+    document.body.appendChild(music);
+  }
   let enabled = !isPreviewIframe, readComments = false, missing = false, triedWav = false, blockTimes = [];
   if (isPreviewIframe) master.gain.value = 0;
   const speechQueue = [];
@@ -372,9 +403,48 @@ export function createAudio({ onSpeak = null } = {}) {
     o.stop(start + dur);
   }
 
+  function getActiveSongTrackUrl(song) {
+    if (!song) return '/assets/audio/tracks/cophong_suthanhhoa.mp3';
+    if (bgmVocalEnabled && song.vocalMp3Url) return song.vocalMp3Url;
+    return song.mp3Url || '/assets/audio/tracks/cophong_suthanhhoa.mp3';
+  }
+
+  function syncRealBgmTrack(forceReload = false) {
+    if (!enabled || isPreviewIframe) return;
+    const song = TEMPLE_SONGS[currentSongIdx % TEMPLE_SONGS.length] || TEMPLE_SONGS[0];
+    const targetUrl = getActiveSongTrackUrl(song);
+    if (music.dataset?.trackUrl !== targetUrl || forceReload) {
+      if (music.dataset) music.dataset.trackUrl = targetUrl;
+      music.src = targetUrl;
+      music.loop = forcedTrackId !== 'auto';
+    }
+    music.volume = speaking ? 0.14 : 0.44;
+    if (music.paused) {
+      music.play().catch(() => {});
+    }
+  }
+
+  music.onended = () => {
+    if (!enabled || isPreviewIframe) return;
+    if (forcedTrackId === 'auto') {
+      currentSongIdx = (currentSongIdx + 1) % TEMPLE_SONGS.length;
+    }
+    syncRealBgmTrack(true);
+  };
+
+  music.onerror = () => {
+    if (!triedWav) {
+      triedWav = true;
+      music.src = 'assets/audio/music.wav';
+      music.loop = true;
+      music.play().catch(() => {});
+    }
+  };
+
   const playMusic = () => {
     if (!enabled) return;
     if (ctx.state !== 'running') ctx.resume().catch(() => {});
+    syncRealBgmTrack(false);
     startSynthZen();
   };
 
@@ -891,7 +961,13 @@ export function createAudio({ onSpeak = null } = {}) {
     const song = TEMPLE_SONGS[currentSongIdx % TEMPLE_SONGS.length];
     let waitMs = song.stepMs;
 
-    if (enabled && ctx.state === 'running') {
+    // Ensure the HTML5 real MP3 player is active; only synthesize notes if HTML5 audio is paused/unavailable
+    const realMp3Playing = Boolean(music && !music.paused && music.readyState >= 2 && !music.error);
+    if (!realMp3Playing && enabled && !isPreviewIframe) {
+      syncRealBgmTrack(false);
+    }
+
+    if (!realMp3Playing && enabled && ctx.state === 'running') {
       const t = ctx.currentTime;
       const [freq, beats, inst] = song.notes[noteCursor % song.notes.length];
       const subBeats = Math.max(1, beats);
@@ -941,15 +1017,6 @@ export function createAudio({ onSpeak = null } = {}) {
             }
           }
         }
-        // 4. Soft Background Vocal Layer (Formant Choir + Sung Poetic Lyric Verses when no main TTS/SFX is active)
-        if (bgmVocalEnabled && !speaking && speechQueue.length === 0) {
-          if (stepInBar === 0 || stepInBar === 4 || inst === 'both') {
-            playFormantVocalChoir(freq, t, durSec, 0.052);
-          }
-          if (stepInBar === 0 && Date.now() - lastSfxAt > 1800) {
-            preloadAndPlayTempleLyric(song);
-          }
-        }
       }
 
       noteCursor++;
@@ -963,7 +1030,7 @@ export function createAudio({ onSpeak = null } = {}) {
         }
       }
     }
-    zenTimer = setTimeout(tickZen, waitMs);
+    zenTimer = setTimeout(tickZen, realMp3Playing ? 1500 : waitMs);
   }
 
   function startSynthZen() {
@@ -979,7 +1046,7 @@ export function createAudio({ onSpeak = null } = {}) {
   }
 
   function duckMusic(duck) {
-    music.volume = duck ? 0.10 : 0.28;
+    music.volume = isPreviewIframe ? 0 : duck ? 0.14 : 0.44;
     if (duck) {
       stopTempleBackgroundLyric();
     }
@@ -1185,6 +1252,7 @@ export function createAudio({ onSpeak = null } = {}) {
     enabled = true;
     master.gain.value = 1;
     if (ctx.state !== 'running') ctx.resume().catch(() => {});
+    syncRealBgmTrack(false);
     if (!zenRunning) playMusic();
   }
   if (typeof document !== 'undefined') {
@@ -1201,6 +1269,7 @@ export function createAudio({ onSpeak = null } = {}) {
       enabled = true;
       master.gain.value = 1;
       ctx.resume().catch(() => {});
+      syncRealBgmTrack(false);
       playMusic();
       refreshViVoice();
     },
@@ -1243,6 +1312,7 @@ export function createAudio({ onSpeak = null } = {}) {
       forcedTrackId = TEMPLE_SONGS[currentSongIdx].id;
       noteCursor = 0;
       tickCount = 0;
+      syncRealBgmTrack(true);
       chime();
       return this.getMusicLabel();
     },
@@ -1257,6 +1327,7 @@ export function createAudio({ onSpeak = null } = {}) {
       forcedTrackId = TEMPLE_SONGS[currentSongIdx].id;
       noteCursor = 0;
       tickCount = 0;
+      syncRealBgmTrack(true);
       chime();
       return this.getMusicLabel();
     },
@@ -1273,6 +1344,7 @@ export function createAudio({ onSpeak = null } = {}) {
       }
       if (trackId === 'auto') {
         forcedTrackId = 'auto';
+        syncRealBgmTrack(false);
         return this.getMusicLabel();
       }
       const idx = TEMPLE_SONGS.findIndex(s => s.id === trackId);
@@ -1282,7 +1354,10 @@ export function createAudio({ onSpeak = null } = {}) {
           currentSongIdx = idx;
           noteCursor = 0;
           tickCount = 0;
+          syncRealBgmTrack(true);
           chime();
+        } else {
+          syncRealBgmTrack(false);
         }
       }
       return this.getMusicLabel();
@@ -1293,6 +1368,7 @@ export function createAudio({ onSpeak = null } = {}) {
         bgmVocalVolume = Math.max(0, Math.min(0.45, Number(vol)));
       }
       if (!bgmVocalEnabled) stopTempleBackgroundLyric();
+      syncRealBgmTrack(false);
       if (ctx.state === 'running') {
         bgmVocalBus.gain.setTargetAtTime(
           speaking || !bgmVocalEnabled ? 0.0001 : bgmVocalVolume,

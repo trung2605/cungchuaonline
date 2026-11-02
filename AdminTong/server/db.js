@@ -99,10 +99,16 @@ export function createDatabase({
       chuaDemoOn: false,
       chuaDemoRate: 0.15,
       chuaDemoGiftRatio: 0.12,
+      chuaBgmTrack: 'auto',
+      chuaBgmSeq: 0,
+      chuaBgmVocal: true,
+      chuaBgmVocalVolume: 0.15,
       duaAutoBalanceEnabled: false,
       duaDemoOn: false,
       duaDemoRate: 0.15,
       duaDemoGiftRatio: 0.15,
+      duaBgmVocal: true,
+      duaBgmVocalVolume: 0.15,
     },
   };
 

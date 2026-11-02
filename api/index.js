@@ -456,7 +456,7 @@ async function initUnifiedRuntime() {
         try { await saveBlocked(b, path.join(tmpDir, 'chua-lists')); } catch {}
       },
       saveSceneConfig: async patch => {
-        if (patch?.autoBalance || patch?.demo) {
+        if (patch?.autoBalance || patch?.demo || patch?.scene) {
           await db.updateRuntimeSettings?.({
             ...(patch.autoBalance ? { chuaAutoBalanceEnabled: Boolean(patch.autoBalance.enabled) } : {}),
             ...(patch.demo
@@ -464,6 +464,14 @@ async function initUnifiedRuntime() {
                   chuaDemoOn: Boolean(patch.demo.on),
                   ...(Number.isFinite(patch.demo.rate) ? { chuaDemoRate: Number(patch.demo.rate) } : {}),
                   ...(Number.isFinite(patch.demo.giftRatio) ? { chuaDemoGiftRatio: Number(patch.demo.giftRatio) } : {}),
+                }
+              : {}),
+            ...(patch.scene
+              ? {
+                  ...(patch.scene.bgmTrack ? { chuaBgmTrack: String(patch.scene.bgmTrack) } : {}),
+                  ...(Number.isFinite(patch.scene.bgmSeq) ? { chuaBgmSeq: Number(patch.scene.bgmSeq) } : {}),
+                  ...(patch.scene.bgmVocal !== undefined ? { chuaBgmVocal: Boolean(patch.scene.bgmVocal) } : {}),
+                  ...(Number.isFinite(patch.scene.bgmVocalVolume) ? { chuaBgmVocalVolume: Number(patch.scene.bgmVocalVolume) } : {}),
                 }
               : {}),
           });
@@ -501,7 +509,7 @@ async function initUnifiedRuntime() {
       ingest: ingestDua,
       broadcast: broadcastDua,
       saveSceneConfig: async patch => {
-        if (patch?.autoBalance || patch?.demo) {
+        if (patch?.autoBalance || patch?.demo || patch?.scene) {
           await db.updateRuntimeSettings?.({
             ...(patch.autoBalance ? { duaAutoBalanceEnabled: Boolean(patch.autoBalance.enabled) } : {}),
             ...(patch.demo
@@ -509,6 +517,12 @@ async function initUnifiedRuntime() {
                   duaDemoOn: Boolean(patch.demo.on),
                   ...(Number.isFinite(patch.demo.rate) ? { duaDemoRate: Number(patch.demo.rate) } : {}),
                   ...(Number.isFinite(patch.demo.giftRatio) ? { duaDemoGiftRatio: Number(patch.demo.giftRatio) } : {}),
+                }
+              : {}),
+            ...(patch.scene
+              ? {
+                  ...(patch.scene.bgmVocal !== undefined ? { duaBgmVocal: Boolean(patch.scene.bgmVocal) } : {}),
+                  ...(Number.isFinite(patch.scene.bgmVocalVolume) ? { duaBgmVocalVolume: Number(patch.scene.bgmVocalVolume) } : {}),
                 }
               : {}),
           });
@@ -550,12 +564,37 @@ async function initUnifiedRuntime() {
           demoRate: rtSettings.chuaDemoRate,
           demoGiftRatio: rtSettings.chuaDemoGiftRatio,
         });
+        const curChuaScene = chuaPipeline.snapshot?.()?.scene || {};
+        if (
+          (rtSettings.chuaBgmTrack && rtSettings.chuaBgmSeq && rtSettings.chuaBgmSeq !== curChuaScene.bgmSeq) ||
+          (rtSettings.chuaBgmVocal !== undefined && Boolean(rtSettings.chuaBgmVocal) !== Boolean(curChuaScene.bgmVocal)) ||
+          (Number.isFinite(rtSettings.chuaBgmVocalVolume) && Number(rtSettings.chuaBgmVocalVolume) !== Number(curChuaScene.bgmVocalVolume))
+        ) {
+          const msgs = chuaPipeline.setScene({
+            ...(rtSettings.chuaBgmTrack ? { bgmTrack: rtSettings.chuaBgmTrack } : {}),
+            ...(rtSettings.chuaBgmSeq ? { bgmSeq: rtSettings.chuaBgmSeq } : {}),
+            ...(rtSettings.chuaBgmVocal !== undefined ? { bgmVocal: Boolean(rtSettings.chuaBgmVocal) } : {}),
+            ...(Number.isFinite(rtSettings.chuaBgmVocalVolume) ? { bgmVocalVolume: Number(rtSettings.chuaBgmVocalVolume) } : {}),
+          });
+          broadcastChua(msgs);
+        }
         duaAdmin.syncExternalState?.({
           autoBalanceEnabled: Boolean(rtSettings.duaAutoBalanceEnabled),
           demoOn: Boolean(rtSettings.duaDemoOn),
           demoRate: rtSettings.duaDemoRate,
           demoGiftRatio: rtSettings.duaDemoGiftRatio,
         });
+        if (
+          (rtSettings.duaBgmVocal !== undefined && Boolean(rtSettings.duaBgmVocal) !== Boolean(duaScene.bgmVocal)) ||
+          (Number.isFinite(rtSettings.duaBgmVocalVolume) && Number(rtSettings.duaBgmVocalVolume) !== Number(duaScene.bgmVocalVolume))
+        ) {
+          duaScene = {
+            ...duaScene,
+            ...(rtSettings.duaBgmVocal !== undefined ? { bgmVocal: Boolean(rtSettings.duaBgmVocal) } : {}),
+            ...(Number.isFinite(rtSettings.duaBgmVocalVolume) ? { bgmVocalVolume: Number(rtSettings.duaBgmVocalVolume) } : {}),
+          };
+          broadcastDua([{ t: 'scene', scene: duaScene }]);
+        }
       }
     } catch {}
     stepSimulationsIfNeeded();

@@ -294,11 +294,15 @@ export async function startMasterAdmin({
     },
   };
 
+  const CHUA_ASSETS_DIR = path.resolve(__dirname, '../../web/assets');
   const MIME = {
     '.css': 'text/css; charset=utf-8',
     '.js': 'text/javascript; charset=utf-8',
     '.json': 'application/json; charset=utf-8',
     '.svg': 'image/svg+xml',
+    '.mp3': 'audio/mpeg',
+    '.wav': 'audio/wav',
+    '.ogg': 'audio/ogg',
   };
 
   const server = http.createServer(async (req, res) => {
@@ -310,14 +314,21 @@ export async function startMasterAdmin({
 
     if (req.method === 'GET' && urlPath.startsWith('/assets/')) {
       const rel = urlPath.slice('/assets/'.length);
-      const safePath = path.resolve(PUBLIC_DIR, rel);
-      if (!safePath.startsWith(PUBLIC_DIR)) return send(res, 404, { error: 'not found' });
-      return fs.readFile(safePath, (err, buf) => {
+      const safePublic = path.resolve(PUBLIC_DIR, rel);
+      const safeChua = path.resolve(CHUA_ASSETS_DIR, rel);
+      const targetFile =
+        safePublic.startsWith(PUBLIC_DIR) && fs.existsSync(safePublic)
+          ? safePublic
+          : safeChua.startsWith(CHUA_ASSETS_DIR) && fs.existsSync(safeChua)
+            ? safeChua
+            : null;
+      if (!targetFile) return send(res, 404, { error: 'not found' });
+      return fs.readFile(targetFile, (err, buf) => {
         if (err) return send(res, 404, { error: 'not found' });
-        const ext = path.extname(safePath).toLowerCase();
+        const ext = path.extname(targetFile).toLowerCase();
         res.writeHead(200, {
           'content-type': MIME[ext] || 'application/octet-stream',
-          'cache-control': 'no-store',
+          'cache-control': ext === '.mp3' || ext === '.wav' ? 'public, max-age=86400' : 'no-store',
         }).end(buf);
       });
     }

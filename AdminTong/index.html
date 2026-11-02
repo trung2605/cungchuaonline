@@ -1104,6 +1104,15 @@
                 <button type="button" class="btn sm emerald" data-chua-music="zen_singing_bowl">🥣 Chuông Xoay 432Hz</button>
               </div>
 
+              <!-- Live Real MP3 Audio Player & Monitor Bar -->
+              <div style="background:#ffffff;border:1px solid rgba(217,119,6,0.35);padding:9px 12px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+                <div style="min-width:210px">
+                  <div style="font-size:12.5px;font-weight:800;color:var(--text-primary)" id="adminChuaNowPlayingLabel">🎧 Nhạc Thật Đang Phát: 🌸 Cổ Phong Đàn Tranh &amp; Sáo Trúc</div>
+                  <div style="font-size:11px;color:var(--text-muted)">Bấm bất kỳ nút nhạc phía trên để phát nhạc thật ngay lập tức &amp; đồng bộ sang màn hình 3D</div>
+                </div>
+                <audio id="adminChuaMusicPlayer" controls loop preload="auto" src="/assets/audio/tracks/cophong_suthanhhoa.mp3" style="height:34px;flex:1;min-width:240px;max-width:380px"></audio>
+              </div>
+
               <!-- Soft Sung Buddhist Vocal / Lyric Layer Control -->
               <div style="background:#ffffff;border:1px solid rgba(217,119,6,0.32);padding:9px 12px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
                 <div>
@@ -1509,6 +1518,21 @@
                       </div>
                     </div>
                   </div>
+                </div>
+              </div>
+              <!-- Live Real MP3 Audio Player for Đi Bộ Xuyên Việt -->
+              <div style="background:#ffffff;border:1px solid rgba(13,148,136,0.32);padding:9px 12px;margin-top:8px">
+                <div class="row-inline" style="justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:8px">
+                  <div style="font-size:12px;font-weight:800;color:var(--text-primary)" id="adminDuaNowPlayingLabel">🎵 Nhạc Quê Hương &amp; Đàn Bầu Thật: Chân Quê (Quang Linh)</div>
+                  <audio id="adminDuaMusicPlayer" controls loop preload="auto" src="/assets/audio/tracks/quehuong_chanque.mp3" style="height:32px;flex:1;min-width:220px;max-width:340px"></audio>
+                </div>
+                <div class="row-inline" style="gap:6px;flex-wrap:wrap">
+                  <button type="button" class="btn sm gold" data-dua-music="/assets/audio/tracks/quehuong_chanque.mp3">🌾 Chân Quê (Có Lời)</button>
+                  <button type="button" class="btn sm primary" data-dua-music="/assets/audio/tracks/quehuong_quanho.mp3">🌸 Dòng Sông Quan Họ</button>
+                  <button type="button" class="btn sm rose" data-dua-music="/assets/audio/tracks/quehuong_xuhue.mp3">💜 Tình Ca Xứ Huế</button>
+                  <button type="button" class="btn sm teal" data-dua-music="/assets/audio/tracks/quehuong_aobaba.mp3">🛶 Chiếc Áo Bà Ba</button>
+                  <button type="button" class="btn sm emerald" data-dua-music="/assets/audio/tracks/danbau_langtoi.mp3">🎶 Đàn Bầu Làng Tôi</button>
+                  <button type="button" class="btn sm gold" data-dua-music="/assets/audio/tracks/cophong_suthanhhoa.mp3">🪈 Sáo Trúc Đỉnh Đèo</button>
                 </div>
               </div>
             </div>

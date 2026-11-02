@@ -521,7 +521,7 @@ export async function startAdmin({ port = 8788, host = '127.0.0.1', password, ct
         ...(bgmVocalVolume !== undefined && { bgmVocalVolume: Number(bgmVocalVolume) }),
       });
       broadcast(msgs);
-      await ctx.saveSceneConfig?.();
+      await ctx.saveSceneConfig?.({ scene: msgs[0].scene });
       return { scene: msgs[0].scene, stayConfig: stage.getStayConfig?.() };
     },
 

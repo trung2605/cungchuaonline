@@ -1518,12 +1518,57 @@ window.addEventListener('DOMContentLoaded', () => {
   });
 
   // Temple Music Switcher (12 Styles: Buddhist Remix, Cổ Phong, Handpan, Tibetan, Synthwave, Lofi & Zen)
+  const CHUA_TRACK_MP3_MAP = {
+    buddha_vinahouse_remix: '/assets/audio/tracks/adidaphat_daosu.mp3',
+    dai_bi_trap_remix: '/assets/audio/tracks/chudaibi_nhanh.mp3',
+    co_phong_dan_tranh_remix: '/assets/audio/tracks/cophong_suthanhhoa.mp3',
+    deep_house_chanh_dien: '/assets/audio/tracks/handpan_house.mp3',
+    handpan_lien_hoa: '/assets/audio/tracks/handpan_meditation.mp3',
+    tay_tang_mat_tong: '/assets/audio/tracks/om_mani_padme_hum.mp3',
+    cyber_zen_synthwave: '/assets/audio/tracks/handpan_agua.mp3',
+    vu_dieu_hoan_hy_edm: '/assets/audio/tracks/chuyen_phap_luan.mp3',
+    quan_am_lofi_chill: '/assets/audio/tracks/cophong_nunhitinh.mp3',
+    duoc_su_jazz_lounge: '/assets/audio/tracks/danbau_langtoi.mp3',
+    zen_singing_bowl: '/assets/audio/tracks/nhacthien_tinhlang.mp3',
+    nhac_thien_ngon_gio: '/assets/audio/tracks/danbau_buoisang.mp3',
+  };
+  const CHUA_TRACK_IDS = Object.keys(CHUA_TRACK_MP3_MAP);
+  let adminChuaTrackIdx = 2; // defaults to co_phong_dan_tranh_remix
+
+  const playAdminChuaTrackPreview = (trackId, labelText = '') => {
+    let resolvedId = trackId;
+    if (trackId === 'next') {
+      adminChuaTrackIdx = (adminChuaTrackIdx + 1) % CHUA_TRACK_IDS.length;
+      resolvedId = CHUA_TRACK_IDS[adminChuaTrackIdx];
+    } else if (trackId === 'random' || trackId === 'auto') {
+      adminChuaTrackIdx = Math.floor(Math.random() * CHUA_TRACK_IDS.length);
+      resolvedId = CHUA_TRACK_IDS[adminChuaTrackIdx];
+    } else if (CHUA_TRACK_MP3_MAP[trackId]) {
+      adminChuaTrackIdx = CHUA_TRACK_IDS.indexOf(trackId);
+    }
+    const mp3Url = CHUA_TRACK_MP3_MAP[resolvedId] || '/assets/audio/tracks/cophong_suthanhhoa.mp3';
+    const player = $('adminChuaMusicPlayer');
+    const duaPlayer = $('adminDuaMusicPlayer');
+    if (duaPlayer && !duaPlayer.paused) duaPlayer.pause();
+    if (player) {
+      if (player.getAttribute('src') !== mp3Url) {
+        player.src = mp3Url;
+      }
+      player.volume = 0.55;
+      player.play().catch(() => {});
+    }
+    if ($('adminChuaNowPlayingLabel')) {
+      $('adminChuaNowPlayingLabel').textContent = `🎧 Nhạc Thật Đang Phát: ${labelText || resolvedId}`;
+    }
+  };
+
   const triggerChuaMusic = async (bgmTrack, labelText = '') => {
+    playAdminChuaTrackPreview(bgmTrack, labelText);
     await gameAction('cung-chua-online', '/api/scene', { bgmTrack });
     if ($('chuaMusicSelect') && bgmTrack !== 'next' && bgmTrack !== 'random') {
       $('chuaMusicSelect').value = bgmTrack;
     }
-    showToast(`🎵 Đã chuyển nhạc Chánh Điện sang: ${labelText || bgmTrack}!`);
+    showToast(`🎵 Đã phát & chuyển nhạc Chánh Điện sang: ${labelText || bgmTrack}!`);
     await pollState();
   };
   $('chuaMusicSelect')?.addEventListener('change', () => {
@@ -1540,6 +1585,25 @@ window.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('[data-chua-music]').forEach(btn => {
     btn.addEventListener('click', () => {
       triggerChuaMusic(btn.dataset.chuaMusic, btn.textContent.trim());
+    });
+  });
+
+  document.querySelectorAll('[data-dua-music]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const mp3Url = btn.dataset.duaMusic;
+      const label = btn.textContent.trim();
+      const player = $('adminDuaMusicPlayer');
+      const chuaPlayer = $('adminChuaMusicPlayer');
+      if (chuaPlayer && !chuaPlayer.paused) chuaPlayer.pause();
+      if (player && mp3Url) {
+        if (player.getAttribute('src') !== mp3Url) player.src = mp3Url;
+        player.volume = 0.55;
+        player.play().catch(() => {});
+      }
+      if ($('adminDuaNowPlayingLabel')) {
+        $('adminDuaNowPlayingLabel').textContent = `🎵 Nhạc Quê Hương & Đàn Bầu Thật: ${label}`;
+      }
+      showToast(`🎵 Đang phát nhạc quê hương: ${label}!`);
     });
   });
 

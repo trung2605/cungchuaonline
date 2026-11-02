@@ -66,6 +66,7 @@ const srv = await startServer({
     '/vendor/gsap/': path.join(ROOT_DIR, 'node_modules/gsap/'),
     '/vendor/canvas-confetti/': path.join(ROOT_DIR, 'node_modules/canvas-confetti/'),
     '/vendor/simplex-noise/': path.join(ROOT_DIR, 'node_modules/simplex-noise/'),
+    '/assets/audio/tracks/': path.join(ROOT_DIR, 'web/assets/audio/tracks/'),
   },
   getSnapshot,
   onClientMsg: msg => {

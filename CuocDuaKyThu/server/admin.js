@@ -264,6 +264,7 @@ export async function startRaceAdmin({ port = 8790, host = '127.0.0.1', password
         ...(bgmVocalVolume !== undefined && { bgmVocalVolume: Number(bgmVocalVolume) }),
       });
       broadcast([{ t: 'scene', scene }]);
+      await ctx.saveSceneConfig?.({ scene });
       return { scene, stayConfig: stage.getStayConfig?.() };
     },
 
