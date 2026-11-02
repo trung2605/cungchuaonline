@@ -880,6 +880,51 @@
               </div>
             </div>
 
+            <!-- Temple Music Switcher: Buddhist Remix, Cổ Phong, Handpan, Tibetan & Zen -->
+            <div class="form-group" style="margin-top:12px;margin-bottom:12px;background:rgba(217,119,6,0.06);padding:12px 14px;border-radius:0px;border:1px solid rgba(217,119,6,0.28)">
+              <div class="row-inline" style="justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:6px">
+                <label class="form-label" for="chuaMusicSelect" style="margin-bottom:0;font-weight:800;color:var(--text-primary)">
+                  🎵 Đổi Nhạc Chánh Điện &amp; Nhạc Phật Remix Đa Phong Cách (12 Bản Phối)
+                </label>
+                <span class="badge gold" id="chuaMusicBadge">Đang phát: Tự động xoay vòng 12 bài</span>
+              </div>
+              <div class="row-inline" style="gap:8px;flex-wrap:wrap;margin-bottom:10px">
+                <select id="chuaMusicSelect" style="flex:1;min-width:250px;font-weight:700">
+                  <option value="auto">🔄 Tự Động Xoay Vòng 12 Bài Nhạc Phật Remix &amp; Thiền</option>
+                  <option value="buddha_vinahouse_remix">🔥 Nam Mô A Di Đà Phật Remix (Vinahouse Hoan Hỷ)</option>
+                  <option value="dai_bi_trap_remix">⚡ Chú Đại Bi Future Bass &amp; Trap 808 Remix</option>
+                  <option value="co_phong_dan_tranh_remix">🌸 Cổ Phong Đàn Tranh &amp; Đàn Bầu Remix (EDM Hoa Sen)</option>
+                  <option value="deep_house_chanh_dien">🎧 Tịnh Độ Deep House &amp; Chuông Ngọc (Spiritual House)</option>
+                  <option value="handpan_lien_hoa">🛸 Trống Handpan Vũ Trụ &amp; Suối Nguồn Tâm Linh (Nhạc Lạ)</option>
+                  <option value="tay_tang_mat_tong">🏔️ Mật Tông Tây Tạng Huyền Bí (Om Mani Padme Hum)</option>
+                  <option value="cyber_zen_synthwave">🌌 Phật Quang Synthwave &amp; Ngân Hà (Cosmic Retrowave)</option>
+                  <option value="vu_dieu_hoan_hy_edm">🎉 Vũ Điệu Hoan Hỷ Công Đức (Festival EDM Remix)</option>
+                  <option value="quan_am_lofi_chill">🪷 Quan Âm Lofi Hip-Hop &amp; Tiếng Đàn Đêm (Lofi Chill)</option>
+                  <option value="duoc_su_jazz_lounge">☕ Dược Sư Lưu Ly Acoustic &amp; Neo-Soul Piano</option>
+                  <option value="zen_singing_bowl">🥣 Thiền Chuông Xoay Himalaya &amp; Đàn Tranh 432Hz</option>
+                  <option value="nhac_thien_ngon_gio">🍃 Sáo Trúc Thiền Viện &amp; Chuông Gió Cổ Tự</option>
+                </select>
+                <button type="button" class="btn sm primary" id="btnChuaNextMusic">
+                  <i data-lucide="skip-forward"></i> Đổi Bài Khác
+                </button>
+                <button type="button" class="btn sm gold" id="btnChuaRandomMusic">
+                  <i data-lucide="shuffle"></i> Random Nhạc Lạ
+                </button>
+              </div>
+              <div class="row-inline" style="gap:6px;flex-wrap:wrap">
+                <button type="button" class="btn sm gold" data-chua-music="buddha_vinahouse_remix">🔥 Phật Remix Vinahouse</button>
+                <button type="button" class="btn sm primary" data-chua-music="dai_bi_trap_remix">⚡ Chú Đại Bi Trap 808</button>
+                <button type="button" class="btn sm rose" data-chua-music="co_phong_dan_tranh_remix">🌸 Cổ Phong EDM</button>
+                <button type="button" class="btn sm teal" data-chua-music="deep_house_chanh_dien">🎧 Tịnh Độ Deep House</button>
+                <button type="button" class="btn sm emerald" data-chua-music="handpan_lien_hoa">🛸 Trống Handpan Lạ</button>
+                <button type="button" class="btn sm gold" data-chua-music="tay_tang_mat_tong">🏔️ Mật Tông Tây Tạng</button>
+                <button type="button" class="btn sm primary" data-chua-music="cyber_zen_synthwave">🌌 Phật Quang Synthwave</button>
+                <button type="button" class="btn sm gold" data-chua-music="vu_dieu_hoan_hy_edm">🎉 Vũ Điệu EDM</button>
+                <button type="button" class="btn sm teal" data-chua-music="quan_am_lofi_chill">🪷 Quan Âm Lofi Chill</button>
+                <button type="button" class="btn sm emerald" data-chua-music="zen_singing_bowl">🥣 Chuông Xoay 432Hz</button>
+              </div>
+            </div>
+
             <div class="form-group" style="margin-top:12px;margin-bottom:12px;background:rgba(37,99,235,0.05);padding:10px 12px;border-radius:0px;border:1px solid var(--border)">
               <label class="form-label" for="chuaStayMinutesInput">⏳ Thời Gian Phật Tử Ở Lại Trong Chánh Điện (Phút · Tặng quà tự động nhân 2x – 5x)</label>
               <div class="row-inline">

@@ -323,10 +323,11 @@ export async function startAdmin({ port = 8788, host = '127.0.0.1', password, ct
     },
 
     'POST /api/scene': async req => {
-      const { theme, sound, readComments, stayMinutes } = await readJson(req);
+      const { theme, sound, readComments, stayMinutes, bgmTrack } = await readJson(req);
       if (theme !== undefined && !THEMES.includes(theme)) throw bad(`theme phải là ${THEMES.join('/')}`);
       if (sound !== undefined && typeof sound !== 'boolean') throw bad('sound phải là boolean');
       if (readComments !== undefined && typeof readComments !== 'boolean') throw bad('readComments phải là boolean');
+      if (bgmTrack !== undefined && (typeof bgmTrack !== 'string' || !bgmTrack.trim())) throw bad('bgmTrack không hợp lệ');
       if (stayMinutes !== undefined) {
         const mins = Number(stayMinutes);
         if (!Number.isFinite(mins) || mins < 0.5 || mins > 180) throw bad('stayMinutes phải từ 0.5 đến 180 phút');
@@ -336,6 +337,7 @@ export async function startAdmin({ port = 8788, host = '127.0.0.1', password, ct
         ...(theme && { theme }),
         ...(sound !== undefined && { sound }),
         ...(readComments !== undefined && { readComments }),
+        ...(bgmTrack !== undefined && { bgmTrack: bgmTrack.trim(), bgmSeq: Date.now() }),
       });
       broadcast(msgs);
       await ctx.saveSceneConfig?.();

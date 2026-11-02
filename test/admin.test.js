@@ -90,7 +90,14 @@ test('TC-09.11 scene: valid broadcasts, invalid 400', async () => {
   assert.deepEqual(sent, [{ t: 'scene', scene: { theme: 'day', sound: true } }]);
   assert.equal((await call('POST', '/api/scene', { theme: 'abc' })).status, 400);
   assert.equal((await call('POST', '/api/scene', { sound: 'yes' })).status, 400);
+  assert.equal((await call('POST', '/api/scene', { bgmTrack: '' })).status, 400);
   assert.equal((await (await call('GET', '/api/state')).json()).scene.theme, 'day');
+  sent.length = 0;
+  const rMusic = await call('POST', '/api/scene', { bgmTrack: 'buddha_vinahouse_remix' });
+  assert.equal(rMusic.status, 200);
+  assert.equal(sent[0].t, 'scene');
+  assert.equal(sent[0].scene.bgmTrack, 'buddha_vinahouse_remix');
+  assert.equal(typeof sent[0].scene.bgmSeq, 'number');
 });
 
 test('TC-09.12 banner gift-bait 400', async () => {

@@ -629,6 +629,20 @@ function renderAll(state) {
     if (document.activeElement !== $('chuaThemeSelect')) $('chuaThemeSelect').value = chua.scene.theme || 'night';
     $('chuaSoundCheck').checked = chua.scene.sound !== false;
     if ($('chuaReadCommentsCheck')) $('chuaReadCommentsCheck').checked = Boolean(chua.scene.readComments);
+    const curTrack = chua.scene.bgmTrack || 'auto';
+    if ($('chuaMusicSelect') && document.activeElement !== $('chuaMusicSelect') && curTrack !== 'next' && curTrack !== 'random') {
+      $('chuaMusicSelect').value = curTrack;
+    }
+    if ($('chuaMusicBadge')) {
+      const opt = $('chuaMusicSelect')?.querySelector(`option[value="${CSS.escape(curTrack)}"]`);
+      const label = curTrack === 'next' ? '⏭️ Vừa chuyển sang bài tiếp theo'
+        : curTrack === 'random' ? '🎲 Đang phát ngẫu nhiên Nhạc Lạ / Remix'
+        : opt ? opt.textContent : '🔄 Tự động xoay vòng 12 bài';
+      $('chuaMusicBadge').textContent = label;
+    }
+    document.querySelectorAll('[data-chua-music]').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.chuaMusic === curTrack);
+    });
   }
 
   const readCommentsOn = Boolean(chua.scene?.readComments || dua.scene?.readComments);
@@ -1121,6 +1135,32 @@ window.addEventListener('DOMContentLoaded', () => {
     await gameAction('cung-chua-online', '/api/scene', { readComments });
     showToast(readComments ? '🔊 Đã BẬT đọc bình luận Chùa 3D!' : '🔇 Đã TẮT đọc bình luận Chùa 3D!');
     await pollState();
+  });
+
+  // Temple Music Switcher (12 Styles: Buddhist Remix, Cổ Phong, Handpan, Tibetan, Synthwave, Lofi & Zen)
+  const triggerChuaMusic = async (bgmTrack, labelText = '') => {
+    await gameAction('cung-chua-online', '/api/scene', { bgmTrack });
+    if ($('chuaMusicSelect') && bgmTrack !== 'next' && bgmTrack !== 'random') {
+      $('chuaMusicSelect').value = bgmTrack;
+    }
+    showToast(`🎵 Đã chuyển nhạc Chánh Điện sang: ${labelText || bgmTrack}!`);
+    await pollState();
+  };
+  $('chuaMusicSelect')?.addEventListener('change', () => {
+    const sel = $('chuaMusicSelect');
+    const text = sel.options[sel.selectedIndex]?.textContent || sel.value;
+    triggerChuaMusic(sel.value, text);
+  });
+  $('btnChuaNextMusic')?.addEventListener('click', () =>
+    triggerChuaMusic('next', '⏭️ Bài nhạc tiếp theo trong danh sách 12 bản phối')
+  );
+  $('btnChuaRandomMusic')?.addEventListener('click', () =>
+    triggerChuaMusic('random', '🎲 Random Nhạc Phật Remix / Nhạc Lạ')
+  );
+  document.querySelectorAll('[data-chua-music]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      triggerChuaMusic(btn.dataset.chuaMusic, btn.textContent.trim());
+    });
   });
 
   $('btnChuaBanner').addEventListener('click', async () => {

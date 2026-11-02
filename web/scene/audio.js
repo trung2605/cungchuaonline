@@ -150,6 +150,182 @@ export function formatTtsBlessing({ name = '', offering = 'dâng hương', repea
   return `${base}, ${b}`;
 }
 
+// Pitch table (Hz) across 3 octaves for Buddhist Remix, Cổ Phong, Handpan, Tibetan & Zen
+const N = {
+  C3: 130.81, D3: 146.83, E3: 164.81, F3: 174.61, G3: 196.00, A3: 220.00, B3: 246.94,
+  C4: 261.63, D4: 293.66, E4: 329.63, F4: 349.23, G4: 392.00, A4: 440.00, B4: 493.88,
+  C5: 523.25, D5: 587.33, E5: 659.25, F5: 698.46, G5: 783.99, A5: 880.00,
+};
+
+// ============================================================================
+// 12 MULTI-STYLE BUDDHIST REMIX, MYSTICAL & ZEN TRACKS FOR CÚNG CHÙA ONLINE
+// ============================================================================
+export const TEMPLE_SONGS = [
+  {
+    id: 'buddha_vinahouse_remix',
+    title: '🔥 Nam Mô A Di Đà Phật Remix (Vinahouse Hoan Hỷ)',
+    genre: 'Nhạc Phật Remix · Vinahouse Sôi Động',
+    style: 'vinahouse',
+    stepMs: 225,
+    bassRoots: [N.A3, N.F3, N.C3, N.G3],
+    notes: [
+      [N.A4, 1, 'lead'], [N.C5, 1, 'lead'], [N.D5, 1, 'both'], [N.E5, 1, 'lead'],
+      [N.E5, 1, 'zither'], [N.D5, 1, 'lead'], [N.C5, 1, 'zither'], [N.A4, 1, 'both'],
+      [N.G4, 1, 'lead'], [N.A4, 1, 'lead'], [N.C5, 1, 'both'], [N.D5, 1, 'lead'],
+      [N.E5, 1, 'both'], [N.G5, 1, 'lead'], [N.E5, 2, 'both'],
+      [N.D5, 1, 'lead'], [N.C5, 1, 'zither'], [N.A4, 1, 'lead'], [N.G4, 1, 'zither'],
+      [N.A4, 2, 'both'], [N.A4, 2, 'lead'],
+    ],
+  },
+  {
+    id: 'dai_bi_trap_remix',
+    title: '⚡ Chú Đại Bi Future Bass & Trap 808 Remix',
+    genre: 'Nhạc Phật Remix · Trap 808 & Sáo Trúc',
+    style: 'trap',
+    stepMs: 240,
+    bassRoots: [N.D3, N.A3, N.C3, N.G3],
+    notes: [
+      [N.D5, 1, 'flute'], [N.F5, 1, 'zither'], [N.E5, 1, 'lead'], [N.D5, 1, 'both'],
+      [N.C5, 1, 'zither'], [N.A4, 1, 'flute'], [N.C5, 2, 'both'],
+      [N.D5, 1, 'lead'], [N.A4, 1, 'zither'], [N.G4, 1, 'flute'], [N.F4, 1, 'zither'],
+      [N.G4, 1, 'lead'], [N.A4, 1, 'both'], [N.D4, 2, 'both'],
+    ],
+  },
+  {
+    id: 'co_phong_dan_tranh_remix',
+    title: '🌸 Cổ Phong Đàn Tranh & Đàn Bầu Remix (Viet-Chill)',
+    genre: 'Cổ Phong Điện Tử · Đàn Tranh & Đàn Bầu',
+    style: 'co_phong',
+    stepMs: 245,
+    bassRoots: [N.C3, N.A3, N.F3, N.G3],
+    notes: [
+      [N.E4, 1, 'zither'], [N.G4, 1, 'zither'], [N.A4, 2, 'bau'], [N.C5, 1, 'zither'],
+      [N.D5, 1, 'flute'], [N.E5, 2, 'bau'], [N.D5, 1, 'zither'], [N.C5, 1, 'zither'],
+      [N.A4, 2, 'both'], [N.G4, 1, 'zither'], [N.E4, 1, 'zither'], [N.G4, 2, 'bau'],
+      [N.A4, 1, 'zither'], [N.C5, 1, 'flute'], [N.A4, 2, 'both'],
+    ],
+  },
+  {
+    id: 'deep_house_chanh_dien',
+    title: '🎧 Tịnh Độ Deep House & Chuông Ngọc (Melodic House)',
+    genre: 'Nhạc Lạ · Melodic Spiritual House',
+    style: 'deep_house',
+    stepMs: 240,
+    bassRoots: [N.A3, N.E3, N.F3, N.G3],
+    notes: [
+      [N.E4, 1, 'guitar'], [N.A4, 1, 'lead'], [N.B4, 1, 'zither'], [N.C5, 2, 'both'],
+      [N.B4, 1, 'guitar'], [N.A4, 1, 'lead'], [N.G4, 2, 'flute'],
+      [N.E4, 1, 'zither'], [N.G4, 1, 'lead'], [N.A4, 2, 'both'], [N.C5, 1, 'zither'],
+      [N.D5, 1, 'lead'], [N.E5, 2, 'both'], [N.A4, 2, 'both'],
+    ],
+  },
+  {
+    id: 'handpan_lien_hoa',
+    title: '🛸 Trống Handpan Vũ Trụ & Suối Nguồn Tâm Linh',
+    genre: 'Nhạc Lạ Độc Đáo · Celestial Handpan',
+    style: 'handpan',
+    stepMs: 260,
+    bassRoots: [N.D3, N.A3, N.C3, N.G3],
+    notes: [
+      [N.D4, 1, 'handpan'], [N.A4, 1, 'handpan'], [N.C5, 1, 'handpan'], [N.D5, 1, 'handpan'],
+      [N.F5, 1, 'handpan'], [N.E5, 1, 'handpan'], [N.C5, 1, 'handpan'], [N.A4, 1, 'handpan'],
+      [N.G4, 1, 'handpan'], [N.A4, 1, 'handpan'], [N.C5, 1, 'handpan'], [N.E5, 1, 'handpan'],
+      [N.D5, 2, 'handpan'], [N.A4, 1, 'handpan'], [N.D4, 2, 'handpan'],
+    ],
+  },
+  {
+    id: 'tay_tang_mat_tong',
+    title: '🏔️ Mật Tông Tây Tạng Huyền Bí (Om Mani Padme Hum)',
+    genre: 'Nhạc Lạ Huyền Bí · Tibetan Mystical Drone',
+    style: 'tibetan',
+    stepMs: 310,
+    bassRoots: [N.D3, N.D3, N.C3, N.D3],
+    notes: [
+      [N.D4, 2, 'tibetan'], [N.F4, 1, 'zither'], [N.G4, 1, 'flute'], [N.A4, 2, 'tibetan'],
+      [N.C5, 1, 'flute'], [N.A4, 2, 'tibetan'], [N.G4, 1, 'zither'], [N.F4, 1, 'flute'],
+      [N.D4, 3, 'tibetan'],
+    ],
+  },
+  {
+    id: 'cyber_zen_synthwave',
+    title: '🌌 Phật Quang Synthwave & Ngân Hà (Cosmic Retrowave)',
+    genre: 'Nhạc Lạ · Cosmic Retrowave & Chuông Chùa',
+    style: 'synthwave',
+    stepMs: 235,
+    bassRoots: [N.A3, N.F3, N.C3, N.G3],
+    notes: [
+      [N.A4, 1, 'lead'], [N.E5, 1, 'lead'], [N.C5, 1, 'zither'], [N.A4, 1, 'lead'],
+      [N.G4, 1, 'lead'], [N.D5, 1, 'lead'], [N.B4, 1, 'zither'], [N.G4, 1, 'lead'],
+      [N.F4, 1, 'lead'], [N.C5, 1, 'lead'], [N.A4, 1, 'zither'], [N.C5, 1, 'lead'],
+      [N.E5, 2, 'both'], [N.D5, 1, 'lead'], [N.A4, 2, 'both'],
+    ],
+  },
+  {
+    id: 'vu_dieu_hoan_hy_edm',
+    title: '🎉 Vũ Điệu Hoan Hỷ Công Đức (Festival EDM Remix)',
+    genre: 'Nhạc Phật Remix · Festival Progressive',
+    style: 'vinahouse',
+    stepMs: 230,
+    bassRoots: [N.C3, N.G3, N.A3, N.F3],
+    notes: [
+      [N.C5, 1, 'lead'], [N.D5, 1, 'lead'], [N.E5, 1, 'both'], [N.G5, 1, 'lead'],
+      [N.E5, 1, 'zither'], [N.D5, 1, 'lead'], [N.C5, 2, 'both'],
+      [N.A4, 1, 'lead'], [N.C5, 1, 'zither'], [N.D5, 1, 'lead'], [N.E5, 1, 'both'],
+      [N.D5, 1, 'lead'], [N.C5, 1, 'zither'], [N.G4, 1, 'lead'], [N.C5, 2, 'both'],
+    ],
+  },
+  {
+    id: 'quan_am_lofi_chill',
+    title: '🪷 Quan Âm Lofi Hip-Hop & Tiếng Đàn Đêm (Lofi Chill)',
+    genre: 'Lofi Chillhop · Piano & Đàn Tranh',
+    style: 'lofi',
+    stepMs: 280,
+    bassRoots: [N.C3, N.A3, N.F3, N.G3],
+    notes: [
+      [N.E4, 1, 'guitar'], [N.G4, 1, 'zither'], [N.A4, 2, 'bau'], [N.C5, 1, 'flute'],
+      [N.D5, 2, 'both'], [N.C5, 1, 'guitar'], [N.A4, 2, 'bau'],
+      [N.G4, 1, 'zither'], [N.E4, 1, 'guitar'], [N.D4, 1, 'zither'], [N.C4, 2, 'both'],
+    ],
+  },
+  {
+    id: 'duoc_su_jazz_lounge',
+    title: '☕ Dược Sư Lưu Ly Acoustic & Neo-Soul Piano',
+    genre: 'Acoustic Lounge · Rhodes Piano & Guitar',
+    style: 'lofi',
+    stepMs: 270,
+    bassRoots: [N.D3, N.G3, N.C3, N.A3],
+    notes: [
+      [N.F4, 1, 'guitar'], [N.A4, 2, 'zither'], [N.C5, 1, 'flute'], [N.D5, 2, 'both'],
+      [N.E5, 1, 'guitar'], [N.C5, 1, 'zither'], [N.A4, 2, 'flute'], [N.G4, 1, 'guitar'],
+      [N.F4, 1, 'zither'], [N.D4, 2, 'both'],
+    ],
+  },
+  {
+    id: 'zen_singing_bowl',
+    title: '🥣 Thiền Chuông Xoay Himalaya & Đàn Tranh 432Hz',
+    genre: 'Thiền Định Truyền Thống · Singing Bowl',
+    style: 'zen',
+    stepMs: 320,
+    bassRoots: [N.C3, N.G3, N.A3, N.F3],
+    notes: [
+      [N.C4, 2, 'zither'], [N.E4, 1, 'zither'], [N.G4, 2, 'flute'], [N.A4, 2, 'both'],
+      [N.C5, 2, 'flute'], [N.A4, 1, 'zither'], [N.G4, 2, 'both'], [N.E4, 2, 'zither'],
+    ],
+  },
+  {
+    id: 'nhac_thien_ngon_gio',
+    title: '🍃 Sáo Trúc Thiền Viện & Chuông Gió Cổ Tự',
+    genre: 'Thiền Tự Nhiên · Sáo Trúc & Guitar Mộc',
+    style: 'zen',
+    stepMs: 300,
+    bassRoots: [N.G3, N.E3, N.C3, N.D3],
+    notes: [
+      [N.G4, 2, 'flute'], [N.A4, 1, 'guitar'], [N.B4, 2, 'flute'], [N.D5, 2, 'both'],
+      [N.B4, 1, 'zither'], [N.A4, 2, 'flute'], [N.G4, 2, 'both'],
+    ],
+  },
+];
+
 export function createAudio({ onSpeak = null } = {}) {
   const isPreviewIframe = (() => {
     try { return window.self !== window.top; } catch { return true; }
@@ -199,85 +375,354 @@ export function createAudio({ onSpeak = null } = {}) {
   const playMusic = () => {
     if (!enabled) return;
     if (ctx.state !== 'running') ctx.resume().catch(() => {});
-    if (!missing) {
-      music.play().catch(() => { startSynthZen(); });
-    } else {
-      startSynthZen();
-    }
+    startSynthZen();
   };
 
-  // Gentle procedural Zen & Buddhist meditation music (warm 432Hz/528Hz harmonic pads,
-  // pentatonic guzheng/bamboo-flute-like gentle notes, and soft singing bowl overtones).
-  // 100% copyright-free (synthesized live via WebAudio), guaranteed not to trigger TikTok copyright mute.
+  // ============================================================================
+  // MULTI-STYLE BUDDHIST REMIX, HANDPAN, TIBETAN, CỔ PHONG & ZEN JUKEBOX ENGINE
+  // Synthesized via Karplus-Strong Physical String Modeling + Stereo Hall Reverb
+  // + EDM/Vinahouse/Trap/DeepHouse/Handpan/Tibetan DSP (100% Copyright-Free!)
+  // ============================================================================
   let zenRunning = false;
   let zenTimer = null;
+  let currentSongIdx = 0; // Defaults to 'buddha_vinahouse_remix' or rotates in 'auto'
+  let forcedTrackId = 'auto';
+  let lastAppliedSeq = -1;
+  let noteCursor = 0;
+  let tickCount = 0;
+
   const zenGain = ctx.createGain();
-  zenGain.gain.value = 0.22;
+  zenGain.gain.value = 0.34;
   zenGain.connect(master);
 
-  // Pentatonic scale in C major / A minor (warm meditation tuning: C4, D4, E4, G4, A4, C5, D5, E5, G5)
-  const ZEN_NOTES = [261.63, 293.66, 329.63, 392.00, 440.00, 523.25, 587.33, 659.25, 783.99];
-  const ZEN_BASS = [130.81, 146.83, 164.81, 196.00, 220.00];
+  const bgmFilter = ctx.createBiquadFilter();
+  bgmFilter.type = 'lowpass';
+  bgmFilter.frequency.value = 4200;
+  bgmFilter.connect(zenGain);
 
-  function playZenPad(freq, dur) {
-    if (!enabled || !zenRunning || ctx.state !== 'running') return;
-    const t = ctx.currentTime;
-    // Two slightly detuned sine oscillators for a warm, breathing singing-bowl pad
-    for (const detune of [-3, 3]) {
+  // 2.4-second Stereo Temple Hall Convolution Reverb
+  const templeReverb = ctx.createConvolver();
+  templeReverb.buffer = (() => {
+    const sr = ctx.sampleRate;
+    const len = Math.floor(sr * 2.4);
+    const ir = ctx.createBuffer(2, len, sr);
+    for (let ch = 0; ch < 2; ch++) {
+      const d = ir.getChannelData(ch);
+      let lp = 0;
+      for (let i = 0; i < len; i++) {
+        const t = i / sr;
+        const env = Math.exp(-t * 2.2) * (1 - Math.exp(-t * 30));
+        const raw = (Math.random() * 2 - 1) * env;
+        lp = lp * 0.74 + raw * 0.26;
+        d[i] = lp * 0.42;
+      }
+    }
+    return ir;
+  })();
+
+  const reverbWet = ctx.createGain();
+  reverbWet.gain.value = 0.46;
+  templeReverb.connect(reverbWet);
+  reverbWet.connect(bgmFilter);
+
+  const dryBus = ctx.createGain();
+  dryBus.gain.value = 0.86;
+  dryBus.connect(bgmFilter);
+  dryBus.connect(templeReverb);
+
+  // Karplus-Strong Physical String Waveguide Cache (Đàn Tranh & Guitar Nylon)
+  const ksCache = new Map();
+  function getKsBuffer(freq, style = 'zither') {
+    const key = `${style}:${Math.round(freq * 10)}`;
+    let buf = ksCache.get(key);
+    if (buf) return buf;
+    const sr = ctx.sampleRate;
+    const durSec = style === 'guitar' ? 2.2 : 2.6;
+    const len = Math.floor(sr * durSec);
+    buf = ctx.createBuffer(1, len, sr);
+    const out = buf.getChannelData(0);
+    const period = Math.max(8, Math.round(sr / freq));
+    const ring = new Float32Array(period);
+    let prev = 0;
+    const alpha = style === 'guitar' ? 0.56 : 0.30;
+    for (let i = 0; i < period; i++) {
+      const n = Math.random() * 2 - 1;
+      prev = prev * alpha + n * (1 - alpha);
+      const body = Math.sin((2 * Math.PI * i) / period) * 0.5;
+      ring[i] = (prev * 0.6 + body) * 0.9;
+    }
+    const damping = style === 'guitar' ? 0.9935 : 0.9962;
+    const bright = style === 'guitar' ? 0.38 : 0.55;
+    let p = 0;
+    let lastVal = 0;
+    for (let i = 0; i < len; i++) {
+      const cur = ring[p];
+      out[i] = cur;
+      const nextP = (p + 1) % period;
+      const avg = bright * cur + (1 - bright) * ring[nextP];
+      ring[p] = (avg * 0.88 + lastVal * 0.12) * damping;
+      lastVal = cur;
+      p = nextP;
+    }
+    ksCache.set(key, buf);
+    return buf;
+  }
+
+  function playPluck(freq, start, vol = 0.24, style = 'zither') {
+    if (!enabled || !zenRunning || ctx.state !== 'running' || freq <= 0) return;
+    const src = ctx.createBufferSource();
+    src.buffer = getKsBuffer(freq, style);
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(vol, start);
+    g.gain.exponentialRampToValueAtTime(0.0008, start + 2.1);
+    src.connect(g).connect(dryBus);
+    src.start(start);
+    src.stop(start + 2.15);
+  }
+
+  // Electronic Remix Pluck / Supersaw Lead (Vinahouse / EDM / Synthwave / Trap)
+  function playRemixLead(freq, start, durSec, vol = 0.11) {
+    if (!enabled || !zenRunning || ctx.state !== 'running' || freq <= 0) return;
+    for (const det of [-8, 0, 8]) {
+      const o = ctx.createOscillator();
+      const flt = ctx.createBiquadFilter();
+      const g = ctx.createGain();
+      o.type = det === 0 ? 'sawtooth' : 'triangle';
+      o.frequency.setValueAtTime(freq, start);
+      o.detune.setValueAtTime(det, start);
+      flt.type = 'lowpass';
+      flt.frequency.setValueAtTime(2800, start);
+      flt.frequency.exponentialRampToValueAtTime(680, start + durSec);
+      g.gain.setValueAtTime(0.0001, start);
+      g.gain.linearRampToValueAtTime(vol / 2.4, start + 0.015);
+      g.gain.exponentialRampToValueAtTime(0.0001, start + durSec * 1.08);
+      o.connect(flt).connect(g).connect(dryBus);
+      o.start(start);
+      o.stop(start + durSec * 1.12);
+    }
+    playPluck(freq, start, vol * 1.1, 'zither');
+  }
+
+  // Celestial Handpan / Hang Drum (1 : 2 : 2.98 tuned steel harmonics + slap transient)
+  function playHandpan(freq, start, vol = 0.22) {
+    if (!enabled || !zenRunning || ctx.state !== 'running' || freq <= 0) return;
+    for (const [ratio, amp, decay] of [[1, 1.0, 2.2], [2, 0.42, 1.4], [2.98, 0.20, 0.85]]) {
       const o = ctx.createOscillator();
       const g = ctx.createGain();
       o.type = 'sine';
-      o.frequency.setValueAtTime(freq, t);
-      o.detune.setValueAtTime(detune, t);
-      g.gain.setValueAtTime(0.0001, t);
-      g.gain.linearRampToValueAtTime(0.11, t + dur * 0.35);
-      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-      o.connect(g).connect(zenGain);
-      o.start(t);
-      o.stop(t + dur + 0.05);
+      o.frequency.setValueAtTime(freq * ratio * 1.015, start);
+      o.frequency.exponentialRampToValueAtTime(freq * ratio, start + 0.035);
+      g.gain.setValueAtTime(0.0001, start);
+      g.gain.linearRampToValueAtTime(vol * amp, start + 0.012);
+      g.gain.exponentialRampToValueAtTime(0.0001, start + decay);
+      o.connect(g).connect(dryBus);
+      o.start(start);
+      o.stop(start + decay + 0.04);
     }
   }
 
-  function playZenPluck(freq, delay = 0) {
-    if (!enabled || !zenRunning || ctx.state !== 'running') return;
-    const t = ctx.currentTime + delay;
-    // Soft harmonic pluck (fundamental + octave overtone) like a gentle đàn tranh / singing bowl touch
-    for (const [mult, peak, d] of [[1, 0.16, 4.2], [2, 0.05, 2.2], [3, 0.015, 1.2]]) {
+  // Mystical Tibetan Throat-Singing Overtone Drone & Ritual Bell
+  function playTibetanTone(freq, start, durSec, vol = 0.14) {
+    if (!enabled || !zenRunning || ctx.state !== 'running' || freq <= 0) return;
+    const o = ctx.createOscillator();
+    const f1 = ctx.createBiquadFilter();
+    const g = ctx.createGain();
+    o.type = 'sawtooth';
+    o.frequency.setValueAtTime(freq * 0.5, start);
+    f1.type = 'bandpass';
+    f1.frequency.setValueAtTime(freq * 1.5, start);
+    f1.Q.value = 4.5;
+    g.gain.setValueAtTime(0.0001, start);
+    g.gain.linearRampToValueAtTime(vol, start + 0.12);
+    g.gain.exponentialRampToValueAtTime(0.0001, start + durSec * 1.4);
+    o.connect(f1).connect(g).connect(dryBus);
+    o.start(start);
+    o.stop(start + durSec * 1.45);
+    // Crystalline Dorje overtone
+    playHandpan(freq * 2, start, vol * 0.55);
+  }
+
+  // Silky Bamboo Flute & Expressive Đàn Bầu
+  function playFluteOrBau(freq, start, durSec, isBau = false, vol = 0.10) {
+    if (!enabled || !zenRunning || ctx.state !== 'running' || freq <= 0) return;
+    const totalDur = Math.max(0.38, durSec * 1.25);
+    const o = ctx.createOscillator();
+    const lfo = ctx.createOscillator();
+    const lfoG = ctx.createGain();
+    const flt = ctx.createBiquadFilter();
+    const g = ctx.createGain();
+    o.type = isBau ? 'triangle' : 'sine';
+    o.frequency.setValueAtTime(isBau ? freq * 0.95 : freq * 0.99, start);
+    o.frequency.exponentialRampToValueAtTime(freq, start + (isBau ? 0.14 : 0.05));
+    lfo.frequency.setValueAtTime(5.0, start);
+    lfoG.gain.setValueAtTime(freq * 0.008, start);
+    lfo.connect(lfoG).connect(o.frequency);
+    flt.type = 'lowpass';
+    flt.frequency.value = 1800;
+    g.gain.setValueAtTime(0.0001, start);
+    g.gain.linearRampToValueAtTime(vol, start + 0.06);
+    g.gain.exponentialRampToValueAtTime(0.0001, start + totalDur);
+    o.connect(flt).connect(g).connect(dryBus);
+    o.start(start);
+    lfo.start(start);
+    o.stop(start + totalDur + 0.04);
+    lfo.stop(start + totalDur + 0.04);
+  }
+
+  // Warm Felt Lofi / House Chord Pad
+  function playChordPad(rootFreq, start, durSec, vol = 0.065) {
+    if (!enabled || !zenRunning || ctx.state !== 'running' || rootFreq <= 0) return;
+    for (const [i, mult] of [1.0, 1.5, 2.0, 2.5].entries()) {
       const o = ctx.createOscillator();
+      const flt = ctx.createBiquadFilter();
       const g = ctx.createGain();
-      o.type = 'sine';
-      o.frequency.setValueAtTime(freq * mult, t);
-      g.gain.setValueAtTime(0.0001, t);
-      g.gain.linearRampToValueAtTime(peak, t + 0.08);
-      g.gain.exponentialRampToValueAtTime(0.0001, t + d);
-      o.connect(g).connect(zenGain);
-      o.start(t);
-      o.stop(t + d + 0.05);
+      o.type = 'triangle';
+      o.frequency.setValueAtTime(rootFreq * mult, start + i * 0.025);
+      flt.type = 'lowpass';
+      flt.frequency.value = 950;
+      g.gain.setValueAtTime(0.0001, start + i * 0.025);
+      g.gain.linearRampToValueAtTime(vol * (0.9 - i * 0.12), start + i * 0.025 + 0.04);
+      g.gain.exponentialRampToValueAtTime(0.0001, start + durSec * 1.15);
+      o.connect(flt).connect(g).connect(dryBus);
+      o.start(start + i * 0.025);
+      o.stop(start + durSec * 1.2);
     }
   }
 
-  let zenStep = 0;
+  // Multi-Style Rhythm & Bass Groove Generator (Vinahouse, Trap 808, Deep House, Lofi, Ritual)
+  function playStyleGroove(style, start, stepSec, stepInBar, bassRoot) {
+    if (!enabled || !zenRunning || ctx.state !== 'running') return;
+    if (style === 'vinahouse' || style === 'deep_house' || style === 'synthwave') {
+      // 4-on-the-floor Kick on even steps (0, 2, 4, 6) + Off-beat bouncy Vinahouse Bass on odd steps (1, 3, 5, 7)
+      if (stepInBar % 2 === 0) {
+        const k = ctx.createOscillator();
+        const kg = ctx.createGain();
+        k.type = 'sine';
+        k.frequency.setValueAtTime(style === 'vinahouse' ? 128 : 108, start);
+        k.frequency.exponentialRampToValueAtTime(42, start + 0.14);
+        kg.gain.setValueAtTime(style === 'vinahouse' ? 0.24 : 0.18, start);
+        kg.gain.exponentialRampToValueAtTime(0.0001, start + 0.17);
+        k.connect(kg).connect(bgmFilter);
+        k.start(start);
+        k.stop(start + 0.18);
+      } else {
+        // Off-beat bouncy Vinahouse / House Sub-Bass!
+        const b = ctx.createOscillator();
+        const flt = ctx.createBiquadFilter();
+        const bg = ctx.createGain();
+        b.type = 'sawtooth';
+        b.frequency.setValueAtTime(bassRoot * 0.5, start);
+        flt.type = 'lowpass';
+        flt.frequency.setValueAtTime(520, start);
+        flt.frequency.exponentialRampToValueAtTime(140, start + stepSec * 0.9);
+        bg.gain.setValueAtTime(0.16, start);
+        bg.gain.exponentialRampToValueAtTime(0.0001, start + stepSec * 0.95);
+        b.connect(flt).connect(bg).connect(bgmFilter);
+        b.start(start);
+        b.stop(start + stepSec);
+      }
+    } else if (style === 'trap' || style === 'co_phong') {
+      // Deep 808 Sub-bass on 0, 3, 6 + crisp wood/snare on 2, 6
+      if (stepInBar === 0 || stepInBar === 3 || stepInBar === 6) {
+        const sub = ctx.createOscillator();
+        const sg = ctx.createGain();
+        sub.type = 'sine';
+        sub.frequency.setValueAtTime(bassRoot * 0.5, start);
+        sub.frequency.exponentialRampToValueAtTime(bassRoot * 0.48, start + stepSec * 1.6);
+        sg.gain.setValueAtTime(0.22, start);
+        sg.gain.exponentialRampToValueAtTime(0.0001, start + stepSec * 1.7);
+        sub.connect(sg).connect(bgmFilter);
+        sub.start(start);
+        sub.stop(start + stepSec * 1.75);
+      }
+      if (stepInBar === 2 || stepInBar === 6) {
+        playHandpan(bassRoot * 2, start, 0.08);
+      }
+    } else if (style === 'lofi' || style === 'handpan') {
+      if (stepInBar === 0 || stepInBar === 4) {
+        const k = ctx.createOscillator();
+        const kg = ctx.createGain();
+        k.type = 'sine';
+        k.frequency.setValueAtTime(92, start);
+        k.frequency.exponentialRampToValueAtTime(42, start + 0.13);
+        kg.gain.setValueAtTime(0.12, start);
+        kg.gain.exponentialRampToValueAtTime(0.0001, start + 0.15);
+        k.connect(kg).connect(bgmFilter);
+        k.start(start);
+        k.stop(start + 0.16);
+      }
+    }
+  }
+
   function tickZen() {
     if (!zenRunning) return;
+    const song = TEMPLE_SONGS[currentSongIdx % TEMPLE_SONGS.length];
+    let waitMs = song.stepMs;
+
     if (enabled && ctx.state === 'running') {
-      // Slow breathing bass drone every 2 phrases
-      if (zenStep % 2 === 0) {
-        const bass = ZEN_BASS[(zenStep / 2) % ZEN_BASS.length];
-        playZenPad(bass, 7.5);
-        playZenPad(bass * 1.5, 7.0); // fifth harmony
+      const t = ctx.currentTime;
+      const [freq, beats, inst] = song.notes[noteCursor % song.notes.length];
+      const subBeats = Math.max(1, beats);
+      waitMs = song.stepMs * subBeats;
+      const stepSec = song.stepMs / 1000;
+      const durSec = (waitMs / 1000) * 0.95;
+      const stepInBar = tickCount % 8;
+      const bassRoot = song.bassRoots[Math.floor(tickCount / 4) % song.bassRoots.length];
+
+      // 1. Chord Pads & Acoustic Bass Backing
+      if (stepInBar === 0 || stepInBar === 4) {
+        playChordPad(bassRoot, t, stepSec * 4.0, song.style === 'zen' ? 0.08 : 0.06);
+        playPluck(bassRoot, t, 0.18, 'guitar');
       }
-      // Gentle meditative pentatonic melody notes (1 to 3 notes spaced out slowly)
-      const n1 = ZEN_NOTES[(zenStep * 3 + 2) % ZEN_NOTES.length];
-      const n2 = ZEN_NOTES[(zenStep * 5 + 1) % ZEN_NOTES.length];
-      playZenPluck(n1, 0.2);
-      playZenPluck(n2, 1.6);
-      if (zenStep % 3 === 0) {
-        const n3 = ZEN_NOTES[(zenStep * 2 + 4) % ZEN_NOTES.length];
-        playZenPluck(n3, 2.9);
+
+      // 2. Style-Specific Rhythm & Bass Groove
+      for (let b = 0; b < subBeats; b++) {
+        playStyleGroove(song.style, t + b * stepSec, stepSec, (stepInBar + b) % 8, bassRoot);
       }
-      zenStep++;
+
+      // 3. Lead Instrument Synthesis by Style
+      if (freq > 0) {
+        if (inst === 'lead') {
+          playRemixLead(freq, t, durSec, 0.12);
+        } else if (inst === 'handpan') {
+          playHandpan(freq, t, 0.24);
+          playPluck(freq * 0.5, t + 0.02, 0.12, 'guitar');
+        } else if (inst === 'tibetan') {
+          playTibetanTone(freq, t, durSec, 0.15);
+        } else if (inst === 'flute') {
+          playFluteOrBau(freq, t, durSec, false, 0.11);
+          playPluck(freq, t, 0.16, 'guitar');
+        } else if (inst === 'bau') {
+          playFluteOrBau(freq, t, durSec, true, 0.11);
+          playPluck(freq, t, 0.18, 'zither');
+        } else if (inst === 'guitar') {
+          playPluck(freq, t, 0.26, 'guitar');
+          playPluck(freq * 2, t + 0.02, 0.12, 'zither');
+        } else {
+          // 'zither' or 'both'
+          playPluck(freq, t, 0.28, 'zither');
+          if (inst === 'both') {
+            if (song.style === 'vinahouse' || song.style === 'trap' || song.style === 'synthwave') {
+              playRemixLead(freq, t, durSec, 0.09);
+            } else {
+              playFluteOrBau(freq, t, durSec, false, 0.08);
+            }
+          }
+        }
+      }
+
+      noteCursor++;
+      tickCount += subBeats;
+
+      // Auto-rotate through tracks if in 'auto' mode after 2 full cycles of a song
+      if (noteCursor >= song.notes.length * 2) {
+        noteCursor = 0;
+        if (forcedTrackId === 'auto') {
+          currentSongIdx = (currentSongIdx + 1) % TEMPLE_SONGS.length;
+        }
+      }
     }
-    zenTimer = setTimeout(tickZen, 3800);
+    zenTimer = setTimeout(tickZen, waitMs);
   }
 
   function startSynthZen() {
@@ -292,27 +737,17 @@ export function createAudio({ onSpeak = null } = {}) {
     zenTimer = null;
   }
 
-  music.onerror = () => {
-    if (!triedWav) {
-      triedWav = true;
-      music.src = 'assets/audio/music.wav';
-      if (enabled && ctx.state === 'running') music.play().catch(() => startSynthZen());
-      return;
-    }
-    missing = true;
-    if (enabled && ctx.state === 'running') startSynthZen();
-  };
-
   function duckMusic(duck) {
-    music.volume = duck ? 0.14 : 0.32;
+    music.volume = duck ? 0.10 : 0.28;
     if (ctx.state === 'running') {
-      zenGain.gain.setTargetAtTime(duck ? 0.09 : 0.22, ctx.currentTime, 0.15);
+      zenGain.gain.setTargetAtTime(duck ? 0.10 : 0.34, ctx.currentTime, 0.12);
     }
   }
 
   let currentVoiceSrc = null;
   let currentItem = null;
   let currentDone = null;
+  let activeSpeechSeq = 0;
   let lastPrayerSpeechAt = 0;
   const recentRealGreet = new Map(); // uid -> ts to avoid double-greeting the same real user on join within 15s
   const recentNameGreet = new Map(); // normalizedName -> ts to avoid repeating join greeting within 15s
@@ -323,9 +758,15 @@ export function createAudio({ onSpeak = null } = {}) {
     const curPriority = currentItem.priority ?? (currentItem.isReal ? 1 : 0);
     // Real user actions always interrupt bots (priority 0); Real Gifts (priority 3) also interrupt Join greetings (priority 1)
     if (!currentItem.isReal || (newPriority >= 3 && curPriority <= 1)) {
+      activeSpeechSeq++;
       clearTimeout(watchdog);
-      try { currentVoiceSrc?.stop(); } catch {}
-      currentVoiceSrc = null;
+      if (currentVoiceSrc) {
+        try {
+          currentVoiceSrc.onended = null;
+          currentVoiceSrc.stop();
+        } catch {}
+        currentVoiceSrc = null;
+      }
       if (typeof speechSynthesis !== 'undefined') {
         try { speechSynthesis.cancel(); } catch {}
       }
@@ -410,6 +851,7 @@ export function createAudio({ onSpeak = null } = {}) {
   async function flushSpeech() {
     if (!enabled || speaking || !speechQueue.length) return;
     const item = speechQueue.shift();
+    const mySeq = ++activeSpeechSeq;
     currentItem = item;
     speaking = true;
     duckMusic(true);
@@ -419,6 +861,7 @@ export function createAudio({ onSpeak = null } = {}) {
     const done = () => {
       if (finished) return;
       finished = true;
+      if (mySeq !== activeSpeechSeq) return;
       clearTimeout(watchdog);
       currentVoiceSrc = null;
       currentItem = null;
@@ -440,7 +883,7 @@ export function createAudio({ onSpeak = null } = {}) {
       if (!res.ok) throw new Error('tts fetch failed');
       const arr = await res.arrayBuffer();
       const audioBuf = await ctx.decodeAudioData(arr);
-      if (!enabled) {
+      if (!enabled || mySeq !== activeSpeechSeq) {
         done();
         return;
       }
@@ -457,7 +900,7 @@ export function createAudio({ onSpeak = null } = {}) {
       src.onended = done;
       src.start();
     } catch {
-      speakBrowserFallback(item.text, done);
+      if (mySeq === activeSpeechSeq) speakBrowserFallback(item.text, done);
     }
   }
 
@@ -544,9 +987,15 @@ export function createAudio({ onSpeak = null } = {}) {
           if (speechQueue[i].kind === 'comment') speechQueue.splice(i, 1);
         }
         if (currentItem?.kind === 'comment') {
+          activeSpeechSeq++;
           clearTimeout(watchdog);
-          try { currentVoiceSrc?.stop(); } catch {}
-          currentVoiceSrc = null;
+          if (currentVoiceSrc) {
+            try {
+              currentVoiceSrc.onended = null;
+              currentVoiceSrc.stop();
+            } catch {}
+            currentVoiceSrc = null;
+          }
           if (typeof speechSynthesis !== 'undefined') {
             try { speechSynthesis.cancel(); } catch {}
           }
@@ -556,6 +1005,63 @@ export function createAudio({ onSpeak = null } = {}) {
           setTimeout(flushSpeech, 150);
         }
       }
+    },
+    getMusicLabel() {
+      const s = TEMPLE_SONGS[currentSongIdx % TEMPLE_SONGS.length];
+      return `🎵 ${s.title}`;
+    },
+    getCurrentTrack() {
+      const s = TEMPLE_SONGS[currentSongIdx % TEMPLE_SONGS.length];
+      return { id: s.id, title: s.title, genre: s.genre, forcedTrackId };
+    },
+    nextMusicTrack() {
+      currentSongIdx = (currentSongIdx + 1) % TEMPLE_SONGS.length;
+      forcedTrackId = TEMPLE_SONGS[currentSongIdx].id;
+      noteCursor = 0;
+      tickCount = 0;
+      chime();
+      return this.getMusicLabel();
+    },
+    randomMusicTrack() {
+      if (TEMPLE_SONGS.length > 1) {
+        let nextIdx = currentSongIdx;
+        while (nextIdx === currentSongIdx) {
+          nextIdx = Math.floor(Math.random() * TEMPLE_SONGS.length);
+        }
+        currentSongIdx = nextIdx;
+      }
+      forcedTrackId = TEMPLE_SONGS[currentSongIdx].id;
+      noteCursor = 0;
+      tickCount = 0;
+      chime();
+      return this.getMusicLabel();
+    },
+    setMusicTrack(trackId, seq = null) {
+      if (!trackId) return this.getMusicLabel();
+      if (seq !== null && seq === lastAppliedSeq) return this.getMusicLabel();
+      if (seq !== null) lastAppliedSeq = seq;
+
+      if (trackId === 'next') {
+        return this.nextMusicTrack();
+      }
+      if (trackId === 'random') {
+        return this.randomMusicTrack();
+      }
+      if (trackId === 'auto') {
+        forcedTrackId = 'auto';
+        return this.getMusicLabel();
+      }
+      const idx = TEMPLE_SONGS.findIndex(s => s.id === trackId);
+      if (idx !== -1) {
+        forcedTrackId = trackId;
+        if (currentSongIdx !== idx) {
+          currentSongIdx = idx;
+          noteCursor = 0;
+          tickCount = 0;
+          chime();
+        }
+      }
+      return this.getMusicLabel();
     },
     setEnabled(_on) {
       // Sound is permanently enabled on main livestream display (never turns off)

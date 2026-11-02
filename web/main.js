@@ -77,7 +77,24 @@ const world = createWorld();
 const soundBtn = document.getElementById('sound');
 if (soundBtn) soundBtn.style.display = 'none';
 const commentTtsBtn = document.getElementById('toggle-comment-tts');
+const chuaBgmBtn = document.getElementById('toggle-chua-bgm');
 let liveWs = null;
+
+function syncChuaBgmBtn() {
+  if (chuaBgmBtn && audio.getMusicLabel) {
+    chuaBgmBtn.textContent = audio.getMusicLabel();
+  }
+}
+if (chuaBgmBtn) {
+  syncChuaBgmBtn();
+  chuaBgmBtn.addEventListener('click', e => {
+    e.stopPropagation();
+    audio.unlock();
+    audio.nextMusicTrack?.();
+    syncChuaBgmBtn();
+  });
+  setInterval(syncChuaBgmBtn, 1500);
+}
 
 function syncCommentTtsBtn(on) {
   audio.setReadComments(on);
@@ -118,6 +135,10 @@ function run(cmds, now) {
         hall.setTheme(c.scene.theme, now);
         audio.setEnabled(c.scene.sound);
         if (c.scene.readComments !== undefined) syncCommentTtsBtn(Boolean(c.scene.readComments));
+        if (c.scene.bgmTrack) {
+          audio.setMusicTrack?.(c.scene.bgmTrack, c.scene.bgmSeq ?? null);
+          syncChuaBgmBtn();
+        }
         break;
       case 'hud':
         hud.handle(c.msg);
