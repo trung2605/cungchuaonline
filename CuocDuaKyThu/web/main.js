@@ -48,7 +48,7 @@ const runners = createRunners(scene);
 const fx = createRaceFx(scene);
 const hud = createRaceHud();
 const audio = createRaceAudio({
-  onSpeak: (text, on) => hud.showVoice(text, on),
+  onSpeak: (text, on, kind, gender) => hud.showVoice(text, on, kind, gender),
 });
 
 const composer = new EffectComposer(renderer);

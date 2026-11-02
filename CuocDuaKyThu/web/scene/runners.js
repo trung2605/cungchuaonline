@@ -506,17 +506,23 @@ export function createRunners(scene) {
 
   function computeFormationTarget(runner, rank = null) {
     const h = hashRunnerId(runner.id);
-    const laneX = (runner.lane || 0) * 0.88;
-    const xJitter = (((h % 9) - 4) / 4) * 0.34;
-    const laneOffset = Math.max(-2.95, Math.min(2.95, laneX + xJitter));
+    if (rank && rank <= 6) {
+      // Spread Top 6 leaders into distinct staggered lanes & mid-road depths so 3D labels never overlap or clip edges
+      const topLanes = [0, 0.85, -0.85, 1.48, -1.48, 0.38, -0.42];
+      const laneOffset = topLanes[rank] ?? 0;
+      const targetZ = -0.8 - (rank - 1) * 1.35;
+      return { laneOffset, targetZ };
+    }
+    const laneX = (runner.lane || 0) * 0.58;
+    const xJitter = (((h % 9) - 4) / 4) * 0.24;
+    const laneOffset = Math.max(-1.58, Math.min(1.58, laneX + xJitter));
 
-    // Use golden-ratio distribution along the depth of the road (-9.2 .. +2.6) so walkers and labels spread cleanly
+    // Golden-ratio depth distribution (-9.2 .. -1.2) keeps walkers in the upper-middle road zone above TikTok chat
     const goldenFrac = ((h * 0.61803398875) % 1 + 1) % 1;
-    const rowDepth = goldenFrac * 8.2;
-    const rankBonus = rank ? Math.max(0, (10 - rank) * 0.32) : 0;
+    const rowDepth = goldenFrac * 7.6;
     const activeTier = Math.max(runner.tier || 0, runner.boostTier || 0);
-    const tierBonus = Math.min(2.2, activeTier * 0.55);
-    const targetZ = Math.max(-9.6, Math.min(2.6, 2.6 - rowDepth - rankBonus * 0.4 - tierBonus * 0.4));
+    const tierBonus = Math.min(1.6, activeTier * 0.35);
+    const targetZ = Math.max(-9.2, Math.min(-1.0, -1.0 - rowDepth + tierBonus * 0.45));
 
     return { laneOffset, targetZ };
   }
@@ -560,7 +566,7 @@ export function createRunners(scene) {
         const label = new CSS2DObject(el);
         label.center.set(0.5, 1);
         const h = hashRunnerId(runner.id);
-        label.position.set(0, 1.38 + (h % 4) * 0.14, 0);
+        label.position.set(0, 1.34 + (h % 5) * 0.18, 0);
         holder.add(label);
 
         const { laneOffset, targetZ } = computeFormationTarget(runner, null);
@@ -653,7 +659,7 @@ export function createRunners(scene) {
         const isTop3 = e.rank && e.rank <= 3;
         const isBoosted = (e.runner.boostTier || 0) > 0;
         const isRecent = now < (e.activeUntil || 0);
-        const shouldShow = hasBubble || isTop3 || isBoosted || (isRecent && shownLabels < 6);
+        const shouldShow = hasBubble || isTop3 || (isBoosted && shownLabels < 4) || (isRecent && shownLabels < 4);
         if (shouldShow) shownLabels++;
         e.label.visible = Boolean(shouldShow);
 

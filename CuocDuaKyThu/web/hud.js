@@ -111,21 +111,28 @@ export function createRaceHud() {
       if (empty) empty.style.display = top.length ? 'none' : 'block';
       const ol = $('#board ol');
       if (!ol) return;
-      ol.replaceChildren(...top.slice(0, 10).map(r => {
+      ol.replaceChildren(...top.slice(0, 8).map(r => {
         const li = document.createElement('li');
         const dBadge = r.diamonds > 0 ? ` · 💎${r.diamonds}` : '';
         li.textContent = `${r.name} · ${fmtDist(r.distanceM)}${dBadge}`;
         return li;
       }));
     },
-    showVoice(text, on) {
+    showVoice(text, on, _kind = 'interactive', gender = 'male') {
       const toast = $('#voice-toast');
       const span = $('#voice-text');
+      const badge = $('#voice-badge');
       if (!toast || !span) return;
       if (on && text) {
         $('#welcome-card')?.classList.remove('on');
         $('#banner')?.classList.remove('on');
-        span.textContent = text;
+        const isFemale = gender === 'female';
+        toast.classList.toggle('female', isFemale);
+        toast.classList.toggle('male', !isFemale);
+        if (badge) {
+          badge.textContent = isFemale ? '👩 MC Hoài My' : '👨 MC Minh Quân';
+        }
+        span.textContent = text.replace(/^🎙️\s*/, '');
         toast.classList.add('on');
       } else {
         toast.classList.remove('on');

@@ -1,13 +1,14 @@
-// Audio, Multi-Track Lively Vietnamese Folk-Pop BGM & Continuous Priority AI Voice Engine
+// Audio, Karplus-Strong Acoustic Vietnamese BGM & Dual-Host (1 Male + 1 Female) AI Voice Engine
 // for Hành Trình Đi Bộ Xuyên Việt:
-// - 100% separated from Cúng Chùa Online (zero temple/Buddhist terms, zero cross-tab collision).
-// - Continuous non-stop AI storytelling throughout the entire walk with background AudioBuffer pre-fetching
-//   so there is zero dead air between sentences (~350ms natural breath).
-// - Strict Priority Hierarchy:
-//     1. Donate / Gift Boost (priority: 6..9) — Highest
-//     2. Viewer Comment TTS (priority: 4 real / 2 demo)
-//     3. Viewer Join / Welcome (priority: 3 real / 1 demo)
-//     4. AI Landmark Cultural & Human Storyteller (priority: 0, kind: 'story') — Lowest ("ưu tiên cuối cùng")
+// - 2 Distinct AI Voices ("1 Nam – 1 Nữ đồng dẫn chương trình"):
+//     * 👨 Nam MC Minh Quân (WSOLA phase-aligned time-stretch + formant-shifted baritone + chest EQ)
+//     * 👩 Nữ MC Hoài My (Crisp neural Vietnamese female voice + presence EQ)
+// - Studio-Grade Acoustic BGM Engine:
+//     * Karplus-Strong Physical String Waveguide Modeling for Đàn Tranh & Nylon Acoustic Guitar
+//     * Warm Felt Lofi Piano 7th/9th Chords + Silky Bamboo Flute
+//     * True Stereo Concert Hall Convolution Reverb (`ConvolverNode`)
+// - Continuous non-stop reading with background pre-fetching & strict Priority Preemption:
+//     Donate (6..9) > Comment (4) > Join (3) > Story Narration (0 - lowest priority)
 
 import { LANDMARK_STORIES, PROVINCE_STORIES } from './storyScripts.js';
 
@@ -93,7 +94,7 @@ export function formatGiftBoostSpeech({ name = '', giftVi = 'món quà', repeat 
   return `${greet}Cảm ơn ${who} đã tặng ${combo}, nhận ${mountLabel}, tiến thêm ${bonusM} mét trên hành trình xuyên Việt!`;
 }
 
-// Pitch table (Hz) across 3 octaves for Vietnamese pentatonic & modal arrangements
+// Pitch table (Hz) across 3 octaves for Vietnamese pentatonic & acoustic arrangements
 const N = {
   C3: 130.81, D3: 146.83, E3: 164.81, F3: 174.61, G3: 196.00, A3: 220.00, B3: 246.94,
   C4: 261.63, D4: 293.66, E4: 329.63, F4: 349.23, G4: 392.00, A4: 440.00, B4: 493.88,
@@ -102,15 +103,15 @@ const N = {
 };
 
 // ============================================================================
-// 21 VIETNAMESE FOLK-POP, REGIONAL & TROPICAL TRAVEL SONGS (100% Royalty-Free)
+// 21 VIETNAMESE ACOUSTIC FOLK, LOFI PIANO & TRAVEL SONGS (100% Royalty-Free)
 // ============================================================================
 export const VN_SONGS = [
   {
     id: 'trong_com',
-    title: 'Trống Cơm (V-Pop Travel Remix)',
-    stepMs: 225,
-    bassRoots: [N.C3, N.G3, N.A3, N.G3],
-    drumPattern: [1, 0.3, 0.6, 0.3, 0.9, 0.4, 0.5, 0.6],
+    title: 'Trống Cơm (Acoustic Guitar & Đàn Tranh)',
+    stepMs: 250,
+    bassRoots: [N.C3, N.G3, N.A3, N.F3],
+    drumPattern: [1, 0, 0.5, 0, 0.85, 0, 0.45, 0],
     notes: [
       [N.G4, 1, 'zither'], [N.A4, 1, 'zither'], [N.C5, 1, 'both'], [N.C5, 1, 'zither'],
       [N.D5, 1, 'both'], [N.C5, 1, 'zither'], [N.A4, 1, 'zither'], [N.G4, 1, 'both'],
@@ -124,10 +125,10 @@ export const VN_SONGS = [
   },
   {
     id: 'beo_dat',
-    title: 'Bèo Dạt Mây Trôi (Đàn Tranh & Đàn Bầu)',
-    stepMs: 260,
-    bassRoots: [N.C3, N.A3, N.D3, N.G3],
-    drumPattern: [0.85, 0.25, 0.4, 0.45, 0.75, 0.25, 0.5, 0.3],
+    title: 'Bèo Dạt Mây Trôi (Piano Lofi & Đàn Tranh)',
+    stepMs: 280,
+    bassRoots: [N.C3, N.A3, N.F3, N.G3],
+    drumPattern: [0.85, 0, 0.35, 0, 0.75, 0, 0.4, 0],
     notes: [
       [N.C4, 1, 'both'], [N.E4, 1, 'zither'], [N.G4, 2, 'bau'], [N.G4, 1, 'zither'],
       [N.A4, 1, 'both'], [N.C5, 2, 'bau'], [N.A4, 1, 'zither'], [N.G4, 1, 'both'],
@@ -140,10 +141,10 @@ export const VN_SONGS = [
   },
   {
     id: 'ly_cay_bong',
-    title: 'Lý Cây Bông (Dân Ca Nam Bộ Sôi Động)',
-    stepMs: 220,
-    bassRoots: [N.C3, N.E3, N.G3, N.C3],
-    drumPattern: [0.95, 0.3, 0.55, 0.5, 0.9, 0.3, 0.6, 0.4],
+    title: 'Lý Cây Bông (Acoustic Miền Tây)',
+    stepMs: 245,
+    bassRoots: [N.C3, N.A3, N.D3, N.G3],
+    drumPattern: [0.9, 0, 0.45, 0, 0.85, 0, 0.5, 0],
     notes: [
       [N.E4, 1, 'zither'], [N.G4, 1, 'zither'], [N.A4, 1, 'both'], [N.A4, 1, 'zither'],
       [N.G4, 1, 'zither'], [N.A4, 1, 'both'], [N.C5, 1, 'flute'], [N.A4, 1, 'zither'],
@@ -155,10 +156,10 @@ export const VN_SONGS = [
   },
   {
     id: 'co_la',
-    title: 'Cò Lả (Sáo Trúc Đồng Quê Rộn Ràng)',
-    stepMs: 245,
-    bassRoots: [N.G3, N.D3, N.E3, N.C3],
-    drumPattern: [0.9, 0.25, 0.45, 0.35, 0.8, 0.4, 0.5, 0.3],
+    title: 'Cò Lả (Sáo Trúc & Guitar Đồng Quê)',
+    stepMs: 265,
+    bassRoots: [N.C3, N.G3, N.A3, N.E3],
+    drumPattern: [0.85, 0, 0.4, 0, 0.75, 0, 0.45, 0],
     notes: [
       [N.G4, 1, 'both'], [N.A4, 1, 'zither'], [N.C5, 2, 'flute'], [N.D5, 1, 'zither'],
       [N.E5, 1, 'flute'], [N.D5, 1, 'zither'], [N.C5, 1, 'both'], [N.A4, 2, 'flute'],
@@ -169,10 +170,10 @@ export const VN_SONGS = [
   },
   {
     id: 'tay_bac',
-    title: 'Vũ Điệu Tây Bắc – Inh Lả Ơi',
-    stepMs: 225,
-    bassRoots: [N.A3, N.E3, N.D3, N.A3],
-    drumPattern: [0.95, 0.3, 0.5, 0.4, 0.85, 0.3, 0.6, 0.35],
+    title: 'Inh Lả Ơi (Sáo Trúc & Guitar Tây Bắc)',
+    stepMs: 250,
+    bassRoots: [N.A3, N.F3, N.C3, N.G3],
+    drumPattern: [0.9, 0, 0.45, 0, 0.8, 0, 0.5, 0],
     notes: [
       [N.A4, 1, 'flute'], [N.C5, 1, 'flute'], [N.D5, 2, 'both'], [N.E5, 1, 'flute'],
       [N.G5, 1, 'flute'], [N.E5, 2, 'both'], [N.D5, 1, 'zither'], [N.C5, 1, 'flute'],
@@ -183,10 +184,10 @@ export const VN_SONGS = [
   },
   {
     id: 'luu_thuy',
-    title: 'Lưu Thủy Kim Tiền (Nhã Nhạc Cung Đình)',
-    stepMs: 230,
-    bassRoots: [N.D3, N.A3, N.G3, N.D3],
-    drumPattern: [0.95, 0.3, 0.6, 0.35, 0.9, 0.45, 0.55, 0.35],
+    title: 'Lưu Thủy Kim Tiền (Acoustic Cố Đô Huế)',
+    stepMs: 255,
+    bassRoots: [N.D3, N.A3, N.F3, N.G3],
+    drumPattern: [0.9, 0, 0.5, 0, 0.85, 0, 0.45, 0],
     notes: [
       [N.D4, 1, 'moon'], [N.F4, 1, 'zither'], [N.G4, 1, 'both'], [N.A4, 2, 'moon'],
       [N.C5, 1, 'flute'], [N.D5, 1, 'both'], [N.C5, 1, 'zither'], [N.A4, 1, 'moon'],
@@ -197,10 +198,10 @@ export const VN_SONGS = [
   },
   {
     id: 'tay_nguyen',
-    title: 'Đàn T’rưng Đại Ngàn & Nhịp Bước Cao Nguyên',
-    stepMs: 210,
-    bassRoots: [N.C3, N.G3, N.E3, N.A3],
-    drumPattern: [1, 0.4, 0.6, 0.35, 0.9, 0.4, 0.65, 0.35],
+    title: 'Khúc Nhạc Cao Nguyên & Rừng Thông',
+    stepMs: 245,
+    bassRoots: [N.C3, N.G3, N.A3, N.F3],
+    drumPattern: [0.9, 0, 0.5, 0, 0.85, 0, 0.5, 0],
     notes: [
       [N.G4, 1, 'trung'], [N.C5, 1, 'trung'], [N.E5, 1, 'both'], [N.G5, 1, 'trung'],
       [N.E5, 1, 'trung'], [N.D5, 1, 'flute'], [N.C5, 2, 'both'],
@@ -211,10 +212,10 @@ export const VN_SONGS = [
   },
   {
     id: 'hoa_thom',
-    title: 'Hoa Thơm Bướm Lượn (Quan Họ Hội Xuân)',
-    stepMs: 235,
+    title: 'Hoa Thơm Bướm Lượn (Quan Họ Acoustic)',
+    stepMs: 260,
     bassRoots: [N.G3, N.E3, N.C3, N.D3],
-    drumPattern: [0.9, 0.3, 0.5, 0.3, 0.85, 0.35, 0.5, 0.3],
+    drumPattern: [0.85, 0, 0.45, 0, 0.8, 0, 0.45, 0],
     notes: [
       [N.D4, 1, 'zither'], [N.G4, 1, 'both'], [N.A4, 1, 'zither'], [N.B4, 2, 'flute'],
       [N.A4, 1, 'zither'], [N.G4, 2, 'both'],
@@ -225,10 +226,10 @@ export const VN_SONGS = [
   },
   {
     id: 'khen_ma_pi_leng',
-    title: 'Tiếng Khèn Mèo Đỉnh Mã Pí Lèng (Hà Giang)',
-    stepMs: 220,
+    title: 'Sáo Trúc Trên Đỉnh Mã Pí Lèng (Hà Giang)',
+    stepMs: 255,
     bassRoots: [N.D3, N.A3, N.C3, N.G3],
-    drumPattern: [0.95, 0.3, 0.5, 0.45, 0.85, 0.3, 0.55, 0.4],
+    drumPattern: [0.9, 0, 0.45, 0, 0.8, 0, 0.5, 0],
     notes: [
       [N.D4, 1, 'flute'], [N.F4, 1, 'flute'], [N.A4, 2, 'both'], [N.C5, 1, 'flute'],
       [N.D5, 2, 'flute'], [N.C5, 1, 'zither'], [N.A4, 1, 'flute'], [N.G4, 2, 'both'],
@@ -239,10 +240,10 @@ export const VN_SONGS = [
   },
   {
     id: 'mua_lua_sapa',
-    title: 'Mùa Lúa Chín Trên Bản Mây (Sa Pa)',
-    stepMs: 240,
-    bassRoots: [N.C3, N.G3, N.D3, N.A3],
-    drumPattern: [0.85, 0.3, 0.45, 0.3, 0.8, 0.35, 0.5, 0.3],
+    title: 'Mùa Lúa Chín Trên Bản Mây (Sa Pa Chill)',
+    stepMs: 270,
+    bassRoots: [N.C3, N.G3, N.A3, N.F3],
+    drumPattern: [0.85, 0, 0.4, 0, 0.75, 0, 0.45, 0],
     notes: [
       [N.E4, 1, 'bau'], [N.G4, 1, 'zither'], [N.A4, 2, 'bau'], [N.C5, 1, 'flute'],
       [N.D5, 2, 'both'], [N.E5, 1, 'flute'], [N.D5, 1, 'zither'], [N.C5, 2, 'bau'],
@@ -253,10 +254,10 @@ export const VN_SONGS = [
   },
   {
     id: 'nhip_cheo_ha_long',
-    title: 'Đào Liễu & Nhịp Sóng Hạ Long',
-    stepMs: 215,
-    bassRoots: [N.G3, N.D3, N.A3, N.E3],
-    drumPattern: [1, 0.35, 0.6, 0.4, 0.9, 0.45, 0.6, 0.35],
+    title: 'Đào Liễu & Sóng Biển Hạ Long (Acoustic)',
+    stepMs: 250,
+    bassRoots: [N.G3, N.D3, N.E3, N.C3],
+    drumPattern: [0.9, 0, 0.5, 0, 0.85, 0, 0.5, 0],
     notes: [
       [N.G4, 1, 'moon'], [N.A4, 1, 'moon'], [N.B4, 1, 'both'], [N.D5, 2, 'flute'],
       [N.E5, 1, 'zither'], [N.D5, 1, 'moon'], [N.B4, 1, 'both'], [N.A4, 2, 'bau'],
@@ -267,10 +268,10 @@ export const VN_SONGS = [
   },
   {
     id: 'nguoi_oi_dung_ve',
-    title: 'Người Ơi Người Ở Đừng Về (Hà Nội Chill)',
-    stepMs: 255,
-    bassRoots: [N.C3, N.F3, N.G3, N.C3],
-    drumPattern: [0.85, 0.25, 0.4, 0.4, 0.8, 0.3, 0.45, 0.3],
+    title: 'Người Ơi Người Ở Đừng Về (Lofi Piano)',
+    stepMs: 275,
+    bassRoots: [N.C3, N.A3, N.F3, N.G3],
+    drumPattern: [0.8, 0, 0.35, 0, 0.75, 0, 0.4, 0],
     notes: [
       [N.G4, 2, 'bau'], [N.A4, 1, 'zither'], [N.C5, 2, 'bau'], [N.D5, 1, 'flute'],
       [N.E5, 2, 'bau'], [N.D5, 1, 'zither'], [N.C5, 2, 'both'],
@@ -281,10 +282,10 @@ export const VN_SONGS = [
   },
   {
     id: 'hat_xoan_co_do',
-    title: 'Trẩy Hội Mùa Xuân Cố Đô (Ninh Bình)',
-    stepMs: 230,
-    bassRoots: [N.D3, N.G3, N.A3, N.D3],
-    drumPattern: [0.9, 0.3, 0.55, 0.35, 0.85, 0.4, 0.5, 0.35],
+    title: 'Khúc Hát Mùa Xuân Cố Đô (Ninh Bình)',
+    stepMs: 255,
+    bassRoots: [N.D3, N.A3, N.G3, N.D3],
+    drumPattern: [0.85, 0, 0.45, 0, 0.8, 0, 0.45, 0],
     notes: [
       [N.D4, 1, 'moon'], [N.E4, 1, 'zither'], [N.G4, 2, 'both'], [N.A4, 1, 'moon'],
       [N.C5, 2, 'flute'], [N.A4, 1, 'zither'], [N.G4, 2, 'bau'],
@@ -295,10 +296,10 @@ export const VN_SONGS = [
   },
   {
     id: 'nam_binh_song_huong',
-    title: 'Nhịp Cầu Trường Tiền & Sông Hương',
-    stepMs: 250,
-    bassRoots: [N.D3, N.F3, N.A3, N.D3],
-    drumPattern: [0.85, 0.25, 0.45, 0.35, 0.8, 0.3, 0.5, 0.3],
+    title: 'Chiều Tím Sông Hương (Guitar & Đàn Tranh)',
+    stepMs: 270,
+    bassRoots: [N.D3, N.F3, N.C3, N.G3],
+    drumPattern: [0.8, 0, 0.4, 0, 0.75, 0, 0.4, 0],
     notes: [
       [N.A4, 2, 'bau'], [N.D5, 1, 'zither'], [N.F5, 2, 'bau'], [N.E5, 1, 'flute'],
       [N.D5, 2, 'both'], [N.C5, 1, 'moon'], [N.A4, 2, 'bau'],
@@ -310,9 +311,9 @@ export const VN_SONGS = [
   {
     id: 'ly_ngua_o_trung',
     title: 'Lý Ngựa Ô Xứ Quảng (Cầu Vàng Đà Nẵng)',
-    stepMs: 205,
-    bassRoots: [N.G3, N.C3, N.D3, N.G3],
-    drumPattern: [1, 0.4, 0.6, 0.45, 0.95, 0.4, 0.65, 0.45],
+    stepMs: 240,
+    bassRoots: [N.G3, N.D3, N.E3, N.C3],
+    drumPattern: [0.95, 0, 0.5, 0, 0.85, 0, 0.5, 0],
     notes: [
       [N.G4, 1, 'moon'], [N.G4, 1, 'zither'], [N.C5, 1, 'both'], [N.C5, 1, 'moon'],
       [N.D5, 1, 'flute'], [N.E5, 1, 'zither'], [N.D5, 2, 'both'],
@@ -323,10 +324,10 @@ export const VN_SONGS = [
   },
   {
     id: 'dem_hoa_dang_hoian',
-    title: 'Đêm Hoa Đăng Sông Hoài (Hội An)',
-    stepMs: 245,
-    bassRoots: [N.A3, N.E3, N.F3, N.C3],
-    drumPattern: [0.85, 0.3, 0.45, 0.35, 0.8, 0.3, 0.5, 0.3],
+    title: 'Đêm Hoa Đăng Sông Hoài (Piano & Đàn Tranh)',
+    stepMs: 265,
+    bassRoots: [N.A3, N.F3, N.C3, N.G3],
+    drumPattern: [0.85, 0, 0.4, 0, 0.75, 0, 0.45, 0],
     notes: [
       [N.E4, 1, 'moon'], [N.A4, 2, 'zither'], [N.B4, 1, 'flute'], [N.C5, 2, 'bau'],
       [N.B4, 1, 'zither'], [N.A4, 1, 'moon'], [N.G4, 2, 'both'],
@@ -337,10 +338,10 @@ export const VN_SONGS = [
   },
   {
     id: 'bai_choi_pho_co',
-    title: 'Khúc Hát Bài Chòi Xứ Quảng',
-    stepMs: 215,
-    bassRoots: [N.C3, N.G3, N.D3, N.G3],
-    drumPattern: [0.95, 0.35, 0.6, 0.4, 0.9, 0.35, 0.55, 0.4],
+    title: 'Khúc Hát Bài Chòi Xứ Quảng (Acoustic)',
+    stepMs: 245,
+    bassRoots: [N.C3, N.G3, N.A3, N.F3],
+    drumPattern: [0.9, 0, 0.5, 0, 0.85, 0, 0.5, 0],
     notes: [
       [N.G4, 1, 'moon'], [N.A4, 1, 'moon'], [N.C5, 1, 'both'], [N.D5, 1, 'zither'],
       [N.E5, 2, 'flute'], [N.D5, 1, 'moon'], [N.C5, 1, 'zither'],
@@ -350,10 +351,10 @@ export const VN_SONGS = [
   },
   {
     id: 'suong_thong_dalat',
-    title: 'Bản Tình Ca Rừng Thông Đà Lạt',
-    stepMs: 245,
+    title: 'Bản Tình Ca Rừng Thông Đà Lạt (Lofi Piano)',
+    stepMs: 265,
     bassRoots: [N.C3, N.A3, N.F3, N.G3],
-    drumPattern: [0.85, 0.3, 0.45, 0.35, 0.8, 0.3, 0.5, 0.3],
+    drumPattern: [0.85, 0, 0.4, 0, 0.75, 0, 0.45, 0],
     notes: [
       [N.G4, 1, 'zither'], [N.C5, 2, 'bau'], [N.B4, 1, 'zither'], [N.A4, 2, 'flute'],
       [N.G4, 1, 'zither'], [N.E4, 2, 'both'], [N.D4, 1, 'zither'],
@@ -363,10 +364,10 @@ export const VN_SONGS = [
   },
   {
     id: 'song_bien_ponagar',
-    title: 'Vũ Điệu Tháp Chăm & Gió Biển Nha Trang',
-    stepMs: 215,
-    bassRoots: [N.D3, N.A3, N.C3, N.D3],
-    drumPattern: [1, 0.4, 0.55, 0.35, 0.9, 0.4, 0.6, 0.35],
+    title: 'Gió Biển Nha Trang & Tháp Cổ (Acoustic)',
+    stepMs: 245,
+    bassRoots: [N.D3, N.A3, N.C3, N.G3],
+    drumPattern: [0.9, 0, 0.45, 0, 0.85, 0, 0.5, 0],
     notes: [
       [N.D4, 1, 'trung'], [N.F4, 1, 'trung'], [N.A4, 1, 'both'], [N.B4, 1, 'flute'],
       [N.C5, 2, 'flute'], [N.B4, 1, 'trung'], [N.A4, 1, 'zither'],
@@ -377,10 +378,10 @@ export const VN_SONGS = [
   },
   {
     id: 'da_co_phuong_nam',
-    title: 'Nhịp Sống Sài Gòn & Giai Điệu Phương Nam',
-    stepMs: 225,
-    bassRoots: [N.G3, N.D3, N.C3, N.G3],
-    drumPattern: [0.95, 0.35, 0.5, 0.4, 0.9, 0.35, 0.55, 0.4],
+    title: 'Đêm Sài Gòn & Giai Điệu Phương Nam',
+    stepMs: 255,
+    bassRoots: [N.G3, N.E3, N.C3, N.D3],
+    drumPattern: [0.85, 0, 0.45, 0, 0.8, 0, 0.45, 0],
     notes: [
       [N.D4, 1, 'moon'], [N.G4, 2, 'bau'], [N.A4, 1, 'moon'], [N.C5, 2, 'bau'],
       [N.D5, 1, 'zither'], [N.E5, 1, 'flute'], [N.D5, 2, 'both'],
@@ -390,10 +391,10 @@ export const VN_SONGS = [
   },
   {
     id: 'ly_chieu_chieu',
-    title: 'Lý Chiều Chiều & Chợ Nổi Miền Tây',
-    stepMs: 220,
-    bassRoots: [N.C3, N.G3, N.A3, N.E3],
-    drumPattern: [0.95, 0.35, 0.55, 0.4, 0.85, 0.35, 0.55, 0.35],
+    title: 'Lý Chiều Chiều & Quê Hương Miền Tây',
+    stepMs: 250,
+    bassRoots: [N.C3, N.G3, N.A3, N.F3],
+    drumPattern: [0.9, 0, 0.45, 0, 0.8, 0, 0.45, 0],
     notes: [
       [N.G4, 1, 'zither'], [N.A4, 1, 'moon'], [N.C5, 2, 'bau'], [N.D5, 1, 'flute'],
       [N.E5, 1, 'zither'], [N.D5, 1, 'moon'], [N.C5, 2, 'both'],
@@ -420,6 +421,68 @@ export const BIOME_PLAYLISTS = {
   vietnam: ['trong_com', 'beo_dat', 'ly_cay_bong'],
 };
 
+// ============================================================================
+// WSOLA (Waveform Similarity Overlap-Add) Time-Stretch for Natural Male Voice
+// Stretches audio duration by `stretch = 1.22` at original pitch using phase-aligned
+// Hann windows so when played back at `playbackRate = 0.82`, the speaking tempo is
+// 1.00x (100% natural speed) while pitch & vocal-tract formants shift down into a
+// warm, natural Vietnamese Male MC baritone!
+// ============================================================================
+function createMaleStretchedBuffer(ctx, srcBuf, stretch = 1.21) {
+  const sr = srcBuf.sampleRate;
+  const input = srcBuf.getChannelData(0);
+  const inLen = input.length;
+  const outLen = Math.floor(inLen * stretch);
+  const outBuf = ctx.createBuffer(1, outLen, sr);
+  const output = outBuf.getChannelData(0);
+
+  const winSize = Math.round(sr * 0.036); // 36ms grain window
+  const halfWin = Math.floor(winSize / 2);
+  const synHop = halfWin;
+  const anaHop = synHop / stretch;
+  const searchRange = Math.round(sr * 0.008); // +-8ms pitch-period correlation search
+
+  const hann = new Float32Array(winSize);
+  for (let i = 0; i < winSize; i++) {
+    hann[i] = 0.5 * (1 - Math.cos((2 * Math.PI * i) / (winSize - 1)));
+  }
+
+  let outPos = 0;
+  let inCenter = 0;
+
+  while (outPos + winSize < outLen && inCenter + winSize < inLen) {
+    let bestOffset = 0;
+    const expectedIn = Math.floor(inCenter);
+
+    if (outPos > 0) {
+      let maxCorr = -Infinity;
+      const minOff = Math.max(0, expectedIn - searchRange);
+      const maxOff = Math.min(inLen - winSize - 1, expectedIn + searchRange);
+      // Cross-correlate the overlapping tail in `output` with candidate frames in `input`
+      for (let cand = minOff; cand <= maxOff; cand += 2) {
+        let corr = 0;
+        for (let k = 0; k < halfWin; k += 4) {
+          corr += output[outPos + k] * input[cand + k];
+        }
+        if (corr > maxCorr) {
+          maxCorr = corr;
+          bestOffset = cand - expectedIn;
+        }
+      }
+    }
+
+    const actualIn = Math.max(0, Math.min(inLen - winSize, expectedIn + bestOffset));
+    for (let i = 0; i < winSize; i++) {
+      output[outPos + i] += input[actualIn + i] * hann[i];
+    }
+
+    outPos += synHop;
+    inCenter += anaHop;
+  }
+
+  return outBuf;
+}
+
 export function createRaceAudio({ onSpeak = null } = {}) {
   const isPreviewIframe = (() => {
     try { return window.self !== window.top; } catch { return true; }
@@ -440,15 +503,55 @@ export function createRaceAudio({ onSpeak = null } = {}) {
   let watchdog = null;
   let currentVoiceSrc = null;
   let currentItem = null;
+  let interactiveGenderToggle = 0;
   const recentUidGreet = new Map();
   const recentNameGreet = new Map();
 
-  // Continuous AI Cultural Storyteller state & Preload AudioBuffer Cache
+  // Continuous AI Cultural Storyteller state & Dual-Voice AudioBuffer Cache
   let currentStoryBiomeId = 'vn_hagiang';
   let currentProvinceCode = 0;
   let storyStepIdx = 0;
   let pendingProvinceStory = null;
-  const decodedTtsCache = new Map(); // text -> Promise<AudioBuffer>
+  const decodedTtsCache = new Map(); // text -> Promise<{ femaleBuf, maleBuf }>
+
+  // Dedicated Broadcast Voice EQ Chains for Male MC & Female MC
+  const maleVoiceChain = (() => {
+    const lowShelf = ctx.createBiquadFilter();
+    lowShelf.type = 'lowshelf';
+    lowShelf.frequency.value = 175;
+    lowShelf.gain.value = 4.2;
+
+    const bodyPeak = ctx.createBiquadFilter();
+    bodyPeak.type = 'peaking';
+    bodyPeak.frequency.value = 440;
+    bodyPeak.Q.value = 1.1;
+    bodyPeak.gain.value = 2.2;
+
+    const smoothTop = ctx.createBiquadFilter();
+    smoothTop.type = 'lowpass';
+    smoothTop.frequency.value = 7600;
+
+    lowShelf.connect(bodyPeak);
+    bodyPeak.connect(smoothTop);
+    smoothTop.connect(master);
+    return lowShelf;
+  })();
+
+  const femaleVoiceChain = (() => {
+    const hp = ctx.createBiquadFilter();
+    hp.type = 'highpass';
+    hp.frequency.value = 115;
+
+    const presence = ctx.createBiquadFilter();
+    presence.type = 'peaking';
+    presence.frequency.value = 2650;
+    presence.Q.value = 1.2;
+    presence.gain.value = 2.0;
+
+    hp.connect(presence);
+    presence.connect(master);
+    return hp;
+  })();
 
   function tone(freq, start, dur, peak, type = 'triangle', endFreq = freq) {
     if (!enabled) return;
@@ -466,273 +569,257 @@ export function createRaceAudio({ onSpeak = null } = {}) {
   }
 
   // ============================================================================
-  // STUDIO-GRADE MULTI-TRACK VIETNAMESE FOLK-POP & TRAVEL GROOVE ENGINE
-  // Includes:
-  // - Warm Stereo Echo & Lowpass Ambience Bus (`melodyBus`)
-  // - Crisp Travel Percussion (Kick + Bamboo Phách Rimshot + 16th-Note Shaker)
-  // - Syncopated Plucked Pentatonic Bassline (`playGrooveBass`)
-  // - Off-beat Pentatonic Chord Arpeggio Strummer (`playChordStrum`)
-  // - Expressive 5-Instrument Vietnamese Lead Ensemble
+  // KARPLUS-STRONG PHYSICAL STRING MODELING & CONCERT HALL REVERB BGM ENGINE
+  // Produces realistic plucked Đàn Tranh, Nylon Acoustic Guitar, Warm Lofi Felt
+  // Piano Chords, and Silky Bamboo Flute inside a 2.5s Stereo Hall Reverb!
   // ============================================================================
   const bgmGain = ctx.createGain();
-  bgmGain.gain.value = 0.36;
+  bgmGain.gain.value = 0.38;
   bgmGain.connect(master);
 
-  // Melody bus with warm acoustic echo (195ms delay + 2600Hz lowpass feedback) so notes shimmer richly
-  const melodyBus = ctx.createGain();
-  melodyBus.gain.value = 1.0;
-  melodyBus.connect(bgmGain);
+  // Master BGM Warmth Compressor & EQ so no harsh frequencies ever clash with AI voices
+  const bgmWarmFilter = ctx.createBiquadFilter();
+  bgmWarmFilter.type = 'lowpass';
+  bgmWarmFilter.frequency.value = 3800;
+  bgmWarmFilter.connect(bgmGain);
 
-  const echoDelay = ctx.createDelay(1.0);
-  echoDelay.delayTime.value = 0.195;
-  const echoFilter = ctx.createBiquadFilter();
-  echoFilter.type = 'lowpass';
-  echoFilter.frequency.value = 2500;
-  const echoFeedback = ctx.createGain();
-  echoFeedback.gain.value = 0.28;
-  const echoWet = ctx.createGain();
-  echoWet.gain.value = 0.32;
-
-  melodyBus.connect(echoDelay);
-  echoDelay.connect(echoFilter);
-  echoFilter.connect(echoWet);
-  echoWet.connect(bgmGain);
-  echoFilter.connect(echoFeedback);
-  echoFeedback.connect(echoDelay);
-
-  // Pre-generate white noise buffer for lively Shaker, Hi-Hat, and Bamboo Snare
-  const noiseBuf = (() => {
-    const len = ctx.sampleRate * 0.25;
-    const b = ctx.createBuffer(1, len, ctx.sampleRate);
-    const data = b.getChannelData(0);
-    for (let i = 0; i < len; i++) data[i] = Math.random() * 2 - 1;
-    return b;
+  // True 2.5-second Stereo Concert Hall Convolution Reverb
+  const hallReverb = ctx.createConvolver();
+  hallReverb.buffer = (() => {
+    const sr = ctx.sampleRate;
+    const len = Math.floor(sr * 2.5);
+    const ir = ctx.createBuffer(2, len, sr);
+    for (let ch = 0; ch < 2; ch++) {
+      const d = ir.getChannelData(ch);
+      let lp = 0;
+      for (let i = 0; i < len; i++) {
+        const t = i / sr;
+        const env = Math.exp(-t * 2.35) * (1 - Math.exp(-t * 28));
+        const raw = (Math.random() * 2 - 1) * env;
+        // Warm low-pass damping inside hall
+        lp = lp * 0.72 + raw * 0.28;
+        d[i] = lp * 0.42;
+      }
+    }
+    return ir;
   })();
 
-  // 1. Plucked Đàn Tranh (16-string Vietnamese zither with bright attack & warm body)
-  function playDanTranh(freq, start, dur, vol = 0.14) {
-    if (!enabled || bgmMuted || ctx.state !== 'running' || freq <= 0) return;
-    for (const [mult, peak, d, type] of [
-      [1, vol, dur * 1.55, 'triangle'],
-      [2, vol * 0.42, dur * 0.95, 'sine'],
-      [3, vol * 0.16, dur * 0.5, 'sine'],
-    ]) {
-      const o = ctx.createOscillator();
-      const g = ctx.createGain();
-      o.type = type;
-      o.frequency.setValueAtTime(freq * mult * 1.014, start);
-      o.frequency.exponentialRampToValueAtTime(freq * mult, start + 0.042);
-      g.gain.setValueAtTime(0.0001, start);
-      g.gain.linearRampToValueAtTime(peak, start + 0.014);
-      g.gain.exponentialRampToValueAtTime(0.0001, start + Math.max(0.22, d));
-      o.connect(g).connect(melodyBus);
-      o.start(start);
-      o.stop(start + Math.max(0.22, d) + 0.03);
+  const reverbWet = ctx.createGain();
+  reverbWet.gain.value = 0.48;
+  hallReverb.connect(reverbWet);
+  reverbWet.connect(bgmWarmFilter);
+
+  const acousticDry = ctx.createGain();
+  acousticDry.gain.value = 0.85;
+  acousticDry.connect(bgmWarmFilter);
+  acousticDry.connect(hallReverb);
+
+  // Karplus-Strong Physical Waveguide Plucked String Generator (Caches realistic plucked string buffers)
+  const stringBufferCache = new Map();
+  function getKarplusStrongBuffer(freq, style = 'zither') {
+    const key = `${style}:${Math.round(freq * 10)}`;
+    let buf = stringBufferCache.get(key);
+    if (buf) return buf;
+
+    const sr = ctx.sampleRate;
+    const durSec = style === 'guitar' ? 2.4 : 2.8;
+    const len = Math.floor(sr * durSec);
+    buf = ctx.createBuffer(1, len, sr);
+    const out = buf.getChannelData(0);
+
+    const period = Math.max(8, Math.round(sr / freq));
+    const ring = new Float32Array(period);
+
+    // Pluck exciter: smoothed noise burst + fundamental body impulse
+    let prev = 0;
+    const smoothAlpha = style === 'guitar' ? 0.58 : 0.32;
+    for (let i = 0; i < period; i++) {
+      const n = Math.random() * 2 - 1;
+      prev = prev * smoothAlpha + n * (1 - smoothAlpha);
+      const body = Math.sin((2 * Math.PI * i) / period) * (style === 'guitar' ? 0.65 : 0.4);
+      ring[i] = (prev * 0.6 + body) * 0.9;
     }
+
+    // Damping & string stiffness parameters
+    const damping = style === 'guitar' ? 0.9935 : 0.9962;
+    const brightness = style === 'guitar' ? 0.38 : 0.54;
+    let p = 0;
+    let lastVal = 0;
+
+    for (let i = 0; i < len; i++) {
+      const cur = ring[p];
+      out[i] = cur;
+      const nextP = (p + 1) % period;
+      // Lowpass waveguide bridge reflection
+      const avg = brightness * cur + (1 - brightness) * ring[nextP];
+      ring[p] = (avg * 0.88 + lastVal * 0.12) * damping;
+      lastVal = cur;
+      p = nextP;
+    }
+
+    stringBufferCache.set(key, buf);
+    return buf;
   }
 
-  // 2. Breathy Sáo Trúc (Vietnamese bamboo flute with 5.5Hz vibrato & harmonic overtone)
-  function playSaoTruc(freq, start, dur, vol = 0.105) {
+  // 1. Play Physical-Modeled Đàn Tranh or Acoustic Guitar Pluck
+  function playAcousticPluck(freq, start, vol = 0.24, style = 'zither') {
     if (!enabled || bgmMuted || ctx.state !== 'running' || freq <= 0) return;
-    const totalDur = Math.max(0.3, dur * 1.2);
-    for (const [mult, ratio] of [[1, 1.0], [2, 0.22]]) {
-      const o = ctx.createOscillator();
-      const lfo = ctx.createOscillator();
-      const lfoGain = ctx.createGain();
-      const g = ctx.createGain();
-      o.type = 'sine';
-      o.frequency.setValueAtTime(freq * mult, start);
-      lfo.frequency.setValueAtTime(5.5, start);
-      lfoGain.gain.setValueAtTime(freq * mult * 0.0085, start);
-      lfo.connect(lfoGain).connect(o.frequency);
-
-      g.gain.setValueAtTime(0.0001, start);
-      g.gain.linearRampToValueAtTime(vol * ratio, start + 0.055);
-      g.gain.exponentialRampToValueAtTime(0.0001, start + totalDur);
-      o.connect(g).connect(melodyBus);
-      o.start(start);
-      lfo.start(start);
-      o.stop(start + totalDur + 0.03);
-      lfo.stop(start + totalDur + 0.03);
-    }
+    const buf = getKarplusStrongBuffer(freq, style);
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(vol, start);
+    g.gain.exponentialRampToValueAtTime(0.0008, start + (style === 'guitar' ? 2.1 : 2.5));
+    src.connect(g).connect(acousticDry);
+    src.start(start);
+    src.stop(start + (style === 'guitar' ? 2.15 : 2.55));
   }
 
-  // 3. Expressive Đàn Bầu (Vietnamese monochord with signature pitch bend)
-  function playDanBau(freq, start, dur, vol = 0.13) {
-    if (!enabled || bgmMuted || ctx.state !== 'running' || freq <= 0) return;
-    const totalDur = Math.max(0.36, dur * 1.32);
-    for (const [mult, ratio, type] of [
-      [1, 1.0, 'sine'],
-      [2, 0.58, 'triangle'],
-    ]) {
-      const o = ctx.createOscillator();
-      const lfo = ctx.createOscillator();
-      const lfoGain = ctx.createGain();
-      const g = ctx.createGain();
-      o.type = type;
-      o.frequency.setValueAtTime(freq * mult * 0.955, start);
-      o.frequency.exponentialRampToValueAtTime(freq * mult * 1.022, start + Math.min(0.13, totalDur * 0.35));
-      o.frequency.exponentialRampToValueAtTime(freq * mult, start + Math.min(0.24, totalDur * 0.65));
-      lfo.frequency.setValueAtTime(4.9, start);
-      lfoGain.gain.setValueAtTime(freq * mult * 0.009, start);
-      lfo.connect(lfoGain).connect(o.frequency);
-
-      g.gain.setValueAtTime(0.0001, start);
-      g.gain.linearRampToValueAtTime(vol * ratio, start + 0.038);
-      g.gain.exponentialRampToValueAtTime(0.0001, start + totalDur);
-      o.connect(g).connect(melodyBus);
-      o.start(start);
-      lfo.start(start);
-      o.stop(start + totalDur + 0.04);
-      lfo.stop(start + totalDur + 0.04);
-    }
-  }
-
-  // 4. Warm Đàn Nguyệt / Đàn Kìm (2-string moon lute)
-  function playDanNguyet(freq, start, dur, vol = 0.14) {
-    if (!enabled || bgmMuted || ctx.state !== 'running' || freq <= 0) return;
-    const totalDur = Math.max(0.24, dur * 1.2);
-    for (const [mult, ratio, type] of [
-      [1, 1.0, 'triangle'],
-      [1.5, 0.25, 'sine'],
-      [2, 0.3, 'sine'],
-    ]) {
-      const o = ctx.createOscillator();
-      const g = ctx.createGain();
-      o.type = type;
-      o.frequency.setValueAtTime(freq * mult * 1.008, start);
-      o.frequency.exponentialRampToValueAtTime(freq * mult, start + 0.028);
-      g.gain.setValueAtTime(0.0001, start);
-      g.gain.linearRampToValueAtTime(vol * ratio, start + 0.012);
-      g.gain.exponentialRampToValueAtTime(0.0001, start + totalDur);
-      o.connect(g).connect(melodyBus);
-      o.start(start);
-      o.stop(start + totalDur + 0.03);
-    }
-  }
-
-  // 5. Crisp Đàn T'rưng (Highland bamboo marimba)
-  function playDanTrung(freq, start, dur, vol = 0.135) {
-    if (!enabled || bgmMuted || ctx.state !== 'running' || freq <= 0) return;
-    const totalDur = Math.max(0.18, dur * 0.95);
-    for (const [mult, ratio] of [
-      [1, 1.0],
-      [2.76, 0.28],
-    ]) {
-      const o = ctx.createOscillator();
-      const g = ctx.createGain();
-      o.type = 'sine';
-      o.frequency.setValueAtTime(freq * mult, start);
-      g.gain.setValueAtTime(0.0001, start);
-      g.gain.linearRampToValueAtTime(vol * ratio, start + 0.007);
-      g.gain.exponentialRampToValueAtTime(0.0001, start + totalDur);
-      o.connect(g).connect(melodyBus);
-      o.start(start);
-      o.stop(start + totalDur + 0.02);
-    }
-  }
-
-  // 6. Groovy Plucked Pentatonic Bassline + Warm Pad
-  function playGrooveBass(rootFreq, start, dur, vol = 0.12) {
+  // 2. Play Warm Felt Lofi Piano Chord (Lush 4-note chord pad + soft hammer attack)
+  function playFeltPianoChord(rootFreq, start, durSec, vol = 0.068) {
     if (!enabled || bgmMuted || ctx.state !== 'running' || rootFreq <= 0) return;
+    // Warm Pentatonic Major9 / Add6 voicing: Root, Fifth, Octave, Major 10th
+    const intervals = [1.0, 1.5, 2.0, 2.5, 3.0];
+    for (let i = 0; i < intervals.length; i++) {
+      const f = rootFreq * intervals[i];
+      const noteStart = start + i * 0.032; // Gentle pianist roll arpeggiation
+      const o1 = ctx.createOscillator();
+      const o2 = ctx.createOscillator();
+      const flt = ctx.createBiquadFilter();
+      const g = ctx.createGain();
+
+      o1.type = 'triangle';
+      o2.type = 'sine';
+      o1.frequency.setValueAtTime(f, noteStart);
+      o2.frequency.setValueAtTime(f * 2, noteStart);
+      o1.detune.setValueAtTime((i - 2) * 2.5, noteStart);
+
+      flt.type = 'lowpass';
+      flt.frequency.setValueAtTime(920, noteStart);
+      flt.frequency.exponentialRampToValueAtTime(340, noteStart + durSec);
+
+      const noteVol = i === 0 ? vol * 1.15 : vol * (0.85 - i * 0.1);
+      g.gain.setValueAtTime(0.0001, noteStart);
+      g.gain.linearRampToValueAtTime(noteVol, noteStart + 0.035);
+      g.gain.exponentialRampToValueAtTime(0.0001, noteStart + durSec * 1.15);
+
+      const p2Gain = ctx.createGain();
+      p2Gain.gain.value = 0.22;
+      o1.connect(flt);
+      o2.connect(p2Gain).connect(flt);
+      flt.connect(g).connect(acousticDry);
+
+      o1.start(noteStart);
+      o2.start(noteStart);
+      o1.stop(noteStart + durSec * 1.2);
+      o2.stop(noteStart + durSec * 1.2);
+    }
+  }
+
+  // 3. Silky Bamboo Flute (Sáo Trúc with delayed natural vibrato & warm lowpass)
+  function playSilkFlute(freq, start, durSec, vol = 0.085) {
+    if (!enabled || bgmMuted || ctx.state !== 'running' || freq <= 0) return;
+    const totalDur = Math.max(0.38, durSec * 1.28);
     const o = ctx.createOscillator();
+    const overtone = ctx.createOscillator();
+    const overGain = ctx.createGain();
+    const lfo = ctx.createOscillator();
+    const lfoGain = ctx.createGain();
     const flt = ctx.createBiquadFilter();
     const g = ctx.createGain();
-    o.type = 'sawtooth';
-    o.frequency.setValueAtTime(rootFreq, start);
+
+    o.type = 'sine';
+    overtone.type = 'sine';
+    o.frequency.setValueAtTime(freq * 0.992, start);
+    o.frequency.exponentialRampToValueAtTime(freq, start + 0.045);
+    overtone.frequency.setValueAtTime(freq * 2, start);
+    overGain.gain.value = 0.16;
+
+    // Delayed vibrato blooms naturally after 100ms
+    lfo.frequency.setValueAtTime(5.2, start);
+    lfoGain.gain.setValueAtTime(0.01, start);
+    lfoGain.gain.linearRampToValueAtTime(freq * 0.0075, start + Math.min(0.18, totalDur * 0.45));
+    lfo.connect(lfoGain).connect(o.frequency);
+
     flt.type = 'lowpass';
-    flt.frequency.setValueAtTime(480, start);
-    flt.frequency.exponentialRampToValueAtTime(150, start + dur * 0.85);
+    flt.frequency.value = 1850;
+
     g.gain.setValueAtTime(0.0001, start);
-    g.gain.linearRampToValueAtTime(vol, start + 0.015);
-    g.gain.exponentialRampToValueAtTime(0.0001, start + dur * 0.92);
-    o.connect(flt).connect(g).connect(bgmGain);
+    g.gain.linearRampToValueAtTime(vol, start + 0.075);
+    g.gain.setValueAtTime(vol * 0.92, start + totalDur * 0.65);
+    g.gain.exponentialRampToValueAtTime(0.0001, start + totalDur);
+
+    o.connect(flt);
+    overtone.connect(overGain).connect(flt);
+    flt.connect(g).connect(acousticDry);
+
     o.start(start);
-    o.stop(start + dur);
+    overtone.start(start);
+    lfo.start(start);
+    o.stop(start + totalDur + 0.04);
+    overtone.stop(start + totalDur + 0.04);
+    lfo.stop(start + totalDur + 0.04);
   }
 
-  // 7. Off-Beat Pentatonic Chord Arpeggio Strummer (fills the background with lush movement)
-  function playChordStrum(rootFreq, start, stepDurSec) {
-    if (!enabled || bgmMuted || ctx.state !== 'running' || rootFreq <= 0) return;
-    // Pentatonic major chord voicing: Root (octave up), Major 2nd/3rd, Perfect 5th, Octave
-    const ratios = [2.0, 2.5, 3.0, 4.0];
-    for (let i = 0; i < ratios.length; i++) {
-      const t = start + i * 0.028;
-      const o = ctx.createOscillator();
-      const g = ctx.createGain();
-      o.type = 'sine';
-      o.frequency.setValueAtTime(rootFreq * ratios[i], t);
-      g.gain.setValueAtTime(0.0001, t);
-      g.gain.linearRampToValueAtTime(0.036, t + 0.012);
-      g.gain.exponentialRampToValueAtTime(0.0001, t + stepDurSec * 1.4);
-      o.connect(g).connect(melodyBus);
-      o.start(t);
-      o.stop(t + stepDurSec * 1.45);
-    }
+  // 4. Expressive Đàn Bầu (Warm singing harmonic glide in Concert Hall Reverb)
+  function playDanBau(freq, start, durSec, vol = 0.095) {
+    if (!enabled || bgmMuted || ctx.state !== 'running' || freq <= 0) return;
+    const totalDur = Math.max(0.45, durSec * 1.38);
+    const o = ctx.createOscillator();
+    const lfo = ctx.createOscillator();
+    const lfoGain = ctx.createGain();
+    const flt = ctx.createBiquadFilter();
+    const g = ctx.createGain();
+
+    o.type = 'triangle';
+    o.frequency.setValueAtTime(freq * 0.955, start);
+    o.frequency.exponentialRampToValueAtTime(freq * 1.018, start + Math.min(0.14, totalDur * 0.35));
+    o.frequency.exponentialRampToValueAtTime(freq, start + Math.min(0.26, totalDur * 0.65));
+
+    lfo.frequency.setValueAtTime(4.8, start);
+    lfoGain.gain.setValueAtTime(freq * 0.0085, start);
+    lfo.connect(lfoGain).connect(o.frequency);
+
+    flt.type = 'lowpass';
+    flt.frequency.value = 1650;
+
+    g.gain.setValueAtTime(0.0001, start);
+    g.gain.linearRampToValueAtTime(vol, start + 0.045);
+    g.gain.exponentialRampToValueAtTime(0.0001, start + totalDur);
+
+    o.connect(flt).connect(g).connect(acousticDry);
+    o.start(start);
+    lfo.start(start);
+    o.stop(start + totalDur + 0.04);
+    lfo.stop(start + totalDur + 0.04);
   }
 
-  // 8. Lively Percussion: Warm Kick + Bamboo Phách Snare + 16th-Note Travel Shaker
-  function playPercussionGroove(start, stepInBar, accent, stepDurSec) {
+  // 5. Soft Lo-Fi Heartbeat Kick & Gentle Wood Clave
+  function playWarmLofiPulse(start, stepInBar) {
     if (!enabled || bgmMuted || ctx.state !== 'running') return;
-
-    // Kick drum on beats 0, 3, 4 (syncopated tropical/travel groove)
-    if (stepInBar === 0 || stepInBar === 3 || stepInBar === 4) {
-      const kVol = stepInBar === 0 ? 0.14 : 0.10;
+    if (stepInBar === 0 || stepInBar === 4) {
       const o = ctx.createOscillator();
       const g = ctx.createGain();
       o.type = 'sine';
-      o.frequency.setValueAtTime(128, start);
-      o.frequency.exponentialRampToValueAtTime(46, start + 0.11);
-      g.gain.setValueAtTime(kVol, start);
-      g.gain.exponentialRampToValueAtTime(0.0001, start + 0.13);
-      o.connect(g).connect(bgmGain);
+      o.frequency.setValueAtTime(96, start);
+      o.frequency.exponentialRampToValueAtTime(42, start + 0.13);
+      g.gain.setValueAtTime(stepInBar === 0 ? 0.12 : 0.085, start);
+      g.gain.exponentialRampToValueAtTime(0.0001, start + 0.16);
+      o.connect(g).connect(bgmWarmFilter);
       o.start(start);
-      o.stop(start + 0.14);
-    }
-
-    // Crisp Bamboo Phách / Snare Rimshot on backbeats (step 2 and 6)
-    if (stepInBar === 2 || stepInBar === 6) {
-      // Woody rim tone
+      o.stop(start + 0.17);
+    } else if (stepInBar === 2 || stepInBar === 6) {
+      // Soft woody acoustic guitar body tap / phách trầm
       const o = ctx.createOscillator();
       const g = ctx.createGain();
-      o.type = 'triangle';
-      o.frequency.setValueAtTime(340, start);
-      o.frequency.exponentialRampToValueAtTime(165, start + 0.055);
-      g.gain.setValueAtTime(0.075, start);
-      g.gain.exponentialRampToValueAtTime(0.0001, start + 0.065);
-      o.connect(g).connect(bgmGain);
+      o.type = 'sine';
+      o.frequency.setValueAtTime(240, start);
+      o.frequency.exponentialRampToValueAtTime(115, start + 0.045);
+      g.gain.setValueAtTime(0.045, start);
+      g.gain.exponentialRampToValueAtTime(0.0001, start + 0.055);
+      o.connect(g).connect(acousticDry);
       o.start(start);
-      o.stop(start + 0.07);
-
-      // Crisp snare snap
-      const nSrc = ctx.createBufferSource();
-      nSrc.buffer = noiseBuf;
-      const bp = ctx.createBiquadFilter();
-      bp.type = 'bandpass';
-      bp.frequency.value = 2200;
-      bp.Q.value = 1.4;
-      const ng = ctx.createGain();
-      ng.gain.setValueAtTime(0.055, start);
-      ng.gain.exponentialRampToValueAtTime(0.0001, start + 0.07);
-      nSrc.connect(bp).connect(ng).connect(bgmGain);
-      nSrc.start(start);
-      nSrc.stop(start + 0.075);
-    }
-
-    // Lively 16th-note Shaker / Hi-hat groove (main step + subdivision off-beat)
-    for (const [subOffset, sVol] of [[0, 0.032 * Math.max(0.5, accent)], [stepDurSec * 0.5, 0.022]]) {
-      const st = start + subOffset;
-      const nSrc = ctx.createBufferSource();
-      nSrc.buffer = noiseBuf;
-      const hp = ctx.createBiquadFilter();
-      hp.type = 'highpass';
-      hp.frequency.value = 5800;
-      const sg = ctx.createGain();
-      sg.gain.setValueAtTime(sVol, st);
-      sg.gain.exponentialRampToValueAtTime(0.0001, st + 0.038);
-      nSrc.connect(hp).connect(sg).connect(bgmGain);
-      nSrc.start(st);
-      nSrc.stop(st + 0.042);
+      o.stop(start + 0.06);
     }
   }
 
@@ -747,11 +834,9 @@ export function createRaceAudio({ onSpeak = null } = {}) {
 
   function duckBgm(duck) {
     if (ctx.state === 'running') {
-      // Keep the lively background music clearly audible (0.24) during continuous story narration,
-      // duck slightly more (0.15) for high-priority viewer interactive events, and 0.36 when idle.
       const isStory = currentItem?.kind === 'story';
-      const target = bgmMuted ? 0 : duck ? (isStory ? 0.24 : 0.15) : 0.36;
-      bgmGain.gain.setTargetAtTime(target, ctx.currentTime, 0.14);
+      const target = bgmMuted ? 0 : duck ? (isStory ? 0.27 : 0.18) : 0.40;
+      bgmGain.gain.setTargetAtTime(target, ctx.currentTime, 0.16);
     }
   }
 
@@ -769,59 +854,48 @@ export function createRaceAudio({ onSpeak = null } = {}) {
       const stepInBar = tickCount % 8;
       const bassRoot = song.bassRoots[Math.floor(tickCount / 4) % song.bassRoots.length];
 
-      // 1. Syncopated Plucked Bassline (Root on 0, 4; Fifth on 2, 6; Octave bounce on 3, 7)
-      if (stepInBar % 2 === 0) {
-        const bFreq = (stepInBar === 2 || stepInBar === 6) ? bassRoot * 1.5 : bassRoot;
-        playGrooveBass(bFreq, t, stepSec * 1.85, 0.115);
+      // 1. Warm Lofi Felt Piano Chords & Acoustic Guitar Bass Arpeggio
+      if (stepInBar === 0 || stepInBar === 4) {
+        playFeltPianoChord(bassRoot, t, stepSec * 4.2, 0.062);
+        playAcousticPluck(bassRoot, t, 0.22, 'guitar');
+      } else if (stepInBar === 2 || stepInBar === 6) {
+        playAcousticPluck(bassRoot * 1.5, t, 0.16, 'guitar');
+      } else if (stepInBar === 1 || stepInBar === 5) {
+        playAcousticPluck(bassRoot * 2, t, 0.13, 'guitar');
       } else if (stepInBar === 3 || stepInBar === 7) {
-        playGrooveBass(bassRoot * 2, t, stepSec * 0.9, 0.075);
+        playAcousticPluck(bassRoot * 2.5, t, 0.12, 'guitar');
       }
 
-      // 2. Off-beat Pentatonic Chord Arpeggio Strum on steps 1 and 5
-      if (stepInBar === 1 || stepInBar === 5) {
-        playChordStrum(bassRoot, t, stepSec);
-      }
-
-      // 3. Lively Percussion Groove (Kick + Bamboo Snare + 16th-Note Shaker) across every beat of the note
+      // 2. Soft Lo-Fi Heartbeat Rhythm
       const subBeats = Math.max(1, beats);
       for (let b = 0; b < subBeats; b++) {
-        const subStep = (stepInBar + b) % 8;
-        const drumAccent = song.drumPattern[subStep % song.drumPattern.length] || 0.4;
-        playPercussionGroove(t + b * stepSec, subStep, drumAccent, stepSec);
+        playWarmLofiPulse(t + b * stepSec, (stepInBar + b) % 8);
       }
 
-      // 4. Vietnamese Traditional Lead Ensemble + Harmony Duet
+      // 3. Lead Karplus-Strong Đàn Tranh, Nylon Guitar, Đàn Bầu & Silky Sáo Trúc
       if (freq > 0) {
-        if (inst === 'zither' || inst === 'both') {
-          playDanTranh(freq, t, durSec, 0.145);
-          // Graceful harmony pluck (octave + fifth shimmer on longer notes)
-          playDanTranh(freq * 0.5, t + 0.025, durSec, 0.065);
+        if (inst === 'zither' || inst === 'both' || inst === 'trung') {
+          playAcousticPluck(freq, t, 0.28, 'zither');
+          // Shimmering lower-octave guitar companion note
+          playAcousticPluck(freq * 0.5, t + 0.025, 0.16, 'guitar');
           if (beats >= 2) {
-            playDanTranh(freq * 1.5, t + stepSec * 0.98, durSec * 0.6, 0.075);
-          }
-        }
-        if (inst === 'flute' || inst === 'both') {
-          playSaoTruc(freq, t + 0.008, durSec, inst === 'flute' ? 0.11 : 0.08);
-          if (inst === 'flute') {
-            playDanTranh(freq * 0.5, t, durSec * 0.8, 0.06);
-          }
-        }
-        if (inst === 'bau') {
-          playDanBau(freq, t, durSec, 0.13);
-          playDanTranh(freq * 0.5, t + 0.03, durSec, 0.065);
-          if (beats >= 2) {
-            playSaoTruc(freq, t + stepSec * 0.5, durSec * 0.7, 0.065);
+            // Gentle ornamental grace pluck (láy đàn tranh) on sustained notes
+            playAcousticPluck(freq * 1.5, t + stepSec * 0.96, 0.16, 'zither');
           }
         }
         if (inst === 'moon') {
-          playDanNguyet(freq, t, durSec, 0.14);
-          if (beats >= 2) {
-            playDanTranh(freq * 1.5, t + stepSec * 0.95, durSec * 0.6, 0.07);
+          playAcousticPluck(freq, t, 0.28, 'guitar');
+          playAcousticPluck(freq * 2, t + 0.02, 0.14, 'zither');
+        }
+        if (inst === 'flute' || inst === 'both') {
+          playSilkFlute(freq, t + 0.01, durSec, inst === 'flute' ? 0.095 : 0.07);
+          if (inst === 'flute') {
+            playAcousticPluck(freq, t, 0.18, 'guitar');
           }
         }
-        if (inst === 'trung') {
-          playDanTrung(freq, t, durSec, 0.14);
-          playDanTranh(freq * 0.5, t + 0.02, durSec, 0.06);
+        if (inst === 'bau') {
+          playDanBau(freq, t, durSec, 0.10);
+          playAcousticPluck(freq, t, 0.20, 'zither');
         }
       }
 
@@ -855,28 +929,27 @@ export function createRaceAudio({ onSpeak = null } = {}) {
   function joinChime() {
     if (!enabled) return;
     const t = ctx.currentTime;
-    tone(523.25, t, 0.35, 0.07, 'sine');
-    tone(659.25, t + 0.07, 0.45, 0.05, 'sine');
+    playAcousticPluck(N.C5, t, 0.18, 'zither');
+    playAcousticPluck(N.E5, t + 0.07, 0.16, 'zither');
   }
 
   function boostSfx(tier = 1) {
     if (!enabled) return;
     const t = ctx.currentTime;
     if (tier >= 3) {
-      for (const [i, f] of [392.0, 523.25, 659.25].entries()) {
-        tone(f, t + i * 0.11, 0.45, 0.11, 'sine');
+      for (const [i, f] of [N.G4, N.C5, N.E5].entries()) {
+        playAcousticPluck(f, t + i * 0.1, 0.22, 'zither');
       }
     } else {
-      tone(440, t, 0.36, 0.09, 'sine', 587.33);
+      playAcousticPluck(N.A4, t, 0.20, 'zither');
+      playAcousticPluck(N.D5, t + 0.08, 0.20, 'zither');
     }
   }
 
   // ============================================================================
-  // PRE-FETCHING & CONTINUOUS PRIORITY TTS ENGINE
-  // Pre-decodes upcoming story sentences into AudioBuffers while the current
-  // sentence is playing so the transition between sentences takes only ~350ms!
+  // DUAL-HOST (1 MALE + 1 FEMALE) PRE-FETCHING & CONTINUOUS PRIORITY TTS ENGINE
   // ============================================================================
-  function fetchAndDecodeTts(text) {
+  function fetchAndDecodeDualVoiceTts(text) {
     if (!text) return Promise.reject(new Error('empty text'));
     let p = decodedTtsCache.get(text);
     if (!p) {
@@ -884,10 +957,12 @@ export function createRaceAudio({ onSpeak = null } = {}) {
         const res = await fetch(`/tts?q=${encodeURIComponent(text)}`);
         if (!res.ok) throw new Error('tts failed');
         const arr = await res.arrayBuffer();
-        return await ctx.decodeAudioData(arr);
+        const femaleBuf = await ctx.decodeAudioData(arr);
+        const maleBuf = createMaleStretchedBuffer(ctx, femaleBuf, 1.21);
+        return { femaleBuf, maleBuf };
       })();
       p.catch(() => decodedTtsCache.delete(text));
-      if (decodedTtsCache.size >= 80) {
+      if (decodedTtsCache.size >= 60) {
         decodedTtsCache.delete(decodedTtsCache.keys().next().value);
       }
       decodedTtsCache.set(text, p);
@@ -905,7 +980,7 @@ export function createRaceAudio({ onSpeak = null } = {}) {
   function preloadNextStoryBuffer() {
     const nextText = peekNextStoryText();
     if (nextText) {
-      fetchAndDecodeTts(nextText).catch(() => {});
+      fetchAndDecodeDualVoiceTts(nextText).catch(() => {});
     }
   }
 
@@ -928,12 +1003,10 @@ export function createRaceAudio({ onSpeak = null } = {}) {
   function interruptSpeechIfLowerPriority(newPriority = 2, isReal = true) {
     if (!speaking || !currentItem) return;
     const curPrio = currentItem.priority ?? 0;
-    // 1. Story narration (priority 0) ALWAYS yields immediately to ANY join, comment, or donate (priority >= 1)
     if (currentItem.kind === 'story' && newPriority >= 1) {
       stopCurrentSpeechImmediately(true);
       return;
     }
-    // 2. Mock/bot speech yields to any real viewer event, and normal join yields to high-tier donate
     if ((isReal && !currentItem.isReal) || (newPriority >= 5 && curPrio <= 3)) {
       stopCurrentSpeechImmediately(false);
     }
@@ -963,14 +1036,12 @@ export function createRaceAudio({ onSpeak = null } = {}) {
     if (speechQueue.some(x => x.text === item.text)) return;
 
     if (isStory) {
-      // Story narration has the lowest priority (0): NEVER queue if anything is speaking or waiting
       if (speaking || speechQueue.length > 0) return;
       speechQueue.push(item);
       flushSpeech();
       return;
     }
 
-    // Interactive event (Donate, Comment, or Join): purge any queued story and preempt active story immediately
     purgeLowerPriorityFromQueue(Boolean(item.isReal));
     interruptSpeechIfLowerPriority(prio, Boolean(item.isReal));
 
@@ -997,10 +1068,12 @@ export function createRaceAudio({ onSpeak = null } = {}) {
     if (pendingProvinceStory && storyStepIdx > 0) {
       const provText = pendingProvinceStory;
       pendingProvinceStory = null;
+      const gender = storyStepIdx % 2 === 0 ? 'male' : 'female';
       enqueueSpeech({
         uid: '__ai_story_province__',
         text: provText,
         kind: 'story',
+        gender,
         priority: 0,
         isReal: false,
         rewindOnInterrupt: false,
@@ -1010,12 +1083,15 @@ export function createRaceAudio({ onSpeak = null } = {}) {
 
     const chapters = LANDMARK_STORIES[currentStoryBiomeId] || LANDMARK_STORIES.vietnam;
     if (!chapters || !chapters.length) return;
+    // Alternate 1 Male (👨 MC Minh Quân) & 1 Female (👩 MC Hoài My) on every chapter!
+    const gender = storyStepIdx % 2 === 0 ? 'male' : 'female';
     const text = chapters[storyStepIdx % chapters.length];
     storyStepIdx++;
     enqueueSpeech({
       uid: '__ai_story__',
       text,
       kind: 'story',
+      gender,
       priority: 0,
       isReal: false,
       rewindOnInterrupt: true,
@@ -1027,10 +1103,11 @@ export function createRaceAudio({ onSpeak = null } = {}) {
     const item = speechQueue.shift();
     currentItem = item;
     speaking = true;
+    const gender = item.gender || 'female';
     duckBgm(true);
-    onSpeak?.(item.kind === 'story' ? `🎙️ ${item.text}` : item.text, true, item.kind || 'interactive');
+    onSpeak?.(item.text, true, item.kind || 'interactive', gender);
 
-    // Immediately start pre-fetching the NEXT story chapter while this sentence is playing!
+    // Pre-fetch the next story chapter while this sentence is speaking!
     preloadNextStoryBuffer();
 
     let finished = false;
@@ -1043,15 +1120,12 @@ export function createRaceAudio({ onSpeak = null } = {}) {
       usingBrowserSpeech = false;
       speaking = false;
       duckBgm(false);
-      onSpeak?.('', false, '');
+      onSpeak?.('', false, '', gender);
 
-      // Continuous non-stop flow:
-      // - If interactive items (Donate / Comment / Join) are waiting in queue, speak them within 180ms.
-      // - Once interactive queue is empty, immediately chain the next AI landmark story sentence within 350ms!
       if (speechQueue.length > 0) {
         setTimeout(flushSpeech, 180);
       } else {
-        setTimeout(queueNextStoryNow, 350);
+        setTimeout(queueNextStoryNow, 340);
       }
     };
 
@@ -1059,18 +1133,21 @@ export function createRaceAudio({ onSpeak = null } = {}) {
 
     try {
       if (ctx.state !== 'running') await ctx.resume().catch(() => {});
-      const audioBuf = await fetchAndDecodeTts(item.text);
+      const { femaleBuf, maleBuf } = await fetchAndDecodeDualVoiceTts(item.text);
       if (!enabled || currentItem !== item) {
         if (currentItem !== item) return;
         done();
         return;
       }
+      const isMale = gender === 'male';
       const src = ctx.createBufferSource();
-      src.buffer = audioBuf;
-      src.playbackRate.value = item.kind === 'story' ? 0.98 : 1.0;
+      src.buffer = isMale ? maleBuf : femaleBuf;
+      // Male uses WSOLA 1.21x stretched buffer played at 0.825x rate -> 1.00x natural speed with warm baritone pitch!
+      // Female uses original neural buffer at 1.01x rate -> crisp, bright female voice!
+      src.playbackRate.value = isMale ? 0.825 : 1.01;
       const g = ctx.createGain();
-      g.gain.value = item.kind === 'story' ? 1.08 : 1.15;
-      src.connect(g).connect(master);
+      g.gain.value = isMale ? 1.22 : 1.08;
+      src.connect(g).connect(isMale ? maleVoiceChain : femaleVoiceChain);
       currentVoiceSrc = src;
       src.onended = done;
       src.start();
@@ -1080,6 +1157,7 @@ export function createRaceAudio({ onSpeak = null } = {}) {
         const u = new SpeechSynthesisUtterance(item.text);
         u.lang = 'vi-VN';
         u.rate = 0.96;
+        u.pitch = gender === 'male' ? 0.78 : 1.12;
         u.onend = done;
         u.onerror = done;
         try {
@@ -1091,7 +1169,7 @@ export function createRaceAudio({ onSpeak = null } = {}) {
     }
   }
 
-  // Auto-start background music & continuous AI cultural narrator immediately
+  // Auto-start background music & continuous dual-host AI narrator immediately
   ctx.resume().then(() => {
     startBg();
     queueNextStoryNow();
@@ -1100,7 +1178,6 @@ export function createRaceAudio({ onSpeak = null } = {}) {
     queueNextStoryNow();
   });
 
-  // Watchdog heartbeat ensures continuous reading & lively BGM never stall 24/7
   setInterval(() => {
     if (!isPreviewIframe) {
       enabled = true;
@@ -1123,7 +1200,7 @@ export function createRaceAudio({ onSpeak = null } = {}) {
     },
     getBgmLabel() {
       const song = VN_SONGS[currentSongIdx % VN_SONGS.length];
-      return `🔊 Nhạc Việt: ${song.title}`;
+      return `🎵 ${song.title}`;
     },
     nextBgmTrack() {
       bgmMuted = false;
@@ -1234,8 +1311,9 @@ export function createRaceAudio({ onSpeak = null } = {}) {
       }
 
       joinChime();
+      const gender = interactiveGenderToggle++ % 2 === 0 ? 'female' : 'male';
       const text = formatWelcomeSpeech(msg.name, false);
-      enqueueSpeech({ uid, text, kind: 'join', priority: isReal ? 3 : 1, isReal });
+      enqueueSpeech({ uid, text, kind: 'join', gender, priority: isReal ? 3 : 1, isReal });
       if (!speaking) flushSpeech();
     },
     speakComment(runner, rawComment = '') {
@@ -1257,8 +1335,9 @@ export function createRaceAudio({ onSpeak = null } = {}) {
       }
 
       joinChime();
+      const gender = interactiveGenderToggle++ % 2 === 0 ? 'male' : 'female';
       const text = `${who} bình luận: ${cleanText}`;
-      enqueueSpeech({ uid, text, kind: 'comment', priority: isReal ? 4 : 2, isReal });
+      enqueueSpeech({ uid, text, kind: 'comment', gender, priority: isReal ? 4 : 2, isReal });
       if (!speaking) flushSpeech();
     },
     announceGift(d) {
@@ -1270,8 +1349,9 @@ export function createRaceAudio({ onSpeak = null } = {}) {
       recentNameGreet.set(who.toLowerCase(), Date.now());
 
       boostSfx(d.tier || 1);
+      const gender = interactiveGenderToggle++ % 2 === 0 ? 'female' : 'male';
       const text = formatGiftBoostSpeech(d);
-      enqueueSpeech({ uid, text, kind: 'gift', priority: 5 + (d.tier || 1), isReal });
+      enqueueSpeech({ uid, text, kind: 'gift', gender, priority: 5 + (d.tier || 1), isReal });
       if (!speaking) flushSpeech();
     },
   };
