@@ -44,44 +44,62 @@
   }
 
   /* ============================================================================
-     CLEAN 3-COLUMN SYMMETRICAL BROADCAST HEADER (Top Safe-Zone = 124px)
-     Leaves the entire bottom 700px 100% clear for TikTok Live chat & gift stream!
+     HIGH-LEGIBILITY TIKTOK LIVE MOBILE BROADCAST HUD
+     - Top-Left (width: 584px): Province Landmark Header + AI MC Voice Subtitle
+     - Top-Right (width: 448px): Odometer + Bảng Vàng Xuyên Việt
+     - Bottom-Right Corner (width: 510px): 🎁 Đặc Sản Tỉnh Thành & Kho Báu Lễ Hội
+       (Placed in the bottom-right safe zone where TikTok Live has NO comments!)
+     - Bottom-Left remains 100% clear for TikTok Live chat stream & 3D walkers!
      ============================================================================ */
 
-  /* Center Column: Landmark Header + Dual-Voice Subtitle Bar */
+  /* Top-Left Column: Landmark Header + Dual-Voice Subtitle Bar */
+  #top-left-col {
+    left: 16px; top: 24px; width: 584px;
+    display: flex; flex-direction: column; gap: 10px;
+    pointer-events: none;
+  }
   #world-card {
-    left: 50%; top: 124px; translate: -50% 0; width: 516px; padding: 11px 18px;
-    text-align: center; border: 1.5px solid var(--gold-line);
-    background-image: linear-gradient(180deg, rgba(24, 20, 16, .82), rgba(12, 10, 8, .92)), url('/assets/sky_vietnam.jpg');
+    position: static; width: 100%; padding: 14px 18px;
+    text-align: center; border: 2px solid var(--gold-line);
+    background-image: linear-gradient(180deg, rgba(24, 20, 16, .88), rgba(12, 10, 8, .95)), url('/assets/sky_vietnam.jpg');
     background-size: cover; background-position: center;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, .65);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, .68);
     pointer-events: none;
   }
   #world-card .eyebrow {
-    font-size: 13.5px; font-weight: 800; letter-spacing: 1.2px; color: #e5d8c0;
+    font-size: 18.5px; font-weight: 800; letter-spacing: 1px; color: #f6dfaa;
     text-transform: uppercase; text-shadow: 0 2px 4px #000;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
   #biome-name {
-    font-size: 21px; font-weight: 800; color: #f8e5bc; margin: 3px 0 2px;
+    font-size: 26.5px; font-weight: 800; color: #fff0cc; margin: 4px 0 3px;
     text-shadow: 0 2px 6px rgba(0, 0, 0, .95);
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
   #biome-sub {
-    font-size: 15px; font-weight: 700; color: #ddd3c2; margin-bottom: 7px;
+    font-size: 19.5px; font-weight: 700; color: #e8decb; margin-bottom: 9px;
     text-shadow: 0 1px 4px #000;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
-  .biome-bar { height: 6px; background: rgba(255, 255, 255, .18); border-radius: 99px; overflow: hidden; }
-  #biome-bar-fill { height: 100%; width: 25%; background: linear-gradient(90deg, #b88b4a, #e8c682); transition: width .4s ease; }
+  .biome-bar { height: 8px; background: rgba(255, 255, 255, .2); border-radius: 99px; overflow: hidden; }
+  #biome-bar-fill { height: 100%; width: 25%; background: linear-gradient(90deg, #d97706, #fbbf24, #fef08a); transition: width .4s ease; }
 
-  /* Upper-Center Subtitle & Notification Zone (Right below #world-card, never overlapping bottom chat!) */
+  #toggle-bgm {
+    position: static; width: 100%; padding: 9px 14px; font-size: 19px; font-weight: 800;
+    color: #fae19c; font-family: inherit; pointer-events: none; text-align: center;
+    background: linear-gradient(180deg, rgba(28, 22, 16, .92), rgba(14, 11, 8, .96));
+    border: 1.5px solid rgba(226, 189, 118, .68); border-radius: 12px;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, .55);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+
+  /* Upper-Left Subtitle & Notification Zone (Right below #top-left-col) */
   #welcome-card {
-    left: 50%; top: 242px; bottom: auto; translate: -50% 0; width: 516px; max-width: 516px; padding: 9px 18px;
-    background: linear-gradient(180deg, rgba(34, 29, 24, .95), rgba(20, 17, 14, .96));
-    border: 1.5px solid var(--gold-line); border-radius: 14px;
-    box-shadow: 0 8px 22px rgba(0, 0, 0, .65);
-    color: #f4e2bc; font-size: 17.5px; font-weight: 800; text-align: center;
+    left: 16px; top: 232px; bottom: auto; width: 584px; max-width: 584px; padding: 12px 18px;
+    background: linear-gradient(180deg, rgba(34, 29, 24, .96), rgba(20, 17, 14, .98));
+    border: 2px solid var(--gold-line); border-radius: 14px;
+    box-shadow: 0 8px 22px rgba(0, 0, 0, .68);
+    color: #fff0cc; font-size: 22px; font-weight: 800; text-align: center;
     opacity: 0; transform: translateY(-6px) scale(.98);
     transition: opacity 280ms var(--ease-out), transform 280ms var(--ease-out);
     pointer-events: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
@@ -90,64 +108,111 @@
   #welcome-card.on { opacity: 1; transform: none; }
 
   #banner {
-    left: 50%; top: 242px; bottom: auto; translate: -50% 0; width: 516px; max-width: 516px; padding: 9px 18px;
-    font-size: 17.5px; font-weight: 800; color: #f4e2bc; text-align: center;
+    left: 16px; top: 232px; bottom: auto; width: 584px; max-width: 584px; padding: 12px 18px;
+    font-size: 22px; font-weight: 800; color: #fff0cc; text-align: center;
     opacity: 0; transform: translateY(-6px); transition: opacity 260ms ease, transform 260ms ease;
-    pointer-events: none; border-color: var(--gold-line);
+    pointer-events: none; border: 2px solid var(--gold-line);
     box-sizing: border-box;
   }
   #banner.on { opacity: 1; transform: none; }
 
   #voice-toast {
-    left: 50%; top: 242px; bottom: auto; translate: -50% 0; width: 516px; max-width: 516px; padding: 9px 16px;
-    font-size: 16.5px; font-weight: 700; color: #f6e9ce; text-align: left;
-    background: rgba(18, 16, 13, .92); border: 1.5px solid var(--gold-line); border-radius: 14px;
-    box-shadow: 0 8px 22px rgba(0, 0, 0, .62);
+    left: 16px; top: 232px; bottom: auto; width: 584px; max-width: 584px; padding: 12px 18px;
+    font-size: 21.5px; font-weight: 800; color: #fff4dc; text-align: left;
+    background: rgba(16, 14, 11, .95); border: 2px solid var(--gold-line); border-radius: 14px;
+    box-shadow: 0 8px 22px rgba(0, 0, 0, .68);
     opacity: 0; transform: translateY(-6px); transition: opacity 240ms ease, transform 240ms ease;
-    pointer-events: none; display: flex; align-items: center; gap: 10px; line-height: 1.34;
+    pointer-events: none; display: flex; align-items: center; gap: 12px; line-height: 1.34;
     box-sizing: border-box;
   }
   #voice-toast.on { opacity: 1; transform: none; }
-  #voice-toast.female { border-color: rgba(244, 180, 152, .68); }
-  #voice-toast.male { border-color: rgba(148, 202, 238, .68); }
+  #voice-toast.female { border-color: rgba(244, 180, 152, .78); }
+  #voice-toast.male { border-color: rgba(148, 202, 238, .78); }
   #voice-badge {
-    flex: none; padding: 3px 9px; border-radius: 8px; font-size: 14px; font-weight: 800;
-    background: rgba(230, 194, 128, .18); color: #f6d896; border: 1px solid rgba(230, 194, 128, .42);
+    flex: none; padding: 5px 12px; border-radius: 9px; font-size: 18.5px; font-weight: 800;
+    background: rgba(230, 194, 128, .22); color: #ffe09e; border: 1.5px solid rgba(230, 194, 128, .52);
     white-space: nowrap;
   }
   #voice-toast.female #voice-badge {
-    background: rgba(244, 162, 138, .2); color: #fbc5b3; border-color: rgba(244, 162, 138, .48);
+    background: rgba(244, 162, 138, .25); color: #ffd0c2; border-color: rgba(244, 162, 138, .58);
   }
   #voice-toast.male #voice-badge {
-    background: rgba(125, 192, 236, .2); color: #bae0fa; border-color: rgba(125, 192, 236, .48);
+    background: rgba(125, 192, 236, .25); color: #c8e8ff; border-color: rgba(125, 192, 236, .58);
   }
   #voice-text {
     flex: 1; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
     overflow: hidden; text-overflow: ellipsis;
   }
-  .wave { display: inline-flex; align-items: center; gap: 3px; height: 18px; flex: none; }
-  .wave i { display: block; width: 3.5px; height: 7px; border-radius: 2px; background: #c8a262; animation: wave-bar 560ms ease-in-out infinite alternate; }
-  .wave i:nth-child(2) { animation-delay: 150ms; height: 14px; }
-  .wave i:nth-child(3) { animation-delay: 300ms; height: 9px; }
-  @keyframes wave-bar { to { height: 18px; background: #f2d59b; } }
+  .wave { display: inline-flex; align-items: center; gap: 3.5px; height: 22px; flex: none; }
+  .wave i { display: block; width: 4px; height: 9px; border-radius: 2px; background: #c8a262; animation: wave-bar 560ms ease-in-out infinite alternate; }
+  .wave i:nth-child(2) { animation-delay: 150ms; height: 18px; }
+  .wave i:nth-child(3) { animation-delay: 300ms; height: 12px; }
+  @keyframes wave-bar { to { height: 22px; background: #f2d59b; } }
 
-  /* Left Safe-Zone Column (Aligned at top: 124px, ends well above TikTok chat!) */
-  #left-col {
-    left: 14px; top: 124px; width: 256px;
-    display: flex; flex-direction: column; gap: 9px;
+  /* Top-Right Column: Odometer + Bảng Vàng Xuyên Việt */
+  #right-col {
+    right: 16px; top: 24px; width: 448px;
+    display: flex; flex-direction: column; gap: 10px;
     pointer-events: none;
   }
-  #guide { width: 100%; padding: 10px 11px; pointer-events: none; border-color: var(--gold-line); }
-  #guide h3 {
-    margin: 0 0 7px; padding-bottom: 5px; text-align: center; color: #f8dfa5;
-    letter-spacing: 0.5px; font-size: 16.5px; font-weight: 800; border-bottom: 1.5px solid var(--gold-line);
+  #odometer {
+    width: 100%; padding: 11px 14px; text-align: center;
+    font-variant-numeric: tabular-nums; border: 2px solid var(--gold-line); pointer-events: none;
+  }
+  #odometer b { display: block; font-size: 19px; font-weight: 800; color: #f8dfa5; letter-spacing: 0.6px; }
+  #world-dist { display: block; font-size: 35px; font-weight: 800; color: #ffffff; margin: 2px 0; text-shadow: 0 2px 6px #000; }
+  #runner-count { display: block; font-size: 19.5px; font-weight: 800; color: #e8decb; }
+
+  #board { width: 100%; padding: 12px 14px 13px; pointer-events: none; display: flex; flex-direction: column; border: 2px solid var(--gold-line); }
+  #board h3 {
+    margin: 0 0 8px; padding-bottom: 6px; text-align: center; color: #ffe29e;
+    letter-spacing: 0.5px; font-size: 23px; font-weight: 800; border-bottom: 2px solid var(--gold-line);
+  }
+  #king-spotlight {
+    margin-bottom: 8px; padding: 8px 10px; border-radius: 10px;
+    background: linear-gradient(90deg, rgba(180, 120, 28, .36), rgba(92, 58, 14, .28));
+    border: 1.5px solid rgba(245, 198, 105, .68);
+    font-size: 19.5px; font-weight: 800; color: #fff6db; line-height: 1.3;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
+  #board ol { margin: 0; padding-left: 28px; font-variant-numeric: tabular-nums; }
+  #board li {
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.42;
+    padding: 3px 0; border-bottom: 1px dashed rgba(255, 245, 225, .16);
+    color: #fff4df; font-size: 20.5px; font-weight: 800;
+  }
+  #board li:last-child { border-bottom: none; }
+  #board li::marker { color: var(--gold); font-weight: 800; }
+  #board .empty-board { font-size: 19px; font-weight: 700; color: #d8cdb8; text-align: center; padding: 10px 6px; line-height: 1.35; }
+  #overtake-hint {
+    margin-top: 8px; padding: 7px 10px; border-radius: 9px;
+    background: rgba(217, 119, 6, .24); border: 1.5px dashed rgba(245, 194, 107, .65);
+    font-size: 18px; font-weight: 800; color: #ffe7a8; text-align: center; line-height: 1.3;
+  }
+
+  /* Bottom-Right Safe-Zone Column: 🎁 Đặc Sản Tỉnh & Kho Báu Lễ Hội (No TikTok Comments here!) */
+  #bottom-right-col {
+    right: 16px; bottom: 26px; width: 512px;
+    display: flex; flex-direction: column; gap: 10px;
+    pointer-events: none;
+  }
+  #guide {
+    width: 100%; padding: 13px 15px; pointer-events: none;
+    border: 2px solid rgba(245, 198, 105, .78);
+    background: linear-gradient(180deg, rgba(28, 22, 16, .93), rgba(14, 11, 8, .97));
+    box-shadow: 0 10px 26px rgba(0, 0, 0, .7);
+  }
+  #guide h3 {
+    margin: 0 0 9px; padding-bottom: 6px; text-align: center; color: #ffe4a3;
+    letter-spacing: 0.6px; font-size: 24px; font-weight: 800; border-bottom: 2px solid var(--gold-line);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    text-shadow: 0 2px 5px #000;
+  }
   #guide .tier {
-    display: flex; align-items: center; justify-content: space-between; gap: 4px;
-    margin-bottom: 5px; padding: 4px 6px; border-radius: 8px;
-    border-bottom: 1px dashed rgba(255, 245, 225, .14);
-    line-height: 1.24; font-size: 13.8px; font-weight: 700; font-variant-numeric: tabular-nums; color: #ebe2d3;
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    margin-bottom: 6px; padding: 6px 10px; border-radius: 10px;
+    border-bottom: 1px dashed rgba(255, 245, 225, .18);
+    line-height: 1.3; font-size: 20.5px; font-weight: 800; font-variant-numeric: tabular-nums; color: #fff6e5;
     transition: background 260ms ease, border-color 260ms ease, transform 220ms ease;
   }
   #guide .tier > span:first-child {
@@ -155,42 +220,42 @@
   }
   #guide .tier:last-child { margin-bottom: 0; border-bottom: none; }
   #guide .tier-bonus {
-    flex: none; padding: 1.5px 6px; border-radius: 6px; font-size: 12.5px; font-weight: 800;
-    background: rgba(230, 194, 128, .18); color: #f9dfa2; border: 1px solid rgba(230, 194, 128, .42);
+    flex: none; padding: 3px 9px; border-radius: 8px; font-size: 18.5px; font-weight: 800;
+    background: rgba(245, 184, 75, .25); color: #ffe7a3; border: 1.5px solid rgba(245, 198, 105, .58);
   }
   #guide .tier.tier-hot {
-    background: linear-gradient(90deg, rgba(217, 119, 6, .24), rgba(180, 83, 9, .12));
-    border: 1px solid rgba(251, 191, 36, .62);
+    background: linear-gradient(90deg, rgba(217, 119, 6, .34), rgba(180, 83, 9, .18));
+    border: 1.5px solid rgba(251, 191, 36, .78);
   }
   #guide .tier.tier-triggered {
-    background: linear-gradient(90deg, rgba(245, 158, 11, .48), rgba(217, 119, 6, .28));
-    border: 1.5px solid #fde047;
+    background: linear-gradient(90deg, rgba(245, 158, 11, .56), rgba(217, 119, 6, .34));
+    border: 2px solid #fde047;
     transform: scale(1.03);
   }
 
   /* Community Gift Treasure Chest Card (#gift-goal-card) */
   #gift-goal-card {
-    width: 100%; padding: 9px 11px; pointer-events: none;
-    background: linear-gradient(180deg, rgba(38, 26, 14, .92), rgba(20, 14, 8, .95));
-    border: 1.5px solid rgba(245, 194, 107, .72);
-    box-shadow: 0 6px 18px rgba(0, 0, 0, .58);
+    width: 100%; padding: 12px 15px; pointer-events: none;
+    background: linear-gradient(180deg, rgba(42, 28, 14, .95), rgba(22, 14, 8, .98));
+    border: 2px solid rgba(245, 194, 107, .82);
+    box-shadow: 0 8px 22px rgba(0, 0, 0, .68);
   }
   #gift-goal-card.unlocked {
     border-color: #fde047;
-    box-shadow: 0 0 22px rgba(250, 204, 21, .45), 0 6px 18px rgba(0, 0, 0, .6);
+    box-shadow: 0 0 26px rgba(250, 204, 21, .55), 0 8px 22px rgba(0, 0, 0, .68);
   }
   .chest-head {
     display: flex; align-items: center; justify-content: space-between;
-    font-size: 13.5px; font-weight: 800; color: #f9dfa2; margin-bottom: 5px;
+    font-size: 20px; font-weight: 800; color: #ffe4a3; margin-bottom: 7px;
   }
   #chest-progress-text {
-    color: #fff6d6; font-variant-numeric: tabular-nums;
-    background: rgba(245, 158, 11, .24); padding: 1px 6px; border-radius: 6px;
-    border: 1px solid rgba(245, 194, 107, .45);
+    color: #fff9e6; font-variant-numeric: tabular-nums;
+    background: rgba(245, 158, 11, .32); padding: 2px 9px; border-radius: 8px;
+    border: 1.5px solid rgba(245, 194, 107, .58);
   }
   .chest-bar {
-    height: 8px; background: rgba(255, 255, 255, .14); border-radius: 99px;
-    overflow: hidden; margin-bottom: 5px; border: 1px solid rgba(255, 235, 180, .22);
+    height: 11px; background: rgba(255, 255, 255, .18); border-radius: 99px;
+    overflow: hidden; margin-bottom: 7px; border: 1px solid rgba(255, 235, 180, .3);
   }
   #chest-bar-fill {
     height: 100%; width: 0%;
@@ -198,88 +263,36 @@
     transition: width .45s var(--ease-out);
   }
   #chest-cta {
-    font-size: 13px; font-weight: 700; color: #efe3c8; line-height: 1.26; text-align: center;
+    font-size: 18.5px; font-weight: 800; color: #fff2d6; line-height: 1.3; text-align: center;
   }
 
-  #toggle-bgm {
-    position: static; width: 100%; padding: 7px 10px; font-size: 13.5px; font-weight: 800;
-    color: var(--gold); font-family: inherit; pointer-events: none; text-align: center;
-    background: linear-gradient(180deg, rgba(28, 22, 16, .9), rgba(14, 11, 8, .94));
-    border: 1.5px solid rgba(226, 189, 118, .65); border-radius: 12px;
-    box-shadow: 0 6px 16px rgba(0, 0, 0, .55);
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  }
-
-  #joins { display: none; }
-
-  /* Right Safe-Zone Column (Aligned at top: 124px) */
-  #right-col {
-    right: 14px; top: 124px; width: 256px;
-    display: flex; flex-direction: column; gap: 9px;
-    pointer-events: none;
-  }
-  #odometer {
-    width: 100%; padding: 9px 11px; text-align: center;
-    font-variant-numeric: tabular-nums; border-color: var(--gold-line); pointer-events: none;
-  }
-  #odometer b { display: block; font-size: 14.5px; font-weight: 800; color: var(--gold); letter-spacing: 0.6px; }
-  #world-dist { display: block; font-size: 25px; font-weight: 800; color: #faf4e8; margin: 1px 0; }
-  #runner-count { display: block; font-size: 14.5px; font-weight: 700; color: #d8cdb8; }
-
-  #board { width: 100%; padding: 10px 11px 11px; pointer-events: none; display: flex; flex-direction: column; border-color: var(--gold-line); }
-  #board h3 {
-    margin: 0 0 6px; padding-bottom: 5px; text-align: center; color: #f8dfa5;
-    letter-spacing: 0.5px; font-size: 17px; font-weight: 800; border-bottom: 1.5px solid var(--gold-line);
-  }
-  #king-spotlight {
-    margin-bottom: 6px; padding: 6px 8px; border-radius: 9px;
-    background: linear-gradient(90deg, rgba(180, 120, 28, .28), rgba(92, 58, 14, .22));
-    border: 1px solid rgba(245, 198, 105, .58);
-    font-size: 14px; font-weight: 800; color: #fff3cf; line-height: 1.28;
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  }
-  #board ol { margin: 0; padding-left: 22px; font-variant-numeric: tabular-nums; }
-  #board li {
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.38;
-    padding: 2px 0; border-bottom: 1px dashed rgba(255, 245, 225, .13);
-    color: #f0e4cc; font-size: 15px; font-weight: 700;
-  }
-  #board li:last-child { border-bottom: none; }
-  #board li::marker { color: var(--gold); font-weight: 800; }
-  #board .empty-board { font-size: 14.5px; font-weight: 700; color: #d8cdb8; text-align: center; padding: 8px 4px; line-height: 1.32; }
-  #overtake-hint {
-    margin-top: 7px; padding: 5px 7px; border-radius: 8px;
-    background: rgba(217, 119, 6, .18); border: 1px dashed rgba(245, 194, 107, .55);
-    font-size: 13px; font-weight: 800; color: #fae19c; text-align: center; line-height: 1.26;
-  }
+  #joins, #footer { display: none; }
 
   #donor { width: 100%; pointer-events: none; }
   #donor .card {
-    display: flex; align-items: center; gap: 9px; padding: 9px 11px;
-    background: linear-gradient(180deg, rgba(48, 32, 14, .95), rgba(24, 16, 8, .96));
-    border: 1.5px solid #f7cb6b; box-shadow: 0 0 18px rgba(245, 184, 75, .32), 0 6px 18px rgba(0, 0, 0, .6);
+    display: flex; align-items: center; gap: 12px; padding: 12px 15px;
+    background: linear-gradient(180deg, rgba(54, 36, 14, .97), rgba(28, 18, 8, .98));
+    border: 2px solid #fbbf24; box-shadow: 0 0 22px rgba(245, 184, 75, .42), 0 8px 22px rgba(0, 0, 0, .7);
   }
-  #donor .avatar { flex: none; width: 38px; height: 38px; font-size: 18px; border-radius: 50%; background: linear-gradient(135deg, #f3cc7a, #b47d2a); color: #181410; font-weight: 800; display: grid; place-items: center; }
-  #donor .card b { display: block; font-size: 16.5px; font-weight: 800; color: #fff2cc; max-width: 185px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  #donor .card span { display: block; font-size: 14px; font-weight: 700; color: #f3deB3; line-height: 1.28; }
+  #donor .avatar { flex: none; width: 48px; height: 48px; font-size: 24px; border-radius: 50%; background: linear-gradient(135deg, #f3cc7a, #b47d2a); color: #181410; font-weight: 800; display: grid; place-items: center; }
+  #donor .card b { display: block; font-size: 22px; font-weight: 800; color: #fff6d6; max-width: 410px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #donor .card span { display: block; font-size: 19px; font-weight: 800; color: #ffe7b3; line-height: 1.32; }
 
-  #footer { display: none; }
-
-  /* 3D Runner Overhead Labels (Crisp, non-overlapping pills) */
+  /* 3D Runner Overhead Labels (Large, bold, crystal-clear on mobile) */
   .label {
-    font-size: 16.5px; font-weight: 700; color: #f7f2e7;
-    padding: 3px 10px; border-radius: 999px;
-    background: rgba(20, 18, 15, .92); border: 1.5px solid rgba(218, 196, 156, .52);
-    text-shadow: 0 2px 4px #000; white-space: nowrap; font-variant-numeric: tabular-nums;
+    font-size: 21.5px; font-weight: 800; color: #fffaf0;
+    padding: 4px 13px; border-radius: 999px;
+    background: rgba(18, 16, 13, .94); border: 2px solid rgba(230, 198, 142, .62);
+    text-shadow: 0 2px 5px #000; white-space: nowrap; font-variant-numeric: tabular-nums;
   }
-  .label.tier1 { font-size: 17px; font-weight: 700; border-color: #9cb8a8; color: #eef5f0; background: rgba(26, 36, 31, .92); }
-  .label.tier2 { font-size: 17.5px; font-weight: 800; border-color: #d4ae6a; color: #f9eed8; background: rgba(44, 34, 20, .94); }
-  .label.tier3 { font-size: 18px; font-weight: 800; border-color: #c9886b; color: #fbece6; background: rgba(48, 26, 20, .95); }
-  .label.tier4 { font-size: 19px; font-weight: 800; border-color: #e5c172; color: #fff8e6; padding: 4px 12px; background: linear-gradient(180deg, rgba(58, 44, 22, .96), rgba(32, 24, 12, .96)); box-shadow: 0 4px 14px rgba(0, 0, 0, .6); }
+  .label.tier1 { font-size: 22.5px; font-weight: 800; border-color: #86efac; color: #f0fdf4; background: rgba(20, 38, 28, .94); }
+  .label.tier2 { font-size: 23.5px; font-weight: 800; border-color: #fbbf24; color: #fffbeb; background: rgba(48, 34, 16, .95); }
+  .label.tier3 { font-size: 24.5px; font-weight: 800; border-color: #fb7185; color: #fff1f2; background: rgba(54, 22, 26, .96); }
+  .label.tier4 { font-size: 26px; font-weight: 800; border-color: #fde047; color: #fefce8; padding: 5px 16px; background: linear-gradient(180deg, rgba(64, 48, 20, .97), rgba(36, 26, 10, .97)); box-shadow: 0 5px 16px rgba(0, 0, 0, .68); }
   .bubble {
-    margin-bottom: 5px; padding: 6px 12px; max-width: 250px; white-space: normal;
-    background: rgba(250, 245, 235, .96); color: #221d17; border: 1.5px solid #c9a66b; border-radius: 14px 14px 14px 4px;
-    font-size: 16.5px; font-weight: 700; line-height: 1.3; text-shadow: none; box-shadow: 0 5px 14px rgba(0, 0, 0, .55);
+    margin-bottom: 6px; padding: 8px 15px; max-width: 310px; white-space: normal;
+    background: rgba(255, 250, 240, .97); color: #1c1712; border: 2px solid #d97706; border-radius: 16px 16px 16px 4px;
+    font-size: 21.5px; font-weight: 800; line-height: 1.32; text-shadow: none; box-shadow: 0 6px 16px rgba(0, 0, 0, .6);
     transition: opacity .5s;
   }
   #sound, #toggle-comment-tts { display: none !important; pointer-events: none !important; }
@@ -290,11 +303,15 @@
   <canvas id="c" width="1080" height="1920"></canvas>
   <div id="labels"></div>
 
-  <div id="world-card" class="pill">
-    <div class="eyebrow" id="biome-eyebrow">🇻🇳 ĐI BỘ XUYÊN VIỆT · TỈNH 1/63: HÀ GIANG</div>
-    <div id="biome-name">Đèo Mã Pí Lèng &amp; Cột Cờ Lũng Cú – Hà Giang 🇻🇳</div>
-    <div id="biome-sub">Cung đường đèo chữ S hùng vĩ &amp; hoa tam giác mạch nở rộ</div>
-    <div class="biome-bar"><div id="biome-bar-fill"></div></div>
+  <div id="top-left-col">
+    <div id="world-card" class="pill">
+      <div class="eyebrow" id="biome-eyebrow">🇻🇳 ĐI BỘ XUYÊN VIỆT · TỈNH 1/63: HÀ GIANG</div>
+      <div id="biome-name">Đèo Mã Pí Lèng &amp; Cột Cờ Lũng Cú – Hà Giang 🇻🇳</div>
+      <div id="biome-sub">Cung đường đèo chữ S hùng vĩ &amp; hoa tam giác mạch nở rộ</div>
+      <div class="biome-bar"><div id="biome-bar-fill"></div></div>
+    </div>
+
+    <button id="toggle-bgm" class="pill" type="button">🎵 Nhạc Việt: Trống Cơm Acoustic</button>
   </div>
 
   <div id="welcome-card">🇻🇳 <span id="welcome-text">Chào mừng bạn cùng tham gia hành trình đi bộ xuyên Việt!</span></div>
@@ -305,7 +322,25 @@
     <span id="voice-text"></span>
   </div>
 
-  <div id="left-col">
+  <div id="right-col">
+    <div id="odometer" class="pill">
+      <b>QUÃNG ĐƯỜNG XUYÊN VIỆT</b>
+      <span id="world-dist">0 m</span>
+      <span id="runner-count">Đang đi: 0 người</span>
+    </div>
+
+    <div id="board" class="pill">
+      <h3>🏆 BẢNG VÀNG XUYÊN VIỆT</h3>
+      <div id="king-spotlight">👑 Top 1 đang trống · Gửi quà chiếm Ngôi Vua!</div>
+      <ol></ol>
+      <div id="board-empty" class="empty-board">Bình luận hoặc tặng quà để lên Bảng Vàng!</div>
+      <div id="overtake-hint">🌹 Tặng 1 Hoa Hồng (1💎) nhận Cánh Chim +80m lên Top 1!</div>
+    </div>
+  </div>
+
+  <div id="bottom-right-col">
+    <div id="donor"></div>
+
     <div id="guide" class="pill">
       <h3>🎁 ĐẶC SẢN HÀ GIANG</h3>
       <div class="tier"><span>💬 Bình luận: Đi bộ</span><span class="tier-bonus">+15m</span></div>
@@ -325,29 +360,11 @@
       <div id="chest-cta">🔥 Góp 25 💎 nổ Đại Tiệc Tăng Tốc ×3.0 toàn đoàn!</div>
     </div>
 
-    <button id="toggle-bgm" class="pill" type="button">🎵 Nhạc Việt: Trống Cơm Acoustic</button>
-
     <div id="joins" class="pill">
       <h3>VỪA KHỞI HÀNH</h3>
       <ul id="join-list">
         <li>🇻🇳 Bình luận để đi bộ xuyên Việt!</li>
       </ul>
-    </div>
-  </div>
-
-  <div id="right-col">
-    <div id="odometer" class="pill">
-      <b>QUÃNG ĐƯỜNG XUYÊN VIỆT</b>
-      <span id="world-dist">0 m</span>
-      <span id="runner-count">Đang đi: 0 người</span>
-    </div>
-
-    <div id="board" class="pill">
-      <h3>🏆 BẢNG VÀNG XUYÊN VIỆT</h3>
-      <div id="king-spotlight">👑 Top 1 đang trống · Gửi quà chiếm Ngôi Vua!</div>
-      <ol></ol>
-      <div id="board-empty" class="empty-board">Bình luận hoặc tặng quà để lên Bảng Vàng!</div>
-      <div id="overtake-hint">🌹 Tặng 1 Hoa Hồng (1💎) nhận Cánh Chim +80m lên Top 1!</div>
     </div>
 
     <div id="footer" class="pill">
@@ -355,8 +372,6 @@
       <div class="title">💬 Bình luận bất kỳ để tham gia</div>
       <div class="tiers">🔊 AI đọc tên chào mừng trực tiếp</div>
     </div>
-
-    <div id="donor"></div>
   </div>
 
   <button id="sound" class="pill">🔊 Bật Âm Thanh &amp; Giọng Đọc AI</button>
