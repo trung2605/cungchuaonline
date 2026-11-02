@@ -1,0 +1,15 @@
+{
+  "version": 2,
+  "functions": {
+    "api/index.js": {
+      "maxDuration": 60,
+      "includeFiles": "{web/**,CuocDuaKyThu/**,AdminTong/**,server/**,node_modules/three/**,node_modules/@pixiv/three-vrm/**,node_modules/@fontsource/be-vietnam-pro/**,node_modules/gsap/**,node_modules/canvas-confetti/**,node_modules/simplex-noise/**}"
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/api/index.js"
+    }
+  ]
+}

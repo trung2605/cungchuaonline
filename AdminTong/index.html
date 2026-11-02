@@ -150,6 +150,12 @@
           <button type="button" class="btn sm" data-toggle-mock title="Khi TẮT: chỉ thống kê người dùng thật từ TikTok LIVE. Khi BẬT: thống kê kèm dữ liệu mẫu (Fake)">
             <i data-lucide="user-check"></i> <span class="mock-toggle-label">Thống Kê Mẫu: TẮT</span>
           </button>
+          <a class="btn sm gold" id="linkOpenChua3D" href="/chua/" target="_blank" rel="noopener" title="Mở toàn màn hình 3D Cúng Chùa Online để phát TikTok LIVE">
+            <i data-lucide="external-link"></i> Mở Chùa 3D
+          </a>
+          <a class="btn sm teal" id="linkOpenDua3D" href="/dua/" target="_blank" rel="noopener" title="Mở toàn màn hình 3D Đi Bộ Xuyên Việt để phát TikTok LIVE">
+            <i data-lucide="external-link"></i> Mở Xuyên Việt 3D
+          </a>
           <button type="button" class="btn sm primary" id="btnToggle3DPreview" title="Xem trực tiếp 2 màn hình 3D ngay trong trang này mà không cần mở tab mới">
             <i data-lucide="monitor-play"></i> Xem 2 Màn Hình 3D
           </button>
@@ -164,15 +170,15 @@
         <div class="preview-grid">
           <div class="preview-frame-card">
             <div class="preview-frame-head">
-              <span><i data-lucide="landmark" style="width:14px;height:14px;vertical-align:-2px;color:var(--gold)"></i> Màn Hình 3D Cúng Chùa Online (:8787)</span>
-              <span style="font-size:11px;color:var(--text-muted)">http://127.0.0.1:8787</span>
+              <span><i data-lucide="landmark" style="width:14px;height:14px;vertical-align:-2px;color:var(--gold)"></i> Màn Hình 3D Cúng Chùa Online</span>
+              <span style="font-size:11px;color:var(--text-muted)" id="previewUrlChuaLabel">/chua/</span>
             </div>
             <iframe id="iframeChua3D" title="Màn hình 3D Cúng Chùa Online"></iframe>
           </div>
           <div class="preview-frame-card">
             <div class="preview-frame-head">
-              <span><i data-lucide="compass" style="width:14px;height:14px;vertical-align:-2px;color:var(--teal)"></i> Màn Hình 3D Đi Bộ Xuyên Việt (:8789)</span>
-              <span style="font-size:11px;color:var(--text-muted)">http://127.0.0.1:8789</span>
+              <span><i data-lucide="compass" style="width:14px;height:14px;vertical-align:-2px;color:var(--teal)"></i> Màn Hình 3D Đi Bộ Xuyên Việt</span>
+              <span style="font-size:11px;color:var(--text-muted)" id="previewUrlDuaLabel">/dua/</span>
             </div>
             <iframe id="iframeDua3D" title="Màn hình 3D Đi Bộ Xuyên Việt"></iframe>
           </div>

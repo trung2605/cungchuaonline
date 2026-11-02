@@ -6,6 +6,7 @@ logs/
 *.log
 *.mp4
 .codegraph/
+.vercel
 .DS_Store
 Thumbs.db
 server/data/scene.json

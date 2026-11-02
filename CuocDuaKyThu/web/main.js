@@ -257,11 +257,49 @@ function handleMsg(msg) {
   }
 }
 
+// Hybrid Real-Time Transport: Local WebSocket (:8789) + Vercel Cloud HTTP Polling (/api/dua/poll)
+let duaCloudPollingActive = false;
+let duaCloudSeq = 0;
+
+async function pollDuaCloud() {
+  try {
+    const res = await fetch(`/api/dua/poll?since=${duaCloudSeq}`, { cache: 'no-store' });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.snapshot) handleMsg(data.snapshot);
+      if (Array.isArray(data.messages)) {
+        for (const m of data.messages) handleMsg(m);
+      }
+      if (typeof data.seq === 'number') duaCloudSeq = data.seq;
+    }
+  } catch {}
+  if (duaCloudPollingActive) setTimeout(pollDuaCloud, 1200);
+}
+
+function startDuaCloudPolling() {
+  if (duaCloudPollingActive) return;
+  duaCloudPollingActive = true;
+  pollDuaCloud();
+}
+
 function connect() {
-  const ws = new WebSocket(`ws://${location.host}`);
+  if (location.protocol === 'https:' || location.pathname.startsWith('/dua')) {
+    startDuaCloudPolling();
+    return;
+  }
+  let opened = false;
+  const wsProto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+  const ws = new WebSocket(`${wsProto}//${location.host}`);
   liveWs = ws;
+  ws.onopen = () => { opened = true; };
   ws.onmessage = e => handleMsg(JSON.parse(e.data));
-  ws.onclose = () => setTimeout(connect, 2000);
+  ws.onclose = () => {
+    if (!opened && location.port !== '8789') {
+      startDuaCloudPolling();
+      return;
+    }
+    setTimeout(connect, 2000);
+  };
 }
 connect();
 

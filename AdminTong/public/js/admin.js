@@ -1296,15 +1296,23 @@ window.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // In-Page 3D Live Preview Drawer (No new browser tabs needed!)
+  // In-Page 3D Live Preview Drawer & Fullscreen 3D Screen Links (Works on both Local :8791 and Vercel Cloud!)
+  const isLocalMultiPort = location.port === '8791';
+  const chua3dUrl = isLocalMultiPort ? 'http://127.0.0.1:8787' : `${location.origin}/chua/`;
+  const dua3dUrl = isLocalMultiPort ? 'http://127.0.0.1:8789' : `${location.origin}/dua/`;
+  if ($('linkOpenChua3D')) $('linkOpenChua3D').href = chua3dUrl;
+  if ($('linkOpenDua3D')) $('linkOpenDua3D').href = dua3dUrl;
+  if ($('previewUrlChuaLabel')) $('previewUrlChuaLabel').textContent = chua3dUrl;
+  if ($('previewUrlDuaLabel')) $('previewUrlDuaLabel').textContent = dua3dUrl;
+
   let previewLoaded = false;
   $('btnToggle3DPreview')?.addEventListener('click', () => {
     const drawer = $('previewDrawer');
     const isOpen = drawer.classList.toggle('open');
     if (isOpen && !previewLoaded) {
       previewLoaded = true;
-      $('iframeChua3D').src = 'http://127.0.0.1:8787';
-      $('iframeDua3D').src = 'http://127.0.0.1:8789';
+      $('iframeChua3D').src = chua3dUrl;
+      $('iframeDua3D').src = dua3dUrl;
     }
   });
 

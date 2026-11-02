@@ -259,12 +259,49 @@ const receive = msg => { const now = performance.now(); run(applyMsg(world, msg,
 // Manual tests (TC-07.15/16) fire StageMsg from the console: stageMsg({t:'fx',kind:'bell',power:1}).
 if (params.get('debug') === '1') window.stageMsg = receive;
 
-// BR-07.11: reconnect every 2 s; the server sends a fresh snapshot on connect.
+// Hybrid Real-Time Transport: Local WebSocket (:8787) + Vercel Cloud HTTP Polling (/api/chua/poll)
+let cloudPollingActive = false;
+let cloudSeq = 0;
+
+async function pollChuaCloud() {
+  try {
+    const res = await fetch(`/api/chua/poll?since=${cloudSeq}`, { cache: 'no-store' });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.snapshot) receive(data.snapshot);
+      if (Array.isArray(data.messages)) {
+        for (const m of data.messages) receive(m);
+      }
+      if (typeof data.seq === 'number') cloudSeq = data.seq;
+    }
+  } catch {}
+  if (cloudPollingActive) setTimeout(pollChuaCloud, 1200);
+}
+
+function startChuaCloudPolling() {
+  if (cloudPollingActive) return;
+  cloudPollingActive = true;
+  pollChuaCloud();
+}
+
 (function connect() {
-  const ws = new WebSocket(`ws://${location.host}`);
+  if (location.protocol === 'https:' || location.pathname.startsWith('/chua')) {
+    startChuaCloudPolling();
+    return;
+  }
+  let opened = false;
+  const wsProto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+  const ws = new WebSocket(`${wsProto}//${location.host}`);
   liveWs = ws;
+  ws.onopen = () => { opened = true; };
   ws.onmessage = e => receive(JSON.parse(e.data));
-  ws.onclose = () => setTimeout(connect, RECONNECT_MS);
+  ws.onclose = () => {
+    if (!opened && location.port !== '8787') {
+      startChuaCloudPolling();
+      return;
+    }
+    setTimeout(connect, RECONNECT_MS);
+  };
 })();
 
 const fpsEl = document.getElementById('fps');
