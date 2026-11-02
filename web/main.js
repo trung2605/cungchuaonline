@@ -72,18 +72,7 @@ let liveWs = null;
 
 function syncCommentTtsBtn(on) {
   audio.setReadComments(on);
-  if (!commentTtsBtn) return;
-  commentTtsBtn.classList.toggle('off', !on);
-  commentTtsBtn.textContent = on ? '🔊 Đọc bình luận: BẬT' : '🔇 Đọc bình luận: TẮT';
 }
-
-commentTtsBtn?.addEventListener('click', () => {
-  const next = !audio.readComments;
-  syncCommentTtsBtn(next);
-  if (liveWs && liveWs.readyState === 1) {
-    liveWs.send(JSON.stringify({ t: 'setReadComments', readComments: next }));
-  }
-});
 
 // Auto-unlock audio by default on load and on any interaction (mouse move, key, touch, focus)
 audio.unlock();

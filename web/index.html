@@ -215,16 +215,7 @@
     text-shadow: 0 2px 4px rgba(0, 0, 0, .85);
     box-shadow: 0 8px 20px rgba(0, 0, 0, .7); transition: opacity .6s;
   }
-  #sound { right: 24px; bottom: 24px; padding: 14px 24px; font-size: 22px; font-weight: 700; display: none; color: var(--gilt-bright); font-family: inherit; cursor: pointer; }
-  #toggle-comment-tts {
-    right: 26px; bottom: 26px; padding: 12px 20px; font-size: 20px; font-weight: 700;
-    color: var(--gilt-bright); font-family: inherit; cursor: pointer; z-index: 30;
-    background: linear-gradient(180deg, rgba(46, 14, 4, .92), rgba(18, 5, 1, .94));
-    border: 1.5px solid rgba(240, 202, 114, .75); border-radius: 999px;
-    box-shadow: 0 6px 18px rgba(0, 0, 0, .65); transition: transform .15s, border-color .2s, opacity .2s;
-  }
-  #toggle-comment-tts:hover { transform: scale(1.03); border-color: #ffe082; }
-  #toggle-comment-tts.off { opacity: 0.82; border-color: rgba(240, 202, 114, .4); color: #e2c992; }
+  #sound, #toggle-comment-tts { display: none !important; pointer-events: none !important; }
   @media (prefers-reduced-motion: reduce) {
     #banner, #banner.on { transform: none; transition: opacity .2s; }
     .card, #donor .card, #namo.bump span { animation: none; }

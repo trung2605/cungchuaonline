@@ -621,8 +621,17 @@ export function createRaceAudio({ onSpeak = null } = {}) {
     }
   }
 
-  // Auto-start background music immediately on creation
+  // Auto-start background music immediately on creation and keep it permanently running 24/7
   ctx.resume().then(() => { startBg(); }).catch(() => { startBg(); });
+  setInterval(() => {
+    if (!isPreviewIframe) {
+      enabled = true;
+      bgmMuted = false;
+      master.gain.value = 1;
+      if (ctx.state !== 'running') ctx.resume().catch(() => {});
+      if (!bgRunning) startBg();
+    }
+  }, 1500);
 
   return {
     get suspended() {
@@ -632,37 +641,21 @@ export function createRaceAudio({ onSpeak = null } = {}) {
       return readComments;
     },
     getBgmLabel() {
-      if (bgmMuted) return '🔇 Nhạc nền: TẮT';
       const song = VN_SONGS[currentSongIdx % VN_SONGS.length];
-      return autoCycleSongs ? `🎵 Nhạc Việt: ${song.title}` : `🎵 Đang lặp: ${song.title}`;
+      return `🔊 Nhạc Việt: ${song.title}`;
     },
     nextBgmTrack() {
+      // Sound is always ON: cycling only switches to the next Vietnamese folk song and never mutes
+      bgmMuted = false;
       if (ctx.state !== 'running') ctx.resume().catch(() => {});
       startBg();
-      if (bgmMuted) {
-        bgmMuted = false;
-        autoCycleSongs = true;
-        currentSongIdx = 0;
-        noteCursor = 0;
-        duckBgm(speaking);
-        return this.getBgmLabel();
-      }
-      if (autoCycleSongs) {
-        autoCycleSongs = false;
-        currentSongIdx = 0;
-        noteCursor = 0;
-        return this.getBgmLabel();
-      }
-      if (currentSongIdx < VN_SONGS.length - 1) {
-        currentSongIdx++;
-        noteCursor = 0;
-        return this.getBgmLabel();
-      }
-      bgmMuted = true;
-      duckBgm(false);
+      currentSongIdx = (currentSongIdx + 1) % VN_SONGS.length;
+      noteCursor = 0;
+      duckBgm(speaking);
       return this.getBgmLabel();
     },
     setBiomeMusic(biomeId) {
+      bgmMuted = false;
       const targetSongId = BIOME_SONG_MAP[biomeId];
       if (!targetSongId) return this.getBgmLabel();
       const idx = VN_SONGS.findIndex(s => s.id === targetSongId);
@@ -673,7 +666,10 @@ export function createRaceAudio({ onSpeak = null } = {}) {
       return this.getBgmLabel();
     },
     unlock() {
-      if (!enabled) return;
+      if (isPreviewIframe) return;
+      enabled = true;
+      bgmMuted = false;
+      master.gain.value = 1;
       ctx.resume().catch(() => {});
       startBg();
     },
@@ -697,24 +693,14 @@ export function createRaceAudio({ onSpeak = null } = {}) {
         }
       }
     },
-    setEnabled(on) {
+    setEnabled(_on) {
+      // Sound is permanently enabled on main livestream display (never turns off)
       if (isPreviewIframe) return;
-      enabled = on;
-      master.gain.value = on ? 1 : 0;
-      if (on) {
-        startBg();
-        flushSpeech();
-      } else {
-        bgRunning = false;
-        clearTimeout(bgTimer);
-        speechQueue.length = 0;
-        try { currentVoiceSrc?.stop(); } catch {}
-        if (typeof speechSynthesis !== 'undefined') {
-          try { speechSynthesis.cancel(); } catch {}
-        }
-        speaking = false;
-        onSpeak?.('', false);
-      }
+      enabled = true;
+      bgmMuted = false;
+      master.gain.value = 1;
+      startBg();
+      flushSpeech();
     },
     greetJoin(msg) {
       if (!enabled || !msg) return;

@@ -41,15 +41,15 @@ async function gameAction(game, endpoint, payload = {}, method = 'POST') {
 // LEFT SIDEBAR TREE NAVIGATION & SUB-NAVIGATION (Main Group + Sub-Nav + Breadcrumb)
 // ============================================================================
 const MAIN_TAB_LABELS = {
-  master: 'Admin Tổng (Hệ Thống)',
-  chua: 'Cúng Chùa Online 3D',
-  dua: 'Cuộc Đua Kỳ Thú 3D',
+  master: 'Admin Tổng (:8791)',
+  chua: 'Cúng Chùa 3D (:8787)',
+  dua: 'Đi Bộ Xuyên Việt (:8789)',
 };
 
 const activeSubTabByParent = {
   master: 'master-overview',
-  chua: 'chua-analytics',
-  dua: 'dua-analytics',
+  chua: 'chua-controls',
+  dua: 'dua-controls',
 };
 
 function updateBreadcrumb(parentTab, subTabId) {
@@ -682,16 +682,25 @@ function renderAll(state) {
     if ($('duaReadCommentsCheck')) $('duaReadCommentsCheck').checked = Boolean(dua.scene.readComments);
   }
 
-  // Biome Grid
+  // Biome Grid (12 Vietnamese Landmarks with Region Badges)
   const biomes = dua.biomes || [];
   const forced = dua.forcedBiome || 'auto';
-  const allBiomes = [{ id: 'auto', name: '🔄 Tự Động Xoay Vòng Kỳ Quan', sub: 'Đổi địa điểm mỗi 600m hành trình' }, ...biomes];
-  $('duaBiomeGrid').innerHTML = allBiomes.map(b => `
-    <button type="button" class="biome-btn ${forced === b.id ? 'active' : ''}" data-biome-id="${esc(b.id)}">
-      <strong>${esc(b.name)}</strong>
-      <span>${esc(b.sub)}</span>
-    </button>
-  `).join('');
+  const currentBiomeId = dua.stats?.currentBiome?.id || '';
+  const allBiomes = [
+    { id: 'auto', name: '🔄 Tự Động Xoay Vòng 12 Địa Danh', sub: 'Tự động đổi danh thắng mỗi 600m hành trình', region: 'Tự động' },
+    ...biomes,
+  ];
+  $('duaBiomeGrid').innerHTML = allBiomes.map(b => {
+    const isForced = forced === b.id;
+    const isCurrentAuto = forced === 'auto' && b.id === currentBiomeId;
+    return `
+      <button type="button" class="biome-btn ${isForced ? 'active' : ''}" data-biome-id="${esc(b.id)}">
+        ${b.region ? `<span class="badge ${isForced || isCurrentAuto ? 'teal' : ''}" style="font-size:10px;padding:2px 7px;width:fit-content;margin-bottom:2px">${esc(b.region)}${isCurrentAuto ? ' · 📍 Đang đi qua' : ''}</span>` : ''}
+        <strong>${esc(b.name)}</strong>
+        <span>${esc(b.sub)}</span>
+      </button>
+    `;
+  }).join('');
 
   // Dua Active Runners Table
   const duaRunners = vm.duaRunners;
@@ -930,6 +939,30 @@ window.addEventListener('DOMContentLoaded', () => {
   $('btnQuickDemoStop')?.addEventListener('click', () =>
     triggerAutoDemo('all', false, $('quickDemoRate')?.value, $('quickDemoGiftPct')?.value, 70)
   );
+
+  // 1-Click Demo Speed Preset Pills
+  document.querySelectorAll('.preset-pill[data-demo-rate]').forEach(pill => {
+    pill.addEventListener('click', () => {
+      document.querySelectorAll('.preset-pill[data-demo-rate]').forEach(p => p.classList.remove('active'));
+      pill.classList.add('active');
+      const rate = pill.dataset.demoRate;
+      const giftPct = pill.dataset.demoGift || '15';
+      if ($('quickDemoRate')) $('quickDemoRate').value = rate;
+      if ($('quickDemoGiftPct')) $('quickDemoGiftPct').value = giftPct;
+      triggerAutoDemo('all', true, rate, giftPct, 70);
+    });
+  });
+
+  // 1-Click Stay Duration Preset Pills
+  document.querySelectorAll('.preset-pill[data-stay-mins]').forEach(pill => {
+    pill.addEventListener('click', () => {
+      document.querySelectorAll('.preset-pill[data-stay-mins]').forEach(p => p.classList.remove('active'));
+      pill.classList.add('active');
+      const mins = pill.dataset.stayMins;
+      if ($('quickStayMinutes')) $('quickStayMinutes').value = mins;
+      triggerStayTime('all', mins);
+    });
+  });
 
   $('btnMasterDemoStart')?.addEventListener('click', () =>
     triggerAutoDemo('all', true, $('masterDemoRate')?.value, $('masterDemoGiftPct')?.value, $('masterDemoPrayerPct')?.value)

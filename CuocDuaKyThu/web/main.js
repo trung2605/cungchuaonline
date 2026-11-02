@@ -57,31 +57,14 @@ let liveWs = null;
 
 function syncBgmBtn() {
   if (!bgmBtn || !audio.getBgmLabel) return;
-  const label = audio.getBgmLabel();
-  bgmBtn.textContent = label;
-  bgmBtn.classList.toggle('off', label.includes('TẮT'));
+  bgmBtn.textContent = audio.getBgmLabel();
+  bgmBtn.classList.remove('off');
 }
-
-bgmBtn?.addEventListener('click', () => {
-  audio.nextBgmTrack?.();
-  syncBgmBtn();
-});
 setInterval(syncBgmBtn, 2000);
 
 function syncCommentTtsBtn(on) {
   audio.setReadComments(on);
-  if (!commentTtsBtn) return;
-  commentTtsBtn.classList.toggle('off', !on);
-  commentTtsBtn.textContent = on ? '🔊 Đọc bình luận: BẬT' : '🔇 Đọc bình luận: TẮT';
 }
-
-commentTtsBtn?.addEventListener('click', () => {
-  const next = !audio.readComments;
-  syncCommentTtsBtn(next);
-  if (liveWs && liveWs.readyState === 1) {
-    liveWs.send(JSON.stringify({ t: 'setReadComments', readComments: next }));
-  }
-});
 
 // Auto-unlock audio by default on load and on any interaction
 audio.unlock();

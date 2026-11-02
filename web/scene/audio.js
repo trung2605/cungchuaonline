@@ -497,13 +497,24 @@ export function createAudio({ onSpeak = null } = {}) {
     }
   }
 
-  // Auto-unlock and start meditation music by default on creation
+  // Auto-unlock and start meditation music by default on creation, keeping audio permanently ON 24/7
   ctx.resume().then(() => { playMusic(); }).catch(() => { startSynthZen(); });
+  setInterval(() => {
+    if (!isPreviewIframe) {
+      enabled = true;
+      master.gain.value = 1;
+      if (ctx.state !== 'running') ctx.resume().catch(() => {});
+      if (!synthZenRunning) playMusic();
+    }
+  }, 1500);
 
   return {
     get suspended() { return ctx.state !== 'running'; },
     get readComments() { return readComments; },
     unlock() {
+      if (isPreviewIframe) return;
+      enabled = true;
+      master.gain.value = 1;
       ctx.resume().catch(() => {});
       playMusic();
       refreshViVoice();
@@ -528,23 +539,13 @@ export function createAudio({ onSpeak = null } = {}) {
         }
       }
     },
-    setEnabled(on) {
-      enabled = on;
-      master.gain.value = on ? 1 : 0;
-      if (on) {
-        playMusic();
-        flushSpeech();
-      } else {
-        music.pause();
-        stopSynthZen();
-        speechQueue.length = 0;
-        clearTimeout(watchdog);
-        try { currentVoiceSrc?.stop(); } catch {}
-        currentVoiceSrc = null;
-        if (typeof speechSynthesis !== 'undefined') speechSynthesis.cancel();
-        speaking = false;
-        onSpeak?.('', false);
-      }
+    setEnabled(_on) {
+      // Sound is permanently enabled on main livestream display (never turns off)
+      if (isPreviewIframe) return;
+      enabled = true;
+      master.gain.value = 1;
+      playMusic();
+      flushSpeech();
     },
     woodBlock() {
       // Wood block ("tóc tóc") disabled per user preference; keep only peaceful meditation music, chimes/bells, and TTS.
