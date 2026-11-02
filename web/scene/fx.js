@@ -2,8 +2,11 @@
 // Includes: Incense Smoke, Pink Lotus Rain, Golden Apricot/Nectar Rain, Sky Lantern Festival,
 // Dharma Wheel 3D Mandala, Buddha Light Pillars, and Great Bell Golden Shockwaves.
 import * as THREE from 'three';
+import { createNoise2D } from 'simplex-noise';
 import { canvasTex, glowTex } from './hall.js';
 import { ALTAR } from './layout.js';
+
+const noise2D = createNoise2D();
 
 const petalTex = canvasTex(64, 64, g => {
   const r = g.createRadialGradient(28, 28, 2, 32, 32, 26);
@@ -333,6 +336,35 @@ export function createFx(scene, { low = false, smokeOrigin }) {
     return { mesh: cyl, mat, phase: idx * 1.1 };
   });
 
+  // 4. Persistent Ambient 3D Volumetric Temple Light Shafts (Phật Quang Khối 3D) modulated by Simplex-Noise
+  const shaftGradTex = canvasTex(64, 256, (g, w, h) => {
+    const grad = g.createLinearGradient(0, 0, 0, h);
+    grad.addColorStop(0, 'rgba(255, 232, 165, 0.36)');
+    grad.addColorStop(0.55, 'rgba(255, 210, 115, 0.14)');
+    grad.addColorStop(1, 'rgba(255, 190, 80, 0)');
+    g.fillStyle = grad;
+    g.fillRect(0, 0, w, h);
+  });
+  const ambientShafts = [
+    { x: -2.4, z: -0.8, tiltZ: -0.18, scale: 1.0, phase: 0.3 },
+    { x: 0.0, z: -1.4, tiltZ: 0.0, scale: 1.35, phase: 1.7 },
+    { x: 2.4, z: -0.8, tiltZ: 0.18, scale: 1.0, phase: 3.1 },
+  ].map(cfg => {
+    const mat = new THREE.MeshBasicMaterial({
+      map: shaftGradTex,
+      transparent: true,
+      opacity: 0.12,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+      side: THREE.DoubleSide,
+    });
+    const cone = new THREE.Mesh(new THREE.ConeGeometry(1.55 * cfg.scale, 9.2, 18, 1, true), mat);
+    cone.position.set(cfg.x, 4.8, cfg.z);
+    cone.rotation.z = cfg.tiltZ;
+    scene.add(cone);
+    return { mesh: cone, mat, cfg };
+  });
+
   let ring = 0;
   let smokeUntil = 0, smokePower = 0;
   let lotusUntil = 0, goldRainUntil = 0, blossomUntil = 0, lanternUntil = 0;
@@ -535,6 +567,14 @@ export function createFx(scene, { low = false, smokeOrigin }) {
           r.scale.setScalar(0.55 + u * 14.5);
           r.material.opacity = (1 - u) * 0.9;
         }
+      }
+
+      // 10. Ambient 3D Volumetric Temple Light Shafts modulated by Simplex-Noise
+      for (const sh of ambientShafts) {
+        const n = noise2D(t * 0.35 + sh.cfg.phase, sh.cfg.phase);
+        sh.mat.opacity = 0.095 + n * 0.035;
+        sh.mesh.rotation.z = sh.cfg.tiltZ + n * 0.035;
+        sh.mesh.rotation.y = t * 0.14 + sh.cfg.phase;
       }
 
       for (const p of Object.values(P)) p.update(dt, t);

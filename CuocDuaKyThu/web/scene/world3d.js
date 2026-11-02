@@ -652,26 +652,256 @@ function buildVietnamMilestonePost(provIndex) {
   return g;
 }
 
-function buildTrailsideFoliage(side, variant) {
+function buildTrailsideFoliage(biomeId, side, variant, animList) {
   const g = new THREE.Group();
-  const bushMat = new THREE.MeshStandardMaterial({ color: 0x36593e, roughness: 0.88 });
-  const flowerColors = [0xfacc15, 0xf472b6, 0xffffff, 0xfb923c];
-  const fMat = new THREE.MeshStandardMaterial({
-    color: flowerColors[variant % flowerColors.length],
-    roughness: 0.75,
+  const phaseOffset = variant * 1.3 + (side > 0 ? 0.7 : 0);
+
+  // Biome-adaptive organic foliage & blossom palettes
+  const bushPalettes = {
+    vn_hagiang: [0x274e3b, 0x36593e, 0x1e3f2f],
+    vn_sapa: [0x3f6212, 0x4d7c0f, 0x65a30d],
+    vn_halong: [0x1b6344, 0x164e35, 0x0f5238],
+    vn_hanoi: [0xca8a04, 0xb45309, 0x3f6212],
+    vn_ninhbinh: [0x15803d, 0x166534, 0x14532d],
+    vn_hue: [0x2e5a36, 0x3b6e44, 0x1e4620],
+    vn_danang: [0x365314, 0x3f6212, 0x166534],
+    vn_hoian: [0x15803d, 0x166534, 0x3f6212],
+    vn_dalat: [0x14532d, 0x064e3b, 0x1e3a2f],
+    vn_nhatrang: [0x16a34a, 0x15803d, 0x22c55e],
+    vn_saigon: [0x15803d, 0x166534, 0x14532d],
+    vn_mientay: [0x22c55e, 0x16a34a, 0x15803d],
+  };
+  const flowerPalettes = {
+    vn_hagiang: [0xf472b6, 0xfbcfe8, 0xc084fc], // Hoa Tam Giác Mạch hồng tím
+    vn_sapa: [0xfacc15, 0xfde047, 0xfb923c], // Hoa cải vàng Tây Bắc
+    vn_halong: [0xffffff, 0xfef08a, 0x38bdf8],
+    vn_hanoi: [0xfacc15, 0xf59e0b, 0xef4444], // Hoa sữa & lá vàng mùa thu
+    vn_ninhbinh: [0xf472b6, 0xfb7185, 0xfef08a], // Hoa sen hồng Tràng An
+    vn_hue: [0xc084fc, 0xa855f7, 0xfacc15], // Sắc tím Huế & hoàng mai
+    vn_danang: [0xf43f5e, 0xfb7185, 0xfacc15], // Hoa cẩm tú cầu Bà Nà
+    vn_hoian: [0xe11d48, 0xf43f5e, 0xfacc15], // Hoa giấy đỏ Hội An
+    vn_dalat: [0xfacc15, 0xf59e0b, 0xa855f7], // Hoa dã quỳ vàng & cẩm tú cầu
+    vn_nhatrang: [0xf97316, 0xfacc15, 0xffffff],
+    vn_saigon: [0xfacc15, 0xec4899, 0x38bdf8],
+    vn_mientay: [0xfacc15, 0xf43f5e, 0xf97316],
+  };
+
+  const greens = bushPalettes[biomeId] || bushPalettes.vn_hagiang;
+  const flowers = flowerPalettes[biomeId] || flowerPalettes.vn_hagiang;
+
+  // 1. Sculpted 3D Mossy Roadside Boulders (Dodecahedron crags instead of round balls)
+  const rockMat = new THREE.MeshStandardMaterial({
+    map: mossStoneTex,
+    color: 0x6b7c73,
+    roughness: 0.9,
+    flatShading: true,
   });
+  for (let rIdx = 0; rIdx < 2; rIdx++) {
+    const rSize = 0.28 + ((variant + rIdx) % 3) * 0.1;
+    const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(rSize, 1), rockMat);
+    rock.scale.set(1.35, 0.78, 1.15);
+    rock.rotation.set(rIdx * 0.7, variant * 1.1, rIdx * 0.4);
+    rock.position.set(side * (0.05 + rIdx * 0.42), rSize * 0.35, (rIdx - 0.5) * 2.2);
+    rock.castShadow = true;
+    rock.receiveShadow = true;
+    g.add(rock);
+  }
 
+  // 2. Multi-Clustered Organic Shrubs & Ferns (Faceted Icosahedron foliage clusters)
   for (let i = 0; i < 3; i++) {
-    const zOff = (i - 1) * 1.6;
-    const r = 0.36 + ((variant + i) % 3) * 0.11;
-    const bush = new THREE.Mesh(new THREE.SphereGeometry(r, 10, 8), bushMat);
-    bush.scale.set(1.2, 0.75, 1.1);
-    bush.position.set(side * (0.1 + (i % 2) * 0.35), r * 0.5, zOff);
-    g.add(bush);
+    const zOff = (i - 1) * 1.65;
+    const cluster = new THREE.Group();
+    cluster.position.set(side * (0.14 + (i % 2) * 0.38), 0, zOff);
 
-    const blossom = new THREE.Mesh(new THREE.SphereGeometry(0.095, 8, 6), fMat);
-    blossom.position.set(bush.position.x - side * 0.1, r * 0.85, zOff + 0.1);
-    g.add(blossom);
+    const bMat = new THREE.MeshStandardMaterial({
+      color: greens[(variant + i) % greens.length],
+      roughness: 0.84,
+      flatShading: true,
+    });
+    const fMat = new THREE.MeshStandardMaterial({
+      color: flowers[(variant + i) % flowers.length],
+      emissive: flowers[(variant + i) % flowers.length],
+      emissiveIntensity: 0.18,
+      roughness: 0.65,
+    });
+
+    for (let sub = 0; sub < 3; sub++) {
+      const r = 0.26 + ((variant + i + sub) % 3) * 0.08;
+      const crown = new THREE.Mesh(new THREE.IcosahedronGeometry(r, 1), bMat);
+      crown.scale.set(1.25, 0.72 + (sub % 2) * 0.2, 1.15);
+      crown.position.set(
+        (sub - 1) * 0.24,
+        r * 0.55 + (sub === 1 ? 0.12 : 0),
+        (sub % 2 - 0.5) * 0.22
+      );
+      crown.rotation.y = sub * 1.2 + variant;
+      crown.castShadow = true;
+      cluster.add(crown);
+
+      const blossom = new THREE.Mesh(new THREE.DodecahedronGeometry(0.085, 0), fMat);
+      blossom.position.set(crown.position.x - side * 0.06, crown.position.y + r * 0.58, crown.position.z + 0.06);
+      cluster.add(blossom);
+    }
+    g.add(cluster);
+  }
+
+  // 3. Swaying 3D Vietnamese Green Bamboo Grove (Khóm Tre / Trúc Xanh Việt Nam)
+  if ((variant + (side > 0 ? 1 : 0)) % 2 === 0 && biomeId !== 'vn_saigon') {
+    const bambooGroup = new THREE.Group();
+    bambooGroup.position.set(side * 0.92, 0, -0.85);
+    const stalkMat = new THREE.MeshStandardMaterial({ color: 0x3f6212, roughness: 0.62 });
+    const leafMat = new THREE.MeshStandardMaterial({ color: 0x4d7c0f, roughness: 0.75, flatShading: true });
+
+    for (let b = 0; b < 3; b++) {
+      const h = 2.1 + (b % 2) * 0.55;
+      const stalk = new THREE.Mesh(new THREE.CylinderGeometry(0.032, 0.048, h, 6), stalkMat);
+      stalk.position.set((b - 1) * 0.16, h / 2, (b % 2) * 0.14);
+      stalk.rotation.z = -side * (0.08 + b * 0.04);
+      bambooGroup.add(stalk);
+
+      const tuft = new THREE.Mesh(new THREE.ConeGeometry(0.38, 0.65, 5), leafMat);
+      tuft.position.set(stalk.position.x - side * 0.12, h - 0.15, stalk.position.z);
+      tuft.rotation.z = -side * 0.22;
+      bambooGroup.add(tuft);
+    }
+    g.add(bambooGroup);
+    if (animList) {
+      animList.push(t => {
+        bambooGroup.rotation.z = Math.sin(t * 1.9 + phaseOffset) * 0.055;
+      });
+    }
+  }
+
+  return g;
+}
+
+// Procedural architectural & natural textures for rich 3D Vietnamese heritage buildings
+const mossStoneTex = canvasTex(128, 128, (g, w, h) => {
+  g.fillStyle = '#5c6b64';
+  g.fillRect(0, 0, w, h);
+  for (let i = 0; i < 90; i++) {
+    g.fillStyle = i % 3 === 0 ? 'rgba(63, 98, 18, 0.38)' : i % 2 === 0 ? 'rgba(42, 52, 48, 0.35)' : 'rgba(148, 163, 156, 0.25)';
+    g.beginPath();
+    g.arc((i * 43) % w, (i * 71) % h, 4 + (i % 10), 0, Math.PI * 2);
+    g.fill();
+  }
+});
+
+const heritageWallTex = canvasTex(128, 128, (g, w, h) => {
+  // Warm Hoi An / Hanoi ochre plaster with weathered patina & wooden lattice window
+  const grad = g.createLinearGradient(0, 0, 0, h);
+  grad.addColorStop(0, '#d9962b');
+  grad.addColorStop(0.55, '#e8a838');
+  grad.addColorStop(1, '#b8761c');
+  g.fillStyle = grad;
+  g.fillRect(0, 0, w, h);
+
+  // Subtle moss & weathering streaks
+  for (let i = 0; i < 32; i++) {
+    g.fillStyle = 'rgba(74, 52, 22, 0.16)';
+    g.fillRect((i * 29) % w, (i * 41) % h, 14, 6);
+  }
+  // Wooden cornice & pillars
+  g.fillStyle = '#4a2210';
+  g.fillRect(0, 0, w, 10);
+  g.fillRect(0, h - 10, w, 10);
+  g.fillRect(6, 0, 8, h);
+  g.fillRect(w - 14, 0, 8, h);
+
+  // Glowing heritage window with wooden shutters
+  g.fillStyle = '#3b1a0b';
+  g.fillRect(34, 30, 60, 56);
+  const winGlow = g.createRadialGradient(64, 58, 4, 64, 58, 30);
+  winGlow.addColorStop(0, '#fff3b0');
+  winGlow.addColorStop(0.6, '#f59e0b');
+  winGlow.addColorStop(1, '#78350f');
+  g.fillStyle = winGlow;
+  g.fillRect(40, 36, 48, 44);
+  g.fillStyle = '#3b1a0b';
+  for (let x = 48; x < 88; x += 12) g.fillRect(x, 36, 3, 44);
+  g.fillRect(40, 56, 48, 3);
+});
+
+const yinYangRoofTex = canvasTex(128, 128, (g, w, h) => {
+  // Traditional Vietnamese Yin-Yang Terra-Cotta Roof Tiles (Ngói Âm Dương)
+  g.fillStyle = '#7c2214';
+  g.fillRect(0, 0, w, h);
+  for (let x = 0; x < w; x += 12) {
+    g.fillStyle = x % 24 === 0 ? '#9e2a1b' : '#5e170d';
+    g.fillRect(x, 0, 10, h);
+  }
+  for (let y = 0; y < h; y += 16) {
+    g.fillStyle = 'rgba(28, 10, 6, 0.35)';
+    g.fillRect(0, y, w, 3);
+  }
+});
+
+const chamBrickTex = canvasTex(128, 128, (g, w, h) => {
+  // Ancient Po Nagar Champa Fired Red Brickcourses & Pilasters
+  g.fillStyle = '#9a2e17';
+  g.fillRect(0, 0, w, h);
+  for (let y = 0; y < h; y += 10) {
+    const rowOff = (y / 10) % 2 === 0 ? 0 : 12;
+    for (let x = -12; x < w; x += 24) {
+      g.fillStyle = (x + y) % 3 === 0 ? '#b9381c' : '#7f2310';
+      g.fillRect(x + rowOff + 1, y + 1, 22, 8);
+    }
+  }
+  // Carved vertical pilaster grooves
+  g.fillStyle = 'rgba(45, 10, 4, 0.35)';
+  g.fillRect(24, 14, 10, h - 28);
+  g.fillRect(w - 34, 14, 10, h - 28);
+});
+
+const skyscraperGlassTex = canvasTex(128, 256, (g, w, h) => {
+  // Modern Saigon Skyscraper Illuminated Curtain Wall
+  const grad = g.createLinearGradient(0, 0, w, h);
+  grad.addColorStop(0, '#0f2942');
+  grad.addColorStop(0.5, '#1e3a8a');
+  grad.addColorStop(1, '#09192b');
+  g.fillStyle = grad;
+  g.fillRect(0, 0, w, h);
+  for (let y = 8; y < h - 8; y += 14) {
+    for (let x = 8; x < w - 8; x += 16) {
+      const lit = (x * 7 + y * 13) % 5 !== 0;
+      g.fillStyle = lit
+        ? (x + y) % 3 === 0
+          ? 'rgba(253, 224, 71, 0.85)'
+          : 'rgba(125, 211, 252, 0.82)'
+        : 'rgba(15, 23, 42, 0.7)';
+      g.fillRect(x, y, 11, 9);
+    }
+  }
+});
+
+// Builds an animated 3D cascading mountain waterfall with rising mist spray
+function build3DWaterfall(side, phaseOffset, animList) {
+  const g = new THREE.Group();
+  const streamMat = new THREE.MeshStandardMaterial({
+    color: 0xe0f2fe,
+    emissive: 0x38bdf8,
+    emissiveIntensity: 0.38,
+    roughness: 0.2,
+    transparent: true,
+    opacity: 0.82,
+  });
+  const stream = new THREE.Mesh(new THREE.BoxGeometry(0.52, 4.4, 0.45), streamMat);
+  stream.position.set(-side * 0.85, 2.35, 0.35);
+  stream.rotation.z = side * 0.16;
+  g.add(stream);
+
+  const pool = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.95, 1.1, 0.12, 12),
+    new THREE.MeshBasicMaterial({ color: 0x7dd3fc, transparent: true, opacity: 0.65 })
+  );
+  pool.position.set(-side * 1.15, 0.12, 0.35);
+  g.add(pool);
+
+  if (animList) {
+    animList.push(t => {
+      streamMat.emissiveIntensity = 0.32 + Math.sin(t * 6.5 + phaseOffset) * 0.14;
+      pool.scale.setScalar(0.92 + Math.sin(t * 4.2 + phaseOffset) * 0.1);
+    });
   }
   return g;
 }
@@ -774,7 +1004,7 @@ function buildRoadsideScene(biomeId, side, variant, animList, provBaseIdx = 0) {
   const g = new THREE.Group();
   const phaseOffset = variant * 1.7 + (side > 0 ? 0.9 : 0);
 
-  g.add(buildTrailsideFoliage(side, variant));
+  g.add(buildTrailsideFoliage(biomeId, side, variant, animList));
 
   // Place a 63-Province National Highway Milestone Post on the right side every 3 rows
   if (side > 0 && variant % 3 === 0) {
@@ -785,9 +1015,12 @@ function buildRoadsideScene(biomeId, side, variant, animList, provBaseIdx = 0) {
   }
 
   if (biomeId === 'vn_hagiang') {
-    // Hà Giang: 3D Sculpted Limestone Karst Peak + Cột Cờ Đỏ Sao Vàng + Tam Giác Mạch terraces
+    // Hà Giang: 3D Sculpted Limestone Karst Peak + Cascading Cliff Waterfall + Cột Cờ Đỏ Sao Vàng
     const peak = buildSculptedKarstMountain(2.5, 7.0 + (variant % 3) * 1.6, 0x3b4d54, 0x274e3b, variant + (side > 0 ? 10 : 0));
     peak.position.set(side * 4.2, 0, 0);
+    if (variant % 3 === 1) {
+      peak.add(build3DWaterfall(side, phaseOffset, animList));
+    }
     g.add(peak);
 
     if (variant % 2 === 0) {
@@ -796,10 +1029,10 @@ function buildRoadsideScene(biomeId, side, variant, animList, provBaseIdx = 0) {
       g.add(flag);
     }
   } else if (biomeId === 'vn_sapa') {
-    // Sa Pa: Golden Stepped Rice Terraces + Spinning Bamboo Waterwheel (Cối Nước Tây Bắc) + Stilt House
+    // Sa Pa: Golden Stepped Rice Terraces + Spinning Bamboo Waterwheel (Cối Nước Tây Bắc) + Waterfall
     const terraceGroup = new THREE.Group();
-    const goldRiceMat = new THREE.MeshStandardMaterial({ color: 0xeab308, roughness: 0.75 });
-    const greenRiceMat = new THREE.MeshStandardMaterial({ color: 0x65a30d, roughness: 0.8 });
+    const goldRiceMat = new THREE.MeshStandardMaterial({ color: 0xeab308, roughness: 0.72, flatShading: true });
+    const greenRiceMat = new THREE.MeshStandardMaterial({ color: 0x65a30d, roughness: 0.78, flatShading: true });
     for (let step = 0; step < 4; step++) {
       const slab = new THREE.Mesh(
         new THREE.CylinderGeometry(2.6 - step * 0.45, 2.8 - step * 0.45, 0.55, 12),
@@ -846,22 +1079,22 @@ function buildRoadsideScene(biomeId, side, variant, animList, provBaseIdx = 0) {
       boat.rotation.z = Math.sin(t * 1.3 + phaseOffset) * 0.08;
     });
   } else if (biomeId === 'vn_hanoi') {
-    // Hà Nội: Tháp Rùa / Khuê Văn Các Pavilion + Autumn Gold Foliage + Vermilion Bridge Posts
+    // Hà Nội: Tháp Rùa / Khuê Văn Các Textured Pavilion + Autumn Gold Foliage + Vermilion Bridge Posts
     const pavilion = new THREE.Group();
     pavilion.position.set(side * 3.1, 0, 0);
     const stoneBase = new THREE.Mesh(
-      new THREE.BoxGeometry(2.3, 1.4, 2.3),
-      new THREE.MeshStandardMaterial({ color: 0xd6b88d, roughness: 0.75 })
+      new THREE.BoxGeometry(2.3, 1.5, 2.3),
+      new THREE.MeshStandardMaterial({ map: heritageWallTex, roughness: 0.72 })
     );
-    stoneBase.position.y = 0.7;
+    stoneBase.position.y = 0.75;
     pavilion.add(stoneBase);
     for (let tier = 0; tier < 2; tier++) {
       const roof = new THREE.Mesh(
-        new THREE.ConeGeometry(2.1 - tier * 0.4, 0.7, 4),
-        new THREE.MeshStandardMaterial({ color: 0x991b1b, roughness: 0.55 })
+        new THREE.ConeGeometry(2.15 - tier * 0.4, 0.72, 4),
+        new THREE.MeshStandardMaterial({ map: yinYangRoofTex, roughness: 0.58 })
       );
       roof.rotation.y = Math.PI / 4;
-      roof.position.y = 1.65 + tier * 0.85;
+      roof.position.y = 1.72 + tier * 0.85;
       pavilion.add(roof);
     }
     g.add(pavilion);
@@ -880,11 +1113,11 @@ function buildRoadsideScene(biomeId, side, variant, animList, provBaseIdx = 0) {
     orb.position.set(side * 0.35, 1.92, 0);
     g.add(orb);
   } else if (biomeId === 'vn_ninhbinh') {
-    // Ninh Bình: Bái Đính Stupa Tower + Giant Blooming Pink Lotus on Emerald Water
+    // Ninh Bình: Bái Đính Stupa Tower + Sculpted Karst + Giant Blooming Pink Lotus on Emerald Water
     const stupa = new THREE.Group();
     stupa.position.set(side * 3.4, 0, 0);
-    const bodyMat = new THREE.MeshStandardMaterial({ color: 0x92400e, roughness: 0.65 });
-    const roofMat = new THREE.MeshStandardMaterial({ color: 0xfbbf24, metalness: 0.4, roughness: 0.35 });
+    const bodyMat = new THREE.MeshStandardMaterial({ map: chamBrickTex, roughness: 0.65 });
+    const roofMat = new THREE.MeshStandardMaterial({ color: 0xfbbf24, metalness: 0.45, roughness: 0.32 });
     for (let i = 0; i < 4; i++) {
       const s = 1.65 - i * 0.22;
       const y = i * 1.25;
@@ -906,32 +1139,38 @@ function buildRoadsideScene(biomeId, side, variant, animList, provBaseIdx = 0) {
     lotus.position.set(side * 1.5, 0.25, 0.6);
     g.add(lotus);
   } else if (biomeId === 'vn_hue') {
-    // Cố Đô Huế: Imperial Ngọ Môn Pavilion + Purple Royal Lanterns + Tràng Tiền Arch
+    // Cố Đô Huế: Imperial Ngọ Môn Pavilion with Heritage Texture + Royal Golden Roof
     const citadel = new THREE.Group();
     citadel.position.set(side * 3.2, 0, 0);
     const wall = new THREE.Mesh(
-      new THREE.BoxGeometry(2.6, 1.8, 2.2),
-      new THREE.MeshStandardMaterial({ color: 0x78350f, roughness: 0.8 })
+      new THREE.BoxGeometry(2.6, 1.85, 2.2),
+      new THREE.MeshStandardMaterial({ map: heritageWallTex, color: 0xd97706, roughness: 0.75 })
     );
-    wall.position.y = 0.9;
+    wall.position.y = 0.92;
     citadel.add(wall);
     const palaceRoof = new THREE.Mesh(
-      new THREE.ConeGeometry(2.3, 1.1, 4),
-      new THREE.MeshStandardMaterial({ color: 0xeab308, emissive: 0x422006, metalness: 0.5, roughness: 0.3 })
+      new THREE.ConeGeometry(2.35, 1.15, 4),
+      new THREE.MeshStandardMaterial({ map: yinYangRoofTex, color: 0xeab308, emissive: 0x422006, metalness: 0.45, roughness: 0.35 })
     );
     palaceRoof.rotation.y = Math.PI / 4;
-    palaceRoof.position.y = 2.35;
+    palaceRoof.position.y = 2.4;
     citadel.add(palaceRoof);
     g.add(citadel);
   } else if (biomeId === 'vn_danang') {
-    // Đà Nẵng Cầu Vàng: Giant Mossy Stone Hand (Bàn Tay Đá Khổng Lồ) cradling the Golden Bridge!
+    // Đà Nẵng Cầu Vàng: Giant Mossy Stone Hand (Bàn Tay Đá Khổng Lồ) with Craggy Moss Texture
     const handGroup = new THREE.Group();
     handGroup.position.set(side * 0.55, -0.45, 0);
-    const stoneMat = new THREE.MeshStandardMaterial({ color: 0x9ca3af, roughness: 0.88 });
-    const mossMat = new THREE.MeshStandardMaterial({ color: 0x4d7c0f, roughness: 0.85 });
+    const stoneMat = new THREE.MeshStandardMaterial({
+      map: mossStoneTex,
+      color: 0x9ca3af,
+      roughness: 0.88,
+      flatShading: true,
+    });
+    const mossMat = new THREE.MeshStandardMaterial({ color: 0x4d7c0f, roughness: 0.85, flatShading: true });
 
     // Giant Forearm & Sculpted Palm rising from the clouds right under the bridge edge
-    const palm = new THREE.Mesh(new THREE.BoxGeometry(1.9, 2.3, 1.8), stoneMat);
+    const palm = new THREE.Mesh(new THREE.DodecahedronGeometry(1.35, 1), stoneMat);
+    palm.scale.set(1.35, 1.65, 1.25);
     palm.position.y = 0.65;
     handGroup.add(palm);
 
@@ -939,27 +1178,28 @@ function buildRoadsideScene(biomeId, side, variant, animList, provBaseIdx = 0) {
     for (let f = 0; f < 5; f++) {
       const zOff = (f - 2) * 0.36;
       const fingerH = f === 2 ? 2.65 : f === 1 || f === 3 ? 2.35 : 1.85;
-      const finger = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.26, fingerH, 10), stoneMat);
+      const finger = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.28, fingerH, 8), stoneMat);
       finger.position.set(-side * 0.45, 1.95 + fingerH * 0.34, zOff);
       finger.rotation.z = side * 0.25;
       handGroup.add(finger);
 
-      const mossCap = new THREE.Mesh(new THREE.SphereGeometry(0.22, 8, 6), mossMat);
+      const mossCap = new THREE.Mesh(new THREE.DodecahedronGeometry(0.24, 1), mossMat);
       mossCap.position.set(-side * 0.38, 1.95 + fingerH * 0.7, zOff);
       handGroup.add(mossCap);
     }
     g.add(handGroup);
   } else if (biomeId === 'vn_hoian' || biomeId === 'vietnam') {
-    // Phố Cổ Hội An: Ancient Yellow Heritage House + Bougainvillea (Hoa giấy đỏ) + Swinging Silk Lanterns
+    // Phố Cổ Hội An: Ancient Yellow Heritage House with Lattice Windows & Yin-Yang Tile Roof + Silk Lanterns
     const house = new THREE.Mesh(
       new THREE.BoxGeometry(2.8, 3.3, 2.5),
-      new THREE.MeshStandardMaterial({ color: 0xe8a838, roughness: 0.7 })
+      new THREE.MeshStandardMaterial({ map: heritageWallTex, roughness: 0.68 })
     );
     house.position.set(side * 2.9, 1.65, 0);
+    house.castShadow = true;
     g.add(house);
     const roof = new THREE.Mesh(
-      new THREE.ConeGeometry(2.4, 1.3, 4),
-      new THREE.MeshStandardMaterial({ color: 0x9e2a1b, roughness: 0.6 })
+      new THREE.ConeGeometry(2.45, 1.32, 4),
+      new THREE.MeshStandardMaterial({ map: yinYangRoofTex, roughness: 0.6 })
     );
     roof.rotation.y = Math.PI / 4;
     roof.position.set(side * 2.9, 3.85, 0);
@@ -986,7 +1226,7 @@ function buildRoadsideScene(biomeId, side, variant, animList, provBaseIdx = 0) {
       lanternPivot.rotation.z = Math.sin(t * 2.0 + phaseOffset) * 0.16;
     });
   } else if (biomeId === 'vn_dalat') {
-    // Đà Lạt & Tây Nguyên: Towering Pine Trees + Lam Vien Artichoke Glass Bud / Nhà Rông
+    // Đà Lạt & Tây Nguyên: Towering Pine Trees + Lam Vien Artichoke Glass Bud + Waterfall
     for (let p = 0; p < 2; p++) {
       const pine = new THREE.Group();
       pine.position.set(side * (2.2 + p * 1.6), 0, (p - 0.5) * 1.4);
@@ -996,7 +1236,7 @@ function buildRoadsideScene(biomeId, side, variant, animList, provBaseIdx = 0) {
       );
       trunk.position.y = 1.3;
       pine.add(trunk);
-      const needleMat = new THREE.MeshStandardMaterial({ color: 0x14532d, roughness: 0.82 });
+      const needleMat = new THREE.MeshStandardMaterial({ color: 0x14532d, roughness: 0.82, flatShading: true });
       for (let layer = 0; layer < 3; layer++) {
         const cone = new THREE.Mesh(new THREE.ConeGeometry(1.35 - layer * 0.28, 1.6, 9), needleMat);
         cone.position.y = 2.4 + layer * 1.05;
@@ -1012,13 +1252,17 @@ function buildRoadsideScene(biomeId, side, variant, animList, provBaseIdx = 0) {
       );
       artichoke.position.set(side * 3.2, 1.3, 0);
       g.add(artichoke);
+    } else if (variant % 3 === 0) {
+      const wf = build3DWaterfall(side, phaseOffset, animList);
+      wf.position.set(side * 3.4, 0, -0.5);
+      g.add(wf);
     }
   } else if (biomeId === 'vn_nhatrang') {
-    // Nha Trang: Ancient Red-Brick Po Nagar Cham Tower (Tháp Bà Ponagar) + Coconut Palms
+    // Nha Trang: Ancient Red-Brick Po Nagar Cham Tower (Tháp Bà Ponagar) with Carved Brick Texture + Coconut Palms
     if (variant % 2 === 0) {
       const cham = new THREE.Group();
       cham.position.set(side * 3.3, 0, 0);
-      const brickMat = new THREE.MeshStandardMaterial({ color: 0xb9381c, roughness: 0.72 });
+      const brickMat = new THREE.MeshStandardMaterial({ map: chamBrickTex, roughness: 0.7 });
       for (let tier = 0; tier < 3; tier++) {
         const w = 1.85 - tier * 0.42;
         const h = 1.55 - tier * 0.2;
@@ -1028,7 +1272,7 @@ function buildRoadsideScene(biomeId, side, variant, animList, provBaseIdx = 0) {
       }
       g.add(cham);
     } else {
-      // Swaying Coastal Coconut Palm Tree
+      // Swaying Coastal Coconut Palm Tree with Multi-Frond Canopy
       const palm = new THREE.Group();
       palm.position.set(side * 2.1, 0, 0);
       const trunk = new THREE.Mesh(
@@ -1038,20 +1282,30 @@ function buildRoadsideScene(biomeId, side, variant, animList, provBaseIdx = 0) {
       trunk.position.y = 1.9;
       trunk.rotation.z = -side * 0.14;
       palm.add(trunk);
-      const crown = new THREE.Mesh(
-        new THREE.ConeGeometry(1.55, 0.85, 7),
-        new THREE.MeshStandardMaterial({ color: 0x16a34a, roughness: 0.7 })
-      );
-      crown.position.set(-side * 0.26, 3.8, 0);
-      palm.add(crown);
+      const crownMat = new THREE.MeshStandardMaterial({ color: 0x16a34a, roughness: 0.68, flatShading: true });
+      for (let frond = 0; frond < 5; frond++) {
+        const leaf = new THREE.Mesh(new THREE.ConeGeometry(0.42, 1.65, 5), crownMat);
+        const ang = (frond * Math.PI * 2) / 5;
+        leaf.position.set(-side * 0.26 + Math.cos(ang) * 0.55, 3.75, Math.sin(ang) * 0.55);
+        leaf.rotation.z = Math.cos(ang) * 0.85;
+        leaf.rotation.x = Math.sin(ang) * 0.85;
+        palm.add(leaf);
+      }
       g.add(palm);
     }
   } else if (biomeId === 'vn_saigon') {
-    // TP.HCM: Illuminated Skyscraper / Ben Thanh Clock Tower + Modern Boulevard Lights
+    // TP.HCM: Illuminated Curtain-Wall Skyscraper + Spire
     const h = 5.4 + (variant % 3) * 1.8;
     const tower = new THREE.Mesh(
       new THREE.BoxGeometry(2.3, h, 2.3),
-      new THREE.MeshStandardMaterial({ color: 0x1e3a8a, emissive: 0x172554, metalness: 0.65, roughness: 0.25 })
+      new THREE.MeshStandardMaterial({
+        map: skyscraperGlassTex,
+        emissive: 0x1e3a8a,
+        emissiveMap: skyscraperGlassTex,
+        emissiveIntensity: 0.55,
+        metalness: 0.72,
+        roughness: 0.2,
+      })
     );
     tower.position.set(side * 3.7, h / 2, 0);
     g.add(tower);
@@ -1075,7 +1329,7 @@ function buildRoadsideScene(biomeId, side, variant, animList, provBaseIdx = 0) {
     const fruitCols = [0x16a34a, 0xfacc15, 0xef4444, 0xf97316];
     for (let f = 0; f < 4; f++) {
       const mound = new THREE.Mesh(
-        new THREE.SphereGeometry(0.3, 8, 8),
+        new THREE.DodecahedronGeometry(0.3, 1),
         new THREE.MeshStandardMaterial({ color: fruitCols[(variant + f) % fruitCols.length], roughness: 0.6 })
       );
       mound.position.set((f % 2 - 0.5) * 0.36, 0.34, (Math.floor(f / 2) - 0.5) * 0.78);
@@ -1244,7 +1498,7 @@ const mistStrataTex = canvasTex(256, 128, (g, w, h) => {
   g.fillRect(0, 0, w, h);
 });
 
-// Builds a Curved 3D Panoramic Amphitheater Dome with Simplex-Noise 3D depth relief
+// Builds a Curved 3D Panoramic Amphitheater Dome with Simplex-Noise & Image-Luminance 3D depth relief
 function createCurved3DPanoramaGeometry() {
   const w = 96;
   const h = 48;
@@ -1265,6 +1519,102 @@ function createCurved3DPanoramaGeometry() {
   }
   geo.computeVertexNormals();
   return geo;
+}
+
+// Displaces the 65x33 vertices of `domeGeo` in 3D space using actual image luminance/saturation depth relief
+function applyPanoramaDepthRelief(domeGeo, baseDomeZ, depthGrid) {
+  const pos = domeGeo.attributes.position;
+  for (let i = 0; i < pos.count; i++) {
+    const baseZ = baseDomeZ[i * 3 + 2];
+    const imgDepth = depthGrid ? depthGrid[i] || 0 : 0;
+    pos.setZ(i, baseZ + imgDepth);
+  }
+  pos.needsUpdate = true;
+}
+
+// Processes a loaded AI Panorama Image into:
+// 1. Bottom-edge alpha-feathered main CanvasTexture (eliminates any horizontal horizon seam)
+// 2. 65x33 pixel-luminance/saturation 3D vertex relief grid (`depthGrid`)
+// 3. Midground 3D Parallax Cutout Texture (`midTex`) for multi-plane 2.5D/3D separation
+function processPanorama25D(img) {
+  const cw = 1024;
+  const ch = 576;
+  const mainCanvas = document.createElement('canvas');
+  mainCanvas.width = cw;
+  mainCanvas.height = ch;
+  const ctx = mainCanvas.getContext('2d');
+  ctx.drawImage(img, 0, 0, cw, ch);
+
+  // Feather the bottom 15% alpha so the panorama merges smoothly into the 3D terrain & mist
+  ctx.save();
+  ctx.globalCompositeOperation = 'destination-in';
+  const fadeGrad = ctx.createLinearGradient(0, 0, 0, ch);
+  fadeGrad.addColorStop(0, 'rgba(0,0,0,1)');
+  fadeGrad.addColorStop(0.84, 'rgba(0,0,0,1)');
+  fadeGrad.addColorStop(0.95, 'rgba(0,0,0,0.45)');
+  fadeGrad.addColorStop(1.0, 'rgba(0,0,0,0)');
+  ctx.fillStyle = fadeGrad;
+  ctx.fillRect(0, 0, cw, ch);
+  ctx.restore();
+
+  const mainTex = new THREE.CanvasTexture(mainCanvas);
+  mainTex.colorSpace = THREE.SRGBColorSpace;
+  mainTex.anisotropy = 4;
+
+  // Sample 65x33 luminance & color-saturation grid to drive real 3D vertex relief on the dome
+  const segX = 64;
+  const segY = 32;
+  const sampleCanvas = document.createElement('canvas');
+  sampleCanvas.width = segX + 1;
+  sampleCanvas.height = segY + 1;
+  const sCtx = sampleCanvas.getContext('2d');
+  sCtx.drawImage(img, 0, 0, segX + 1, segY + 1);
+  const pixels = sCtx.getImageData(0, 0, segX + 1, segY + 1).data;
+  const depthGrid = new Float32Array((segX + 1) * (segY + 1));
+
+  for (let iy = 0; iy <= segY; iy++) {
+    const vNorm = 1 - (iy / segY) * 2; // +1 top .. -1 bottom
+    for (let ix = 0; ix <= segX; ix++) {
+      const idx = iy * (segX + 1) + ix;
+      const p = idx * 4;
+      const r = pixels[p] / 255;
+      const g = pixels[p + 1] / 255;
+      const b = pixels[p + 2] / 255;
+      const lum = 0.299 * r + 0.587 * g + 0.114 * b;
+      const sat = Math.max(r, g, b) - Math.min(r, g, b);
+      // Darker/saturated foreground mountains, towers, and bridges bulge forward (+Z up to +3.1m), bright sky recedes (-1.4m)
+      const structureWeight = (1 - lum) * 0.72 + sat * 0.48;
+      const lowerBias = vNorm < 0.35 ? 1.0 : Math.max(0.2, 1 - (vNorm - 0.35) * 1.1);
+      depthGrid[idx] = (structureWeight - 0.38) * 4.4 * lowerBias;
+    }
+  }
+
+  // Build Midground 3D Parallax Cutout Layer (flanks & lower-midground silhouettes)
+  const midCanvas = document.createElement('canvas');
+  midCanvas.width = 512;
+  midCanvas.height = 288;
+  const mCtx = midCanvas.getContext('2d');
+  mCtx.drawImage(img, 0, 0, 512, 288);
+  const mImg = mCtx.getImageData(0, 0, 512, 288);
+  const md = mImg.data;
+  for (let y = 0; y < 288; y++) {
+    const yn = y / 288; // 0 top .. 1 bottom
+    const vMask = yn < 0.25 ? 0 : yn < 0.45 ? (yn - 0.25) / 0.2 : yn > 0.86 ? Math.max(0, (1 - yn) / 0.14) : 1;
+    for (let x = 0; x < 512; x++) {
+      const xn = (x / 512) * 2 - 1; // -1 .. +1
+      // Keep center road corridor transparent so only the 3D side flanks & silhouettes project forward
+      const sideMask = Math.max(0, Math.min(1, (Math.abs(xn) - 0.22) / 0.26));
+      const p = (y * 512 + x) * 4;
+      const lum = (md[p] * 0.299 + md[p + 1] * 0.587 + md[p + 2] * 0.114) / 255;
+      const silMask = Math.max(0, Math.min(1, (0.76 - lum) * 2.1));
+      md[p + 3] = Math.round(255 * vMask * sideMask * silMask * 0.58);
+    }
+  }
+  mCtx.putImageData(mImg, 0, 0);
+  const midTex = new THREE.CanvasTexture(midCanvas);
+  midTex.colorSpace = THREE.SRGBColorSpace;
+
+  return { mainTex, midTex, depthGrid };
 }
 
 function buildHorizonLandmark(biomeId) {
@@ -1300,8 +1650,49 @@ export function buildRaceWorld(scene) {
   scene.add(dir);
 
   // Preload all 12 dedicated Vietnamese Landmark Panoramas + World Fallbacks
+  // and process each image into a 2.5D/3D multi-plane depth relief + feathered horizon + midground cutout
   const texLoader = new THREE.TextureLoader();
   const skyTextures = {};
+  const skyMidTextures = {};
+  const skyDepthGrids = {};
+
+  // Curved 3D Panoramic Amphitheater Dome + Secondary GSAP Cross-Fade Dome + Midground 3D Parallax Layer
+  const domeGeo = createCurved3DPanoramaGeometry();
+  const baseDomeZ = Float32Array.from(domeGeo.attributes.position.array);
+
+  const midGeo = createCurved3DPanoramaGeometry();
+  midGeo.scale(0.82, 0.82, 1.15);
+
+  const skyMat = new THREE.MeshBasicMaterial({
+    fog: false,
+    transparent: true,
+    opacity: 0.99,
+  });
+  const skyBackdrop = new THREE.Mesh(domeGeo, skyMat);
+  skyBackdrop.position.set(2.0, 14.2, -56);
+  scene.add(skyBackdrop);
+
+  const skyFadeMat = new THREE.MeshBasicMaterial({
+    fog: false,
+    transparent: true,
+    opacity: 0,
+    depthWrite: false,
+  });
+  const skyBackdropFade = new THREE.Mesh(domeGeo, skyFadeMat);
+  skyBackdropFade.position.set(2.0, 14.2, -55.8);
+  scene.add(skyBackdropFade);
+
+  // Midground 3D Parallax Cutout Layer (z = -43) that shifts at 1.85x parallax speed relative to the main dome!
+  const skyMidMat = new THREE.MeshBasicMaterial({
+    fog: false,
+    transparent: true,
+    opacity: 0.78,
+    depthWrite: false,
+  });
+  const skyMidground = new THREE.Mesh(midGeo, skyMidMat);
+  skyMidground.position.set(2.0, 11.4, -43);
+  scene.add(skyMidground);
+
   for (const url of [
     '/assets/sky_vn_hagiang.jpg',
     '/assets/sky_vn_sapa.jpg',
@@ -1325,34 +1716,28 @@ export function buildRaceWorld(scene) {
     '/assets/sky_europe.jpg',
     '/assets/sky_world.jpg',
   ]) {
-    const t = texLoader.load(url);
+    const t = texLoader.load(url, loadedTex => {
+      if (loadedTex.image) {
+        const { mainTex, midTex, depthGrid } = processPanorama25D(loadedTex.image);
+        skyTextures[url] = mainTex;
+        skyMidTextures[url] = midTex;
+        skyDepthGrids[url] = depthGrid;
+        const activePal = BIOME_PALETTES[activeTrailBiomeId] || BIOME_PALETTES.vn_hagiang;
+        if (activePal.skyImg === url) {
+          skyMat.map = mainTex;
+          skyMat.needsUpdate = true;
+          skyMidMat.map = midTex;
+          skyMidMat.needsUpdate = true;
+          applyPanoramaDepthRelief(domeGeo, baseDomeZ, depthGrid);
+        }
+      }
+    });
     t.colorSpace = THREE.SRGBColorSpace;
     t.anisotropy = 4;
     skyTextures[url] = t;
   }
-
-  // Curved 3D Panoramic Amphitheater Dome + Secondary GSAP Cross-Fade Dome
-  const domeGeo = createCurved3DPanoramaGeometry();
-  const skyMat = new THREE.MeshBasicMaterial({
-    map: skyTextures['/assets/sky_vn_hagiang.jpg'],
-    fog: false,
-    transparent: true,
-    opacity: 0.99,
-  });
-  const skyBackdrop = new THREE.Mesh(domeGeo, skyMat);
-  skyBackdrop.position.set(2.0, 14.2, -56);
-  scene.add(skyBackdrop);
-
-  const skyFadeMat = new THREE.MeshBasicMaterial({
-    map: skyTextures['/assets/sky_vn_hagiang.jpg'],
-    fog: false,
-    transparent: true,
-    opacity: 0,
-    depthWrite: false,
-  });
-  const skyBackdropFade = new THREE.Mesh(domeGeo, skyFadeMat);
-  skyBackdropFade.position.set(2.0, 14.2, -55.8);
-  scene.add(skyBackdropFade);
+  skyMat.map = skyTextures['/assets/sky_vn_hagiang.jpg'];
+  skyFadeMat.map = skyTextures['/assets/sky_vn_hagiang.jpg'];
 
   // 6 Multi-Plane 3D Parallax Volumetric Mist & Cloud Strata bridging 3D world to panorama
   const mistLayers = [];
@@ -1581,8 +1966,16 @@ export function buildRaceWorld(scene) {
       gsap.killTweensOf(skyFadeMat);
       gsap.to(skyFadeMat, { opacity: 0, duration: 1.1, ease: 'power2.out' });
     }
+    const nextMidTex = skyMidTextures[pal.skyImg];
+    if (nextMidTex) {
+      skyMidMat.map = nextMidTex;
+      skyMidMat.needsUpdate = true;
+    }
+    applyPanoramaDepthRelief(domeGeo, baseDomeZ, skyDepthGrids[pal.skyImg]);
+
     skyBackdrop.position.set(baseSkyPanX, baseSkyPanY, -56);
     skyBackdropFade.position.set(baseSkyPanX, baseSkyPanY, -55.8);
+    skyMidground.position.set(baseSkyPanX * 0.75, baseSkyPanY - 2.6, -43);
 
     currentRoadTex = createBiomeTrailTexture(biomeId);
     roadMat.map = currentRoadTex;
@@ -1658,13 +2051,17 @@ export function buildRaceWorld(scene) {
       deformTerrainValley(elapsed);
       updatePropRowsCurveAlignment();
 
-      // Multi-dimensional 3D Parallax Sway on the Curved Panorama Dome & Volumetric Mist Strata
+      // Multi-dimensional 3D Parallax Sway on the Curved Panorama Dome, Midground Cutout & Mist Strata
       const fgPose = getTrailPose(2, activeTrailScrollDist, activeTrailBiomeId);
       const parallaxX = -fgPose.x * 0.45 + Math.sin(elapsed * 0.32) * 0.65;
       const parallaxY = Math.cos(elapsed * 0.26) * 0.28;
       skyBackdrop.position.x = baseSkyPanX + parallaxX;
       skyBackdrop.position.y = baseSkyPanY + parallaxY;
       skyBackdrop.rotation.y = -fgPose.angleY * 0.18 + Math.sin(elapsed * 0.22) * 0.015;
+
+      skyMidground.position.x = baseSkyPanX * 0.75 + parallaxX * 1.85;
+      skyMidground.position.y = baseSkyPanY - 2.6 + parallaxY * 1.4;
+      skyMidground.rotation.y = -fgPose.angleY * 0.28 + Math.sin(elapsed * 0.22) * 0.022;
 
       for (const m of mistLayers) {
         m.mesh.position.x = m.baseX + Math.sin(elapsed * m.speed + m.phase) * 5.5 - fgPose.x * m.parallax;

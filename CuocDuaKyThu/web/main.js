@@ -6,7 +6,7 @@ import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js'
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { gsap } from 'gsap';
-import { buildRaceWorld } from './scene/world3d.js';
+import { buildRaceWorld, getTrailPose } from './scene/world3d.js';
 import { createRunners } from './scene/runners.js';
 import { createRaceFx } from './scene/fx.js';
 import { createRaceAudio } from './scene/audio.js';
@@ -179,10 +179,15 @@ function frame(now) {
   world3d.update(dt, Math.min(1.38, 0.85 + (packSpeed - 1) * 0.1));
   fx.update(dt);
 
-  // Subtle dynamic camera sway for a cinematic walking trek feel
-  camera.position.x = Math.sin(now / 3600) * 0.28;
-  camera.position.y = 4.3 + Math.cos(now / 2400) * 0.08;
-  camera.lookAt(0, 1.75, -12);
+  // 3D Steadicam Trail Tracking: camera smoothly glides along the foreground road curve with subtle banking roll
+  const nearPose = getTrailPose(10);
+  const lookPose = getTrailPose(-14);
+  const targetCamX = nearPose.x * 0.34 + Math.sin(now / 3200) * 0.32;
+  const targetCamY = 4.35 + nearPose.y * 0.25 + Math.cos(now / 2300) * 0.09;
+  camera.position.x += (targetCamX - camera.position.x) * Math.min(1, dt * 3.5);
+  camera.position.y += (targetCamY - camera.position.y) * Math.min(1, dt * 3.5);
+  camera.lookAt(lookPose.x * 0.28, 1.75 + lookPose.y * 0.18, -14);
+  camera.rotation.z = -nearPose.angleY * 0.045 + Math.sin(now / 4100) * 0.008;
 
   composer.render();
   labelRenderer.render(scene, camera);
