@@ -1311,8 +1311,8 @@ window.addEventListener('DOMContentLoaded', () => {
     const isOpen = drawer.classList.toggle('open');
     if (isOpen && !previewLoaded) {
       previewLoaded = true;
-      $('iframeChua3D').src = chua3dUrl;
-      $('iframeDua3D').src = dua3dUrl;
+      $('iframeChua3D').src = `${chua3dUrl}?preview=1`;
+      $('iframeDua3D').src = `${dua3dUrl}?preview=1`;
     }
   });
 

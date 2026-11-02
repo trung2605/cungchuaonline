@@ -328,11 +328,25 @@ export const TEMPLE_SONGS = [
 
 export function createAudio({ onSpeak = null } = {}) {
   const isPreviewIframe = (() => {
-    try { return window.self !== window.top; } catch { return true; }
+    try { return new URLSearchParams(location.search).get('preview') === '1'; } catch { return false; }
   })();
   const ctx = new AudioContext();
   const master = ctx.createGain();
   master.connect(ctx.destination);
+  // Route WebAudio through a live <audio> media element as well so TikTok LIVE Studio / OBS CEF
+  // "Link" sources that only capture HTMLMediaElement streams receive 100% of the sound!
+  let mediaStreamEl = null;
+  if (!isPreviewIframe && typeof ctx.createMediaStreamDestination === 'function' && typeof Audio !== 'undefined') {
+    try {
+      const streamDest = ctx.createMediaStreamDestination();
+      master.connect(streamDest);
+      mediaStreamEl = new Audio();
+      mediaStreamEl.srcObject = streamDest.stream;
+      mediaStreamEl.volume = 1.0;
+      mediaStreamEl.muted = false;
+      mediaStreamEl.play().catch(() => {});
+    } catch {}
+  }
   const music = new Audio('assets/audio/music.mp3');
   music.loop = true;
   music.volume = 0.32;
@@ -1181,24 +1195,11 @@ export function createAudio({ onSpeak = null } = {}) {
   // so it never overlaps with Cuộc Đua Kỳ Thú (:8789) when switching tabs
   function syncVisibilityAudio() {
     if (isPreviewIframe) return;
-    if (typeof document !== 'undefined' && document.hidden) {
-      enabled = false;
-      master.gain.value = 0;
-      try { music.pause(); } catch {}
-      speechQueue.length = 0;
-      if (speaking) {
-        clearTimeout(watchdog);
-        try { currentVoiceSrc?.stop(); } catch {}
-        currentVoiceSrc = null;
-        currentItem = null;
-        speaking = false;
-      }
-    } else {
-      enabled = true;
-      master.gain.value = 1;
-      if (ctx.state !== 'running') ctx.resume().catch(() => {});
-      if (!zenRunning) playMusic();
-    }
+    enabled = true;
+    master.gain.value = 1;
+    if (ctx.state !== 'running') ctx.resume().catch(() => {});
+    if (mediaStreamEl && mediaStreamEl.paused) mediaStreamEl.play().catch(() => {});
+    if (!zenRunning) playMusic();
   }
   if (typeof document !== 'undefined') {
     document.addEventListener('visibilitychange', syncVisibilityAudio);
@@ -1214,6 +1215,7 @@ export function createAudio({ onSpeak = null } = {}) {
       enabled = true;
       master.gain.value = 1;
       ctx.resume().catch(() => {});
+      if (mediaStreamEl && mediaStreamEl.paused) mediaStreamEl.play().catch(() => {});
       playMusic();
       refreshViVoice();
     },

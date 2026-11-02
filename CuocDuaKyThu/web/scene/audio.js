@@ -525,12 +525,26 @@ function createMaleStretchedBuffer(ctx, srcBuf, stretch = 1.21) {
 
 export function createRaceAudio({ onSpeak = null } = {}) {
   const isPreviewIframe = (() => {
-    try { return window.self !== window.top; } catch { return true; }
+    try { return new URLSearchParams(location.search).get('preview') === '1'; } catch { return false; }
   })();
 
   const ctx = new AudioContext();
   const master = ctx.createGain();
   master.connect(ctx.destination);
+  // Route WebAudio through a live <audio> media element as well so TikTok LIVE Studio / OBS CEF
+  // "Link" sources that only capture HTMLMediaElement streams receive 100% of the sound!
+  let mediaStreamEl = null;
+  if (!isPreviewIframe && typeof ctx.createMediaStreamDestination === 'function' && typeof Audio !== 'undefined') {
+    try {
+      const streamDest = ctx.createMediaStreamDestination();
+      master.connect(streamDest);
+      mediaStreamEl = new Audio();
+      mediaStreamEl.srcObject = streamDest.stream;
+      mediaStreamEl.volume = 1.0;
+      mediaStreamEl.muted = false;
+      mediaStreamEl.play().catch(() => {});
+    } catch {}
+  }
 
   let enabled = !isPreviewIframe;
   let readComments = true;
@@ -1550,6 +1564,7 @@ export function createRaceAudio({ onSpeak = null } = {}) {
       bgmMuted = false;
       master.gain.value = 1;
       if (ctx.state !== 'running') ctx.resume().catch(() => {});
+      if (mediaStreamEl && mediaStreamEl.paused) mediaStreamEl.play().catch(() => {});
       if (!bgRunning) startBg();
       if (!speaking && speechQueue.length === 0 && !nextFlushTimer) {
         queueNextStoryNow();
@@ -1633,6 +1648,7 @@ export function createRaceAudio({ onSpeak = null } = {}) {
       bgmMuted = false;
       master.gain.value = 1;
       ctx.resume().catch(() => {});
+      if (mediaStreamEl && mediaStreamEl.paused) mediaStreamEl.play().catch(() => {});
       startBg();
       if (!speaking && speechQueue.length === 0) {
         queueNextStoryNow();
