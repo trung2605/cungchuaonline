@@ -99,11 +99,39 @@ export function formatWelcomeSpeech(name = '', useFixed = true) {
   return fn(who);
 }
 
-export function formatGiftBoostSpeech({ name = '', giftVi = 'món quà', repeat = 1, mountLabel = 'Đôi Cánh Chim Lạc', bonusM = 80, isNewJoin = false } = {}) {
+export function formatGiftBoostSpeech({
+  name = '',
+  giftVi = 'món quà',
+  repeat = 1,
+  mountLabel = 'Đôi Cánh Chim Lạc',
+  bonusM = 80,
+  isNewJoin = false,
+  overtookKing = false,
+  chestUnlocked = false,
+} = {}) {
   const who = cleanRaceTtsName(name);
   const greet = isNewJoin ? `Chào mừng ${who} cùng tham gia hành trình đi bộ xuyên Việt. ` : '';
   const combo = repeat > 1 ? `${repeat} ${giftVi}` : giftVi;
-  return `${greet}Cảm ơn ${who} đã tặng ${combo}, nhận ${mountLabel}, tiến thêm ${bonusM} mét trên hành trình xuyên Việt!`;
+  const kingNote = overtookKing ? ', chính thức soán ngôi Top 1 Vua Hành Trình!' : ' trên hành trình xuyên Việt!';
+  const chestNote = chestUnlocked ? ' Đại tiệc Kho Báu Lễ Hội đã nổ, tăng tốc toàn đoàn gấp ba lần!' : '';
+  return `${greet}Cảm ơn ${who} đã tặng ${combo}, nhận ${mountLabel}, tiến thêm ${bonusM} mét${kingNote}${chestNote}`;
+}
+
+const GIFT_CTA_SENTENCES = [
+  'Các bạn ơi, chỉ cần gửi tặng một bông Hoa Hồng một kim cương là nhân vật sẽ mọc Đôi Cánh Chim Lạc bay vọt thêm tám mươi mét và góp lửa mở Kho Báu Lễ Hội toàn đoàn đấy ạ!',
+  'Ai muốn cưỡi chiếc Xe Máy Cub tám mươi mốt huyền thoại phóng vèo qua đèo với tốc độ gấp ba lần thì hãy gửi tặng Hoa Rosa mười kim cương để bứt phá lên ngôi Vua Hành Trình nhé!',
+  'Mỗi phần quà từ một bông Hoa Hồng, Hoa Sen hay Nước Hoa đều giúp thanh Kho Báu Lễ Hội đầy lên nhanh chóng; khi Kho Báu nổ, tất cả thành viên trên đường đua đều được tăng tốc cầu vồng gấp ba lần!',
+  'Cuộc đua giành ngôi vị Quán Quân trên Bảng Vàng Xuyên Việt đang rất gay cấn, một phần quà nhỏ lúc này sẽ giúp bạn vượt qua hàng chục đối thủ để dẫn đầu đoàn hành trình!',
+];
+
+function splitIntoAtomicSentences(rawText = '') {
+  const clean = String(rawText || '').replace(/\s+/g, ' ').trim();
+  if (!clean) return [];
+  const parts = clean
+    .split(/(?<=[.!?…])\s+/u)
+    .map(s => s.trim())
+    .filter(Boolean);
+  return parts.length ? parts : [clean];
 }
 
 // Pitch table (Hz) across 3 octaves for Vietnamese pentatonic & acoustic arrangements
@@ -527,7 +555,9 @@ export function createRaceAudio({ onSpeak = null } = {}) {
   let currentStoryBiomeId = 'vn_hagiang';
   let currentProvinceCode = 0;
   let storyStepIdx = 0;
-  let pendingProvinceStory = null;
+  let storyCtaIdx = 0;
+  let pendingStorySentences = [];
+  let pendingProvinceSentences = [];
   const decodedTtsCache = new Map(); // text -> Promise<{ femaleBuf, maleBuf }>
 
   // Dedicated Broadcast Voice EQ Chains for Male MC & Female MC
@@ -986,17 +1016,26 @@ export function createRaceAudio({ onSpeak = null } = {}) {
     return p;
   }
 
-  function peekNextStoryText() {
-    if (pendingProvinceStory && storyStepIdx > 0) return pendingProvinceStory;
+  function peekNextStorySentenceObj() {
+    if (pendingProvinceSentences.length > 0 && storyStepIdx > 0) {
+      return pendingProvinceSentences[0];
+    }
+    if (pendingStorySentences.length > 0) {
+      return pendingStorySentences[0];
+    }
     const chapters = LANDMARK_STORIES[currentStoryBiomeId] || LANDMARK_STORIES.vietnam;
-    if (!chapters || !chapters.length) return '';
-    return chapters[storyStepIdx % chapters.length];
+    if (!chapters || !chapters.length) return null;
+    const chapterText = chapters[storyStepIdx % chapters.length];
+    const gender = storyStepIdx % 2 === 0 ? 'male' : 'female';
+    const sents = splitIntoAtomicSentences(chapterText);
+    if (!sents.length) return null;
+    return { text: sents[0], gender };
   }
 
   function preloadNextStoryBuffer() {
-    const nextText = peekNextStoryText();
-    if (nextText) {
-      fetchAndDecodeDualVoiceTts(nextText).catch(() => {});
+    const nextObj = peekNextStorySentenceObj();
+    if (nextObj?.text) {
+      fetchAndDecodeDualVoiceTts(nextObj.text).catch(() => {});
     }
   }
 
@@ -1007,8 +1046,11 @@ export function createRaceAudio({ onSpeak = null } = {}) {
     clearTimeout(nextFlushTimer);
     nextFlushTimer = null;
     if (!speaking && !currentItem) return;
-    if (rewindStory && currentItem?.kind === 'story' && currentItem.rewindOnInterrupt) {
-      storyStepIdx = Math.max(0, storyStepIdx - 1);
+    if (rewindStory && currentItem?.kind === 'story' && currentItem.text) {
+      pendingStorySentences.unshift({
+        text: currentItem.text,
+        gender: currentItem.gender || 'male',
+      });
     }
     if (currentVoiceSrc) {
       try {
@@ -1026,31 +1068,25 @@ export function createRaceAudio({ onSpeak = null } = {}) {
     speaking = false;
   }
 
-  // Strict Priority Hierarchy:
+  // Strict Priority Hierarchy (NO Mid-Sentence Cutoff!):
   // 1. Gift / Donate (`kind: 'gift'`, priority 13..16 real / 9..12 demo)
   // 2. Participant Join (`kind: 'join'`, priority 10 real / 7 demo)
   // 3. Participant Comment (`kind: 'comment'`, priority 9 real / 6 demo)
   // 4. Landmark & Cultural Story (`kind: 'story'`, priority 0 - ALWAYS lowest)
-  function interruptSpeechIfLowerPriority(newPriority = 6, isReal = true) {
-    if (!speaking || !currentItem) return;
-    const curPrio = currentItem.priority ?? 0;
-    // Any participant event (priority >= 1) IMMEDIATELY preempts Story narration (priority 0)
-    if (currentItem.kind === 'story' && newPriority >= 1) {
-      stopCurrentSpeechImmediately(true);
-      return;
-    }
-    // Real viewer events immediately preempt Mock/Demo speech; Gift events preempt lower non-gift speech
-    if ((isReal && !currentItem.isReal) || (newPriority >= 13 && curPrio <= 9)) {
-      stopCurrentSpeechImmediately(false);
-    }
-  }
-
-  function purgeLowerPriorityFromQueue(isReal = false) {
+  //
+  // IMPORTANT SYNCHRONIZATION RULE:
+  // Never cut off a currently speaking sentence mid-way! Let the active sentence finish
+  // naturally (`src.onended = done`), while purging any *unspoken* story sentences from
+  // `speechQueue` and queueing the participant event at the front of `speechQueue` so it
+  // speaks immediately after the current sentence finishes.
+  function purgeUnspokenLowerPriorityFromQueue(isReal = false) {
     for (let i = speechQueue.length - 1; i >= 0; i--) {
       if (speechQueue[i].kind === 'story') {
-        if (speechQueue[i].rewindOnInterrupt) {
-          storyStepIdx = Math.max(0, storyStepIdx - 1);
-        }
+        // Put unspoken story sentence back to the front of `pendingStorySentences` so it is never lost
+        pendingStorySentences.unshift({
+          text: speechQueue[i].text,
+          gender: speechQueue[i].gender || 'male',
+        });
         speechQueue.splice(i, 1);
         continue;
       }
@@ -1065,8 +1101,8 @@ export function createRaceAudio({ onSpeak = null } = {}) {
     const prio = item.priority ?? 1;
     const isStory = item.kind === 'story';
 
-    if (currentItem && currentItem.text === item.text) return;
-    if (speechQueue.some(x => x.text === item.text)) return;
+    if (currentItem && currentItem.text === item.text && item.kind !== 'gift') return;
+    if (speechQueue.some(x => x.text === item.text && item.kind !== 'gift')) return;
 
     if (isStory) {
       if (speaking || speechQueue.length > 0) return;
@@ -1075,11 +1111,21 @@ export function createRaceAudio({ onSpeak = null } = {}) {
       return;
     }
 
-    // Pre-fetch Dual-Voice TTS audio immediately when a participant event arrives so playback is instantaneous
+    // Pre-fetch Dual-Voice TTS audio immediately in the background while the current sentence finishes!
     fetchAndDecodeDualVoiceTts(item.text).catch(() => {});
 
-    purgeLowerPriorityFromQueue(Boolean(item.isReal));
-    interruptSpeechIfLowerPriority(prio, Boolean(item.isReal));
+    // Remove any unspoken story sentences (or mock items if real user) waiting in speechQueue,
+    // WITHOUT cutting off the sentence that is currently playing on the speaker!
+    purgeUnspokenLowerPriorityFromQueue(Boolean(item.isReal));
+
+    // If the same user already has a lower-priority 'join' waiting in queue and now comments/gifts, upgrade it
+    if (prio >= 11 && item.uid) {
+      for (let i = speechQueue.length - 1; i >= 0; i--) {
+        if (speechQueue[i].uid === item.uid && (speechQueue[i].priority ?? 0) < prio && speechQueue[i].kind === 'join') {
+          speechQueue.splice(i, 1);
+        }
+      }
+    }
 
     // Insert in strict descending priority order; items of the same priority stay in FIFO arrival order
     const insertIdx = speechQueue.findIndex(x => (x.priority ?? 0) < prio);
@@ -1087,45 +1133,64 @@ export function createRaceAudio({ onSpeak = null } = {}) {
     else speechQueue.splice(insertIdx, 0, item);
     if (speechQueue.length > 14) speechQueue.pop();
 
-    flushSpeech();
+    if (!speaking) {
+      flushSpeech();
+    }
   }
 
   function queueNextStoryNow() {
     if (!enabled || isPreviewIframe) return;
     if (speaking || speechQueue.length > 0 || nextFlushTimer) return;
-    // Give participants priority window after interactive speech finishes before resuming story
-    if (Date.now() - lastInteractiveDoneAt < 850) return;
+    // Brief breath window after interactive speech finishes before resuming story
+    if (Date.now() - lastInteractiveDoneAt < 500) {
+      nextFlushTimer = setTimeout(queueNextStoryNow, 520);
+      return;
+    }
 
-    if (pendingProvinceStory && storyStepIdx > 0) {
-      const provText = pendingProvinceStory;
-      pendingProvinceStory = null;
-      const gender = storyStepIdx % 2 === 0 ? 'male' : 'female';
+    // 1. If a province milestone story is pending, speak it sentence by sentence
+    if (pendingProvinceSentences.length > 0 && storyStepIdx > 0) {
+      const nextProv = pendingProvinceSentences.shift();
       enqueueSpeech({
         uid: '__ai_story_province__',
-        text: provText,
+        text: nextProv.text,
         kind: 'story',
-        gender,
+        gender: nextProv.gender,
         priority: 0,
         isReal: false,
-        rewindOnInterrupt: false,
       });
       return;
     }
 
-    const chapters = LANDMARK_STORIES[currentStoryBiomeId] || LANDMARK_STORIES.vietnam;
-    if (!chapters || !chapters.length) return;
-    // Alternate 1 Male (👨 MC Minh Quân) & 1 Female (👩 MC Hoài My) on every chapter!
-    const gender = storyStepIdx % 2 === 0 ? 'male' : 'female';
-    const text = chapters[storyStepIdx % chapters.length];
-    storyStepIdx++;
+    // 2. If there are remaining sentences from the current story chapter (or rewound sentence), speak next sentence
+    if (pendingStorySentences.length === 0) {
+      const chapters = LANDMARK_STORIES[currentStoryBiomeId] || LANDMARK_STORIES.vietnam;
+      if (!chapters || !chapters.length) return;
+      const gender = storyStepIdx % 2 === 0 ? 'male' : 'female';
+      const chapterText = chapters[storyStepIdx % chapters.length];
+      storyStepIdx++;
+
+      for (const s of splitIntoAtomicSentences(chapterText)) {
+        pendingStorySentences.push({ text: s, gender });
+      }
+
+      // Every 5 chapters, weave in 1 natural Gift-Encouraging Call-To-Action sentence!
+      if (storyStepIdx % 5 === 0) {
+        const ctaText = GIFT_CTA_SENTENCES[storyCtaIdx++ % GIFT_CTA_SENTENCES.length];
+        const ctaGender = gender === 'male' ? 'female' : 'male';
+        pendingStorySentences.push({ text: ctaText, gender: ctaGender });
+      }
+    }
+
+    const nextSent = pendingStorySentences.shift();
+    if (!nextSent) return;
+
     enqueueSpeech({
       uid: '__ai_story__',
-      text,
+      text: nextSent.text,
       kind: 'story',
-      gender,
+      gender: nextSent.gender,
       priority: 0,
       isReal: false,
-      rewindOnInterrupt: true,
     });
   }
 
@@ -1138,10 +1203,8 @@ export function createRaceAudio({ onSpeak = null } = {}) {
     currentItem = item;
     speaking = true;
     const gender = item.gender || 'female';
-    duckBgm(true);
-    onSpeak?.(item.text, true, item.kind || 'interactive', gender);
 
-    // Pre-fetch next queued participant item (or next story chapter if queue is empty)
+    // Pre-fetch next queued participant item (or next story sentence if queue is empty)
     if (speechQueue.length > 0) {
       fetchAndDecodeDualVoiceTts(speechQueue[0].text).catch(() => {});
     } else {
@@ -1161,13 +1224,16 @@ export function createRaceAudio({ onSpeak = null } = {}) {
       if (item.kind !== 'story') {
         lastInteractiveDoneAt = Date.now();
       }
-      duckBgm(false);
+      if (speechQueue.length === 0) {
+        duckBgm(false);
+      }
       onSpeak?.('', false, '', gender);
 
+      // Immediately read waiting participant events if any; otherwise resume next story sentence when idle
       if (speechQueue.length > 0) {
-        nextFlushTimer = setTimeout(flushSpeech, 70);
+        nextFlushTimer = setTimeout(flushSpeech, 110);
       } else {
-        nextFlushTimer = setTimeout(queueNextStoryNow, 900);
+        nextFlushTimer = setTimeout(queueNextStoryNow, 620);
       }
     };
 
@@ -1190,6 +1256,13 @@ export function createRaceAudio({ onSpeak = null } = {}) {
       src.connect(g).connect(isMale ? maleVoiceChain : femaleVoiceChain);
       currentVoiceSrc = src;
       src.onended = done;
+
+      // Synchronize BGM ducking, SFX chime/fanfare, and subtitle display at the EXACT start of voice playback!
+      duckBgm(true);
+      if (item.kind === 'gift') boostSfx(item.tier || 1);
+      else if (item.kind === 'join' || item.kind === 'comment') joinChime();
+      onSpeak?.(item.text, true, item.kind || 'interactive', gender);
+
       src.start();
     } catch {
       if (mySeq !== activeSpeechSeq || currentItem !== item) return;
@@ -1202,6 +1275,10 @@ export function createRaceAudio({ onSpeak = null } = {}) {
         u.onend = done;
         u.onerror = done;
         try {
+          duckBgm(true);
+          if (item.kind === 'gift') boostSfx(item.tier || 1);
+          else if (item.kind === 'join' || item.kind === 'comment') joinChime();
+          onSpeak?.(item.text, true, item.kind || 'interactive', gender);
           speechSynthesis.speak(u);
           return;
         } catch {}
@@ -1258,9 +1335,8 @@ export function createRaceAudio({ onSpeak = null } = {}) {
         currentStoryBiomeId = biomeId;
         storyStepIdx = 0;
         playlistCursor = 0;
-        if (currentItem?.kind === 'story') {
-          stopCurrentSpeechImmediately(false);
-        }
+        pendingStorySentences = [];
+        // Remove unspoken story sentences from queue, but let any currently speaking sentence finish naturally!
         for (let i = speechQueue.length - 1; i >= 0; i--) {
           if (speechQueue[i].kind === 'story') speechQueue.splice(i, 1);
         }
@@ -1272,7 +1348,11 @@ export function createRaceAudio({ onSpeak = null } = {}) {
       if (biomeObj?.province?.code && biomeObj.province.code !== currentProvinceCode) {
         currentProvinceCode = biomeObj.province.code;
         if (PROVINCE_STORIES[currentProvinceCode]) {
-          pendingProvinceStory = PROVINCE_STORIES[currentProvinceCode];
+          const gender = storyStepIdx % 2 === 0 ? 'male' : 'female';
+          pendingProvinceSentences = splitIntoAtomicSentences(PROVINCE_STORIES[currentProvinceCode]).map(text => ({
+            text,
+            gender,
+          }));
           preloadNextStoryBuffer();
         }
       }
@@ -1290,7 +1370,11 @@ export function createRaceAudio({ onSpeak = null } = {}) {
       if (biomeObj?.province?.code && biomeObj.province.code !== currentProvinceCode) {
         currentProvinceCode = biomeObj.province.code;
         if (PROVINCE_STORIES[currentProvinceCode]) {
-          pendingProvinceStory = PROVINCE_STORIES[currentProvinceCode];
+          const gender = storyStepIdx % 2 === 0 ? 'male' : 'female';
+          pendingProvinceSentences = splitIntoAtomicSentences(PROVINCE_STORIES[currentProvinceCode]).map(text => ({
+            text,
+            gender,
+          }));
           preloadNextStoryBuffer();
         }
       }
@@ -1311,11 +1395,6 @@ export function createRaceAudio({ onSpeak = null } = {}) {
       if (!readComments) {
         for (let i = speechQueue.length - 1; i >= 0; i--) {
           if (speechQueue[i].kind === 'comment') speechQueue.splice(i, 1);
-        }
-        if (currentItem?.kind === 'comment') {
-          stopCurrentSpeechImmediately(false);
-          onSpeak?.('', false, '');
-          setTimeout(flushSpeech, 150);
         }
       }
     },
@@ -1340,11 +1419,10 @@ export function createRaceAudio({ onSpeak = null } = {}) {
         recentJoinUid.set(uid, now);
       } else {
         const queuedInteractive = speechQueue.filter(x => x.kind !== 'story').length;
-        if (queuedInteractive >= 3 || now - lastMockJoinAt < 4500) return;
+        if (queuedInteractive >= 2 || now - lastMockJoinAt < 5500) return;
         lastMockJoinAt = now;
       }
 
-      joinChime();
       const gender = interactiveGenderToggle++ % 2 === 0 ? 'female' : 'male';
       const text = formatWelcomeSpeech(msg.name, false);
       // Join priority (10 real / 7 demo) is HIGHER than Comment (9 real / 6 demo) and Story (0)
@@ -1366,14 +1444,13 @@ export function createRaceAudio({ onSpeak = null } = {}) {
         recentCommentKey.set(dedupeKey, now);
       } else {
         const queuedInteractive = speechQueue.filter(x => x.kind !== 'story').length;
-        if (queuedInteractive >= 3 || now - lastMockCommentAt < 5000) return;
+        if (queuedInteractive >= 2 || now - lastMockCommentAt < 6000) return;
         lastMockCommentAt = now;
       }
 
-      joinChime();
       const gender = interactiveGenderToggle++ % 2 === 0 ? 'male' : 'female';
       const text = `${who} bình luận: ${cleanText}`;
-      // Comment priority (9 real / 6 demo) is right after Join (10 / 7) and ALWAYS preempts Story (0)
+      // Comment priority (9 real / 6 demo) is right after Join (10 / 7) and ALWAYS ahead of Story (0)
       enqueueSpeech({ uid, text, kind: 'comment', gender, priority: isReal ? 9 : 6, isReal });
     },
     announceGift(d) {
@@ -1381,11 +1458,18 @@ export function createRaceAudio({ onSpeak = null } = {}) {
       const isReal = Boolean(d.src && d.src !== 'mock');
       const uid = d.uid || d.name || '';
 
-      boostSfx(d.tier || 1);
       const gender = interactiveGenderToggle++ % 2 === 0 ? 'female' : 'male';
       const text = formatGiftBoostSpeech(d);
       // Gift priority (13..16 real / 9..12 demo) is the highest priority
-      enqueueSpeech({ uid, text, kind: 'gift', gender, priority: (isReal ? 12 : 8) + (d.tier || 1), isReal });
+      enqueueSpeech({
+        uid,
+        text,
+        kind: 'gift',
+        tier: d.tier || 1,
+        gender,
+        priority: (isReal ? 12 : 8) + (d.tier || 1),
+        isReal,
+      });
     },
   };
 }

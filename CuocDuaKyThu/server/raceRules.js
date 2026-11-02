@@ -89,6 +89,7 @@ export function createRaceRules({ stage, lists, now = Date.now, turboEveryLikes 
           mockRacers.add(e.uid);
         }
 
+        const prevLeader = stage.board(1)[0] || null;
         const tier = raceGiftTier(diamonds);
         const bonusM = (BONUS_DIST[tier] || 80) * Math.min(repeat, 10);
         const boostMs = BOOST_MS[tier] || 10_000;
@@ -102,6 +103,18 @@ export function createRaceRules({ stage, lists, now = Date.now, turboEveryLikes 
           cheer: `Kích hoạt ${mountLabel}!`,
           src,
         });
+
+        const chestRes = stage.addChestDiamonds ? stage.addChestDiamonds(diamonds, name) : { unlocked: false, chest: null, msgs: [] };
+        const updatedBoard = stage.board(50);
+        const newLeader = updatedBoard[0] || null;
+        const rankIdx = updatedBoard.findIndex(r => r.uid === e.uid);
+        const newRank = rankIdx !== -1 ? rankIdx + 1 : null;
+        const overtookKing = Boolean(
+          newLeader &&
+          newLeader.uid === e.uid &&
+          prevLeader &&
+          prevLeader.uid !== e.uid
+        );
 
         const out = [
           ...msgs,
@@ -118,11 +131,24 @@ export function createRaceRules({ stage, lists, now = Date.now, turboEveryLikes 
             mountLabel,
             bonusM,
             isNewJoin,
+            rank: newRank,
+            overtookKing,
+            prevKingName: overtookKing ? prevLeader.name : '',
+            chestUnlocked: chestRes.unlocked,
+            giftChest: chestRes.chest,
           },
           { t: 'fx', kind: tier >= 4 ? 'warp' : tier === 3 ? 'jet' : tier === 2 ? 'hover' : 'wings', at: e.uid, power: Math.min(10, repeat + tier * 2) },
         ];
 
-        if (tier >= 3) {
+        if (chestRes.msgs?.length) {
+          out.push(...chestRes.msgs);
+        } else if (overtookKing) {
+          out.push({
+            t: 'banner',
+            text: `👑 SOÁN NGÔI VUA HÀNH TRÌNH! ${name} tặng ${giftVi} ×${repeat} vượt qua ${prevLeader.name} chiếm Top 1 (${newLeader.distanceM.toLocaleString('vi-VN')}m)!`,
+            ms: 5500,
+          });
+        } else if (tier >= 3) {
           out.push({
             t: 'banner',
             text: `🚀 ${name} tặng ${giftVi} ×${repeat} (💎${diamonds}) · Kích hoạt ${mountLabel} (+${bonusM.toLocaleString('vi-VN')}m)!`,
@@ -137,7 +163,7 @@ export function createRaceRules({ stage, lists, now = Date.now, turboEveryLikes 
           src,
           giftName: `${giftVi} ×${repeat}`,
           diamonds,
-          detail: `${mountLabel} (+${bonusM}m)`,
+          detail: `${mountLabel} (+${bonusM}m)${overtookKing ? ' · 👑 Soán ngôi #1' : ''}`,
         });
         return out;
       }

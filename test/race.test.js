@@ -190,3 +190,51 @@ test('TC-RACE-08: Participant greeting & comment normalization preserves short g
   assert.equal(cleanCommentForTts('🥰🥰🥰'), 'thả tim yêu thương cổ vũ cả đoàn');
   assert.equal(cleanCommentForTts('🙏🙏🙏'), 'chắp tay cầu bình an');
 });
+
+test('TC-RACE-09: Community Gift Treasure Chest & Soán Ngôi Top 1 King overtake detection', () => {
+  let t = 1000;
+  const stage = new RaceStage({ now: () => t });
+  const rules = createRaceRules({ stage, lists, now: () => t });
+
+  // User 1 takes initial #1 lead with 5 Roses (5 diamonds -> +400m)
+  const out1 = rules.handle({
+    kind: 'gift',
+    src: 'tiktok',
+    uid: 'u1',
+    name: 'Hoàng Long',
+    giftId: 5655,
+    giftName: 'Rose',
+    diamonds: 1,
+    repeat: 5,
+    ts: t,
+  });
+  const d1 = out1.find(m => m.t === 'donor');
+  assert.equal(d1.rank, 1);
+  assert.equal(d1.overtookKing, false);
+  assert.equal(d1.giftChest.currentDiamonds, 5);
+  assert.equal(d1.giftChest.targetDiamonds, 25);
+
+  // User 2 sends Perfume (20 diamonds) -> overtakes User 1 AND unlocks Level 1 Treasure Chest (5 + 20 = 25 diamonds)!
+  const out2 = rules.handle({
+    kind: 'gift',
+    src: 'tiktok',
+    uid: 'u2',
+    name: 'Bảo Ngọc',
+    giftId: 5658,
+    giftName: 'Perfume',
+    diamonds: 20,
+    repeat: 2,
+    ts: t,
+  });
+  const d2 = out2.find(m => m.t === 'donor');
+  assert.equal(d2.rank, 1);
+  assert.equal(d2.overtookKing, true);
+  assert.equal(d2.prevKingName, 'Hoàng Long');
+  assert.equal(d2.chestUnlocked, true);
+  assert.equal(d2.giftChest.level, 2);
+  assert.equal(d2.giftChest.targetDiamonds, 50);
+
+  const tts = formatGiftBoostSpeech(d2);
+  assert.ok(tts.includes('soán ngôi Top 1 Vua Hành Trình'));
+  assert.ok(tts.includes('Kho Báu Lễ Hội đã nổ'));
+});

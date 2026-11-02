@@ -6,6 +6,7 @@ import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js'
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { gsap } from 'gsap';
+import confetti from 'canvas-confetti';
 import { buildRaceWorld, getTrailPose } from './scene/world3d.js';
 import { createRunners } from './scene/runners.js';
 import { createRaceFx } from './scene/fx.js';
@@ -111,6 +112,7 @@ function handleMsg(msg) {
       for (const r of msg.runners || []) runners.addOrUpdate(r);
       applyBiomeChange(msg.biome, msg.worldDistanceM || 0);
       hud.updateBoard(msg.board || []);
+      if (msg.giftChest) hud.updateGiftChest?.(msg.giftChest, false);
       hud.setActiveCount(runners.count());
       if (msg.scene?.sound !== undefined) audio.setEnabled(msg.scene.sound);
       if (msg.scene?.readComments !== undefined) syncCommentTtsBtn(Boolean(msg.scene.readComments));
@@ -139,6 +141,16 @@ function handleMsg(msg) {
     case 'donor':
       hud.showDonor(msg);
       audio.announceGift(msg);
+      try {
+        const isBig = msg.overtookKing || msg.chestUnlocked || (msg.tier || 1) >= 2;
+        confetti({
+          particleCount: isBig ? 65 : 28,
+          spread: isBig ? 85 : 55,
+          origin: { x: 0.5, y: 0.26 },
+          colors: ['#fbbf24', '#fde047', '#ef4444', '#38bdf8', '#f472b6'],
+          disableForReducedMotion: true,
+        });
+      } catch {}
       break;
     case 'fx':
       fx.spawn(msg.kind, msg.power);
@@ -153,6 +165,7 @@ function handleMsg(msg) {
     case 'worldTick':
       applyBiomeChange(msg.biome, msg.worldDistanceM);
       hud.updateBoard(msg.board || []);
+      if (msg.giftChest) hud.updateGiftChest?.(msg.giftChest, false);
       runners.syncTick(msg.runners || [], msg.board || []);
       hud.setActiveCount(runners.count());
       break;

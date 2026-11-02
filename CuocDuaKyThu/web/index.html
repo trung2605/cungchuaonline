@@ -133,23 +133,72 @@
 
   /* Left Safe-Zone Column (Aligned at top: 124px, ends well above TikTok chat!) */
   #left-col {
-    left: 14px; top: 124px; width: 252px;
-    display: flex; flex-direction: column; gap: 10px;
+    left: 14px; top: 124px; width: 256px;
+    display: flex; flex-direction: column; gap: 9px;
     pointer-events: none;
   }
-  #guide { width: 100%; padding: 11px 12px; pointer-events: none; }
+  #guide { width: 100%; padding: 10px 11px; pointer-events: none; border-color: var(--gold-line); }
   #guide h3 {
-    margin: 0 0 8px; padding-bottom: 6px; text-align: center; color: var(--gold);
-    letter-spacing: 0.6px; font-size: 18.5px; font-weight: 800; border-bottom: 1.5px solid var(--gold-line);
+    margin: 0 0 7px; padding-bottom: 5px; text-align: center; color: #f8dfa5;
+    letter-spacing: 0.5px; font-size: 17.5px; font-weight: 800; border-bottom: 1.5px solid var(--gold-line);
   }
   #guide .tier {
-    margin-bottom: 6px; padding-bottom: 6px; border-bottom: 1px dashed rgba(255, 245, 225, .14);
-    line-height: 1.28; font-size: 15.5px; font-weight: 700; font-variant-numeric: tabular-nums; color: #ebe2d3;
+    display: flex; align-items: center; justify-content: space-between; gap: 4px;
+    margin-bottom: 5px; padding: 4px 6px; border-radius: 8px;
+    border-bottom: 1px dashed rgba(255, 245, 225, .14);
+    line-height: 1.24; font-size: 14.5px; font-weight: 700; font-variant-numeric: tabular-nums; color: #ebe2d3;
+    transition: background 260ms ease, border-color 260ms ease, transform 220ms ease;
   }
-  #guide .tier:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
+  #guide .tier:last-child { margin-bottom: 0; border-bottom: none; }
+  #guide .tier-bonus {
+    flex: none; padding: 1.5px 6px; border-radius: 6px; font-size: 12.5px; font-weight: 800;
+    background: rgba(230, 194, 128, .18); color: #f9dfa2; border: 1px solid rgba(230, 194, 128, .42);
+  }
+  #guide .tier.tier-hot {
+    background: linear-gradient(90deg, rgba(217, 119, 6, .24), rgba(180, 83, 9, .12));
+    border: 1px solid rgba(251, 191, 36, .62);
+  }
+  #guide .tier.tier-triggered {
+    background: linear-gradient(90deg, rgba(245, 158, 11, .48), rgba(217, 119, 6, .28));
+    border: 1.5px solid #fde047;
+    transform: scale(1.03);
+  }
+
+  /* Community Gift Treasure Chest Card (#gift-goal-card) */
+  #gift-goal-card {
+    width: 100%; padding: 9px 11px; pointer-events: none;
+    background: linear-gradient(180deg, rgba(38, 26, 14, .92), rgba(20, 14, 8, .95));
+    border: 1.5px solid rgba(245, 194, 107, .72);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, .58);
+  }
+  #gift-goal-card.unlocked {
+    border-color: #fde047;
+    box-shadow: 0 0 22px rgba(250, 204, 21, .45), 0 6px 18px rgba(0, 0, 0, .6);
+  }
+  .chest-head {
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 13.5px; font-weight: 800; color: #f9dfa2; margin-bottom: 5px;
+  }
+  #chest-progress-text {
+    color: #fff6d6; font-variant-numeric: tabular-nums;
+    background: rgba(245, 158, 11, .24); padding: 1px 6px; border-radius: 6px;
+    border: 1px solid rgba(245, 194, 107, .45);
+  }
+  .chest-bar {
+    height: 8px; background: rgba(255, 255, 255, .14); border-radius: 99px;
+    overflow: hidden; margin-bottom: 5px; border: 1px solid rgba(255, 235, 180, .22);
+  }
+  #chest-bar-fill {
+    height: 100%; width: 0%;
+    background: linear-gradient(90deg, #d97706, #fbbf24, #fef08a);
+    transition: width .45s var(--ease-out);
+  }
+  #chest-cta {
+    font-size: 13px; font-weight: 700; color: #efe3c8; line-height: 1.26; text-align: center;
+  }
 
   #toggle-bgm {
-    position: static; width: 100%; padding: 8px 11px; font-size: 14px; font-weight: 800;
+    position: static; width: 100%; padding: 7px 10px; font-size: 13.5px; font-weight: 800;
     color: var(--gold); font-family: inherit; pointer-events: none; text-align: center;
     background: linear-gradient(180deg, rgba(28, 22, 16, .9), rgba(14, 11, 8, .94));
     border: 1.5px solid rgba(226, 189, 118, .65); border-radius: 12px;
@@ -161,38 +210,54 @@
 
   /* Right Safe-Zone Column (Aligned at top: 124px) */
   #right-col {
-    right: 14px; top: 124px; width: 252px;
-    display: flex; flex-direction: column; gap: 10px;
+    right: 14px; top: 124px; width: 256px;
+    display: flex; flex-direction: column; gap: 9px;
     pointer-events: none;
   }
   #odometer {
-    width: 100%; padding: 10px 12px; text-align: center;
+    width: 100%; padding: 9px 11px; text-align: center;
     font-variant-numeric: tabular-nums; border-color: var(--gold-line); pointer-events: none;
   }
-  #odometer b { display: block; font-size: 15.5px; font-weight: 800; color: var(--gold); letter-spacing: 0.6px; }
-  #world-dist { display: block; font-size: 27px; font-weight: 800; color: #faf4e8; margin: 2px 0; }
-  #runner-count { display: block; font-size: 15.5px; font-weight: 700; color: #d8cdb8; }
+  #odometer b { display: block; font-size: 14.5px; font-weight: 800; color: var(--gold); letter-spacing: 0.6px; }
+  #world-dist { display: block; font-size: 25px; font-weight: 800; color: #faf4e8; margin: 1px 0; }
+  #runner-count { display: block; font-size: 14.5px; font-weight: 700; color: #d8cdb8; }
 
-  #board { width: 100%; padding: 11px 12px 12px; pointer-events: none; display: flex; flex-direction: column; }
+  #board { width: 100%; padding: 10px 11px 11px; pointer-events: none; display: flex; flex-direction: column; border-color: var(--gold-line); }
   #board h3 {
-    margin: 0 0 7px; padding-bottom: 6px; text-align: center; color: var(--gold);
-    letter-spacing: 0.6px; font-size: 18px; font-weight: 800; border-bottom: 1.5px solid var(--gold-line);
+    margin: 0 0 6px; padding-bottom: 5px; text-align: center; color: #f8dfa5;
+    letter-spacing: 0.5px; font-size: 17px; font-weight: 800; border-bottom: 1.5px solid var(--gold-line);
+  }
+  #king-spotlight {
+    margin-bottom: 6px; padding: 6px 8px; border-radius: 9px;
+    background: linear-gradient(90deg, rgba(180, 120, 28, .28), rgba(92, 58, 14, .22));
+    border: 1px solid rgba(245, 198, 105, .58);
+    font-size: 14px; font-weight: 800; color: #fff3cf; line-height: 1.28;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
   #board ol { margin: 0; padding-left: 22px; font-variant-numeric: tabular-nums; }
   #board li {
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.42;
-    padding: 2.5px 0; border-bottom: 1px dashed rgba(255, 245, 225, .13);
-    color: #f0e4cc; font-size: 16px; font-weight: 700;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.38;
+    padding: 2px 0; border-bottom: 1px dashed rgba(255, 245, 225, .13);
+    color: #f0e4cc; font-size: 15px; font-weight: 700;
   }
   #board li:last-child { border-bottom: none; }
   #board li::marker { color: var(--gold); font-weight: 800; }
-  #board .empty-board { font-size: 15.5px; font-weight: 700; color: #d8cdb8; text-align: center; padding: 10px 4px; line-height: 1.35; }
+  #board .empty-board { font-size: 14.5px; font-weight: 700; color: #d8cdb8; text-align: center; padding: 8px 4px; line-height: 1.32; }
+  #overtake-hint {
+    margin-top: 7px; padding: 5px 7px; border-radius: 8px;
+    background: rgba(217, 119, 6, .18); border: 1px dashed rgba(245, 194, 107, .55);
+    font-size: 13px; font-weight: 800; color: #fae19c; text-align: center; line-height: 1.26;
+  }
 
   #donor { width: 100%; pointer-events: none; }
-  #donor .card { display: flex; align-items: center; gap: 9px; padding: 9px 11px; border-color: var(--gold-line); box-shadow: 0 6px 18px rgba(0, 0, 0, .5); }
-  #donor .avatar { flex: none; width: 38px; height: 38px; font-size: 18px; border-radius: 50%; background: linear-gradient(135deg, #d8b26e, #9c7234); color: #181410; font-weight: 800; display: grid; place-items: center; }
-  #donor .card b { display: block; font-size: 17px; font-weight: 800; color: #f4e2bc; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  #donor .card span { display: block; font-size: 15px; font-weight: 700; color: #dcd2c0; line-height: 1.28; }
+  #donor .card {
+    display: flex; align-items: center; gap: 9px; padding: 9px 11px;
+    background: linear-gradient(180deg, rgba(48, 32, 14, .95), rgba(24, 16, 8, .96));
+    border: 1.5px solid #f7cb6b; box-shadow: 0 0 18px rgba(245, 184, 75, .32), 0 6px 18px rgba(0, 0, 0, .6);
+  }
+  #donor .avatar { flex: none; width: 38px; height: 38px; font-size: 18px; border-radius: 50%; background: linear-gradient(135deg, #f3cc7a, #b47d2a); color: #181410; font-weight: 800; display: grid; place-items: center; }
+  #donor .card b { display: block; font-size: 16.5px; font-weight: 800; color: #fff2cc; max-width: 185px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #donor .card span { display: block; font-size: 14px; font-weight: 700; color: #f3deB3; line-height: 1.28; }
 
   #footer { display: none; }
 
@@ -238,13 +303,22 @@
 
   <div id="left-col">
     <div id="guide" class="pill">
-      <h3>HÀNH TRÌNH XUYÊN VIỆT</h3>
-      <div class="tier">💬 Bình luận: Đi bộ 3D</div>
-      <div class="tier">❤️ 500 Tim: Bão Cầu Vồng</div>
-      <div class="tier">🌹 1 💎 (Hoa Hồng): Cánh Chim ×1.8</div>
-      <div class="tier">🪷 2–5 💎 (Hoa Sen): Cánh Vàng ×2.4</div>
-      <div class="tier">🛵 10–15 💎 (Rosa): Xe Cub ×2.8</div>
-      <div class="tier">🐉 20+ 💎 (Bánh Vòng): Rồng Vàng ×4.8</div>
+      <h3>🎁 ĐẶC QUYỀN TẶNG QUÀ</h3>
+      <div class="tier"><span>💬 Bình luận: Đi bộ</span><span class="tier-bonus">+15m</span></div>
+      <div class="tier"><span>❤️ 500 Tim: Bão Tốc</span><span class="tier-bonus">×2.2</span></div>
+      <div class="tier tier-hot" data-gift-tier="1"><span>🌹 1💎 Hoa Hồng: Cánh</span><span class="tier-bonus">+80m</span></div>
+      <div class="tier" data-gift-tier="1b"><span>🪷 2–5💎 Hoa Sen: Cánh Vàng</span><span class="tier-bonus">+240m</span></div>
+      <div class="tier" data-gift-tier="2"><span>🛵 10💎 Rosa: Xe Cub 81</span><span class="tier-bonus">+350m</span></div>
+      <div class="tier" data-gift-tier="3"><span>🐉 20+💎 Bánh Vòng: Rồng</span><span class="tier-bonus">+1.5km</span></div>
+    </div>
+
+    <div id="gift-goal-card" class="pill">
+      <div class="chest-head">
+        <span>🎁 KHO BÁU LỄ HỘI · CẤP <b id="chest-level">1</b></span>
+        <span id="chest-progress-text">0 / 25 💎</span>
+      </div>
+      <div class="chest-bar"><div id="chest-bar-fill"></div></div>
+      <div id="chest-cta">🔥 Góp 25 💎 nổ Đại Tiệc Tăng Tốc ×3.0 toàn đoàn!</div>
     </div>
 
     <button id="toggle-bgm" class="pill" type="button">🎵 Nhạc Việt: Trống Cơm Acoustic</button>
@@ -266,8 +340,10 @@
 
     <div id="board" class="pill">
       <h3>🏆 BẢNG VÀNG XUYÊN VIỆT</h3>
+      <div id="king-spotlight">👑 Top 1 đang trống · Gửi quà chiếm Ngôi Vua!</div>
       <ol></ol>
-      <div id="board-empty" class="empty-board">Bình luận hoặc tặng quà!</div>
+      <div id="board-empty" class="empty-board">Bình luận hoặc tặng quà để lên Bảng Vàng!</div>
+      <div id="overtake-hint">🌹 Tặng 1 Hoa Hồng (1💎) nhận Cánh Chim +80m lên Top 1!</div>
     </div>
 
     <div id="footer" class="pill">

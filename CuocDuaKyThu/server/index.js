@@ -51,6 +51,7 @@ const getSnapshot = () => ({
   biome: stage.currentBiome(),
   worldDistanceM: Math.round(stage.worldDistanceM),
   board: stage.board(12),
+  giftChest: stage.getGiftChest(),
   scene,
   stats: rules.statsState(status),
 });

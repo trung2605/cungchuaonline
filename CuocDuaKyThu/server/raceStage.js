@@ -228,6 +228,8 @@ export const TIER_MOUNT_LABEL = {
   4: 'Rồng Vàng Lạc Long Quân',
 };
 
+export const CHEST_TARGETS = [25, 50, 100, 180, 300, 500, 800, 1200, 2000];
+
 function skinOf(uid) {
   let h = 0x811c9dc5;
   for (let i = 0; i < uid.length; i++) h = Math.imul(h ^ uid.charCodeAt(i), 0x01000193);
@@ -251,10 +253,72 @@ export class RaceStage {
     this.biomeIdx = 0;
     this.forcedBiome = null; // null = auto cycle
     this.globalTurboUntil = 0;
+    this.chestLevel = 1;
+    this.chestDiamonds = 0;
     this.lastTickAt = now();
     this.stayMinutes = 5;
     this.ttlMap = { ...RACE_TTL };
     if (stayMinutes > 0) this.setStayMinutes(stayMinutes);
+  }
+
+  getGiftChest() {
+    const idx = Math.max(0, this.chestLevel - 1);
+    const targetDiamonds = idx < CHEST_TARGETS.length
+      ? CHEST_TARGETS[idx]
+      : CHEST_TARGETS[CHEST_TARGETS.length - 1] + (idx - CHEST_TARGETS.length + 1) * 1000;
+    const currentDiamonds = Math.min(targetDiamonds, this.chestDiamonds);
+    const remaining = Math.max(0, targetDiamonds - currentDiamonds);
+    const pct = Math.min(100, Math.round((currentDiamonds / Math.max(1, targetDiamonds)) * 100));
+    return {
+      level: this.chestLevel,
+      currentDiamonds,
+      targetDiamonds,
+      remaining,
+      pct,
+    };
+  }
+
+  addChestDiamonds(addDiamonds = 0, donorName = 'Tay Đua') {
+    const d = Math.max(0, Number(addDiamonds) || 0);
+    if (d <= 0) return { unlocked: false, chest: this.getGiftChest(), msgs: [] };
+
+    const chestBefore = this.getGiftChest();
+    this.chestDiamonds += d;
+
+    if (this.chestDiamonds >= chestBefore.targetDiamonds) {
+      const unlockedLevel = this.chestLevel;
+      this.chestDiamonds = Math.max(0, this.chestDiamonds - chestBefore.targetDiamonds);
+      this.chestLevel++;
+
+      const t = this.now();
+      const durationMs = 12_000;
+      this.globalTurboUntil = Math.max(this.globalTurboUntil, t) + durationMs;
+
+      for (const r of this.runners.values()) {
+        r.boostUntil = Math.max(r.boostUntil, t + durationMs);
+        r.speedMult = Math.max(r.speedMult, 3.0);
+        r.distanceM = Math.round((r.distanceM + 120) * 10) / 10;
+        const st = this.statsByUid.get(r.id);
+        if (st) st.distanceM = r.distanceM;
+      }
+
+      const nextChest = this.getGiftChest();
+      return {
+        unlocked: true,
+        unlockedLevel,
+        chest: nextChest,
+        msgs: [
+          { t: 'fx', kind: 'warp', power: 10 },
+          {
+            t: 'banner',
+            text: `🎁 NỔ KHO BÁU LỄ HỘI CẤP ${unlockedLevel}! Nhờ ${donorName} góp quà, toàn đoàn Tăng Tốc x3.0 & +120m!`,
+            ms: 5800,
+          },
+        ],
+      };
+    }
+
+    return { unlocked: false, chest: this.getGiftChest(), msgs: [] };
   }
 
   setStayMinutes(mins) {
@@ -502,6 +566,7 @@ export class RaceStage {
       worldDistanceM: Math.round(this.worldDistanceM),
       biome: this.currentBiome(),
       board: this.board(),
+      giftChest: this.getGiftChest(),
       runners: [...this.runners.values()].map(r => ({
         id: r.id,
         src: r.src || 'tiktok',
@@ -549,6 +614,8 @@ export class RaceStage {
     this.biomeIdx = 0;
     this.forcedBiome = null;
     this.globalTurboUntil = 0;
+    this.chestLevel = 1;
+    this.chestDiamonds = 0;
     return out;
   }
 

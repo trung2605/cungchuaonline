@@ -504,8 +504,12 @@ export function createRunners(scene) {
     return Math.abs(h);
   }
 
-  function computeFormationTarget(runner, rank = null) {
+  function computeFormationTarget(runner, rank = null, vipSpotlight = false) {
     const h = hashRunnerId(runner.id);
+    if (vipSpotlight) {
+      // Newly gifted VIP runner glides right into the front-center camera spotlight!
+      return { laneOffset: 0, targetZ: -1.05 };
+    }
     if (rank && rank <= 6) {
       // Spread Top 6 leaders into distinct staggered lanes & mid-road depths so 3D labels never overlap or clip edges
       const topLanes = [0, 0.85, -0.85, 1.48, -1.48, 0.38, -0.42];
@@ -529,10 +533,12 @@ export function createRunners(scene) {
 
   function updateLabelText(e) {
     const r = e.runner;
-    const rankStr = e.rank && e.rank <= 8 ? `🏆#${e.rank} ` : '';
-    const dStr = r.diamonds > 0 ? ` · 💎${r.diamonds}` : '';
-    e.nameEl.textContent = `${rankStr}${r.name} · ${formatDist(r.distanceM || 0)}${dStr}`;
     const activeTier = Math.max(r.tier || 0, r.boostTier || 0);
+    const rankStr = e.rank === 1 ? '👑#1 ' : (e.rank && e.rank <= 8 ? `🏆#${e.rank} ` : '');
+    const mountIcon = activeTier >= 4 ? '🐉' : activeTier === 3 ? '🐎' : activeTier === 2 ? '🛵' : activeTier === 1 ? '🪽' : '';
+    const dStr = r.diamonds > 0 ? ` · ${mountIcon}💎${r.diamonds}` : '';
+    const boostStr = (r.boostTier || 0) > 0 && (r.speedMult || 1) > 1.2 ? ` ⚡×${Number(r.speedMult).toFixed(1)}` : '';
+    e.nameEl.textContent = `${rankStr}${r.name} · ${formatDist(r.distanceM || 0)}${dStr}${boostStr}`;
     e.nameEl.className = 'label' + (activeTier >= 4 ? ' tier4' : activeTier === 3 ? ' tier3' : activeTier === 2 ? ' tier2' : activeTier === 1 ? ' tier1' : '');
   }
 
@@ -590,15 +596,18 @@ export function createRunners(scene) {
           rank: null,
           activeUntil: performance.now() + 5000,
           waveUntil: performance.now() + 3200,
+          vipSpotlightUntil: (runner.diamonds || 0) > 0 ? performance.now() + 10_000 : 0,
         };
         live.set(runner.id, e);
       } else {
+        const nowTs = performance.now();
         if ((runner.diamonds || 0) > (e.runner.diamonds || 0) || (runner.boostTier || 0) > 0) {
-          e.activeUntil = performance.now() + 6000;
-          e.waveUntil = performance.now() + 3500;
+          e.activeUntil = nowTs + 8000;
+          e.waveUntil = nowTs + 4500;
+          e.vipSpotlightUntil = nowTs + 10_000;
         }
         Object.assign(e.runner, runner);
-        const pos = computeFormationTarget(e.runner, e.rank);
+        const pos = computeFormationTarget(e.runner, e.rank, nowTs < (e.vipSpotlightUntil || 0));
         e.laneOffset = pos.laneOffset;
         e.targetZ = pos.targetZ;
         e.rig.setVisualTier(e.runner.tier || 0, e.runner.boostTier || 0);
@@ -632,13 +641,14 @@ export function createRunners(scene) {
       const rankMap = new Map();
       board.forEach((b, i) => rankMap.set(b.uid, i + 1));
 
+      const nowTs = performance.now();
       for (const item of runnersList) {
         const e = live.get(item.id);
         if (!e) continue;
         Object.assign(e.runner, item);
         e.rank = rankMap.get(item.id) || null;
         e.rig.setVisualTier(e.runner.tier || 0, e.runner.boostTier || 0);
-        const pos = computeFormationTarget(e.runner, e.rank);
+        const pos = computeFormationTarget(e.runner, e.rank, nowTs < (e.vipSpotlightUntil || 0));
         e.laneOffset = pos.laneOffset;
         e.targetZ = pos.targetZ;
         updateLabelText(e);

@@ -753,27 +753,9 @@ export function createAudio({ onSpeak = null } = {}) {
   const recentNameGreet = new Map(); // normalizedName -> ts to avoid repeating join greeting within 15s
   const recentCommentSpeech = new Map(); // uid+text -> ts to avoid duplicate spam within 5s
 
-  function interruptSpeechIfLowerPriority(newPriority = 2) {
-    if (!speaking || !currentItem) return;
-    const curPriority = currentItem.priority ?? (currentItem.isReal ? 1 : 0);
-    // Real user actions always interrupt bots (priority 0); Real Gifts (priority 3) also interrupt Join greetings (priority 1)
-    if (!currentItem.isReal || (newPriority >= 3 && curPriority <= 1)) {
-      activeSpeechSeq++;
-      clearTimeout(watchdog);
-      if (currentVoiceSrc) {
-        try {
-          currentVoiceSrc.onended = null;
-          currentVoiceSrc.stop();
-        } catch {}
-        currentVoiceSrc = null;
-      }
-      if (typeof speechSynthesis !== 'undefined') {
-        try { speechSynthesis.cancel(); } catch {}
-      }
-      currentItem = null;
-      speaking = false;
-      currentDone = null;
-    }
+  function interruptSpeechIfLowerPriority(_newPriority = 2) {
+    // Never cut off a sentence mid-speech; let the active sentence finish naturally (`onended = done`),
+    // while `purgeQueuedBots()` + priority insertion ensures real gifts/joins/comments speak next immediately!
   }
 
   function purgeQueuedBots() {
