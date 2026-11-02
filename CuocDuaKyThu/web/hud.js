@@ -41,7 +41,15 @@ export function createRaceHud() {
     card.className = 'card pill';
     const av = document.createElement('div');
     av.className = 'avatar';
-    av.textContent = d.overtookKing ? '👑' : d.tier >= 3 ? '🐉' : d.tier === 2 ? '🛵' : initial(d.name);
+    av.textContent = d.overtookKing
+      ? '👑'
+      : d.regionalItem?.icon
+        ? d.regionalItem.icon
+        : d.tier >= 3
+          ? '🐉'
+          : d.tier === 2
+            ? '🛵'
+            : initial(d.name);
     const info = document.createElement('div');
     const b = document.createElement('b');
     const rankTag = d.overtookKing
@@ -51,7 +59,10 @@ export function createRaceHud() {
         : '';
     b.textContent = `${d.name}${rankTag}`;
     const span = document.createElement('span');
-    span.textContent = `🎁 ${d.giftVi} ×${d.repeat} (💎${d.diamonds}) → ${d.mountLabel} (+${d.bonusM}m)`;
+    const specLabel = d.regionalItem
+      ? ` + ${d.regionalItem.icon} ${d.regionalItem.shortName || d.regionalItem.name}`
+      : '';
+    span.textContent = `🎁 ${d.giftVi} ×${d.repeat} (💎${d.diamonds}) → ${d.mountLabel}${specLabel} (+${d.bonusM}m)`;
     info.append(b, span);
     card.append(av, info);
     box.replaceChildren(card);
@@ -106,6 +117,31 @@ export function createRaceHud() {
         }
         if (titleEl) titleEl.textContent = biome.name;
         if (subEl) subEl.textContent = biome.province?.landmark ? `${biome.sub} · 📍 ${biome.province.landmark}` : (biome.sub || '');
+
+        const specs = biome.specialties || biome.province?.specialties;
+        if (specs) {
+          const guideTitle = $('#guide h3');
+          if (guideTitle && biome.province?.name) {
+            guideTitle.textContent = `🎁 ĐẶC SẢN ${biome.province.name.toUpperCase()}`;
+          }
+          const tierRows = [
+            { key: '1', gift: '1💎 Hoa Hồng', bonus: '+80m', item: specs['1'] },
+            { key: '1b', gift: '2–5💎 Hoa Sen', bonus: '+240m', item: specs['1b'] },
+            { key: '2', gift: '10💎 Rosa', bonus: '+350m', item: specs['2'] },
+            { key: '3', gift: '20+💎 Bánh Vòng', bonus: '+1.5km', item: specs['3'] },
+          ];
+          for (const rowDef of tierRows) {
+            const rowEl = document.querySelector(`#guide [data-gift-tier="${rowDef.key}"]`);
+            if (!rowEl || !rowDef.item) continue;
+            const spans = rowEl.querySelectorAll('span');
+            if (spans[0]) {
+              spans[0].textContent = `${rowDef.item.icon} ${rowDef.gift}: ${rowDef.item.shortName || rowDef.item.name}`;
+            }
+            if (spans[1]) {
+              spans[1].textContent = rowDef.bonus;
+            }
+          }
+        }
       }
       const distEl = $('#world-dist');
       if (distEl) distEl.textContent = fmtDist(worldDistanceM);
@@ -173,7 +209,8 @@ export function createRaceHud() {
         if (top.length > 0) {
           const king = top[0];
           const dStr = king.diamonds > 0 ? ` · 💎${king.diamonds}` : '';
-          kingEl.textContent = `👑 Vua #1: ${king.name} · ${fmtDist(king.distanceM)}${dStr}`;
+          const specStr = king.regionalItem?.icon ? ` · ${king.regionalItem.icon}` : '';
+          kingEl.textContent = `👑 Vua #1: ${king.name} · ${fmtDist(king.distanceM)}${dStr}${specStr}`;
         } else {
           kingEl.textContent = '👑 Top 1 đang trống · Gửi quà chiếm Ngôi Vua!';
         }
@@ -197,8 +234,9 @@ export function createRaceHud() {
       ol.replaceChildren(...top.slice(0, 7).map((r, idx) => {
         const li = document.createElement('li');
         const crown = idx === 0 ? '👑 ' : '';
+        const specIcon = r.regionalItem?.icon ? ` ${r.regionalItem.icon}` : '';
         const dBadge = r.diamonds > 0 ? ` · 💎${r.diamonds}` : '';
-        li.textContent = `${crown}${r.name} · ${fmtDist(r.distanceM)}${dBadge}`;
+        li.textContent = `${crown}${r.name}${specIcon} · ${fmtDist(r.distanceM)}${dBadge}`;
         return li;
       }));
     },

@@ -1,6 +1,12 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { RaceStage, BIOMES, raceGiftTier } from '../CuocDuaKyThu/server/raceStage.js';
+import {
+  RaceStage,
+  BIOMES,
+  raceGiftTier,
+  PROVINCE_SPECIALTIES_63,
+  resolveRegionalGiftItem,
+} from '../CuocDuaKyThu/server/raceStage.js';
 import { createRaceRules } from '../CuocDuaKyThu/server/raceRules.js';
 import { startRaceAdmin } from '../CuocDuaKyThu/server/admin.js';
 import { startMockRace } from '../CuocDuaKyThu/server/mockRace.js';
@@ -237,4 +243,57 @@ test('TC-RACE-09: Community Gift Treasure Chest & Soán Ngôi Top 1 King overtak
   const tts = formatGiftBoostSpeech(d2);
   assert.ok(tts.includes('soán ngôi Top 1 Vua Hành Trình'));
   assert.ok(tts.includes('Kho Báu Lễ Hội đã nổ'));
+});
+
+test('TC-RACE-10: 63-Province Regional Specialty Items catalog & end-to-end gift specialty equipping', () => {
+  // Verify all 63 provinces have complete 4-tier specialty menus
+  for (let code = 1; code <= 63; code++) {
+    const spec = PROVINCE_SPECIALTIES_63[code];
+    assert.ok(spec, `province ${code} must exist in PROVINCE_SPECIALTIES_63`);
+    for (const tierKey of ['1', '1b', '2', '3']) {
+      assert.ok(spec[tierKey]?.name, `province ${code} tier ${tierKey} must have a name`);
+      assert.ok(spec[tierKey]?.shortName, `province ${code} tier ${tierKey} must have a shortName`);
+      assert.ok(spec[tierKey]?.icon, `province ${code} tier ${tierKey} must have an icon`);
+      assert.ok(spec[tierKey]?.propType, `province ${code} tier ${tierKey} must have a 3D propType`);
+    }
+  }
+
+  // Specific check: Thanh Hóa (code 26) 1💎 -> Bịch Nước Rau Má Đậu Xanh Thanh Hóa
+  const thanhHoaItem = resolveRegionalGiftItem(26, 1, 1);
+  assert.ok(thanhHoaItem.name.includes('Bịch Nước Rau Má'), 'Thanh Hóa 1💎 should award Bịch Nước Rau Má');
+  assert.equal(thanhHoaItem.propType, 'bag_drink');
+
+  // Specific check: Đà Nẵng (code 32) 10💎 -> Tô Mì Quảng Tôm Thịt
+  const daNangItem = resolveRegionalGiftItem(32, 10, 2);
+  assert.ok(daNangItem.name.includes('Tô Mì Quảng'), 'Đà Nẵng 10💎 should award Tô Mì Quảng');
+  assert.equal(daNangItem.propType, 'noodle_bowl');
+
+  // End-to-end stage + rules test when expedition is at Đà Nẵng (province 32)
+  let t = 1000;
+  const stage = new RaceStage({ now: () => t });
+  stage.setBiome('vn_danang');
+  const biome = stage.currentBiome();
+  assert.equal(biome.province.code, 32);
+  assert.equal(biome.province.name, 'Đà Nẵng');
+  assert.ok(biome.specialties['2'].name.includes('Tô Mì Quảng'));
+
+  const rules = createRaceRules({ stage, lists, now: () => t });
+  const out = rules.handle({
+    kind: 'gift',
+    src: 'tiktok',
+    uid: 'dn_walker',
+    name: 'Minh Khôi',
+    giftId: 5999,
+    giftName: 'Rosa',
+    diamonds: 10,
+    repeat: 1,
+    ts: t,
+  });
+  const donor = out.find(m => m.t === 'donor');
+  assert.ok(donor?.regionalItem, 'donor event should include regionalItem');
+  assert.ok(donor.regionalItem.name.includes('Tô Mì Quảng'));
+  assert.equal(stage.runners.get('dn_walker').regionalItem.propType, 'noodle_bowl');
+
+  const speech = formatGiftBoostSpeech(donor);
+  assert.ok(speech.includes('Tô Mì Quảng'), 'TTS speech should announce the regional specialty item');
 });

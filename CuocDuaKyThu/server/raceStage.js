@@ -1,5 +1,12 @@
 // RaceStage: manages 3D walkers on the Cross-Vietnam Walking Journey ("Hành Trình Đi Bộ Xuyên Việt 63 Tỉnh Thành"),
 // their speed multipliers, boost tiers, accumulated distance, current Vietnamese landmark biome, and province milestone.
+import {
+  PROVINCE_SPECIALTIES_63,
+  getProvinceSpecialtyMenu,
+  resolveRegionalGiftItem,
+} from './regionalItems.js';
+
+export { PROVINCE_SPECIALTIES_63, getProvinceSpecialtyMenu, resolveRegionalGiftItem };
 
 export const VN_PROVINCES_63 = [
   // Đông Bắc & Tây Bắc (1–14)
@@ -360,9 +367,11 @@ export class RaceStage {
       base = ALL_BIOMES.find(b => b.id === this.forcedBiome) || base;
     }
     const prov = getProvinceForState(this.worldDistanceM, base.id);
+    const specialties = getProvinceSpecialtyMenu(prov?.code, base.id);
     return {
       ...base,
-      province: prov ? { ...prov, total: VN_PROVINCES_63.length } : null,
+      province: prov ? { ...prov, total: VN_PROVINCES_63.length, specialties } : null,
+      specialties,
     };
   }
 
@@ -385,15 +394,16 @@ export class RaceStage {
     ];
   }
 
-  joinOrBoost(uid, name, giftTierLevel = 0, { addDiamonds = 0, addDistanceM = 0, boostMs = 0, cheer = '', src = 'tiktok' } = {}) {
+  joinOrBoost(uid, name, giftTierLevel = 0, { addDiamonds = 0, addDistanceM = 0, boostMs = 0, cheer = '', src = 'tiktok', regionalItem = null } = {}) {
     const t = this.now();
-    const prev = this.statsByUid.get(uid) || { name, distanceM: 0, diamonds: 0, tier: 0, src, updatedAt: t };
+    const prev = this.statsByUid.get(uid) || { name, distanceM: 0, diamonds: 0, tier: 0, src, updatedAt: t, regionalItem: null };
     const diamonds = prev.diamonds + addDiamonds;
     const distanceM = prev.distanceM + addDistanceM;
     const bestTier = Math.max(prev.tier, giftTierLevel, raceGiftTier(diamonds));
     const finalSrc = src === 'mock' && prev.src && prev.src !== 'mock' ? prev.src : (src || prev.src || 'tiktok');
+    const activeRegionalItem = regionalItem || prev.regionalItem || null;
 
-    this.statsByUid.set(uid, { name, distanceM, diamonds, tier: bestTier, src: finalSrc, updatedAt: t });
+    this.statsByUid.set(uid, { name, distanceM, diamonds, tier: bestTier, src: finalSrc, updatedAt: t, regionalItem: activeRegionalItem });
 
     const existing = this.runners.get(uid);
     const out = [];
@@ -406,6 +416,7 @@ export class RaceStage {
       existing.diamonds = diamonds;
       existing.distanceM = distanceM;
       existing.expiresAt = Math.max(existing.expiresAt, t + this.ttlMap[existing.tier]);
+      if (regionalItem) existing.regionalItem = regionalItem;
       if (cheer) existing.cheer = cheer;
       if (giftTierLevel > 0 || boostMs > 0) {
         const bTier = Math.max(giftTierLevel, existing.boostTier || 1);
@@ -468,6 +479,7 @@ export class RaceStage {
       speedMult,
       distanceM,
       diamonds,
+      regionalItem: activeRegionalItem,
       cheer: cheer || 'Quyết tâm về đích!',
       joinedAt: t,
       expiresAt: t + this.ttlMap[bestTier],
@@ -575,6 +587,7 @@ export class RaceStage {
         tier: r.tier,
         boostTier: r.boostTier,
         diamonds: r.diamonds,
+        regionalItem: r.regionalItem || null,
       })),
     });
 
@@ -591,6 +604,7 @@ export class RaceStage {
         distanceM: Math.round(s.distanceM),
         diamonds: s.diamonds,
         tier: s.tier,
+        regionalItem: s.regionalItem || null,
       }))
       .sort((a, b) => b.distanceM - a.distanceM || b.diamonds - a.diamonds)
       .slice(0, limit);

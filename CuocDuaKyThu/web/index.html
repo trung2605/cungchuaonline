@@ -140,14 +140,18 @@
   #guide { width: 100%; padding: 10px 11px; pointer-events: none; border-color: var(--gold-line); }
   #guide h3 {
     margin: 0 0 7px; padding-bottom: 5px; text-align: center; color: #f8dfa5;
-    letter-spacing: 0.5px; font-size: 17.5px; font-weight: 800; border-bottom: 1.5px solid var(--gold-line);
+    letter-spacing: 0.5px; font-size: 16.5px; font-weight: 800; border-bottom: 1.5px solid var(--gold-line);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
   #guide .tier {
     display: flex; align-items: center; justify-content: space-between; gap: 4px;
     margin-bottom: 5px; padding: 4px 6px; border-radius: 8px;
     border-bottom: 1px dashed rgba(255, 245, 225, .14);
-    line-height: 1.24; font-size: 14.5px; font-weight: 700; font-variant-numeric: tabular-nums; color: #ebe2d3;
+    line-height: 1.24; font-size: 13.8px; font-weight: 700; font-variant-numeric: tabular-nums; color: #ebe2d3;
     transition: background 260ms ease, border-color 260ms ease, transform 220ms ease;
+  }
+  #guide .tier > span:first-child {
+    flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
   #guide .tier:last-child { margin-bottom: 0; border-bottom: none; }
   #guide .tier-bonus {
@@ -303,13 +307,13 @@
 
   <div id="left-col">
     <div id="guide" class="pill">
-      <h3>🎁 ĐẶC QUYỀN TẶNG QUÀ</h3>
+      <h3>🎁 ĐẶC SẢN HÀ GIANG</h3>
       <div class="tier"><span>💬 Bình luận: Đi bộ</span><span class="tier-bonus">+15m</span></div>
       <div class="tier"><span>❤️ 500 Tim: Bão Tốc</span><span class="tier-bonus">×2.2</span></div>
-      <div class="tier tier-hot" data-gift-tier="1"><span>🌹 1💎 Hoa Hồng: Cánh</span><span class="tier-bonus">+80m</span></div>
-      <div class="tier" data-gift-tier="1b"><span>🪷 2–5💎 Hoa Sen: Cánh Vàng</span><span class="tier-bonus">+240m</span></div>
-      <div class="tier" data-gift-tier="2"><span>🛵 10💎 Rosa: Xe Cub 81</span><span class="tier-bonus">+350m</span></div>
-      <div class="tier" data-gift-tier="3"><span>🐉 20+💎 Bánh Vòng: Rồng</span><span class="tier-bonus">+1.5km</span></div>
+      <div class="tier tier-hot" data-gift-tier="1"><span>🍵 1💎 Hoa Hồng: Trà Shan Tuyết</span><span class="tier-bonus">+80m</span></div>
+      <div class="tier" data-gift-tier="1b"><span>🥞 2–5💎 Hoa Sen: Bánh Tam Giác Mạch</span><span class="tier-bonus">+240m</span></div>
+      <div class="tier" data-gift-tier="2"><span>🍲 10💎 Rosa: Tô Cháo Ấu Tẩu</span><span class="tier-bonus">+350m</span></div>
+      <div class="tier" data-gift-tier="3"><span>🥘 20+💎 Bánh Vòng: Lẩu Thắng Cố</span><span class="tier-bonus">+1.5km</span></div>
     </div>
 
     <div id="gift-goal-card" class="pill">

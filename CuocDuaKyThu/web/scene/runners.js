@@ -179,6 +179,173 @@ function createTrekkingStaff() {
   return g;
 }
 
+// ============================================================================
+// 3D REGIONAL SPECIALTY HANDHELD PROPS (`Vật Phẩm Đặc Sản 63 Tỉnh Thành 3D`)
+// Builds lifelike 3D props held in the walker's left hand (`leftLowerArm`),
+// such as Bịch Rau Má Thanh Hóa, Tô Mì Quảng Đà Nẵng, Trái Dừa Bến Tre,
+// Bánh Mì Phượng Hội An, Mâm Cỗ Hoàng Gia, etc.
+// ============================================================================
+function buildRegionalHandheldProp(item = null) {
+  if (!item || !item.propType) return null;
+  const g = new THREE.Group();
+  // Position in front of the left palm (`handMesh` is at y = -0.25 on `leftLowerArm`)
+  g.position.set(0.02, -0.26, 0.09);
+
+  const mainCol = Number.isFinite(item.color) ? item.color : 0xf59e0b;
+  const accCol = Number.isFinite(item.accent) ? item.accent : 0x22c55e;
+  const mainMat = std(mainCol, { roughness: 0.45 });
+  const accMat = std(accCol, { roughness: 0.5 });
+
+  switch (item.propType) {
+    case 'bag_drink': {
+      // Bịch Nước Rau Má Thanh Hóa / Nước Mía cột dây thun đỏ + ống hút
+      const bagOuter = new THREE.Mesh(
+        new THREE.SphereGeometry(0.082, 12, 12),
+        new THREE.MeshStandardMaterial({ color: 0xffffff, transparent: true, opacity: 0.42, roughness: 0.2 })
+      );
+      bagOuter.scale.set(0.88, 1.32, 0.88);
+      const liquid = new THREE.Mesh(
+        new THREE.SphereGeometry(0.072, 12, 10),
+        new THREE.MeshStandardMaterial({ color: mainCol, roughness: 0.35, emissive: mainCol, emissiveIntensity: 0.18 })
+      );
+      liquid.scale.set(0.86, 1.15, 0.86);
+      liquid.position.y = -0.012;
+      const foam = new THREE.Mesh(new THREE.CylinderGeometry(0.056, 0.06, 0.024, 10), accMat);
+      foam.position.y = 0.045;
+      const rubberTie = new THREE.Mesh(new THREE.TorusGeometry(0.024, 0.006, 6, 12), std(0xdc2626));
+      rubberTie.rotation.x = Math.PI / 2;
+      rubberTie.position.y = 0.088;
+      const knotEar = new THREE.Mesh(new THREE.ConeGeometry(0.032, 0.045, 8), std(0xf8fafc, { transparent: true, opacity: 0.65 }));
+      knotEar.position.y = 0.112;
+      const straw = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.008, 0.21, 8), std(0xef4444));
+      straw.position.set(0.015, 0.095, 0.01);
+      straw.rotation.z = -0.22;
+      g.add(liquid, foam, bagOuter, rubberTie, knotEar, straw);
+      break;
+    }
+    case 'coconut': {
+      // Trái Dừa Xiêm Bến Tre / Dừa Sáp Cầu Kè cắm ống hút & lát hoa
+      const shell = new THREE.Mesh(new THREE.SphereGeometry(0.088, 14, 12), mainMat);
+      shell.scale.set(0.96, 1.08, 0.96);
+      const topCut = new THREE.Mesh(new THREE.CylinderGeometry(0.064, 0.072, 0.024, 12), std(0xfefce8));
+      topCut.position.y = 0.076;
+      const straw = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.008, 0.18, 8), std(0xec4899));
+      straw.position.set(0.018, 0.125, 0.01);
+      straw.rotation.z = -0.25;
+      g.add(shell, topCut, straw);
+      break;
+    }
+    case 'cup_drink': {
+      // Ly Trà Shan Tuyết / Cà Phê Sữa Đá / Nước Mót Hội An
+      const cup = new THREE.Mesh(new THREE.CylinderGeometry(0.064, 0.046, 0.155, 12), mainMat);
+      const rim = new THREE.Mesh(new THREE.TorusGeometry(0.064, 0.007, 6, 14), std(0xf8fafc));
+      rim.rotation.x = Math.PI / 2;
+      rim.position.y = 0.078;
+      const topping = new THREE.Mesh(new THREE.CylinderGeometry(0.058, 0.058, 0.022, 12), accMat);
+      topping.position.y = 0.072;
+      const straw = new THREE.Mesh(new THREE.CylinderGeometry(0.007, 0.007, 0.17, 8), std(0x22c55e));
+      straw.position.set(0.02, 0.11, 0);
+      straw.rotation.z = -0.2;
+      g.add(cup, rim, topping, straw);
+      break;
+    }
+    case 'banh_mi': {
+      // Ổ Bánh Mì Phượng Hội An / Bánh Mì Sài Gòn / Bánh Mì Que Hải Phòng
+      const loaf = new THREE.Mesh(new THREE.SphereGeometry(0.088, 12, 10), mainMat);
+      loaf.scale.set(0.68, 0.62, 1.48);
+      const herbs = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.035, 0.21), accMat);
+      herbs.position.set(0, 0.038, 0);
+      const wrapper = new THREE.Mesh(new THREE.CylinderGeometry(0.058, 0.052, 0.11, 10), std(0xfef3c7));
+      wrapper.rotation.x = Math.PI / 2;
+      wrapper.position.z = -0.025;
+      g.add(loaf, herbs, wrapper);
+      break;
+    }
+    case 'noodle_bowl': {
+      // Tô Mì Quảng Đà Nẵng / Tô Phở Hà Nội / Tô Bún Bò Huế + Bánh đa + Đũa
+      const bowl = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.115, 0.062, 0.095, 16),
+        std(0xf8fafc, { roughness: 0.3 })
+      );
+      const rimBand = new THREE.Mesh(new THREE.TorusGeometry(0.114, 0.008, 6, 18), std(0x0284c7));
+      rimBand.rotation.x = Math.PI / 2;
+      rimBand.position.y = 0.045;
+      const broth = new THREE.Mesh(new THREE.CylinderGeometry(0.106, 0.102, 0.02, 14), mainMat);
+      broth.position.y = 0.038;
+      // Garnish: shrimp/meat + fresh herbs + crispy rice cracker (Bánh đa Mì Quảng)
+      const herb = new THREE.Mesh(new THREE.SphereGeometry(0.036, 8, 8), accMat);
+      herb.scale.set(1.2, 0.45, 1.1);
+      herb.position.set(-0.028, 0.055, 0.015);
+      const shrimp = new THREE.Mesh(new THREE.SphereGeometry(0.032, 8, 8), std(0xef4444));
+      shrimp.scale.set(1.1, 0.5, 0.8);
+      shrimp.position.set(0.032, 0.055, -0.015);
+      const cracker = new THREE.Mesh(new THREE.CircleGeometry(0.055, 10), std(0xfef08a, { side: THREE.DoubleSide }));
+      cracker.position.set(0, 0.072, -0.035);
+      cracker.rotation.x = -0.45;
+      // Pair of wooden chopsticks resting on the bowl
+      for (const cz of [-0.016, 0.016]) {
+        const stick = new THREE.Mesh(new THREE.CylinderGeometry(0.005, 0.004, 0.24, 6), staffWoodMat);
+        stick.rotation.z = Math.PI / 2 - 0.18;
+        stick.position.set(0.02, 0.068, cz);
+        g.add(stick);
+      }
+      g.add(bowl, rimBand, broth, herb, shrimp, cracker);
+      break;
+    }
+    case 'plate_dish': {
+      // Đĩa Cơm Cháy Ninh Bình / Cơm Tấm Sài Gòn / Bánh Xèo / Cá Nướng
+      const plate = new THREE.Mesh(new THREE.CylinderGeometry(0.125, 0.095, 0.026, 16), std(0xf8fafc));
+      const foodMain = new THREE.Mesh(new THREE.CylinderGeometry(0.088, 0.092, 0.038, 12), mainMat);
+      foodMain.position.y = 0.025;
+      const garnish = new THREE.Mesh(new THREE.SphereGeometry(0.038, 8, 8), accMat);
+      garnish.scale.set(1.2, 0.5, 1.2);
+      garnish.position.set(0.02, 0.048, 0.01);
+      g.add(plate, foodMain, garnish);
+      break;
+    }
+    case 'woven_gift': {
+      // Chục Nem Chua Thanh Hóa / Cốm Làng Vòng / Bánh Chưng / Bánh Pía
+      const pack = new THREE.Mesh(new THREE.BoxGeometry(0.145, 0.115, 0.145), mainMat);
+      const ribbon1 = new THREE.Mesh(new THREE.BoxGeometry(0.152, 0.122, 0.026), accMat);
+      const ribbon2 = new THREE.Mesh(new THREE.BoxGeometry(0.026, 0.122, 0.152), accMat);
+      g.add(pack, ribbon1, ribbon2);
+      break;
+    }
+    case 'royal_tray':
+    default: {
+      // Mâm Cỗ Hoàng Gia / Đại Tiệc Hải Sản / Nồi Lẩu Đặc Sản Vùng Miền
+      const tray = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.155, 0.135, 0.032, 18),
+        std(0xfacc15, { metalness: 0.65, roughness: 0.28 })
+      );
+      const hotpot = new THREE.Mesh(new THREE.CylinderGeometry(0.095, 0.078, 0.075, 14), mainMat);
+      hotpot.position.y = 0.048;
+      for (const [dx, dz, col] of [[-0.08, 0.06, accCol], [0.08, 0.06, 0xef4444], [0, -0.085, 0xfef08a]]) {
+        const sideDish = new THREE.Mesh(new THREE.SphereGeometry(0.036, 8, 8), std(col));
+        sideDish.scale.set(1, 0.6, 1);
+        sideDish.position.set(dx, 0.032, dz);
+        g.add(sideDish);
+      }
+      g.add(tray, hotpot);
+      break;
+    }
+  }
+
+  // Soft golden aura around the specialty item so viewers immediately spot it on stream!
+  const itemGlow = new THREE.Sprite(new THREE.SpriteMaterial({
+    map: glowTex,
+    color: 0xffe082,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+    opacity: 0.55,
+  }));
+  itemGlow.scale.setScalar(0.32);
+  itemGlow.position.set(0, 0.04, 0);
+  g.add(itemGlow);
+
+  return g;
+}
+
 // Builds a 3D Vintage Vietnamese Honda Cub 81 Scooter (`Xe Máy Cub Phượt Xuyên Việt`) for Tier 2+
 function createHondaCubMount() {
   const g = new THREE.Group();
@@ -357,6 +524,8 @@ function buildRunnerRig(skin = 0, tier = 0) {
 
   // Articulated Arms & Legs with Foot/Ankle Joints
   let trekkingStaff = null;
+  const regionalPropHolder = new THREE.Group();
+  let currentRegionalPropKey = '';
   for (const [side, sx] of [['left', 1], ['right', -1]]) {
     const upperArm = bone(side + 'UpperArm', b.chest, 0.188 * sx, 0.22, 0);
     const shoulderCap = new THREE.Mesh(new THREE.SphereGeometry(0.052, 10, 10), suitMat);
@@ -381,6 +550,9 @@ function buildRunnerRig(skin = 0, tier = 0) {
     handMesh.position.y = -0.25;
     lowerArm.add(handMesh);
 
+    if (side === 'left') {
+      lowerArm.add(regionalPropHolder);
+    }
     if (side === 'right') {
       trekkingStaff = createTrekkingStaff();
       trekkingStaff.position.set(0, -0.24, 0.02);
@@ -470,11 +642,22 @@ function buildRunnerRig(skin = 0, tier = 0) {
     hatGroup,
     backpack,
     trekkingStaff,
+    regionalPropHolder,
     wingsGroup,
     hoverGroup,
     jetGroup,
     crown,
     cosmicRing,
+    setRegionalItem(item = null) {
+      const nextKey = item ? `${item.propType}:${item.color}:${item.accent}` : '';
+      if (nextKey === currentRegionalPropKey) return;
+      currentRegionalPropKey = nextKey;
+      regionalPropHolder.clear();
+      if (item) {
+        const mesh = buildRegionalHandheldProp(item);
+        if (mesh) regionalPropHolder.add(mesh);
+      }
+    },
     setVisualTier(newTier, boostTier = 0) {
       const activeTier = Math.max(newTier, boostTier);
       const col = TIER_SUITS[activeTier] || (outfitStyle === 0 ? 0xffffff : OUTFIT_COLORS[outfitStyle]);
@@ -537,8 +720,11 @@ export function createRunners(scene) {
     const rankStr = e.rank === 1 ? '👑#1 ' : (e.rank && e.rank <= 8 ? `🏆#${e.rank} ` : '');
     const mountIcon = activeTier >= 4 ? '🐉' : activeTier === 3 ? '🐎' : activeTier === 2 ? '🛵' : activeTier === 1 ? '🪽' : '';
     const dStr = r.diamonds > 0 ? ` · ${mountIcon}💎${r.diamonds}` : '';
+    const itemStr = r.regionalItem?.shortName
+      ? ` · ${r.regionalItem.icon || '🍜'} ${r.regionalItem.shortName}`
+      : '';
     const boostStr = (r.boostTier || 0) > 0 && (r.speedMult || 1) > 1.2 ? ` ⚡×${Number(r.speedMult).toFixed(1)}` : '';
-    e.nameEl.textContent = `${rankStr}${r.name} · ${formatDist(r.distanceM || 0)}${dStr}${boostStr}`;
+    e.nameEl.textContent = `${rankStr}${r.name} · ${formatDist(r.distanceM || 0)}${dStr}${itemStr}${boostStr}`;
     e.nameEl.className = 'label' + (activeTier >= 4 ? ' tier4' : activeTier === 3 ? ' tier3' : activeTier === 2 ? ' tier2' : activeTier === 1 ? ' tier1' : '');
   }
 
@@ -557,6 +743,7 @@ export function createRunners(scene) {
       if (!e) {
         const holder = new THREE.Group();
         const rig = buildRunnerRig(runner.skin, Math.max(runner.tier || 0, runner.boostTier || 0));
+        if (runner.regionalItem) rig.setRegionalItem(runner.regionalItem);
         rig.root.scale.setScalar(0.58);
         holder.add(rig.root);
 
@@ -611,6 +798,7 @@ export function createRunners(scene) {
         e.laneOffset = pos.laneOffset;
         e.targetZ = pos.targetZ;
         e.rig.setVisualTier(e.runner.tier || 0, e.runner.boostTier || 0);
+        if (e.runner.regionalItem) e.rig.setRegionalItem(e.runner.regionalItem);
       }
       updateLabelText(e);
     },
@@ -648,6 +836,7 @@ export function createRunners(scene) {
         Object.assign(e.runner, item);
         e.rank = rankMap.get(item.id) || null;
         e.rig.setVisualTier(e.runner.tier || 0, e.runner.boostTier || 0);
+        if (e.runner.regionalItem) e.rig.setRegionalItem(e.runner.regionalItem);
         const pos = computeFormationTarget(e.runner, e.rank, nowTs < (e.vipSpotlightUntil || 0));
         e.laneOffset = pos.laneOffset;
         e.targetZ = pos.targetZ;
@@ -791,6 +980,10 @@ export function createRunners(scene) {
         b.head.rotation.y = lookYaw;
         b.head.rotation.x = lookPitch;
 
+        const hasFoodProp = Boolean(e.runner.regionalItem);
+        // Periodic eating/sipping gesture ("vừa đi vừa ăn tô mì Quảng / hút bịch rau má")
+        const sipWave = hasFoodProp ? Math.max(0, Math.sin(tSec * 2.1 + e.lookSeed)) : 0;
+
         if (activeTier >= 2) {
           // Riding the Vietnamese Honda Cub Scooter / Golden Cloud Mount
           b.hips.position.y = 0.98 + Math.sin(p * 1.2) * 0.025;
@@ -803,8 +996,16 @@ export function createRunners(scene) {
           b.rightUpperLeg.rotation.x = -0.35;
           b.rightLowerLeg.rotation.x = 0.45;
 
-          b.leftUpperArm.rotation.x = -0.55;
-          b.leftLowerArm.rotation.x = -0.35;
+          if (hasFoodProp) {
+            // Left hand holds the specialty bowl/drink while right hand steers the Honda Cub!
+            b.leftUpperArm.rotation.x = -0.82 - sipWave * 0.38;
+            b.leftUpperArm.rotation.z = -0.18;
+            b.leftLowerArm.rotation.x = -0.95 - sipWave * 0.35;
+            if (sipWave > 0.5) b.head.rotation.x = 0.14;
+          } else {
+            b.leftUpperArm.rotation.x = -0.55;
+            b.leftLowerArm.rotation.x = -0.35;
+          }
           b.rightUpperArm.rotation.x = -0.55;
           b.rightLowerArm.rotation.x = -0.35;
         } else {
@@ -842,9 +1043,16 @@ export function createRunners(scene) {
             e.rig.aoDaiBack.rotation.x = 0.08 + Math.abs(c) * 0.14;
           }
 
-          // Natural opposite Arm Swing + Friendly Wave
+          // Natural opposite Arm Swing + Friendly Wave or Holding/Eating Regional Specialty Prop!
           const isWaving = now < (e.waveUntil || 0);
-          if (isWaving) {
+          if (hasFoodProp) {
+            b.leftUpperArm.rotation.x = -0.78 - sipWave * 0.42;
+            b.leftUpperArm.rotation.z = -0.15;
+            b.leftLowerArm.rotation.x = -0.92 - sipWave * 0.38;
+            if (sipWave > 0.55) {
+              b.head.rotation.x = 0.15;
+            }
+          } else if (isWaving) {
             b.leftUpperArm.rotation.x = -2.35;
             b.leftUpperArm.rotation.z = 0.35 + Math.sin(tSec * 9) * 0.22;
             b.leftLowerArm.rotation.x = -0.45;

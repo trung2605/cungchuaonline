@@ -1,6 +1,6 @@
 import { cleanBubble, cleanName } from '../../server/filter.js';
 import { translateGiftName } from '../../server/bowRules.js';
-import { raceGiftTier, BONUS_DIST, BOOST_MS, TIER_MOUNT_LABEL } from './raceStage.js';
+import { raceGiftTier, BONUS_DIST, BOOST_MS, TIER_MOUNT_LABEL, resolveRegionalGiftItem } from './raceStage.js';
 
 export function createRaceRules({ stage, lists, now = Date.now, turboEveryLikes = 500 } = {}) {
   let totalLikes = 0;
@@ -96,12 +96,21 @@ export function createRaceRules({ stage, lists, now = Date.now, turboEveryLikes 
         const mountLabel = TIER_MOUNT_LABEL[tier] || 'Đôi Cánh Năng Lượng';
         const giftVi = translateGiftName(e.giftName);
 
+        const curBiome = stage.currentBiome ? stage.currentBiome() : null;
+        const regionalItem = resolveRegionalGiftItem({
+          provinceCode: curBiome?.province?.code || 1,
+          biomeId: curBiome?.id || 'vn_hagiang',
+          diamonds,
+          tier,
+        });
+
         const { msgs, isNewJoin } = stage.joinOrBoost(e.uid, name, tier, {
           addDiamonds: diamonds,
           addDistanceM: bonusM,
           boostMs,
-          cheer: `Kích hoạt ${mountLabel}!`,
+          cheer: `${regionalItem.icon} ${regionalItem.shortName} · ${mountLabel}!`,
           src,
+          regionalItem,
         });
 
         const chestRes = stage.addChestDiamonds ? stage.addChestDiamonds(diamonds, name) : { unlocked: false, chest: null, msgs: [] };
@@ -129,6 +138,7 @@ export function createRaceRules({ stage, lists, now = Date.now, turboEveryLikes 
             diamonds,
             tier,
             mountLabel,
+            regionalItem,
             bonusM,
             isNewJoin,
             rank: newRank,
@@ -145,13 +155,13 @@ export function createRaceRules({ stage, lists, now = Date.now, turboEveryLikes 
         } else if (overtookKing) {
           out.push({
             t: 'banner',
-            text: `👑 SOÁN NGÔI VUA HÀNH TRÌNH! ${name} tặng ${giftVi} ×${repeat} vượt qua ${prevLeader.name} chiếm Top 1 (${newLeader.distanceM.toLocaleString('vi-VN')}m)!`,
+            text: `👑 SOÁN NGÔI VUA HÀNH TRÌNH! ${name} tặng ${giftVi} ×${repeat} nhận ${regionalItem.icon} ${regionalItem.name} vượt qua ${prevLeader.name} chiếm Top 1 (${newLeader.distanceM.toLocaleString('vi-VN')}m)!`,
             ms: 5500,
           });
         } else if (tier >= 3) {
           out.push({
             t: 'banner',
-            text: `🚀 ${name} tặng ${giftVi} ×${repeat} (💎${diamonds}) · Kích hoạt ${mountLabel} (+${bonusM.toLocaleString('vi-VN')}m)!`,
+            text: `🚀 ${name} tặng ${giftVi} ×${repeat} (💎${diamonds}) · Nhận ${regionalItem.icon} ${regionalItem.name} & ${mountLabel} (+${bonusM.toLocaleString('vi-VN')}m)!`,
             ms: 5500,
           });
         }
@@ -163,7 +173,7 @@ export function createRaceRules({ stage, lists, now = Date.now, turboEveryLikes 
           src,
           giftName: `${giftVi} ×${repeat}`,
           diamonds,
-          detail: `${mountLabel} (+${bonusM}m)${overtookKing ? ' · 👑 Soán ngôi #1' : ''}`,
+          detail: `${regionalItem.icon} ${regionalItem.shortName} · ${mountLabel} (+${bonusM}m)${overtookKing ? ' · 👑 Soán ngôi #1' : ''}`,
         });
         return out;
       }

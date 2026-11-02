@@ -108,13 +108,17 @@ export function formatGiftBoostSpeech({
   isNewJoin = false,
   overtookKing = false,
   chestUnlocked = false,
+  regionalItem = null,
 } = {}) {
   const who = cleanRaceTtsName(name);
   const greet = isNewJoin ? `Chào mừng ${who} cùng tham gia hành trình đi bộ xuyên Việt. ` : '';
   const combo = repeat > 1 ? `${repeat} ${giftVi}` : giftVi;
+  const specPhrase = regionalItem?.name
+    ? ` và đặc sản ${regionalItem.name} ${regionalItem.actionVerb || 'cầm trên tay thưởng thức trên đường đi'}`
+    : '';
   const kingNote = overtookKing ? ', chính thức soán ngôi Top 1 Vua Hành Trình!' : ' trên hành trình xuyên Việt!';
   const chestNote = chestUnlocked ? ' Đại tiệc Kho Báu Lễ Hội đã nổ, tăng tốc toàn đoàn gấp ba lần!' : '';
-  return `${greet}Cảm ơn ${who} đã tặng ${combo}, nhận ${mountLabel}, tiến thêm ${bonusM} mét${kingNote}${chestNote}`;
+  return `${greet}Cảm ơn ${who} đã tặng ${combo}, nhận ${mountLabel}${specPhrase}, tiến thêm ${bonusM} mét${kingNote}${chestNote}`;
 }
 
 const GIFT_CTA_SENTENCES = [
