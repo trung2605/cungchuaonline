@@ -4,7 +4,7 @@ import { RaceStage, BIOMES, raceGiftTier } from '../CuocDuaKyThu/server/raceStag
 import { createRaceRules } from '../CuocDuaKyThu/server/raceRules.js';
 import { startRaceAdmin } from '../CuocDuaKyThu/server/admin.js';
 import { startMockRace } from '../CuocDuaKyThu/server/mockRace.js';
-import { formatWelcomeSpeech, formatGiftBoostSpeech, VN_SONGS, BIOME_PLAYLISTS } from '../CuocDuaKyThu/web/scene/audio.js';
+import { formatWelcomeSpeech, formatGiftBoostSpeech, cleanCommentForTts, VN_SONGS, BIOME_PLAYLISTS } from '../CuocDuaKyThu/web/scene/audio.js';
 import { LANDMARK_STORIES, PROVINCE_STORIES } from '../CuocDuaKyThu/web/scene/storyScripts.js';
 
 const lists = { badwords: ['dm'], triggers: [], intents: {}, couplets: [] };
@@ -181,4 +181,12 @@ test('TC-RACE-07: Multi-song regional jukebox & AI cultural storytelling cover a
     assert.ok(typeof provStory === 'string' && provStory.length >= 40 && provStory.length <= 215, `province ${code} must have a cultural narration line`);
     assert.ok(!/Phật tử|vào chùa lễ Phật/i.test(provStory), `province ${code} must not mix temple game wording`);
   }
+});
+
+test('TC-RACE-08: Participant greeting & comment normalization preserves short greetings and emoji cheers', () => {
+  assert.equal(cleanCommentForTts('Hi'), 'xin chào');
+  assert.equal(cleanCommentForTts('Hello cả nhà'), 'xin chào cả nhà');
+  assert.equal(cleanCommentForTts('Nam mô'), 'Nam mô');
+  assert.equal(cleanCommentForTts('🥰🥰🥰'), 'thả tim yêu thương cổ vũ cả đoàn');
+  assert.equal(cleanCommentForTts('🙏🙏🙏'), 'chắp tay cầu bình an');
 });

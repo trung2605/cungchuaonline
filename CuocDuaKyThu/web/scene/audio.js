@@ -43,6 +43,8 @@ const VN_TTS_PHRASES = [
   [/\bđc\b|\bdc\b/giu, 'được'],
   [/\bgđ\b|\bgd\b/giu, 'gia đình'],
   [/\bvn\b/giu, 'Việt Nam'],
+  [/\bhi+\b|\bhello+\b|\bhelo+\b/giu, 'xin chào'],
+  [/\bok+\b|\boke+\b|\bokay\b/giu, 'ok'],
 ];
 
 export function cleanCommentForTts(raw = '') {
@@ -50,17 +52,27 @@ export function cleanCommentForTts(raw = '') {
   if (!s) return '';
   const deobfuscated = s.replace(/(?<=\p{L})[.*_-]+(?=\p{L})/gu, '');
   if (CLIENT_SENSITIVE_RE.test(s) || CLIENT_SENSITIVE_RE.test(deobfuscated)) return '';
+  const hadEmoji = /[\p{Extended_Pictographic}]/u.test(s);
+  const rawCopy = s;
   s = s
     .replace(/[\p{Extended_Pictographic}\uFE0F\u200D]+/gu, ' ')
     .replace(/[^\p{L}\p{N}\s,.!?'"-]/gu, ' ')
     .replace(/(\p{L})\1{2,}/gu, '$1')
     .replace(/\s+/g, ' ')
     .trim();
-  if (!s || s.length < 2 || !VN_VOWEL_RE.test(s)) return '';
-  if (/^(?:ha|hi|he|ho|ka|ki|hu|hư|ờ|ừ|a|ơ|ư)+$/iu.test(s.replace(/\s+/g, ''))) return '';
   for (const [re, rep] of VN_TTS_PHRASES) s = s.replace(re, rep);
+  s = s.replace(/\s+/g, ' ').trim();
+  if (!s || s.length < 2 || !VN_VOWEL_RE.test(s)) {
+    if (hadEmoji) {
+      if (/[🙏🪷☸️]/u.test(rawCopy)) return 'chắp tay cầu bình an';
+      if (/[🥰😍❤️🧡💛💚💙💜💖💗💓💞💕❣️]/u.test(rawCopy)) return 'thả tim yêu thương cổ vũ cả đoàn';
+      return 'thả biểu cảm cổ vũ hành trình xuyên Việt';
+    }
+    return '';
+  }
+  if (/^(?:ha|he|ho|ka|ki|hu|hư){3,}$/iu.test(s.replace(/\s+/g, ''))) return '';
   if (CLIENT_SENSITIVE_RE.test(s)) return '';
-  return s.replace(/\s+/g, ' ').trim().slice(0, 65);
+  return s.slice(0, 65);
 }
 
 export function cleanRaceTtsName(raw = '') {
@@ -499,13 +511,17 @@ export function createRaceAudio({ onSpeak = null } = {}) {
   const speechQueue = [];
   let speaking = false;
   let usingBrowserSpeech = false;
-  let lastWelcomeSpeechAt = 0;
+  let activeSpeechSeq = 0;
+  let lastInteractiveDoneAt = 0;
+  let lastMockJoinAt = 0;
+  let lastMockCommentAt = 0;
+  let nextFlushTimer = null;
   let watchdog = null;
   let currentVoiceSrc = null;
   let currentItem = null;
   let interactiveGenderToggle = 0;
-  const recentUidGreet = new Map();
-  const recentNameGreet = new Map();
+  const recentJoinUid = new Map();
+  const recentCommentKey = new Map();
 
   // Continuous AI Cultural Storyteller state & Dual-Voice AudioBuffer Cache
   let currentStoryBiomeId = 'vn_hagiang';
@@ -985,13 +1001,23 @@ export function createRaceAudio({ onSpeak = null } = {}) {
   }
 
   function stopCurrentSpeechImmediately(rewindStory = false) {
+    activeSpeechSeq++;
+    clearTimeout(watchdog);
+    watchdog = null;
+    clearTimeout(nextFlushTimer);
+    nextFlushTimer = null;
     if (!speaking && !currentItem) return;
     if (rewindStory && currentItem?.kind === 'story' && currentItem.rewindOnInterrupt) {
       storyStepIdx = Math.max(0, storyStepIdx - 1);
     }
-    clearTimeout(watchdog);
-    try { currentVoiceSrc?.stop(); } catch {}
-    currentVoiceSrc = null;
+    if (currentVoiceSrc) {
+      try {
+        currentVoiceSrc.onended = null;
+        currentVoiceSrc.stop();
+        currentVoiceSrc.disconnect();
+      } catch {}
+      currentVoiceSrc = null;
+    }
     if (usingBrowserSpeech && typeof speechSynthesis !== 'undefined') {
       try { speechSynthesis.cancel(); } catch {}
       usingBrowserSpeech = false;
@@ -1000,14 +1026,21 @@ export function createRaceAudio({ onSpeak = null } = {}) {
     speaking = false;
   }
 
-  function interruptSpeechIfLowerPriority(newPriority = 2, isReal = true) {
+  // Strict Priority Hierarchy:
+  // 1. Gift / Donate (`kind: 'gift'`, priority 13..16 real / 9..12 demo)
+  // 2. Participant Join (`kind: 'join'`, priority 10 real / 7 demo)
+  // 3. Participant Comment (`kind: 'comment'`, priority 9 real / 6 demo)
+  // 4. Landmark & Cultural Story (`kind: 'story'`, priority 0 - ALWAYS lowest)
+  function interruptSpeechIfLowerPriority(newPriority = 6, isReal = true) {
     if (!speaking || !currentItem) return;
     const curPrio = currentItem.priority ?? 0;
+    // Any participant event (priority >= 1) IMMEDIATELY preempts Story narration (priority 0)
     if (currentItem.kind === 'story' && newPriority >= 1) {
       stopCurrentSpeechImmediately(true);
       return;
     }
-    if ((isReal && !currentItem.isReal) || (newPriority >= 5 && curPrio <= 3)) {
+    // Real viewer events immediately preempt Mock/Demo speech; Gift events preempt lower non-gift speech
+    if ((isReal && !currentItem.isReal) || (newPriority >= 13 && curPrio <= 9)) {
       stopCurrentSpeechImmediately(false);
     }
   }
@@ -1042,28 +1075,26 @@ export function createRaceAudio({ onSpeak = null } = {}) {
       return;
     }
 
+    // Pre-fetch Dual-Voice TTS audio immediately when a participant event arrives so playback is instantaneous
+    fetchAndDecodeDualVoiceTts(item.text).catch(() => {});
+
     purgeLowerPriorityFromQueue(Boolean(item.isReal));
     interruptSpeechIfLowerPriority(prio, Boolean(item.isReal));
 
-    if (prio >= 5 && item.uid) {
-      for (let i = speechQueue.length - 1; i >= 0; i--) {
-        if (speechQueue[i].uid === item.uid && (speechQueue[i].priority ?? 1) <= 3) {
-          speechQueue.splice(i, 1);
-        }
-      }
-    }
-
+    // Insert in strict descending priority order; items of the same priority stay in FIFO arrival order
     const insertIdx = speechQueue.findIndex(x => (x.priority ?? 0) < prio);
     if (insertIdx === -1) speechQueue.push(item);
     else speechQueue.splice(insertIdx, 0, item);
-    if (speechQueue.length > 10) speechQueue.pop();
+    if (speechQueue.length > 14) speechQueue.pop();
 
     flushSpeech();
   }
 
   function queueNextStoryNow() {
     if (!enabled || isPreviewIframe) return;
-    if (speaking || speechQueue.length > 0) return;
+    if (speaking || speechQueue.length > 0 || nextFlushTimer) return;
+    // Give participants priority window after interactive speech finishes before resuming story
+    if (Date.now() - lastInteractiveDoneAt < 850) return;
 
     if (pendingProvinceStory && storyStepIdx > 0) {
       const provText = pendingProvinceStory;
@@ -1099,33 +1130,44 @@ export function createRaceAudio({ onSpeak = null } = {}) {
   }
 
   async function flushSpeech() {
+    clearTimeout(nextFlushTimer);
+    nextFlushTimer = null;
     if (!enabled || speaking || !speechQueue.length) return;
     const item = speechQueue.shift();
+    const mySeq = ++activeSpeechSeq;
     currentItem = item;
     speaking = true;
     const gender = item.gender || 'female';
     duckBgm(true);
     onSpeak?.(item.text, true, item.kind || 'interactive', gender);
 
-    // Pre-fetch the next story chapter while this sentence is speaking!
-    preloadNextStoryBuffer();
+    // Pre-fetch next queued participant item (or next story chapter if queue is empty)
+    if (speechQueue.length > 0) {
+      fetchAndDecodeDualVoiceTts(speechQueue[0].text).catch(() => {});
+    } else {
+      preloadNextStoryBuffer();
+    }
 
     let finished = false;
     const done = () => {
-      if (finished) return;
+      if (finished || mySeq !== activeSpeechSeq) return;
       finished = true;
       clearTimeout(watchdog);
+      watchdog = null;
       currentVoiceSrc = null;
       currentItem = null;
       usingBrowserSpeech = false;
       speaking = false;
+      if (item.kind !== 'story') {
+        lastInteractiveDoneAt = Date.now();
+      }
       duckBgm(false);
       onSpeak?.('', false, '', gender);
 
       if (speechQueue.length > 0) {
-        setTimeout(flushSpeech, 180);
+        nextFlushTimer = setTimeout(flushSpeech, 70);
       } else {
-        setTimeout(queueNextStoryNow, 340);
+        nextFlushTimer = setTimeout(queueNextStoryNow, 900);
       }
     };
 
@@ -1134,9 +1176,7 @@ export function createRaceAudio({ onSpeak = null } = {}) {
     try {
       if (ctx.state !== 'running') await ctx.resume().catch(() => {});
       const { femaleBuf, maleBuf } = await fetchAndDecodeDualVoiceTts(item.text);
-      if (!enabled || currentItem !== item) {
-        if (currentItem !== item) return;
-        done();
+      if (!enabled || mySeq !== activeSpeechSeq || currentItem !== item) {
         return;
       }
       const isMale = gender === 'male';
@@ -1152,7 +1192,8 @@ export function createRaceAudio({ onSpeak = null } = {}) {
       src.onended = done;
       src.start();
     } catch {
-      if (typeof speechSynthesis !== 'undefined' && currentItem === item) {
+      if (mySeq !== activeSpeechSeq || currentItem !== item) return;
+      if (typeof speechSynthesis !== 'undefined') {
         usingBrowserSpeech = true;
         const u = new SpeechSynthesisUtterance(item.text);
         u.lang = 'vi-VN';
@@ -1165,7 +1206,7 @@ export function createRaceAudio({ onSpeak = null } = {}) {
           return;
         } catch {}
       }
-      if (currentItem === item) done();
+      done();
     }
   }
 
@@ -1185,7 +1226,7 @@ export function createRaceAudio({ onSpeak = null } = {}) {
       master.gain.value = 1;
       if (ctx.state !== 'running') ctx.resume().catch(() => {});
       if (!bgRunning) startBg();
-      if (!speaking && speechQueue.length === 0) {
+      if (!speaking && speechQueue.length === 0 && !nextFlushTimer) {
         queueNextStoryNow();
       }
     }
@@ -1292,29 +1333,22 @@ export function createRaceAudio({ onSpeak = null } = {}) {
       const isReal = Boolean(msg.src && msg.src !== 'mock');
       const now = Date.now();
       const uid = msg.id || msg.uid || msg.name || '';
-      const who = cleanRaceTtsName(msg.name);
-      const nameKey = who.toLowerCase();
-      const busyInteractive = (speaking && currentItem?.kind !== 'story') || speechQueue.some(x => x.kind !== 'story');
 
       if (isReal) {
-        const lastUid = recentUidGreet.get(uid) || 0;
-        const lastName = recentNameGreet.get(nameKey) || 0;
-        if (now - lastUid < 12_000 || now - lastName < 12_000) return;
-        recentUidGreet.set(uid, now);
-        recentNameGreet.set(nameKey, now);
+        const lastUid = recentJoinUid.get(uid) || 0;
+        if (now - lastUid < 2500) return;
+        recentJoinUid.set(uid, now);
       } else {
-        if (busyInteractive || now - lastWelcomeSpeechAt < 14_000) return;
-        const lastName = recentNameGreet.get(nameKey) || 0;
-        if (now - lastName < 25_000) return;
-        lastWelcomeSpeechAt = now;
-        recentNameGreet.set(nameKey, now);
+        const queuedInteractive = speechQueue.filter(x => x.kind !== 'story').length;
+        if (queuedInteractive >= 3 || now - lastMockJoinAt < 4500) return;
+        lastMockJoinAt = now;
       }
 
       joinChime();
       const gender = interactiveGenderToggle++ % 2 === 0 ? 'female' : 'male';
       const text = formatWelcomeSpeech(msg.name, false);
-      enqueueSpeech({ uid, text, kind: 'join', gender, priority: isReal ? 3 : 1, isReal });
-      if (!speaking) flushSpeech();
+      // Join priority (10 real / 7 demo) is HIGHER than Comment (9 real / 6 demo) and Story (0)
+      enqueueSpeech({ uid, text, kind: 'join', gender, priority: isReal ? 10 : 7, isReal });
     },
     speakComment(runner, rawComment = '') {
       if (!enabled || !readComments || !runner) return;
@@ -1324,35 +1358,34 @@ export function createRaceAudio({ onSpeak = null } = {}) {
       const who = cleanRaceTtsName(runner.name);
       const cleanText = cleanCommentForTts(rawComment);
       if (!cleanText || !/[\p{L}\p{N}]/u.test(cleanText)) return;
-      const busyInteractive = (speaking && currentItem?.kind !== 'story') || speechQueue.some(x => x.kind !== 'story');
 
-      if (!isReal) {
-        if (busyInteractive || now - lastWelcomeSpeechAt < 12_000) return;
-        lastWelcomeSpeechAt = now;
+      const dedupeKey = `${uid}:${cleanText.toLowerCase()}`;
+      if (isReal) {
+        const lastSame = recentCommentKey.get(dedupeKey) || 0;
+        if (now - lastSame < 2500) return;
+        recentCommentKey.set(dedupeKey, now);
       } else {
-        recentUidGreet.set(uid, now);
-        recentNameGreet.set(who.toLowerCase(), now);
+        const queuedInteractive = speechQueue.filter(x => x.kind !== 'story').length;
+        if (queuedInteractive >= 3 || now - lastMockCommentAt < 5000) return;
+        lastMockCommentAt = now;
       }
 
       joinChime();
       const gender = interactiveGenderToggle++ % 2 === 0 ? 'male' : 'female';
       const text = `${who} bình luận: ${cleanText}`;
-      enqueueSpeech({ uid, text, kind: 'comment', gender, priority: isReal ? 4 : 2, isReal });
-      if (!speaking) flushSpeech();
+      // Comment priority (9 real / 6 demo) is right after Join (10 / 7) and ALWAYS preempts Story (0)
+      enqueueSpeech({ uid, text, kind: 'comment', gender, priority: isReal ? 9 : 6, isReal });
     },
     announceGift(d) {
       if (!enabled || !d) return;
       const isReal = Boolean(d.src && d.src !== 'mock');
       const uid = d.uid || d.name || '';
-      const who = cleanRaceTtsName(d.name);
-      recentUidGreet.set(uid, Date.now());
-      recentNameGreet.set(who.toLowerCase(), Date.now());
 
       boostSfx(d.tier || 1);
       const gender = interactiveGenderToggle++ % 2 === 0 ? 'female' : 'male';
       const text = formatGiftBoostSpeech(d);
-      enqueueSpeech({ uid, text, kind: 'gift', gender, priority: 5 + (d.tier || 1), isReal });
-      if (!speaking) flushSpeech();
+      // Gift priority (13..16 real / 9..12 demo) is the highest priority
+      enqueueSpeech({ uid, text, kind: 'gift', gender, priority: (isReal ? 12 : 8) + (d.tier || 1), isReal });
     },
   };
 }
