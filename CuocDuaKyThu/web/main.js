@@ -28,16 +28,16 @@ renderer.setSize(W, H, false);
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.15;
+renderer.toneMappingExposure = 0.88;
 
 const labelRenderer = new CSS2DRenderer({ element: document.getElementById('labels') });
 labelRenderer.setSize(W, H);
 
 const scene = new THREE.Scene();
-// PBR Image-Based Lighting (RoomEnvironment) so metallic landmarks, golden hands, and mounts gleam realistically
+// PBR Image-Based Lighting (RoomEnvironment) calibrated so metallic landmarks gleam without overexposing the road
 const pmremGenerator = new THREE.PMREMGenerator(renderer);
 scene.environment = pmremGenerator.fromScene(new RoomEnvironment(), 0.04).texture;
-scene.environmentIntensity = 0.58;
+scene.environmentIntensity = 0.24;
 
 const camera = new THREE.PerspectiveCamera(48, W / H, 0.2, 120);
 camera.position.set(0, 4.4, 15.5);
@@ -53,7 +53,7 @@ const audio = createRaceAudio({
 
 const composer = new EffectComposer(renderer);
 composer.addPass(new RenderPass(scene, camera));
-const bloomPass = new UnrealBloomPass(new THREE.Vector2(W / 2, H / 2), 0.22, 0.32, 0.88);
+const bloomPass = new UnrealBloomPass(new THREE.Vector2(W / 2, H / 2), 0.14, 0.28, 0.93);
 composer.addPass(bloomPass);
 composer.addPass(new OutputPass());
 

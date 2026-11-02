@@ -24,6 +24,10 @@
   #stage > * { position: absolute; }
   #c, #labels { inset: 0; }
   #labels { pointer-events: none; z-index: 0; }
+  #stage::before {
+    content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 0;
+    background: linear-gradient(180deg, transparent 62%, rgba(8, 12, 16, 0.32) 84%, rgba(5, 8, 12, 0.56) 100%);
+  }
   #stage > :not(#c):not(#labels) { z-index: 1; }
 
   :root {

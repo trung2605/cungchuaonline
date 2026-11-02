@@ -367,18 +367,18 @@ function createBiomeTrailTexture(biomeId) {
       g.fill();
     }
   } else if (biomeId === 'vn_sapa') {
-    // Sa Pa Ruộng Bậc Thang: Golden terraced earth trail + river stepping stones + golden rice borders
-    g.fillStyle = '#ca8a04';
+    // Sa Pa Ruộng Bậc Thang: Rich Dark-Roast Mountain Soil + Mossy Slate Stepping Stones + Golden Rice Trim
+    g.fillStyle = '#713f12';
     g.fillRect(0, 0, 512, 512);
     const earthGrad = g.createLinearGradient(40, 0, 472, 0);
-    earthGrad.addColorStop(0, '#78552b');
-    earthGrad.addColorStop(0.5, '#9a6f3a');
-    earthGrad.addColorStop(1, '#78552b');
+    earthGrad.addColorStop(0, '#3e2714');
+    earthGrad.addColorStop(0.5, '#52361e');
+    earthGrad.addColorStop(1, '#3e2714');
     g.fillStyle = earthGrad;
     g.fillRect(40, 0, 432, 512);
 
-    // Natural rounded stepping stones embedded in golden earth
-    const stoneCols = ['#a8a29e', '#8c7e6a', '#b5a895', '#78716c'];
+    // Natural dark slate stepping stones embedded in warm earth
+    const stoneCols = ['#57534e', '#44403c', '#61584f', '#3f3b37'];
     for (let r = 0; r < 14; r++) {
       const y = r * 36.5;
       for (let cIdx = 0; cIdx < 6; cIdx++) {
@@ -389,36 +389,36 @@ function createBiomeTrailTexture(biomeId) {
         g.fill();
       }
     }
-    // Golden ripe rice stalks along both edges
+    // Warm golden ripe rice stalks along both edges
     for (let y = 0; y < 512; y += 12) {
-      g.fillStyle = y % 24 === 0 ? '#facc15' : '#eab308';
+      g.fillStyle = y % 24 === 0 ? '#ca8a04' : '#a16207';
       g.fillRect(24, y, 20, 8);
       g.fillRect(468, y, 20, 8);
     }
   } else if (biomeId === 'vn_hanoi') {
-    // Cầu Thê Húc Hồ Gươm: Vermilion Red Lacquered Wooden Bridge Deck + Golden Lotus Medallions
-    g.fillStyle = '#0f5245'; // Hoan Kiem emerald water on outer edges
+    // Cầu Thê Húc Hồ Gươm: Deep Vermilion Lacquered Wooden Bridge Deck + Golden Lotus Medallions
+    g.fillStyle = '#0f3d33'; // Hoan Kiem deep emerald water on outer edges
     g.fillRect(0, 0, 512, 512);
     const bridgeGrad = g.createLinearGradient(34, 0, 478, 0);
-    bridgeGrad.addColorStop(0, '#7f1d1d');
-    bridgeGrad.addColorStop(0.5, '#b91c1c');
-    bridgeGrad.addColorStop(1, '#7f1d1d');
+    bridgeGrad.addColorStop(0, '#5c1212');
+    bridgeGrad.addColorStop(0.5, '#7f1d1d');
+    bridgeGrad.addColorStop(1, '#5c1212');
     g.fillStyle = bridgeGrad;
     g.fillRect(34, 0, 444, 512);
 
-    // Horizontal red wooden bridge planks
+    // Horizontal crimson wooden bridge planks
     for (let y = 0; y < 512; y += 24) {
-      g.fillStyle = (y / 24) % 2 === 0 ? '#991b1b' : '#b91c1c';
+      g.fillStyle = (y / 24) % 2 === 0 ? '#6b1616' : '#7f1d1d';
       g.fillRect(44, y + 2, 424, 20);
-      g.fillStyle = 'rgba(255, 220, 150, 0.16)';
+      g.fillStyle = 'rgba(217, 119, 6, 0.18)';
       g.fillRect(44, y + 3, 424, 3);
     }
     // Vermilion & Gold bridge side rails
-    g.fillStyle = '#f59e0b';
+    g.fillStyle = '#b45309';
     g.fillRect(32, 0, 14, 512);
     g.fillRect(466, 0, 14, 512);
     // Golden lotus emblem down the center of Thê Húc bridge
-    g.strokeStyle = 'rgba(253, 224, 71, 0.55)';
+    g.strokeStyle = 'rgba(234, 179, 8, 0.45)';
     g.lineWidth = 3;
     for (let y = 40; y < 512; y += 80) {
       g.beginPath();
@@ -426,26 +426,26 @@ function createBiomeTrailTexture(biomeId) {
       g.stroke();
     }
   } else if (biomeId === 'vn_danang') {
-    // Cầu Vàng Bà Nà Hills: Shimmering Metallic Gold Deck + Purple Lobelia flower planters
-    g.fillStyle = '#4c1d95';
+    // Cầu Vàng Bà Nà Hills: Rich Antique Bronze-Gold Deck + Purple Lobelia flower planters
+    g.fillStyle = '#3b0764';
     g.fillRect(0, 0, 512, 512);
     const goldGrad = g.createLinearGradient(36, 0, 476, 0);
-    goldGrad.addColorStop(0, '#b45309');
-    goldGrad.addColorStop(0.25, '#d97706');
-    goldGrad.addColorStop(0.5, '#f59e0b');
-    goldGrad.addColorStop(0.75, '#d97706');
-    goldGrad.addColorStop(1, '#b45309');
+    goldGrad.addColorStop(0, '#5c2d0c');
+    goldGrad.addColorStop(0.25, '#78350f');
+    goldGrad.addColorStop(0.5, '#92400e');
+    goldGrad.addColorStop(0.75, '#78350f');
+    goldGrad.addColorStop(1, '#5c2d0c');
     g.fillStyle = goldGrad;
     g.fillRect(36, 0, 440, 512);
 
-    // Metallic golden walkway planks
+    // Rich antique golden walkway planks (never bleached white)
     for (let y = 0; y < 512; y += 20) {
-      g.fillStyle = (y / 20) % 2 === 0 ? 'rgba(254, 243, 199, 0.18)' : 'rgba(120, 53, 15, 0.22)';
+      g.fillStyle = (y / 20) % 2 === 0 ? 'rgba(217, 119, 6, 0.25)' : 'rgba(69, 26, 3, 0.28)';
       g.fillRect(48, y + 2, 416, 16);
     }
     // Purple Lobelia flower beds (Hoa Nữ Hoàng Xanh Tím trên Cầu Vàng)
     for (let y = 0; y < 512; y += 14) {
-      g.fillStyle = y % 28 === 0 ? '#a855f7' : '#fbbf24';
+      g.fillStyle = y % 28 === 0 ? '#9333ea' : '#ca8a04';
       g.beginPath();
       g.arc(28, y + 7, 8, 0, Math.PI * 2);
       g.arc(484, y + 7, 8, 0, Math.PI * 2);
@@ -455,10 +455,10 @@ function createBiomeTrailTexture(biomeId) {
     // Kinh Thành Huế: Diagonal Herringbone Bát Tràng Terracotta Bricks + Royal Gold Trim
     g.fillStyle = '#1e3a2f';
     g.fillRect(0, 0, 512, 512);
-    g.fillStyle = '#7c2d12';
+    g.fillStyle = '#5c1f0c';
     g.fillRect(38, 0, 436, 512);
 
-    const brickCols = ['#9a3412', '#b45309', '#854d0e', '#a16207'];
+    const brickCols = ['#6e260e', '#7c2d12', '#61340b', '#78350f'];
     for (let y = -32; y < 544; y += 28) {
       for (let x = 44; x < 460; x += 36) {
         g.save();
@@ -470,67 +470,68 @@ function createBiomeTrailTexture(biomeId) {
       }
     }
     // Royal Gold Imperial border
-    g.fillStyle = '#eab308';
+    g.fillStyle = '#b45309';
     g.fillRect(34, 0, 12, 512);
     g.fillRect(466, 0, 12, 512);
   } else if (biomeId === 'vn_nhatrang' || biomeId === 'vn_halong') {
-    // Coastal Beach & Bay Promenade: Golden sand + White ocean surf foam on edge + Stone walkway
-    g.fillStyle = '#0284c7'; // Turquoise ocean edge
+    // Vịnh Hạ Long & Nha Trang: Deep Emerald-Slate & Warm Teakwood Coastal Pier Promenade (Zero white glare!)
+    g.fillStyle = '#0c4a6e'; // Deep ocean border
     g.fillRect(0, 0, 512, 512);
-    const sandGrad = g.createLinearGradient(32, 0, 480, 0);
-    sandGrad.addColorStop(0, '#fcd34d');
-    sandGrad.addColorStop(0.2, '#fde68a');
-    sandGrad.addColorStop(0.8, '#e2e8f0');
-    sandGrad.addColorStop(1, '#38bdf8');
-    g.fillStyle = sandGrad;
+    const pierGrad = g.createLinearGradient(32, 0, 480, 0);
+    pierGrad.addColorStop(0, '#27383b');
+    pierGrad.addColorStop(0.5, '#33484d');
+    pierGrad.addColorStop(1, '#1e3a4c');
+    g.fillStyle = pierGrad;
     g.fillRect(32, 0, 448, 512);
 
-    // Coastal sandstone pavers in center
+    // Rich dark sandstone & teakwood coastal promenade pavers
     for (let r = 0; r < 16; r++) {
       const y = r * 32;
-      for (let x = 68; x < 420; x += 56) {
-        g.fillStyle = (r + x) % 2 === 0 ? '#d6c7b2' : '#c7b299';
+      for (let x = 56; x < 436; x += 56) {
+        g.fillStyle = (r + x) % 2 === 0 ? '#4b5563' : '#3f4a56';
         g.beginPath();
-        g.roundRect(x + (r % 2) * 14, y + 3, 48, 26, 6);
+        g.roundRect(x + (r % 2) * 12, y + 3, 48, 26, 6);
         g.fill();
       }
-      // White foaming ocean surf along right beach edge
-      g.fillStyle = 'rgba(255, 255, 255, 0.78)';
+      // Warm bronze promenade curb on left & subtle turquoise wave rim on right
+      g.fillStyle = '#92400e';
+      g.fillRect(34, y + 2, 14, 28);
+      g.fillStyle = 'rgba(56, 189, 248, 0.38)';
       g.beginPath();
-      g.arc(462 + Math.sin(r) * 8, y + 16, 16, 0, Math.PI * 2);
+      g.arc(466 + Math.sin(r) * 6, y + 16, 12, 0, Math.PI * 2);
       g.fill();
     }
   } else if (biomeId === 'vn_saigon') {
-    // Phố Đi Bộ Nguyễn Huệ Sài Gòn: Sleek Granite Promenade + Glowing Musical Fountain Strip
-    g.fillStyle = '#1e293b';
+    // Phố Đi Bộ Nguyễn Huệ Sài Gòn: Deep Charcoal Basalt Granite Promenade + Glowing Fountain Strip
+    g.fillStyle = '#0f172a';
     g.fillRect(0, 0, 512, 512);
-    g.fillStyle = '#cbd5e1';
+    g.fillStyle = '#1e293b';
     g.fillRect(36, 0, 440, 512);
 
-    // Modern geometric granite slabs
+    // Modern dark basalt granite slabs
     for (let r = 0; r < 16; r++) {
       const y = r * 32;
       for (let x = 44; x < 460; x += 64) {
-        g.fillStyle = ((r + x / 64) % 2 === 0) ? '#94a3b8' : '#cbd5e1';
+        g.fillStyle = ((r + x / 64) % 2 === 0) ? '#334155' : '#263346';
         g.fillRect(x + 2, y + 2, 60, 28);
       }
     }
-    // Glowing cyan & gold lotus fountain strip in the center of Nguyen Hue Walking Street
+    // Glowing cyan lotus fountain strip in the center of Nguyen Hue Walking Street
     const fountainGrad = g.createLinearGradient(226, 0, 286, 0);
-    fountainGrad.addColorStop(0, '#0284c7');
-    fountainGrad.addColorStop(0.5, '#67e8f9');
-    fountainGrad.addColorStop(1, '#0284c7');
+    fountainGrad.addColorStop(0, '#0369a1');
+    fountainGrad.addColorStop(0.5, '#0284c7');
+    fountainGrad.addColorStop(1, '#0369a1');
     g.fillStyle = fountainGrad;
     g.fillRect(232, 0, 48, 512);
   } else if (biomeId === 'vn_mientay') {
-    // Chợ Nổi Miền Tây: Rustic Wooden Canal Bridge Planks over Shimmering Silt-Gold Water
-    g.fillStyle = '#0f766e';
+    // Chợ Nổi Miền Tây: Rustic Dark Teakwood Canal Bridge Planks over Silt-Emerald Water
+    g.fillStyle = '#115e59';
     g.fillRect(0, 0, 512, 512);
-    g.fillStyle = '#451a03';
+    g.fillStyle = '#2e1202';
     g.fillRect(46, 0, 420, 512);
 
-    // Wooden planks with water peeking between gaps
-    const woodCols = ['#78350f', '#92400e', '#653208', '#854d0e'];
+    // Rich dark wooden planks
+    const woodCols = ['#4a2208', '#5c2b0b', '#3f1d06', '#542709'];
     for (let r = 0; r < 24; r++) {
       const y = r * 21.3;
       g.fillStyle = woodCols[r % woodCols.length];
@@ -538,27 +539,27 @@ function createBiomeTrailTexture(biomeId) {
       g.roundRect(52 + (r % 2) * 4, y + 2, 404, 16, 4);
       g.fill();
       // Bamboo side handrails
-      g.fillStyle = '#ca8a04';
+      g.fillStyle = '#a16207';
       g.fillRect(40, y, 10, 20);
       g.fillRect(462, y, 10, 20);
     }
   } else {
-    // Classic Warm Vietnamese Flagstone & Lotus Medallion Trail (Tràng An, Hội An, Đà Lạt)
-    g.fillStyle = '#1f4d36';
+    // Classic Warm Ancient Vietnamese Flagstone Trail (Tràng An, Hội An, Đà Lạt) - Rich Earthy Tones
+    g.fillStyle = '#193b29';
     g.fillRect(0, 0, 512, 512);
     const mortarGrad = g.createLinearGradient(38, 0, 474, 0);
-    mortarGrad.addColorStop(0, '#4a3d31');
-    mortarGrad.addColorStop(0.5, '#7a6752');
-    mortarGrad.addColorStop(1, '#4a3d31');
+    mortarGrad.addColorStop(0, '#2e251d');
+    mortarGrad.addColorStop(0.5, '#42362b');
+    mortarGrad.addColorStop(1, '#2e251d');
     g.fillStyle = mortarGrad;
     g.fillRect(38, 0, 436, 512);
 
     for (let y = 0; y < 512; y += 32) {
-      g.fillStyle = (y / 32) % 2 === 0 ? '#d9a75a' : '#c28e42';
+      g.fillStyle = (y / 32) % 2 === 0 ? '#926829' : '#78531e';
       g.fillRect(30, y + 2, 16, 28);
       g.fillRect(466, y + 2, 16, 28);
     }
-    const stonePalette = ['#8c765c', '#998266', '#7d6850', '#a38b6d', '#857058', '#917a5f'];
+    const stonePalette = ['#4f4336', '#594b3d', '#453a2e', '#615243', '#4a3e32', '#544739'];
     const rows = 16;
     const rowH = 512 / rows;
     for (let r = 0; r < rows; r++) {
@@ -2344,10 +2345,10 @@ export function buildRaceWorld(scene) {
   scene.background = new THREE.Color(0x1a2e3b);
   scene.fog = new THREE.FogExp2(0x2b4452, 0.0056);
 
-  const hemi = new THREE.HemisphereLight(0xfff4e0, 0x1d3244, 1.65);
+  const hemi = new THREE.HemisphereLight(0xfff4e0, 0x1d3244, 0.95);
   scene.add(hemi);
 
-  const dir = new THREE.DirectionalLight(0xfff0cc, 2.0);
+  const dir = new THREE.DirectionalLight(0xfff0cc, 1.12);
   dir.position.set(8, 18, 12);
   dir.castShadow = true;
   scene.add(dir);
@@ -2566,8 +2567,10 @@ export function buildRaceWorld(scene) {
   let currentRoadTex = createBiomeTrailTexture('vn_hagiang');
   const roadMat = new THREE.MeshStandardMaterial({
     map: currentRoadTex,
-    roughness: 0.74,
-    metalness: 0.08,
+    color: 0xd8cbb8,
+    roughness: 0.92,
+    metalness: 0.02,
+    envMapIntensity: 0.14,
   });
   const road = new THREE.Mesh(roadGeo, roadMat);
   road.receiveShadow = true;
