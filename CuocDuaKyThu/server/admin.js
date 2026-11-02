@@ -209,9 +209,23 @@ export async function startRaceAdmin({ port = 8790, host = '127.0.0.1', password
         cosmic_warp: {
           turbo: true,
           bubble: 'Du hành Ngân Hà Siêu Quang! 🌌✨',
-          banner: '🌌 BƯỚC NHẢY KHÔNG GIAN NGÂN HÀ! Tốc độ ánh sáng kích hoạt!',
+          banner: '🌌 BƯỚC NHẢY RỒNG VÀNG 3D! Tốc độ ánh sáng kích hoạt!',
           fxKind: 'warp',
           speedMult: 4.5,
+        },
+        lantern_festival: {
+          turbo: false,
+          bubble: 'Lễ Hội Thiên Đăng Hội An rực sáng! 🏮✨',
+          banner: '🏮✨ LỄ HỘI THIÊN ĐĂNG 3D! Hàng chục đèn trời rực sáng trên bầu trời Việt Nam!',
+          fxKind: 'lantern',
+          speedMult: 2.2,
+        },
+        fireworks: {
+          turbo: true,
+          bubble: 'Đại Lễ Pháo Hoa Tự Hào Việt Nam! 🎆🇻🇳',
+          banner: '🎆🇻🇳 ĐẠI LỄ PHÁO HOA 3D XUYÊN VIỆT! Pháo hoa rực sáng bầu trời kèm bão tăng tốc!',
+          fxKind: 'fireworks',
+          speedMult: 3.0,
         },
       };
 

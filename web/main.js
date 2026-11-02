@@ -6,6 +6,9 @@ import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js'
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { VignetteShader } from 'three/addons/shaders/VignetteShader.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { gsap } from 'gsap';
+import confetti from 'canvas-confetti';
 import { createWorld, applyMsg, stepWorld } from './scene/reducer.js';
 import { buildHall } from './scene/hall.js';
 import { createActors } from './scene/actors.js';
@@ -42,6 +45,11 @@ const labels = new CSS2DRenderer({ element: document.getElementById('labels') })
 labels.setSize(W, H);
 
 const scene = new THREE.Scene();
+if (!low) {
+  const pmremGenerator = new THREE.PMREMGenerator(renderer);
+  scene.environment = pmremGenerator.fromScene(new RoomEnvironment(), 0.04).texture;
+  scene.environmentIntensity = 0.45;
+}
 // BR-07.1: from the gate, raised, looking at the altar; statue in the top third.
 const camera = new THREE.PerspectiveCamera(50, W / H, 0.1, 120);
 const CAM = new THREE.Vector3(0, 12, 21), LOOK = new THREE.Vector3(0, 1.2, -4);
@@ -49,7 +57,8 @@ const CAM = new THREE.Vector3(0, 12, 21), LOOK = new THREE.Vector3(0, 1.2, -4);
 const composer = new EffectComposer(renderer);
 composer.addPass(new RenderPass(scene, camera));
 // Bloom only on flames and lanterns: high threshold so gilt highlights stay crisp.
-if (params.get('bloom') !== '0') composer.addPass(new UnrealBloomPass(new THREE.Vector2(W / 2, H / 2), 0.55, 0.5, 0.9));
+const bloomPass = new UnrealBloomPass(new THREE.Vector2(W / 2, H / 2), 0.55, 0.5, 0.9);
+if (params.get('bloom') !== '0') composer.addPass(bloomPass);
 // Candlelit interiors fall off toward the frame edge; the vignette keeps the eye on the altar.
 const vignette = new ShaderPass(VignetteShader);
 // darkness mixes toward (1 - darkness): above 1 that color goes negative and tints the edges cyan.
@@ -117,6 +126,18 @@ function run(cmds, now) {
       case 'fx':
         if (c.kind === 'halo' && c.id) actors.halo(c.id, now);
         else fx.spawn(c.kind, c.pos, c.power, now);
+        if (c.kind === 'bell' || c.kind === 'buddha_aura' || c.kind === 'golden_rain' || c.kind === 'dharma_wheel') {
+          gsap.fromTo(bloomPass, { strength: 0.82 }, { strength: 0.55, duration: 1.5, ease: 'power2.out' });
+          try {
+            confetti({
+              particleCount: 40,
+              spread: 70,
+              origin: { x: 0.5, y: 0.25 },
+              colors: ['#facc15', '#fef08a', '#f472b6', '#fb923c'],
+              disableForReducedMotion: true,
+            });
+          } catch {}
+        }
         // Standalone temple sound resonance when FX is triggered from Admin or Auto-FX
         if (!c.id) {
           if (c.kind === 'bell' || c.kind === 'buddha_aura') audio.bell();

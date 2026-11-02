@@ -62,6 +62,9 @@ const srv = await startServer({
     '/vendor/three/': path.join(ROOT_DIR, 'node_modules/three/'),
     '/vendor/three-vrm/': path.join(ROOT_DIR, 'node_modules/@pixiv/three-vrm/'),
     '/vendor/font/': path.join(ROOT_DIR, 'node_modules/@fontsource/be-vietnam-pro/'),
+    '/vendor/gsap/': path.join(ROOT_DIR, 'node_modules/gsap/'),
+    '/vendor/canvas-confetti/': path.join(ROOT_DIR, 'node_modules/canvas-confetti/'),
+    '/vendor/simplex-noise/': path.join(ROOT_DIR, 'node_modules/simplex-noise/'),
   },
   getSnapshot,
   onClientMsg: msg => {

@@ -4,6 +4,8 @@ import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { gsap } from 'gsap';
 import { buildRaceWorld } from './scene/world3d.js';
 import { createRunners } from './scene/runners.js';
 import { createRaceFx } from './scene/fx.js';
@@ -32,6 +34,11 @@ const labelRenderer = new CSS2DRenderer({ element: document.getElementById('labe
 labelRenderer.setSize(W, H);
 
 const scene = new THREE.Scene();
+// PBR Image-Based Lighting (RoomEnvironment) so metallic landmarks, golden hands, and mounts gleam realistically
+const pmremGenerator = new THREE.PMREMGenerator(renderer);
+scene.environment = pmremGenerator.fromScene(new RoomEnvironment(), 0.04).texture;
+scene.environmentIntensity = 0.58;
+
 const camera = new THREE.PerspectiveCamera(48, W / H, 0.2, 120);
 camera.position.set(0, 4.4, 15.5);
 camera.lookAt(0, 1.8, -12);
@@ -46,7 +53,8 @@ const audio = createRaceAudio({
 
 const composer = new EffectComposer(renderer);
 composer.addPass(new RenderPass(scene, camera));
-composer.addPass(new UnrealBloomPass(new THREE.Vector2(W / 2, H / 2), 0.16, 0.25, 0.92));
+const bloomPass = new UnrealBloomPass(new THREE.Vector2(W / 2, H / 2), 0.22, 0.32, 0.88);
+composer.addPass(bloomPass);
 composer.addPass(new OutputPass());
 
 const soundBtn = document.getElementById('sound');
@@ -82,8 +90,15 @@ function applyBiomeChange(biome, distM = 0) {
   hud.setBiome(biome, distM);
   if (bId && bId !== lastBiomeId) {
     lastBiomeId = bId;
+    fx.setBiome?.(bId);
     audio.setBiomeMusic?.(bId);
     syncBgmBtn();
+    // Smooth GSAP cinematic FOV breath on landmark change
+    gsap.fromTo(
+      camera,
+      { fov: 50.8 },
+      { fov: 48, duration: 1.35, ease: 'power2.out', onUpdate: () => camera.updateProjectionMatrix() }
+    );
   }
 }
 
@@ -125,6 +140,7 @@ function handleMsg(msg) {
       break;
     case 'fx':
       fx.spawn(msg.kind, msg.power);
+      gsap.fromTo(bloomPass, { strength: 0.42 }, { strength: 0.22, duration: 1.4, ease: 'power2.out' });
       break;
     case 'biome':
       applyBiomeChange(msg.biome, msg.worldDistanceM);
