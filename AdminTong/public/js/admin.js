@@ -266,7 +266,7 @@ function initApexCharts() {
   charts.globalTopDonors = new ApexCharts($('chartGlobalTopDonors'), {
     chart: { type: 'bar', height: 260, fontFamily: baseFont, toolbar: { show: false } },
     colors: ['#2563eb'],
-    plotOptions: { bar: { horizontal: true, borderRadius: 6, barHeight: '62%' } },
+    plotOptions: { bar: { horizontal: true, borderRadius: 0, barHeight: '62%' } },
     dataLabels: { enabled: true, formatter: v => fmtNum(v) + ' 💎', style: { fontSize: '11px', fontWeight: 700 } },
     series: [{ name: 'Kim cương', data: [] }],
     xaxis: { categories: [], labels: { style: { colors: '#475569', fontSize: '11px' } } },
@@ -320,7 +320,7 @@ function initApexCharts() {
   charts.duaTopRacers = new ApexCharts($('chartDuaTopRacers'), {
     chart: { type: 'bar', height: 260, fontFamily: baseFont, toolbar: { show: false } },
     colors: ['#2563eb'],
-    plotOptions: { bar: { horizontal: true, borderRadius: 6, barHeight: '62%' } },
+    plotOptions: { bar: { horizontal: true, borderRadius: 0, barHeight: '62%' } },
     dataLabels: { enabled: true, formatter: v => fmtNum(v) + ' m', style: { fontSize: '11px', fontWeight: 700 } },
     series: [{ name: 'Quãng đường (m)', data: [] }],
     xaxis: { categories: [] },
