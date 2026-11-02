@@ -656,20 +656,85 @@ export function createRunners(scene) {
     },
     count: () => live.size,
     getRunner: id => live.get(id)?.runner || null,
-    update(now, dt) {
+    getRunnerPose(id) {
+      const e = live.get(id);
+      if (!e) return null;
+      const activeTier = Math.max(e.runner.tier || 0, e.runner.boostTier || 0);
+      return {
+        id,
+        name: e.runner.name || '',
+        x: e.holder.position.x,
+        y: e.holder.position.y,
+        z: e.holder.position.z,
+        rotY: e.holder.rotation.y,
+        tier: e.runner.tier || 0,
+        boostTier: e.runner.boostTier || 0,
+        activeTier,
+        rank: e.rank || null,
+        diamonds: e.runner.diamonds || 0,
+        hasBubble: e.bubbleEl.style.display !== 'none',
+      };
+    },
+    getCameraSpotlightTarget(now) {
+      let best = null;
+      let bestScore = -1;
+      for (const [id, e] of live.entries()) {
+        const hasBubble = e.bubbleEl.style.display !== 'none';
+        const isVipSpotlight = now < (e.vipSpotlightUntil || 0);
+        const isRecent = now < (e.activeUntil || 0);
+        const activeTier = Math.max(e.runner.tier || 0, e.runner.boostTier || 0);
+        const isReal = id && !String(id).startsWith('bot_') && !String(id).startsWith('seed_');
+        let score = 0;
+        if (isVipSpotlight) score += 160;
+        if (hasBubble) score += 130;
+        if (e.rank === 1) score += 85;
+        else if (e.rank && e.rank <= 3) score += 55;
+        score += activeTier * 28;
+        if (isRecent) score += 45;
+        if (isReal) score += 25;
+        // Slight periodic shift so different walkers also get featured when idle
+        score += (Math.sin(now / 4200 + e.lookSeed) + 1) * 12;
+        if (score > bestScore) {
+          bestScore = score;
+          best = {
+            id,
+            name: e.runner.name || '',
+            x: e.holder.position.x,
+            y: e.holder.position.y,
+            z: e.holder.position.z,
+            activeTier,
+            rank: e.rank || null,
+            hasBubble,
+            isVipSpotlight,
+          };
+        }
+      }
+      return best;
+    },
+    update(now, dt, camState = null) {
       let maxSpeed = 1.0;
       let shownLabels = 0;
       const tSec = now / 1000;
+      const focusId = camState?.focusId || null;
+      const camMode = camState?.mode || 'rear_chase_master';
+      const isFrontOrHeroCam =
+        camMode === 'front_lead_closeup' ||
+        camMode === 'vip_target_zoom' ||
+        camMode === 'diag_left_sweep' ||
+        camMode === 'diag_right_sweep' ||
+        camMode === 'side_dolly_glide';
 
-      for (const e of live.values()) {
+      for (const [id, e] of live.entries()) {
         const spd = e.runner.speedMult || 1.0;
         if (spd > maxSpeed) maxSpeed = spd;
 
+        const isFocusTarget = id === focusId;
         const hasBubble = e.bubbleEl.style.display !== 'none';
         const isTop3 = e.rank && e.rank <= 3;
         const isBoosted = (e.runner.boostTier || 0) > 0;
         const isRecent = now < (e.activeUntil || 0);
-        const shouldShow = hasBubble || isTop3 || (isBoosted && shownLabels < 4) || (isRecent && shownLabels < 4);
+        const shouldShow =
+          isFocusTarget || hasBubble || isTop3 || (isBoosted && shownLabels < 4) || (isRecent && shownLabels < 4);
         if (shouldShow) shownLabels++;
         e.label.visible = Boolean(shouldShow);
 
@@ -699,8 +764,29 @@ export function createRunners(scene) {
           flagMesh.rotation.y = Math.sin(tSec * 6.5 + e.lookSeed) * 0.25;
         }
 
-        // Head gently looking around to admire Vietnamese landmarks
-        const lookYaw = Math.sin(tSec * 0.85 + e.lookSeed) * 0.26;
+        // Dynamic Hero Turn toward Camera Lens when focused in Front / VIP / Diagonal shots!
+        let targetRootYaw = Math.PI;
+        if ((isFocusTarget || (camMode === 'front_lead_closeup' && e.holder.position.z > -3.2)) && isFrontOrHeroCam) {
+          const camX = camState?.camX ?? 0;
+          const camZ = camState?.camZ ?? 10;
+          const dx = camX - e.holder.position.x;
+          const dz = camZ - e.holder.position.z;
+          const angleToCam = Math.atan2(dx, dz);
+          if (camMode === 'front_lead_closeup' || camMode === 'vip_target_zoom') {
+            targetRootYaw = angleToCam * 0.78;
+            e.waveUntil = Math.max(e.waveUntil || 0, now + 400);
+          } else {
+            targetRootYaw = Math.PI + Math.max(-0.85, Math.min(0.85, (angleToCam - Math.PI) * 0.45));
+          }
+        }
+        const curYaw = e.rig.root.rotation.y;
+        const diffYaw = Math.atan2(Math.sin(targetRootYaw - curYaw), Math.cos(targetRootYaw - curYaw));
+        e.rig.root.rotation.y = curYaw + diffYaw * Math.min(1, dt * 4.2);
+
+        // Head gently looking around to admire Vietnamese landmarks (or looking at camera when spotlighted)
+        const lookYaw = isFocusTarget && isFrontOrHeroCam
+          ? Math.sin(tSec * 1.6) * 0.15
+          : Math.sin(tSec * 0.85 + e.lookSeed) * 0.26;
         const lookPitch = Math.cos(tSec * 0.65 + e.lookSeed) * 0.055;
         b.head.rotation.y = lookYaw;
         b.head.rotation.x = lookPitch;
