@@ -209,6 +209,13 @@ async function initUnifiedRuntime() {
     } catch {}
   }
 
+  const savedRt = db.getRuntimeSettings?.() || {
+    chuaAutoBalanceEnabled: false,
+    chuaDemoOn: false,
+    duaAutoBalanceEnabled: false,
+    duaDemoOn: false,
+  };
+
   // 2. Initialize Game 1: Cúng Chùa Online 3D Engine
   const chuaEventBuf = createEventRingBuffer(300);
   const lists = loadLists();
@@ -420,13 +427,6 @@ async function initUnifiedRuntime() {
     },
     state: () => ({ on: stopDuaDemo !== null, rate: duaDemoCfg.rate, giftRatio: duaDemoCfg.giftRatio }),
     config: () => ({ on: stopDuaDemo !== null, ...duaDemoCfg }),
-  };
-
-  const savedRt = db.getRuntimeSettings?.() || {
-    chuaAutoBalanceEnabled: false,
-    chuaDemoOn: false,
-    duaAutoBalanceEnabled: false,
-    duaDemoOn: false,
   };
 
   // Connect TikTok LIVE in background if configured on Vercel
