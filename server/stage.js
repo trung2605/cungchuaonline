@@ -21,7 +21,7 @@ export class Stage {
   }
 
   setStayMinutes(mins) {
-    const m = Math.max(0.5, Math.min(180, Number(mins) || 5));
+    const m = Math.max(0.1, Math.min(180, Number(mins) || 5));
     this.stayMinutes = m;
     const baseMs = Math.round(m * 60_000);
     this.ttlMap = {
@@ -31,8 +31,8 @@ export class Stage {
     };
     const t = this.now();
     for (const a of this.actors.values()) {
-      const targetExp = (a.joinedAt || t) + this.ttlMap[a.tier || 0];
-      a.expiresAt = Math.max(a.expiresAt, t + baseMs, targetExp);
+      const tierMs = this.ttlMap[a.tier || 0] || baseMs;
+      a.expiresAt = (a.joinedAt || t) + tierMs;
     }
     return this.getStayConfig();
   }

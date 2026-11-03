@@ -329,7 +329,7 @@ export class RaceStage {
   }
 
   setStayMinutes(mins) {
-    const m = Math.max(0.5, Math.min(180, Number(mins) || 5));
+    const m = Math.max(0.1, Math.min(180, Number(mins) || 5));
     this.stayMinutes = m;
     const baseMs = Math.round(m * 60_000);
     this.ttlMap = {
@@ -341,8 +341,8 @@ export class RaceStage {
     };
     const t = this.now();
     for (const r of this.runners.values()) {
-      const targetExp = (r.joinedAt || t) + this.ttlMap[r.tier || 0];
-      r.expiresAt = Math.max(r.expiresAt, t + baseMs, targetExp);
+      const tierMs = this.ttlMap[r.tier || 0] || baseMs;
+      r.expiresAt = (r.joinedAt || t) + tierMs;
     }
     return this.getStayConfig();
   }

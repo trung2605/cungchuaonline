@@ -683,6 +683,10 @@ function updateAllCharts(state, vm) {
 let chuaListsHydrated = false;
 let catalogCache = [];
 
+let stayInputProtectedUntil = 0;
+let pendingChuaStayMins = null;
+let pendingDuaStayMins = null;
+
 function renderAll(state) {
   lastStateCache = state;
   const db = state.db || {};
@@ -805,21 +809,28 @@ function renderAll(state) {
   }
 
   // Sync Stay Time (Minutes) inputs & badges
-  const chuaStayMins = Number(chua.stayConfig?.stayMinutes) || 5;
-  const duaStayMins = Number(dua.stayConfig?.stayMinutes) || 5;
+  // Protect inputs & badges from being overwritten by background 2s polling while the user is editing or right after saving
+  const nowTs = Date.now();
+  const isStayEditing = nowTs < stayInputProtectedUntil;
+  const serverChuaStayMins = Number(chua.stayConfig?.stayMinutes) || Number(db.runtimeSettings?.chuaStayMinutes) || 5;
+  const serverDuaStayMins = Number(dua.stayConfig?.stayMinutes) || Number(db.runtimeSettings?.duaStayMinutes) || 5;
+  if (pendingChuaStayMins !== null && serverChuaStayMins === pendingChuaStayMins) pendingChuaStayMins = null;
+  if (pendingDuaStayMins !== null && serverDuaStayMins === pendingDuaStayMins) pendingDuaStayMins = null;
+  const chuaStayMins = (isStayEditing && pendingChuaStayMins !== null) ? pendingChuaStayMins : serverChuaStayMins;
+  const duaStayMins = (isStayEditing && pendingDuaStayMins !== null) ? pendingDuaStayMins : serverDuaStayMins;
   if ($('chuaStayBadge')) {
-    $('chuaStayBadge').textContent = `Đang giữ: ${chuaStayMins} phút (Áo Vàng ${chuaStayMins * 2}p · Hoàng Kim ${chuaStayMins * 5}p)`;
+    $('chuaStayBadge').textContent = `Đang giữ: ${chuaStayMins} phút (Áo Vàng ${Number((chuaStayMins * 2).toFixed(1))}p · Hoàng Kim ${Number((chuaStayMins * 5).toFixed(1))}p)`;
   }
   if ($('duaStayBadge')) {
-    $('duaStayBadge').textContent = `Đang giữ: ${duaStayMins} phút (Quà tặng ${duaStayMins * 2}p – ${duaStayMins * 8}p)`;
+    $('duaStayBadge').textContent = `Đang giữ: ${duaStayMins} phút (Quà tặng ${Number((duaStayMins * 2).toFixed(1))}p – ${Number((duaStayMins * 8).toFixed(1))}p)`;
   }
-  if ($('chuaStayMinutesInput') && document.activeElement !== $('chuaStayMinutesInput')) {
+  if ($('chuaStayMinutesInput') && !isStayEditing && document.activeElement !== $('chuaStayMinutesInput')) {
     $('chuaStayMinutesInput').value = chuaStayMins;
   }
-  if ($('duaStayMinutesInput') && document.activeElement !== $('duaStayMinutesInput')) {
+  if ($('duaStayMinutesInput') && !isStayEditing && document.activeElement !== $('duaStayMinutesInput')) {
     $('duaStayMinutesInput').value = duaStayMins;
   }
-  if ($('quickStayMinutes') && document.activeElement !== $('quickStayMinutes')) {
+  if ($('quickStayMinutes') && !isStayEditing && document.activeElement !== $('quickStayMinutes')) {
     $('quickStayMinutes').value = chuaStayMins;
   }
 
@@ -1137,7 +1148,19 @@ window.addEventListener('DOMContentLoaded', () => {
       await gameAction('all', '/api/scene', { bgmVocal: true, bgmVocalVolume: vol });
       showToast(`🎤 Đã chỉnh âm lượng nhạc có lời nhỏ nhẹ (2 Game) = ${Math.round(val)}%!`);
     } else if (knobId === 'masterStayMins') {
-      const mins = Math.max(0.5, Math.min(180, Number(val)));
+      const mins = Math.max(0.1, Math.min(180, Number(val)));
+      stayInputProtectedUntil = Date.now() + 8000;
+      pendingChuaStayMins = mins;
+      pendingDuaStayMins = mins;
+      if ($('chuaStayMinutesInput')) $('chuaStayMinutesInput').value = mins;
+      if ($('duaStayMinutesInput')) $('duaStayMinutesInput').value = mins;
+      if ($('quickStayMinutes')) $('quickStayMinutes').value = mins;
+      if ($('chuaStayBadge')) {
+        $('chuaStayBadge').textContent = `Đang giữ: ${mins} phút (Áo Vàng ${Number((mins * 2).toFixed(1))}p · Hoàng Kim ${Number((mins * 5).toFixed(1))}p)`;
+      }
+      if ($('duaStayBadge')) {
+        $('duaStayBadge').textContent = `Đang giữ: ${mins} phút (Quà tặng ${Number((mins * 2).toFixed(1))}p – ${Number((mins * 8).toFixed(1))}p)`;
+      }
       await gameAction('all', '/api/stay-time', { stayMinutes: mins });
       showToast(`⏳ Đã cập nhật thời gian nhân vật ở lại = ${mins} phút!`);
     } else if (knobId === 'chuaVocalVol') {
@@ -1462,10 +1485,52 @@ window.addEventListener('DOMContentLoaded', () => {
   );
 
   // Stay Duration (TTL in Minutes) Controls
+  const applyOptimisticStayTime = (game, cleanMins) => {
+    stayInputProtectedUntil = Date.now() + 8000;
+    if (game === 'cung-chua-online' || game === 'all') {
+      pendingChuaStayMins = cleanMins;
+      if ($('chuaStayMinutesInput')) $('chuaStayMinutesInput').value = cleanMins;
+      if ($('quickStayMinutes')) $('quickStayMinutes').value = cleanMins;
+      if ($('chuaStayBadge')) {
+        $('chuaStayBadge').textContent = `Đang giữ: ${cleanMins} phút (Áo Vàng ${Number((cleanMins * 2).toFixed(1))}p · Hoàng Kim ${Number((cleanMins * 5).toFixed(1))}p)`;
+      }
+      setKnobVisual('masterStayMins', cleanMins);
+    }
+    if (game === 'cuoc-dua-ky-thu' || game === 'all') {
+      pendingDuaStayMins = cleanMins;
+      if ($('duaStayMinutesInput')) $('duaStayMinutesInput').value = cleanMins;
+      if ($('duaStayBadge')) {
+        $('duaStayBadge').textContent = `Đang giữ: ${cleanMins} phút (Quà tặng ${Number((cleanMins * 2).toFixed(1))}p – ${Number((cleanMins * 8).toFixed(1))}p)`;
+      }
+    }
+  };
+
+  for (const [id, game] of [
+    ['chuaStayMinutesInput', 'cung-chua-online'],
+    ['duaStayMinutesInput', 'cuoc-dua-ky-thu'],
+    ['quickStayMinutes', 'all'],
+  ]) {
+    const inp = $(id);
+    if (!inp) continue;
+    inp.addEventListener('focus', () => {
+      stayInputProtectedUntil = Date.now() + 25000;
+    });
+    inp.addEventListener('input', () => {
+      stayInputProtectedUntil = Date.now() + 25000;
+    });
+    inp.addEventListener('keydown', e => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        triggerStayTime(game, inp.value);
+      }
+    });
+  }
+
   const triggerStayTime = async (game, mins) => {
-    const cleanMins = Math.max(0.5, Math.min(180, Number(mins) || 5));
+    const cleanMins = Math.max(0.1, Math.min(180, Number(mins) || 5));
+    applyOptimisticStayTime(game, cleanMins);
     await gameAction(game, '/api/stay-time', { stayMinutes: cleanMins });
-    showToast(`Đã cập nhật thời gian người tham gia ở lại thành ${cleanMins} phút (Tự động gia hạn luôn cho những người đang có mặt)!`);
+    showToast(`Đã cập nhật thời gian người tham gia ở lại thành ${cleanMins} phút (Áp dụng ngay cho toàn bộ người đang có mặt)!`);
     await pollState();
   };
 

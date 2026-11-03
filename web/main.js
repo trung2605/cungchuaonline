@@ -43,8 +43,8 @@ const renderer = new THREE.WebGLRenderer({
   antialias: false,
   stencil: false,
 });
-renderer.setPixelRatio(1);
-renderer.setSize(Math.round(W * RENDER_SCALE), Math.round(H * RENDER_SCALE), false);
+renderer.setPixelRatio(RENDER_SCALE);
+renderer.setSize(W, H, true);
 renderer.shadowMap.enabled = ENABLE_SHADOWS;
 if (ENABLE_SHADOWS) renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;

@@ -235,7 +235,7 @@ try {
   if (fs.existsSync(SCENE_FILE)) {
     const saved = JSON.parse(fs.readFileSync(SCENE_FILE, 'utf8'));
     if (saved?.scene) pipeline.setScene(saved.scene);
-    if (Number(saved?.stayMinutes) >= 0.5) stage.setStayMinutes(Number(saved.stayMinutes));
+    if (Number(saved?.stayMinutes) >= 0.1) stage.setStayMinutes(Number(saved.stayMinutes));
   }
 } catch {}
 

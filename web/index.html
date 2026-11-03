@@ -25,7 +25,7 @@
   /* Fixed 1080x1920 stage, centered and scaled to fit the window (scale is 1 inside LIVE Studio). */
   #stage { position: absolute; left: 50%; top: 50%; width: 1080px; height: 1920px; transform-origin: center center; overflow: hidden; }
   #stage > * { position: absolute; }
-  #c, #labels { inset: 0; }
+  #c, #labels { inset: 0; width: 1080px; height: 1920px; display: block; }
   /* CSS2DRenderer sets z-index on each label; contain them below the HUD. */
   #labels { pointer-events: none; z-index: 0; }
   #stage > :not(#c):not(#labels) { z-index: 1; }

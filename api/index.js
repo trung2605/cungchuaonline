@@ -216,7 +216,7 @@ async function initUnifiedRuntime() {
   const blocked = new Set(fs.existsSync(blockedFile) ? JSON.parse(fs.readFileSync(blockedFile, 'utf8')) : []);
   const chuaStage = new Stage({
     max: Number(process.env.MAX_ACTORS || 150),
-    stayMinutes: Number(process.env.STAY_MINUTES || 5),
+    stayMinutes: Number(savedRt.chuaStayMinutes || process.env.STAY_MINUTES || 5),
   });
   const chuaCounters = createCounters({ lists, boardSize: 12 });
   const chuaStats = createStats({ lists });
@@ -347,7 +347,7 @@ async function initUnifiedRuntime() {
   const duaStage = new RaceStage({
     max: Number(process.env.RACE_MAX_RUNNERS || 120),
     baseSpeedMps: 1.35,
-    stayMinutes: Number(process.env.STAY_MINUTES || 5),
+    stayMinutes: Number(savedRt.duaStayMinutes || process.env.STAY_MINUTES || 5),
   });
   const duaRules = createRaceRules({ stage: duaStage, lists, status: duaStatus });
   const duaDedupe = createDedupe();
@@ -456,7 +456,7 @@ async function initUnifiedRuntime() {
         try { await saveBlocked(b, path.join(tmpDir, 'chua-lists')); } catch {}
       },
       saveSceneConfig: async patch => {
-        if (patch?.autoBalance || patch?.demo || patch?.scene) {
+        if (patch?.autoBalance || patch?.demo || patch?.scene || Number.isFinite(patch?.stayMinutes)) {
           await db.updateRuntimeSettings?.({
             ...(patch.autoBalance ? { chuaAutoBalanceEnabled: Boolean(patch.autoBalance.enabled) } : {}),
             ...(patch.demo
@@ -466,6 +466,7 @@ async function initUnifiedRuntime() {
                   ...(Number.isFinite(patch.demo.giftRatio) ? { chuaDemoGiftRatio: Number(patch.demo.giftRatio) } : {}),
                 }
               : {}),
+            ...(Number.isFinite(patch.stayMinutes) ? { chuaStayMinutes: Number(patch.stayMinutes) } : {}),
             ...(patch.scene
               ? {
                   ...(patch.scene.bgmTrack ? { chuaBgmTrack: String(patch.scene.bgmTrack) } : {}),
@@ -509,7 +510,7 @@ async function initUnifiedRuntime() {
       ingest: ingestDua,
       broadcast: broadcastDua,
       saveSceneConfig: async patch => {
-        if (patch?.autoBalance || patch?.demo || patch?.scene) {
+        if (patch?.autoBalance || patch?.demo || patch?.scene || Number.isFinite(patch?.stayMinutes)) {
           await db.updateRuntimeSettings?.({
             ...(patch.autoBalance ? { duaAutoBalanceEnabled: Boolean(patch.autoBalance.enabled) } : {}),
             ...(patch.demo
@@ -519,6 +520,7 @@ async function initUnifiedRuntime() {
                   ...(Number.isFinite(patch.demo.giftRatio) ? { duaDemoGiftRatio: Number(patch.demo.giftRatio) } : {}),
                 }
               : {}),
+            ...(Number.isFinite(patch.stayMinutes) ? { duaStayMinutes: Number(patch.stayMinutes) } : {}),
             ...(patch.scene
               ? {
                   ...(patch.scene.bgmVocal !== undefined ? { duaBgmVocal: Boolean(patch.scene.bgmVocal) } : {}),
@@ -564,6 +566,15 @@ async function initUnifiedRuntime() {
           demoRate: rtSettings.chuaDemoRate,
           demoGiftRatio: rtSettings.chuaDemoGiftRatio,
         });
+        if (
+          Number.isFinite(rtSettings.chuaStayMinutes) &&
+          Number(rtSettings.chuaStayMinutes) > 0 &&
+          Number(rtSettings.chuaStayMinutes) !== Number(chuaStage.getStayConfig?.()?.stayMinutes)
+        ) {
+          chuaStage.setStayMinutes(Number(rtSettings.chuaStayMinutes));
+          const expiredMsgs = chuaStage.tick(Date.now());
+          if (expiredMsgs.length) broadcastChua(expiredMsgs);
+        }
         const curChuaScene = chuaPipeline.snapshot?.()?.scene || {};
         if (
           (rtSettings.chuaBgmTrack && rtSettings.chuaBgmSeq && rtSettings.chuaBgmSeq !== curChuaScene.bgmSeq) ||
@@ -584,6 +595,13 @@ async function initUnifiedRuntime() {
           demoRate: rtSettings.duaDemoRate,
           demoGiftRatio: rtSettings.duaDemoGiftRatio,
         });
+        if (
+          Number.isFinite(rtSettings.duaStayMinutes) &&
+          Number(rtSettings.duaStayMinutes) > 0 &&
+          Number(rtSettings.duaStayMinutes) !== Number(duaStage.getStayConfig?.()?.stayMinutes)
+        ) {
+          duaStage.setStayMinutes(Number(rtSettings.duaStayMinutes));
+        }
         if (
           (rtSettings.duaBgmVocal !== undefined && Boolean(rtSettings.duaBgmVocal) !== Boolean(duaScene.bgmVocal)) ||
           (Number.isFinite(rtSettings.duaBgmVocalVolume) && Number(rtSettings.duaBgmVocalVolume) !== Number(duaScene.bgmVocalVolume))

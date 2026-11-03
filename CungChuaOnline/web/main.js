@@ -33,7 +33,7 @@ fit();
 
 const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('c'), antialias: !low });
 renderer.setPixelRatio(1);
-renderer.setSize(W, H, false);
+renderer.setSize(W, H, true);
 renderer.shadowMap.enabled = !low;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;

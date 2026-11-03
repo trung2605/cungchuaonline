@@ -254,7 +254,7 @@ export async function startRaceAdmin({ port = 8790, host = '127.0.0.1', password
       }
       if (stayMinutes !== undefined) {
         const mins = Number(stayMinutes);
-        if (!Number.isFinite(mins) || mins < 0.5 || mins > 180) throw bad('stayMinutes phải từ 0.5 đến 180 phút');
+        if (!Number.isFinite(mins) || mins < 0.1 || mins > 180) throw bad('stayMinutes phải từ 0.1 đến 180 phút');
         stage.setStayMinutes?.(mins);
       }
       const scene = ctx.setScene({
@@ -264,15 +264,19 @@ export async function startRaceAdmin({ port = 8790, host = '127.0.0.1', password
         ...(bgmVocalVolume !== undefined && { bgmVocalVolume: Number(bgmVocalVolume) }),
       });
       broadcast([{ t: 'scene', scene }]);
-      await ctx.saveSceneConfig?.({ scene });
+      await ctx.saveSceneConfig?.({
+        scene,
+        ...(stayMinutes !== undefined ? { stayMinutes: Number(stayMinutes) } : {}),
+      });
       return { scene, stayConfig: stage.getStayConfig?.() };
     },
 
     'POST /api/stay-time': async req => {
       const { stayMinutes } = await readJson(req);
       const mins = Number(stayMinutes);
-      if (!Number.isFinite(mins) || mins < 0.5 || mins > 180) throw bad('Thời gian ở lại phải từ 0.5 đến 180 phút');
+      if (!Number.isFinite(mins) || mins < 0.1 || mins > 180) throw bad('Thời gian ở lại phải từ 0.1 đến 180 phút');
       const stayConfig = stage.setStayMinutes?.(mins);
+      await ctx.saveSceneConfig?.({ stayMinutes: mins });
       return { ok: true, stayConfig };
     },
 

@@ -193,6 +193,13 @@ export async function startMasterAdmin({
           }
         })
       );
+      if (endpoint === '/api/stay-time' && Number.isFinite(Number(payload?.stayMinutes))) {
+        const mins = Math.max(0.1, Math.min(180, Number(payload.stayMinutes)));
+        const rtPatch = {};
+        if (targets.includes('cung-chua-online')) rtPatch.chuaStayMinutes = mins;
+        if (targets.includes('cuoc-dua-ky-thu')) rtPatch.duaStayMinutes = mins;
+        if (Object.keys(rtPatch).length) await db.updateRuntimeSettings?.(rtPatch);
+      }
       db.addWorkLog({
         category: 'control',
         game,

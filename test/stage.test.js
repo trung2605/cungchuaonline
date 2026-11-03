@@ -97,3 +97,20 @@ test('TC-09.1 remove', () => {
   assert.equal(s.has('a'), false);
   assert.deepEqual(s.remove('x'), []);
 });
+
+test('TC-09.2 setStayMinutes extends and shortens stay time of active actors immediately', () => {
+  const [s, c] = setup({ stayMinutes: 5 });
+  assert.equal(s.getStayConfig().stayMinutes, 5);
+  s.enter('a', 'A', 0, 1);
+  assert.equal(s.snapshot()[0].expiresAt, 300_000);
+
+  // Shorten from 5 minutes down to 1 minute -> actor expiresAt becomes 60_000
+  const cfg = s.setStayMinutes(1);
+  assert.equal(cfg.stayMinutes, 1);
+  assert.equal(s.snapshot()[0].expiresAt, 60_000);
+
+  // At t=61s, actor immediately leaves on tick
+  c.t = 61_000;
+  assert.deepEqual(s.tick(), [{ t: 'leave', id: 'a' }]);
+  assert.equal(s.has('a'), false);
+});
