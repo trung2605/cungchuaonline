@@ -10,7 +10,14 @@ import {
 import { createRaceRules } from '../CuocDuaKyThu/server/raceRules.js';
 import { startRaceAdmin } from '../CuocDuaKyThu/server/admin.js';
 import { startMockRace } from '../CuocDuaKyThu/server/mockRace.js';
-import { formatWelcomeSpeech, formatGiftBoostSpeech, cleanCommentForTts, VN_SONGS, BIOME_PLAYLISTS } from '../CuocDuaKyThu/web/scene/audio.js';
+import {
+  formatWelcomeSpeech,
+  formatGiftBoostSpeech,
+  formatContextualRaceSpeech,
+  cleanCommentForTts,
+  VN_SONGS,
+  BIOME_PLAYLISTS,
+} from '../CuocDuaKyThu/web/scene/audio.js';
 import { LANDMARK_STORIES, PROVINCE_STORIES } from '../CuocDuaKyThu/web/scene/storyScripts.js';
 
 const lists = { badwords: ['dm'], triggers: [], intents: {}, couplets: [] };
@@ -296,4 +303,108 @@ test('TC-RACE-10: 63-Province Regional Specialty Items catalog & end-to-end gift
 
   const speech = formatGiftBoostSpeech(donor);
   assert.ok(speech.includes('Tô Mì Quảng'), 'TTS speech should announce the regional specialty item');
+});
+
+test('TC-RACE-11: Contextual & humanized Race speech engine bridges story, join, gift, and comment transitions', () => {
+  // 1. Join while story narration is playing
+  const joinAfterStory = formatContextualRaceSpeech(
+    { kind: 'join', uid: 'u1', name: 'Quốc Khánh', landmarkName: 'Phố Cổ Hội An' },
+    { lastKind: 'story', lastUid: '' },
+  );
+  assert.ok(joinAfterStory.includes('Quốc Khánh'));
+  assert.ok(joinAfterStory.includes('Phố Cổ Hội An'));
+
+  // 2. Join right after another join -> conversational bridge
+  const joinAfterJoin = formatContextualRaceSpeech(
+    { kind: 'join', uid: 'u2', name: 'Thu Hà', landmarkName: 'Phố Cổ Hội An' },
+    { lastKind: 'join', lastUid: 'u1' },
+  );
+  assert.ok(joinAfterJoin.includes('Thu Hà'));
+  assert.notEqual(joinAfterStory, joinAfterJoin);
+
+  // 3. Group join (2-3 walkers arriving together)
+  const groupJoin = formatContextualRaceSpeech(
+    { kind: 'join', uid: 'u3', groupNames: ['Minh Anh', 'Đức Huy', 'Lan Hương'], landmarkName: 'Đèo Hải Vân' },
+    { lastKind: 'join', lastUid: 'u2' },
+  );
+  assert.ok(groupJoin.includes('Minh Anh, Đức Huy và Lan Hương'));
+
+  // 4. Same user sends gift right after joining
+  const giftSameAfterJoin = formatContextualRaceSpeech(
+    {
+      kind: 'gift',
+      uid: 'u1',
+      donor: {
+        uid: 'u1',
+        name: 'Quốc Khánh',
+        giftName: 'Rosa',
+        totalDiamonds: 10,
+        tier: 2,
+        bonusM: 220,
+        speedMult: 3.0,
+      },
+    },
+    { lastKind: 'join', lastUid: 'u1' },
+  );
+  assert.ok(/Vừa mới nhập đoàn|Vừa đặt chân vào đường đua/.test(giftSameAfterJoin));
+  assert.ok(giftSameAfterJoin.includes('Quốc Khánh'));
+
+  // 5. Different user sends gift while welcoming someone else
+  const giftOtherAfterJoin = formatContextualRaceSpeech(
+    {
+      kind: 'gift',
+      uid: 'u9',
+      donor: {
+        uid: 'u9',
+        name: 'Hoàng Nam',
+        giftName: 'Perfume',
+        totalDiamonds: 25,
+        tier: 3,
+        bonusM: 550,
+        speedMult: 4.2,
+      },
+    },
+    { lastKind: 'join', lastUid: 'u1' },
+  );
+  assert.ok(giftOtherAfterJoin.includes('Hoàng Nam'));
+  assert.notEqual(giftSameAfterJoin, giftOtherAfterJoin);
+});
+
+test('TC-RACE-12: Real-time Race reward multiplier optimization & 1-click Treasure Chest unlock', () => {
+  let t = 1000;
+  const stage = new RaceStage({ now: () => t });
+  const rules = createRaceRules({ stage, lists, now: () => t });
+
+  // Tune reward config to 3x distance and 1.5x speed
+  const rc = stage.setRewardConfig({
+    distanceMultiplier: 3,
+    speedMultiplier: 1.5,
+    chestTargetOverride: 15,
+    turboLikesTarget: 100,
+    preset: 'climax',
+  });
+  assert.equal(rc.distanceMultiplier, 3);
+  assert.equal(rc.speedMultiplier, 1.5);
+  assert.equal(stage.getGiftChest().targetDiamonds, 15);
+
+  // 1 Rose (1 diamond) normally gives +80m; with 3x multiplier it should give +240m
+  const out = rules.handle({
+    kind: 'gift',
+    src: 'tiktok',
+    uid: 'u_opt',
+    name: 'Tuấn Kiệt',
+    giftId: 5655,
+    giftName: 'Rose',
+    diamonds: 1,
+    repeat: 1,
+    ts: t,
+  });
+  const donor = out.find(m => m.t === 'donor');
+  assert.equal(donor.bonusM, 240);
+
+  // 1-click force unlock Treasure Chest
+  const res = stage.forceUnlockChest('Admin Lễ Hội');
+  assert.equal(res.unlocked, true);
+  assert.ok(res.msgs.some(m => m.t === 'fx' && m.kind === 'warp'));
+  assert.ok(res.msgs.some(m => m.t === 'banner' && m.text.includes('NỔ KHO BÁU LỄ HỘI')));
 });

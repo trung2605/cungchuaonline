@@ -456,7 +456,7 @@ async function initUnifiedRuntime() {
         try { await saveBlocked(b, path.join(tmpDir, 'chua-lists')); } catch {}
       },
       saveSceneConfig: async patch => {
-        if (patch?.autoBalance || patch?.demo || patch?.scene || Number.isFinite(patch?.stayMinutes)) {
+        if (patch?.autoBalance || patch?.demo || patch?.scene || patch?.rewardConfig || Number.isFinite(patch?.stayMinutes)) {
           await db.updateRuntimeSettings?.({
             ...(patch.autoBalance ? { chuaAutoBalanceEnabled: Boolean(patch.autoBalance.enabled) } : {}),
             ...(patch.demo
@@ -467,6 +467,7 @@ async function initUnifiedRuntime() {
                 }
               : {}),
             ...(Number.isFinite(patch.stayMinutes) ? { chuaStayMinutes: Number(patch.stayMinutes) } : {}),
+            ...(patch.rewardConfig ? { chuaRewardConfig: patch.rewardConfig } : {}),
             ...(patch.scene
               ? {
                   ...(patch.scene.bgmTrack ? { chuaBgmTrack: String(patch.scene.bgmTrack) } : {}),
@@ -510,7 +511,7 @@ async function initUnifiedRuntime() {
       ingest: ingestDua,
       broadcast: broadcastDua,
       saveSceneConfig: async patch => {
-        if (patch?.autoBalance || patch?.demo || patch?.scene || Number.isFinite(patch?.stayMinutes)) {
+        if (patch?.autoBalance || patch?.demo || patch?.scene || patch?.rewardConfig || Number.isFinite(patch?.stayMinutes)) {
           await db.updateRuntimeSettings?.({
             ...(patch.autoBalance ? { duaAutoBalanceEnabled: Boolean(patch.autoBalance.enabled) } : {}),
             ...(patch.demo
@@ -521,6 +522,7 @@ async function initUnifiedRuntime() {
                 }
               : {}),
             ...(Number.isFinite(patch.stayMinutes) ? { duaStayMinutes: Number(patch.stayMinutes) } : {}),
+            ...(patch.rewardConfig ? { duaRewardConfig: patch.rewardConfig } : {}),
             ...(patch.scene
               ? {
                   ...(patch.scene.bgmVocal !== undefined ? { duaBgmVocal: Boolean(patch.scene.bgmVocal) } : {}),
@@ -575,6 +577,9 @@ async function initUnifiedRuntime() {
           const expiredMsgs = chuaStage.tick(Date.now());
           if (expiredMsgs.length) broadcastChua(expiredMsgs);
         }
+        if (rtSettings.chuaRewardConfig && typeof rtSettings.chuaRewardConfig === 'object') {
+          chuaStage.setRewardConfig?.(rtSettings.chuaRewardConfig);
+        }
         const curChuaScene = chuaPipeline.snapshot?.()?.scene || {};
         if (
           (rtSettings.chuaBgmTrack && rtSettings.chuaBgmSeq && rtSettings.chuaBgmSeq !== curChuaScene.bgmSeq) ||
@@ -601,6 +606,9 @@ async function initUnifiedRuntime() {
           Number(rtSettings.duaStayMinutes) !== Number(duaStage.getStayConfig?.()?.stayMinutes)
         ) {
           duaStage.setStayMinutes(Number(rtSettings.duaStayMinutes));
+        }
+        if (rtSettings.duaRewardConfig && typeof rtSettings.duaRewardConfig === 'object') {
+          duaStage.setRewardConfig?.(rtSettings.duaRewardConfig);
         }
         if (
           (rtSettings.duaBgmVocal !== undefined && Boolean(rtSettings.duaBgmVocal) !== Boolean(duaScene.bgmVocal)) ||

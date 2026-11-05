@@ -220,6 +220,8 @@ export async function startRaceAdmin({ port = 8790, host = '127.0.0.1', password
       forcedBiome: stage.forcedBiome,
       scene: ctx.getScene(),
       stayConfig: stage.getStayConfig?.() ?? { stayMinutes: 5 },
+      rewardConfig: stage.getRewardConfig?.() ?? { distanceMultiplier: 1, speedMultiplier: 1, boostDurationMultiplier: 1, chestTargetOverride: 0, turboEveryLikes: 500, preset: 'standard' },
+      giftChest: stage.getGiftChest?.() ?? { level: 1, currentDiamonds: 0, targetDiamonds: 25, remaining: 25, pct: 0 },
       autoBalance: evaluateAutoBalance(false),
       demo: demo.state(),
       demoConfig: demo.config(),
@@ -345,6 +347,19 @@ export async function startRaceAdmin({ port = 8790, host = '127.0.0.1', password
       if (typeof uid !== 'string' || !uid) throw bad('uid không hợp lệ');
       broadcast(stage.remove(uid));
       return { ok: true };
+    },
+
+    'POST /api/reward-config': async req => {
+      const body = await readJson(req);
+      const rewardConfig = stage.setRewardConfig?.(body) ?? body;
+      return { ok: true, rewardConfig, giftChest: stage.getGiftChest?.() };
+    },
+
+    'POST /api/chest/unlock': async req => {
+      const body = await readJson(req);
+      const res = stage.forceUnlockChest?.(body.donorName || 'Admin Lễ Hội') ?? { unlocked: false, msgs: [] };
+      if (res.msgs?.length) broadcast(res.msgs);
+      return { ok: true, ...res };
     },
 
     'POST /api/reset-all': async () => {

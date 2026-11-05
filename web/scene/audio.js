@@ -150,6 +150,204 @@ export function formatTtsBlessing({ name = '', offering = 'dâng hương', repea
   return `${base}, ${b}`;
 }
 
+// ============================================================================
+// CONTEXTUAL & HUMANIZED TEMPLE SPEECH ENGINE (Situational Narrative Transitions)
+// ============================================================================
+const TEMPLE_OPEN_GREETINGS = [
+  who => `A Di Đà Phật, nhà chùa hoan hỷ đón Phật tử ${who} bước vào chánh điện lễ Phật.`,
+  who => `Xin chào đón Phật tử ${who} vừa ghé thăm bảo điện, chúc gia đạo luôn bình an và ấm êm.`,
+  who => `Giữa tiếng chuông chùa thanh tịnh, mời Phật tử ${who} cùng vào dâng nén tâm hương.`,
+  who => `Mô Phật, hữu duyên đón Phật tử ${who} về chùa lễ Phật, nguyện cho tâm luôn an lành.`,
+  who => `Chào mừng Phật tử ${who} đã về trước đài sen vàng, chúc một ngày nhiều niềm vui và may mắn.`,
+  who => `Nhà chùa xin mở rộng cửa đón Phật tử ${who} vào lễ Phật, cầu mong vạn sự hanh thông.`,
+];
+
+const TEMPLE_JOIN_AFTER_JOIN = [
+  (who, prev) => `Nối bước Phật tử ${prev || 'vừa rồi'}, nhà chùa đón thêm Phật tử ${who} cùng vào chánh điện.`,
+  (who) => `Cùng trong giây phút thanh tịnh này, mời Phật tử ${who} bước vào chiếu lễ dâng hương.`,
+  (who, prev) => `Vừa đón Phật tử ${prev || 'đi trước'} xong thì Phật tử ${who} cũng vừa kịp tới, mời vào lễ Phật ạ.`,
+  (who) => `Đạo tràng hôm nay thêm phần ấm cúng khi có thêm Phật tử ${who} vừa bước vào bảo điện.`,
+  (who) => `Tiếp nối bước chân an lạc, xin chào đón Phật tử ${who} cùng về dưới mái chùa bình yên.`,
+];
+
+const TEMPLE_JOIN_GROUP = [
+  names => `A Di Đà Phật, cùng lúc này nhà chùa hoan hỷ đón các Phật tử ${names} vừa bước vào chánh điện lễ Phật.`,
+  names => `Đạo tràng thêm đông vui khi đón các Phật tử ${names} cùng về dâng hương cầu bình an.`,
+  names => `Xin chào đón các Phật tử ${names} vừa hữu duyên hội ngộ tại bảo điện hôm nay.`,
+];
+
+const TEMPLE_JOIN_AFTER_GIFT = [
+  (who, prev) => `Trong tiếng chuông ngân từ tấm lòng của Phật tử ${prev || 'vừa rồi'}, xin đón thêm Phật tử ${who} vào lễ Phật.`,
+  (who) => `Sau lễ vật vừa dâng lên bàn Phật, nhà chùa hoan hỷ chào đón Phật tử ${who} mới bước vào chánh điện.`,
+  (who) => `Hương trầm còn đang quyện tỏa, mời Phật tử ${who} cùng vào chánh điện chắp tay cầu nguyện.`,
+];
+
+const TEMPLE_JOIN_AFTER_COMMENT = [
+  (who) => `Cùng hòa vào những lời nguyện ước lành, nhà chùa xin đón tiếp Phật tử ${who} vừa vào chùa.`,
+  (who, prev) => `Ngay sau lời cầu an của Phật tử ${prev || 'vừa rồi'}, chào mừng Phật tử ${who} bước vào bảo điện.`,
+];
+
+const TEMPLE_GIFT_AFTER_JOIN_SAME = [
+  (who, off, bless) => `Vừa mới bước vào chánh điện, Phật tử ${who} đã thành tâm ${off}, ${bless}.`,
+  (who, off, bless) => `Vừa đặt chân tới chiếu lễ, Phật tử ${who} liền gửi tấm lòng ${off}, ${bless}.`,
+];
+
+const TEMPLE_GIFT_AFTER_JOIN_OTHER = [
+  (who, prev, off, bless) => `Đang lúc nhà chùa đón tiếp Phật tử ${prev || 'mới vào'}, thật ấm lòng khi Phật tử ${who} vừa ${off}, ${bless}.`,
+  (who, _prev, off, bless) => `Giữa lúc đạo tràng đang đón khách thập phương, xin tri ân Phật tử ${who} đã ${off}, ${bless}.`,
+  (who, _prev, off, bless) => `Cũng ngay trong khoảnh khắc sum vầy này, cảm ơn Phật tử ${who} vừa thành tâm ${off}, ${bless}.`,
+];
+
+const TEMPLE_GIFT_AFTER_GIFT_SAME = [
+  (who, off, bless) => `Phật tử ${who} lại tiếp tục phát tâm ${off} thêm lần nữa, ${bless}.`,
+  (who, off, bless) => `Tấm lòng nối tiếp tấm lòng, Phật tử ${who} vừa gửi thêm lễ vật ${off}, ${bless}.`,
+];
+
+const TEMPLE_GIFT_AFTER_GIFT_OTHER = [
+  (who, prev, off, bless) => `Tiếp nối nén tâm hương của Phật tử ${prev || 'vừa rồi'}, nhà chùa xin cảm ơn Phật tử ${who} đã ${off}, ${bless}.`,
+  (who, prev, off, bless) => `Sau tấm lòng của Phật tử ${prev || 'đi trước'}, lại có thêm Phật tử ${who} thành tâm ${off}, ${bless}.`,
+  (who, _prev, off, bless) => `Không khí chánh điện thêm trang nghiêm và ấm áp khi Phật tử ${who} tiếp tục ${off}, ${bless}.`,
+];
+
+const TEMPLE_GIFT_AFTER_COMMENT = [
+  (who, off, bless) => `Cùng với những lời nguyện ước vừa treo lên Cây Bồ Đề, cảm ơn Phật tử ${who} đã ${off}, ${bless}.`,
+  (who, off, bless) => `Hòa cùng lời kinh tiếng kệ, xin tri ân Phật tử ${who} vừa thành tâm ${off}, ${bless}.`,
+];
+
+const TEMPLE_COMMENT_OPEN = [
+  (who, text) => `Trước đài sen vàng, Phật tử ${who} thành tâm gửi lời nguyện: ${text}.`,
+  (who, text) => `Một dải lụa đỏ mang tên Phật tử ${who} vừa bay lên Cây Bồ Đề với điều ước: ${text}.`,
+  (who, text) => `Nhà chùa xin ghi nhận tâm nguyện của Phật tử ${who}: ${text}.`,
+  (who, text) => `Phật tử ${who} vừa chắp tay gửi gắm lời chúc lành: ${text}.`,
+];
+
+const TEMPLE_COMMENT_AFTER_COMMENT = [
+  (who, prev, text) => `Nối tiếp lời cầu nguyện của ${prev || 'bạn vừa rồi'}, Phật tử ${who} cũng nhắn gửi: ${text}.`,
+  (who, _prev, text) => `Trên cành Bồ Đề lại có thêm dải lụa ước nguyện của Phật tử ${who} với lời nhắn: ${text}.`,
+  (who, _prev, text) => `Còn Phật tử ${who} thì gửi tâm niệm rất chân thành: ${text}.`,
+];
+
+const TEMPLE_COMMENT_AFTER_GIFT = [
+  (who, text) => `Trong tiếng chuông chùa ấm áp vừa ngân lên, Phật tử ${who} gửi lời cầu nguyện: ${text}.`,
+  (who, text) => `Sau lễ vật dâng lên Tam Bảo, Phật tử ${who} cũng thành tâm ước nguyện: ${text}.`,
+];
+
+const TEMPLE_COMMENT_AFTER_JOIN = [
+  (who, text) => `Vừa vào chánh điện, Phật tử ${who} đã gửi ngay lời nguyện ước: ${text}.`,
+  (who, text) => `Hòa nhịp cùng các Phật tử mới vào chùa, ${who} chia sẻ tâm nguyện: ${text}.`,
+];
+
+let templeNarrativeCursor = 0;
+
+function formatOfferingActionPhrase(offering = 'dâng hương', repeat = 1) {
+  const n = Math.max(1, Number(repeat) || 1);
+  if (offering === 'phát tâm công đức') {
+    return n >= 2 ? `phát tâm công đức lớn gấp ${n} lần` : 'phát tâm công đức';
+  }
+  if (n >= 2) {
+    if (offering === 'dâng hương') return `dâng ${n} nén hương trầm`;
+    if (offering === 'dâng hoa') return `dâng ${n} đóa hoa sen`;
+    if (offering === 'dâng đèn hoa đăng') return `thắp ${n} ngọn đèn hoa đăng`;
+  }
+  return offering;
+}
+
+export function formatContextualTempleSpeech(item, ctxState = {}) {
+  const step = templeNarrativeCursor++;
+  const now = Date.now();
+  const recentWindow = ctxState.lastAt === undefined
+    ? Boolean(ctxState.lastKind && ctxState.lastKind !== 'none')
+    : (now - (ctxState.lastAt || 0) < 24_000);
+  const prevKind = recentWindow ? (ctxState.lastKind || 'none') : 'none';
+  const prevUid = recentWindow ? (ctxState.lastUid || '') : '';
+  const prevName = recentWindow ? (ctxState.lastName || '') : '';
+
+  if (item.kind === 'join') {
+    if (Array.isArray(item.groupNames) && item.groupNames.length >= 2) {
+      const cleanNames = item.groupNames.map(cleanTtsName);
+      const joined = cleanNames.length === 2
+        ? `${cleanNames[0]} và ${cleanNames[1]}`
+        : `${cleanNames.slice(0, -1).join(', ')} và ${cleanNames[cleanNames.length - 1]}`;
+      const fn = TEMPLE_JOIN_GROUP[step % TEMPLE_JOIN_GROUP.length];
+      return fn(joined);
+    }
+    const who = cleanTtsName(item.name || item.who || '');
+    const intentSuffix = item.intentText ? ` cùng tâm nguyện ${item.intentText}` : '';
+    if (prevKind === 'join') {
+      const fn = TEMPLE_JOIN_AFTER_JOIN[step % TEMPLE_JOIN_AFTER_JOIN.length];
+      return fn(who, prevName) + intentSuffix;
+    }
+    if (prevKind === 'gift') {
+      const fn = TEMPLE_JOIN_AFTER_GIFT[step % TEMPLE_JOIN_AFTER_GIFT.length];
+      return fn(who, prevName) + intentSuffix;
+    }
+    if (prevKind === 'comment') {
+      const fn = TEMPLE_JOIN_AFTER_COMMENT[step % TEMPLE_JOIN_AFTER_COMMENT.length];
+      return fn(who, prevName) + intentSuffix;
+    }
+    const fn = TEMPLE_OPEN_GREETINGS[step % TEMPLE_OPEN_GREETINGS.length];
+    return fn(who) + intentSuffix;
+  }
+
+  if (item.kind === 'comment') {
+    const who = cleanTtsName(item.name || item.who || '');
+    const cleanText = item.cleanText || cleanCommentForTts(item.rawComment || item.text || '');
+    if (!cleanText) return `Chào đón Phật tử ${who} vào chùa lễ Phật.`;
+    if (prevKind === 'comment') {
+      const fn = TEMPLE_COMMENT_AFTER_COMMENT[step % TEMPLE_COMMENT_AFTER_COMMENT.length];
+      return fn(who, prevName, cleanText);
+    }
+    if (prevKind === 'gift') {
+      const fn = TEMPLE_COMMENT_AFTER_GIFT[step % TEMPLE_COMMENT_AFTER_GIFT.length];
+      return fn(who, cleanText);
+    }
+    if (prevKind === 'join') {
+      const fn = TEMPLE_COMMENT_AFTER_JOIN[step % TEMPLE_COMMENT_AFTER_JOIN.length];
+      return fn(who, cleanText);
+    }
+    const fn = TEMPLE_COMMENT_OPEN[step % TEMPLE_COMMENT_OPEN.length];
+    return fn(who, cleanText);
+  }
+
+  if (item.kind === 'gift') {
+    const who = cleanTtsName(item.name || item.who || '');
+    const diamonds = Number(item.diamonds ?? item.totalDiamonds) || 1;
+    const offering = item.offering || (diamonds >= 20 ? 'phát tâm công đức' : diamonds >= 5 ? 'dâng đèn hoa đăng' : 'dâng hương');
+    const repeat = Number(item.repeat) || 1;
+    const offPhrase = formatOfferingActionPhrase(offering, repeat);
+    const blessPool = diamonds >= 20 || offering === 'phát tâm công đức'
+      ? BLESSINGS_TIER2
+      : diamonds >= 5 || offering === 'dâng đèn hoa đăng'
+        ? BLESSINGS_TIER1
+        : BLESSINGS_TIER0;
+    const bless = blessPool[step % blessPool.length];
+
+    if (prevKind === 'join') {
+      if (prevUid && item.uid && prevUid === item.uid) {
+        const fn = TEMPLE_GIFT_AFTER_JOIN_SAME[step % TEMPLE_GIFT_AFTER_JOIN_SAME.length];
+        return fn(who, offPhrase, bless);
+      }
+      const fn = TEMPLE_GIFT_AFTER_JOIN_OTHER[step % TEMPLE_GIFT_AFTER_JOIN_OTHER.length];
+      return fn(who, prevName, offPhrase, bless);
+    }
+    if (prevKind === 'gift') {
+      if (prevUid && item.uid && prevUid === item.uid) {
+        const fn = TEMPLE_GIFT_AFTER_GIFT_SAME[step % TEMPLE_GIFT_AFTER_GIFT_SAME.length];
+        return fn(who, offPhrase, bless);
+      }
+      const fn = TEMPLE_GIFT_AFTER_GIFT_OTHER[step % TEMPLE_GIFT_AFTER_GIFT_OTHER.length];
+      return fn(who, prevName, offPhrase, bless);
+    }
+    if (prevKind === 'comment') {
+      const fn = TEMPLE_GIFT_AFTER_COMMENT[step % TEMPLE_GIFT_AFTER_COMMENT.length];
+      return fn(who, offPhrase, bless);
+    }
+    return formatTtsBlessing({ name: who, offering, repeat, diamonds });
+  }
+
+  return item.text || '';
+}
+
 // Pitch table (Hz) across 3 octaves for Buddhist Remix, Cổ Phong, Handpan, Tibetan & Zen
 const N = {
   C3: 130.81, D3: 146.83, E3: 164.81, F3: 174.61, G3: 196.00, A3: 220.00, B3: 246.94,
@@ -1065,6 +1263,7 @@ export function createAudio({ onSpeak = null } = {}) {
   let currentDone = null;
   let activeSpeechSeq = 0;
   let lastPrayerSpeechAt = 0;
+  const lastSpokenState = { lastKind: 'none', lastUid: '', lastName: '', lastAt: 0 };
   const recentRealGreet = new Map(); // uid -> ts to avoid double-greeting the same real user on join within 15s
   const recentNameGreet = new Map(); // normalizedName -> ts to avoid repeating join greeting within 15s
   const recentCommentSpeech = new Map(); // uid+text -> ts to avoid duplicate spam within 5s
@@ -1150,6 +1349,36 @@ export function createAudio({ onSpeak = null } = {}) {
   async function flushSpeech() {
     if (!enabled || speaking || !speechQueue.length) return;
     const item = speechQueue.shift();
+
+    // If multiple 'join' items are queued back-to-back, coalesce up to 3 into one warm group welcome
+    if (item.kind === 'join' && item.name) {
+      const groupNames = [item.name];
+      for (let i = 0; i < speechQueue.length && groupNames.length < 3; ) {
+        if (speechQueue[i].kind === 'join' && speechQueue[i].name) {
+          const nextJoin = speechQueue.splice(i, 1)[0];
+          if (!groupNames.includes(nextJoin.name)) groupNames.push(nextJoin.name);
+        } else {
+          i++;
+        }
+      }
+      if (groupNames.length >= 2) {
+        item.groupNames = groupNames;
+      }
+    }
+
+    // Dynamically compose contextual speech based on what was just spoken right before this item
+    if (item.kind === 'join' || item.kind === 'comment' || item.kind === 'gift') {
+      item.text = formatContextualTempleSpeech(item, lastSpokenState);
+      lastSpokenState.lastKind = item.kind;
+      lastSpokenState.lastUid = item.uid || '';
+      lastSpokenState.lastName = cleanTtsName(
+        Array.isArray(item.groupNames) && item.groupNames.length
+          ? item.groupNames[item.groupNames.length - 1]
+          : item.name || ''
+      );
+      lastSpokenState.lastAt = Date.now();
+    }
+
     const mySeq = ++activeSpeechSeq;
     currentItem = item;
     speaking = true;
@@ -1432,8 +1661,8 @@ export function createAudio({ onSpeak = null } = {}) {
         lastPrayerSpeechAt = now;
       }
       softBowl();
-      const text = `A Di Đà Phật. Chào mừng Phật tử ${who} vào chùa lễ Phật`;
-      enqueueSpeech({ uid: actor.id, offering: 'join', repeat: 1, text, diamonds: 0, kind: 'join', priority: isReal ? 1 : 0, isReal });
+      const text = formatContextualTempleSpeech({ kind: 'join', uid: actor.id, name: who }, lastSpokenState);
+      enqueueSpeech({ uid: actor.id, name: who, offering: 'join', repeat: 1, text, diamonds: 0, kind: 'join', priority: isReal ? 1 : 0, isReal });
     },
     speakComment(actor, rawComment = '') {
       if (!enabled || !readComments || !actor) return;
@@ -1462,8 +1691,8 @@ export function createAudio({ onSpeak = null } = {}) {
       }
 
       softBowl();
-      const text = `Phật tử ${who}: ${cleanText}`;
-      enqueueSpeech({ uid: actor.id, offering: 'comment', repeat: 1, text, diamonds: 0, kind: 'comment', priority: isReal ? 2 : 0, isReal });
+      const text = formatContextualTempleSpeech({ kind: 'comment', uid: actor.id, name: who, cleanText }, lastSpokenState);
+      enqueueSpeech({ uid: actor.id, name: who, cleanText, offering: 'comment', repeat: 1, text, diamonds: 0, kind: 'comment', priority: isReal ? 2 : 0, isReal });
     },
     thankJoin(msg) {
       if (!enabled || !msg) return;
@@ -1479,8 +1708,8 @@ export function createAudio({ onSpeak = null } = {}) {
       recentRealGreet.set(uid, now);
       recentNameGreet.set(nameKey, now);
       softBowl();
-      const text = `A Di Đà Phật. Chào mừng Phật tử ${who} vào chùa lễ Phật`;
-      enqueueSpeech({ uid, offering: 'join', repeat: 1, text, diamonds: 0, kind: 'join', priority: 1, isReal: true });
+      const text = formatContextualTempleSpeech({ kind: 'join', uid, name: who }, lastSpokenState);
+      enqueueSpeech({ uid, name: who, offering: 'join', repeat: 1, text, diamonds: 0, kind: 'join', priority: 1, isReal: true });
     },
     thankDonor(d) {
       if (!enabled || !d) return;
@@ -1505,16 +1734,17 @@ export function createAudio({ onSpeak = null } = {}) {
       if (existing) {
         existing.repeat += repeat;
         existing.diamonds += total;
+        existing.name = d.name;
         existing.isReal = existing.isReal || isReal;
         existing.priority = existing.isReal ? 3 : 0;
-        existing.text = formatTtsBlessing({ name: d.name, offering, repeat: existing.repeat, diamonds: existing.diamonds });
+        existing.text = formatContextualTempleSpeech(existing, lastSpokenState);
         if (isReal) {
           purgeQueuedBots();
           interruptSpeechIfLowerPriority(3);
         }
       } else {
-        const text = formatTtsBlessing({ name: d.name, offering, repeat, diamonds: total });
-        enqueueSpeech({ uid: d.uid, offering, repeat, text, diamonds: total, kind: 'gift', priority: isReal ? 3 : 0, isReal });
+        const text = formatContextualTempleSpeech({ kind: 'gift', uid: d.uid, name: d.name, offering, repeat, diamonds: total }, lastSpokenState);
+        enqueueSpeech({ uid: d.uid, name: d.name, offering, repeat, text, diamonds: total, kind: 'gift', priority: isReal ? 3 : 0, isReal });
       }
     },
     playMusic,

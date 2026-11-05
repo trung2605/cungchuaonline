@@ -6,6 +6,7 @@ import { createBowRules } from '../server/bowRules.js';
 import { startAdmin } from '../server/admin.js';
 import { createStats } from '../server/stats.js';
 import { createDedupe } from '../server/dedupe.js';
+import { formatContextualTempleSpeech } from '../web/scene/audio.js';
 
 test('TC-BT.1 Stage adds wish and limits to max 50 FIFO', () => {
   const stage = new Stage();
@@ -130,7 +131,60 @@ test('TC-BT.5 Admin HTTP API POST /api/bodhi/wish and /api/bodhi/clear broadcast
     assert.equal(rClear.status, 200);
     assert.ok(sent.some(m => m.t === 'clear_wishes'));
     assert.equal(stage.getWishes().length, 0);
+
+    const rReward = await fetch(`${base}/api/reward-config`, {
+      method: 'POST',
+      headers: { authorization: auth, 'content-type': 'application/json' },
+      body: JSON.stringify({ bowMultiplier: 3, tier1MinDiamonds: 3, tier2MinDiamonds: 10, preset: 'climax' }),
+    });
+    assert.equal(rReward.status, 200);
+    const jReward = await rReward.json();
+    assert.equal(jReward.ok, true);
+    assert.equal(jReward.rewardConfig.bowMultiplier, 3);
+    assert.equal(jReward.rewardConfig.tier1MinDiamonds, 3);
+    assert.equal(jReward.rewardConfig.tier2MinDiamonds, 10);
   } finally {
     admin.close();
   }
+});
+
+test('TC-BT.6 Contextual & humanized Temple speech engine adapts to join/gift/comment transitions', () => {
+  // 1. First join from idle
+  const join1 = formatContextualTempleSpeech(
+    { kind: 'join', uid: 'u1', name: 'Minh Tâm', intentText: 'cầu gia đạo bình an' },
+    { lastKind: 'none', lastUid: '' },
+  );
+  assert.ok(join1.includes('Minh Tâm'), 'join1 should include user name');
+  assert.ok(join1.includes('cầu gia đạo bình an'), 'join1 should include intent');
+
+  // 2. Join right after another join -> uses conversational bridge
+  const join2 = formatContextualTempleSpeech(
+    { kind: 'join', uid: 'u2', name: 'Hoàng Yến', intentText: 'cầu tài lộc' },
+    { lastKind: 'join', lastUid: 'u1' },
+  );
+  assert.ok(join2.includes('Hoàng Yến'));
+  assert.notEqual(join1, join2);
+
+  // 3. Coalesced group join (2-3 users arriving together)
+  const groupJoin = formatContextualTempleSpeech(
+    { kind: 'join', uid: 'u3', groupNames: ['An Nhiên', 'Thanh Tùng', 'Bảo Ngọc'], intentText: 'cầu sức khỏe' },
+    { lastKind: 'join', lastUid: 'u2' },
+  );
+  assert.ok(groupJoin.includes('An Nhiên, Thanh Tùng và Bảo Ngọc'));
+
+  // 4. Same user gifts right after joining -> natural continuation bridge
+  const giftSameAfterJoin = formatContextualTempleSpeech(
+    { kind: 'gift', uid: 'u1', name: 'Minh Tâm', giftName: 'Hoa Sen', totalDiamonds: 5, tier: 1 },
+    { lastKind: 'join', lastUid: 'u1' },
+  );
+  assert.ok(/Vừa mới bước vào chánh điện|Vừa đặt chân tới chiếu lễ/.test(giftSameAfterJoin));
+  assert.ok(giftSameAfterJoin.includes('Minh Tâm'));
+
+  // 5. Different user gifts while welcoming -> warm interruption bridge
+  const giftOtherAfterJoin = formatContextualTempleSpeech(
+    { kind: 'gift', uid: 'u9', name: 'Đại Thí Chủ Long', giftName: 'Nước Hoa', totalDiamonds: 20, tier: 2 },
+    { lastKind: 'join', lastUid: 'u1' },
+  );
+  assert.ok(giftOtherAfterJoin.includes('Đại Thí Chủ Long'));
+  assert.ok(/đại hồng chung|pháp phục hoàng kim|phát tâm công đức/i.test(giftOtherAfterJoin));
 });

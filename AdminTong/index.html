@@ -276,6 +276,65 @@
         </div>
 
         <!-- ================================================================== -->
+        <!-- REWARD OPTIMIZATION HUB (CẢ 2 HỆ THỐNG LIVESTREAM)                 -->
+        <!-- ================================================================== -->
+        <div class="reward-optimizer-card" id="masterRewardOptimizerCard">
+          <div class="card-header" style="margin-bottom:10px">
+            <div>
+              <h2 class="card-title">
+                <i data-lucide="gift" style="color:var(--gold)"></i>
+                4. Trung Tâm Tối Ưu Phần Thưởng &amp; Chế Độ Giờ Vàng (Đồng Bộ Cả 2 Hệ Thống)
+              </h2>
+              <div class="card-subtitle">
+                Bấm 1 chạm để nâng hệ số thưởng lượt lạy, hạ mốc lên pháp phục Hoàng Kim, nhân đôi quãng đường và mở Kho Báu Lễ Hội ngay trên sóng Live
+              </div>
+            </div>
+            <div class="row-inline" style="gap:8px;flex-wrap:wrap">
+              <span class="badge gold" id="masterChuaRewardBadge">🏯 Chùa 3D: ×1.0 lạy · Hoàng Kim 1000💎</span>
+              <span class="badge teal" id="masterDuaRewardBadge">🏁 Xuyên Việt: ×1.0 quãng đường · ×1.0 tốc độ</span>
+            </div>
+          </div>
+
+          <div class="reward-preset-grid">
+            <button type="button" class="reward-preset-tile active" data-global-reward-preset="standard">
+              <div class="reward-preset-top">
+                <span class="badge">Mặc định</span>
+                <strong class="reward-preset-mult">×1.0 Chuẩn</strong>
+              </div>
+              <div class="reward-preset-title">Cấu Hình Thường Ngày</div>
+              <div class="reward-preset-desc">Chùa: Áo Vàng 10💎, Hoàng Kim 1000💎 · Xuyên Việt: Quãng đường ×1.0, Tốc độ ×1.0</div>
+            </button>
+
+            <button type="button" class="reward-preset-tile" data-global-reward-preset="happy_hour">
+              <div class="reward-preset-top">
+                <span class="badge gold">Khuyên dùng khi đông</span>
+                <strong class="reward-preset-mult" style="color:var(--gold)">×2.0 Giờ Vàng</strong>
+              </div>
+              <div class="reward-preset-title">Khung Giờ Vàng Tri Ân</div>
+              <div class="reward-preset-desc">Nhân đôi lượt lạy &amp; mét chạy · Hạ mốc Áo Vàng còn 5💎, Hoàng Kim 15💎, Rương 40💎</div>
+            </button>
+
+            <button type="button" class="reward-preset-tile" data-global-reward-preset="climax">
+              <div class="reward-preset-top">
+                <span class="badge brand">Đẩy tương tác mạnh</span>
+                <strong class="reward-preset-mult" style="color:var(--brand)">×3.0 Cao Trào</strong>
+              </div>
+              <div class="reward-preset-title">Bùng Nổ Quà Nhỏ Lên Đồ Lớn</div>
+              <div class="reward-preset-desc">Nhân 3 lượt lạy &amp; mét chạy · Chỉ 3💎 lên Áo Vàng, 10💎 lên Hoàng Kim, Rương 25💎</div>
+            </button>
+
+            <button type="button" class="reward-preset-tile" data-global-reward-preset="festival">
+              <div class="reward-preset-top">
+                <span class="badge rose">Sự kiện đặc biệt</span>
+                <strong class="reward-preset-mult" style="color:var(--rose)">×5.0 Đại Lễ</strong>
+              </div>
+              <div class="reward-preset-title">Siêu Hội Đêm Rằm &amp; Xuyên Việt</div>
+              <div class="reward-preset-desc">Nhân 5 lượt lạy &amp; quãng đường · Tặng 1💎 có ngay Lụa Vàng, 5💎 lên Áo Hoàng Kim</div>
+            </button>
+          </div>
+        </div>
+
+        <!-- ================================================================== -->
         <!-- STUDIO BALANCE COCKPIT: AUTO-BALANCE, UI TOGGLES & ROTARY KNOBS    -->
         <!-- ================================================================== -->
         <div class="balance-cockpit">
@@ -829,16 +888,32 @@
             <div class="form-group" style="margin-bottom:0">
               <label class="form-label" for="catChuaReward">Phần Thưởng Cúng Chùa Online</label>
               <input type="text" id="catChuaReward" placeholder="VD: Áo tràng Hoàng Kim · Thắp hoa đăng &amp; Đại hồng chung" />
+              <div class="reward-chip-row" style="margin-top:6px">
+                <button type="button" class="reward-chip" data-fill-target="catChuaReward" data-fill-val="Dâng hương trầm + Lạy 12 lạy + Treo Lụa Đỏ Cây Bồ Đề">+Hương &amp; Lụa Đỏ</button>
+                <button type="button" class="reward-chip" data-fill-target="catChuaReward" data-fill-val="Khoác Áo Tràng Vàng + Thắp Hoa Đăng Liên Hoa + Lạy 36 lạy">+Áo Vàng &amp; Hoa Đăng</button>
+                <button type="button" class="reward-chip" data-fill-target="catChuaReward" data-fill-val="Pháp Phục Hoàng Kim + Thỉnh Đại Hồng Chung + Lụa Hoàng Kim Bồ Đề">+Hoàng Kim &amp; Chuông Lớn</button>
+              </div>
             </div>
             <div class="form-group" style="margin-bottom:0">
               <label class="form-label" for="catDuaReward">Phần Thưởng Cuộc Đua Kỳ Thú</label>
               <input type="text" id="catDuaReward" placeholder="VD: Tên Lửa Hoàng Kim · Tốc độ ×4.8 (+1.500m)" />
+              <div class="reward-chip-row" style="margin-top:6px">
+                <button type="button" class="reward-chip" data-fill-target="catDuaReward" data-fill-val="Xe Cub 81 Phượt Đèo · Tốc độ ×2.1 (+160m)">+Xe Cub ×2.1</button>
+                <button type="button" class="reward-chip" data-fill-target="catDuaReward" data-fill-val="Chiến Mã Thánh Gióng · Tốc độ ×3.0 (+450m)">+Chiến Mã ×3.0</button>
+                <button type="button" class="reward-chip" data-fill-target="catDuaReward" data-fill-val="Chuyên Cơ Phượng Hoàng · Tốc độ ×4.2 (+1.100m)">+Phượng Hoàng ×4.2</button>
+                <button type="button" class="reward-chip" data-fill-target="catDuaReward" data-fill-val="Rồng Vàng Tiên Tổ · Tốc độ ×6.5 (+5.000m) + Pháo Hoa">+Rồng Vàng ×6.5</button>
+              </div>
             </div>
           </div>
 
-          <button type="button" class="btn primary" id="btnSaveGiftCatalog">
-            <i data-lucide="save"></i> Lưu Vào Danh Mục Quà Tặng &amp; Đồng Bộ MongoDB
-          </button>
+          <div class="row-inline" style="justify-content:space-between;flex-wrap:wrap;gap:10px">
+            <button type="button" class="btn primary" id="btnSaveGiftCatalog">
+              <i data-lucide="save"></i> Lưu Vào Danh Mục Quà Tặng &amp; Đồng Bộ MongoDB
+            </button>
+            <span style="font-size:12px;color:var(--text-secondary)">
+              💡 Mẹo: Bấm nút <strong>"Sửa Nhanh"</strong> ở bảng dưới để nạp thông tin quà lên khung này và chỉnh phần thưởng chỉ trong 1 chạm.
+            </span>
+          </div>
         </div>
 
         <div class="card" style="margin-bottom:18px">
@@ -1177,6 +1252,49 @@
                   <button type="button" class="btn sm outline" id="btnChuaBodhiClear"><i data-lucide="rotate-ccw"></i> Làm Mới Cây Bồ Đề</button>
                 </div>
                 <span style="font-size:11.5px;color:var(--text-muted)">Tự động bay dải lụa 3D &amp; ngân chuông gió khi Phật tử bình luận / tặng quà</span>
+              </div>
+            </div>
+
+            <!-- Temple Reward Optimizer Box -->
+            <div class="reward-panel-box gold" style="margin-top:14px;margin-bottom:14px">
+              <div class="row-inline" style="justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:6px">
+                <label class="form-label" style="margin-bottom:0;font-weight:800;color:var(--text-primary)">
+                  🎁 Tối Ưu Phần Thưởng Lễ Vật, Pháp Phục &amp; Cây Bồ Đề 3D
+                </label>
+                <span class="badge gold" id="chuaRewardConfigBadge">Đang áp dụng: ×1.0 lạy · Hoàng Kim 1000💎</span>
+              </div>
+              <div class="preset-pills" style="margin-bottom:10px;width:100%;justify-content:flex-start;flex-wrap:wrap">
+                <button type="button" class="preset-pill active" data-chua-reward-preset="standard">×1.0 Chuẩn</button>
+                <button type="button" class="preset-pill" data-chua-reward-preset="happy_hour">×2.0 Giờ Vàng (Áo Vàng 5💎 · Hoàng Kim 15💎)</button>
+                <button type="button" class="preset-pill" data-chua-reward-preset="climax">×3.0 Cao Trào (Áo Vàng 3💎 · Hoàng Kim 10💎)</button>
+                <button type="button" class="preset-pill" data-chua-reward-preset="festival">×5.0 Đại Lễ (Áo Vàng 2💎 · Hoàng Kim 5💎)</button>
+              </div>
+              <div class="grid-2" style="gap:10px;margin-bottom:10px">
+                <div>
+                  <label class="form-label" for="chuaRewardBowMult">Hệ số nhân Lượt Lạy khi tặng quà (1x–10x)</label>
+                  <input type="number" id="chuaRewardBowMult" min="0.5" max="10" step="0.5" value="1" style="font-weight:700" />
+                </div>
+                <div>
+                  <label class="form-label" for="chuaRewardGoldRibbonMin">Mốc 💎 treo Dải Lụa Hoàng Kim Cây Bồ Đề</label>
+                  <input type="number" id="chuaRewardGoldRibbonMin" min="1" max="500" step="1" value="20" style="font-weight:700" />
+                </div>
+                <div>
+                  <label class="form-label" for="chuaRewardTier1Min">Mốc 💎 lên Áo Tràng Vàng &amp; Hoa Đăng</label>
+                  <input type="number" id="chuaRewardTier1Min" min="1" max="500" step="1" value="10" style="font-weight:700" />
+                </div>
+                <div>
+                  <label class="form-label" for="chuaRewardTier2Min">Mốc 💎 lên Pháp Phục Hoàng Kim &amp; Chuông Lớn</label>
+                  <input type="number" id="chuaRewardTier2Min" min="2" max="5000" step="1" value="1000" style="font-weight:700" />
+                </div>
+              </div>
+              <div class="row-inline" style="justify-content:space-between;flex-wrap:wrap;gap:8px">
+                <label class="row-inline" style="cursor:pointer;font-size:12px;font-weight:700;color:var(--text-primary)">
+                  <input type="checkbox" id="chuaRewardWishOnChat" checked style="width:16px;height:16px" />
+                  Tự động treo Dải Lụa Đỏ lên Cây Bồ Đề khi Phật tử bình luận lời chúc
+                </label>
+                <button type="button" class="btn sm gold" id="btnChuaSaveRewardConfig">
+                  <i data-lucide="sparkles"></i> Áp Dụng Cấu Hình Thưởng Chùa 3D
+                </button>
               </div>
             </div>
 
@@ -1577,6 +1695,48 @@
               <div class="row-inline">
                 <input type="text" id="duaBannerInput" placeholder="VD: Chào mừng đoàn lữ khách cùng khám phá danh lam thắng cảnh Việt Nam!" style="flex:1" />
                 <button type="button" class="btn teal" id="btnDuaBanner"><i data-lucide="send"></i> Phát Banner</button>
+              </div>
+            </div>
+
+            <!-- Xuyên Việt Reward Optimizer & Treasure Chest Box -->
+            <div class="reward-panel-box teal" style="margin-top:14px;margin-bottom:14px">
+              <div class="row-inline" style="justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:6px">
+                <label class="form-label" style="margin-bottom:0;font-weight:800;color:var(--text-primary)">
+                  🎁 Tối Ưu Phần Thưởng Quãng Đường, Tốc Độ &amp; Kho Báu Lễ Hội
+                </label>
+                <span class="badge teal" id="duaRewardConfigBadge">Đang áp dụng: ×1.0 quãng đường · Rương 50💎</span>
+              </div>
+              <div class="preset-pills" style="margin-bottom:10px;width:100%;justify-content:flex-start;flex-wrap:wrap">
+                <button type="button" class="preset-pill active" data-dua-reward-preset="standard">×1.0 Chuẩn</button>
+                <button type="button" class="preset-pill" data-dua-reward-preset="happy_hour">×2.0 Giờ Vàng (+100% mét · Rương 40💎)</button>
+                <button type="button" class="preset-pill" data-dua-reward-preset="climax">×3.0 Cao Trào (+200% mét · Rương 25💎)</button>
+                <button type="button" class="preset-pill" data-dua-reward-preset="festival">×5.0 Siêu Tốc (+400% mét · Rương 15💎)</button>
+              </div>
+              <div class="grid-2" style="gap:10px;margin-bottom:10px">
+                <div>
+                  <label class="form-label" for="duaRewardDistMult">Hệ số nhân Quãng Đường Thưởng (+m)</label>
+                  <input type="number" id="duaRewardDistMult" min="0.5" max="10" step="0.5" value="1" style="font-weight:700" />
+                </div>
+                <div>
+                  <label class="form-label" for="duaRewardSpeedMult">Hệ số nhân Tốc Độ Phương Tiện (1x–3x)</label>
+                  <input type="number" id="duaRewardSpeedMult" min="0.5" max="3" step="0.1" value="1" style="font-weight:700" />
+                </div>
+                <div>
+                  <label class="form-label" for="duaRewardChestTarget">Mốc 💎 mở Kho Báu Lễ Hội (0 = Mặc định)</label>
+                  <input type="number" id="duaRewardChestTarget" min="0" max="5000" step="5" value="0" style="font-weight:700" />
+                </div>
+                <div>
+                  <label class="form-label" for="duaRewardTurboLikes">Mốc Thả Tim nổ Bão Cầu Vồng Toàn Đoàn</label>
+                  <input type="number" id="duaRewardTurboLikes" min="20" max="5000" step="10" value="300" style="font-weight:700" />
+                </div>
+              </div>
+              <div class="row-inline" style="justify-content:space-between;flex-wrap:wrap;gap:8px">
+                <button type="button" class="btn sm teal" id="btnDuaSaveRewardConfig">
+                  <i data-lucide="check"></i> Áp Dụng Cấu Hình Thưởng Xuyên Việt
+                </button>
+                <button type="button" class="btn sm gold" id="btnDuaUnlockChestNow">
+                  <i data-lucide="gift"></i> Kích Nổ Kho Báu Lễ Hội Ngay (×3.0 Tốc Độ)
+                </button>
               </div>
             </div>
 

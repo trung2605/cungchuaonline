@@ -86,7 +86,12 @@ export function cleanRaceTtsName(raw = '') {
 }
 
 const WELCOME_TEMPLATES = [
-  name => `Chào mừng ${name} cùng tham gia hành trình đi bộ xuyên Việt`,
+  name => `Chào mừng ${name} cùng tham gia hành trình đi bộ xuyên Việt.`,
+  name => `Chào đón ${name} vừa xỏ giày nhập đoàn đi bộ cùng anh em chúng mình nhé.`,
+  name => `Rất vui khi có thêm ${name} vừa bước vào cung đường khám phá đất nước hôm nay.`,
+  name => `Đoàn bộ hành vừa có thêm người bạn đồng hành mới, xin chào ${name} nhé.`,
+  name => `Giữa khung cảnh tuyệt đẹp này, chào mừng ${name} cùng hòa nhịp bước chân với cả đoàn.`,
+  name => `Xin vẫy tay chào ${name} vừa gia nhập đoàn lữ khách xuyên Việt hôm nay.`,
 ];
 let welcomeTemplateIdx = 0;
 
@@ -121,6 +126,220 @@ export function formatGiftBoostSpeech({
     return `Chào mừng ${who} cùng tham gia hành trình đi bộ xuyên Việt, tặng ${combo} nhận ${mountLabel}${specPhrase}, tiến thêm ${bonusM} mét${kingNote}${chestNote}`;
   }
   return `Cảm ơn ${who} đã tặng ${combo}, nhận ${mountLabel}${specPhrase}, tiến thêm ${bonusM} mét${kingNote}${chestNote}`;
+}
+
+// ============================================================================
+// CONTEXTUAL & HUMANIZED RACE SPEECH ENGINE (Situational Narrative Transitions)
+// ============================================================================
+const RACE_JOIN_AFTER_STORY = [
+  who => `Đang đi qua cung đường này, đoàn mình vui mừng đón thêm ${who} vừa nhập cuộc cùng anh em.`,
+  who => `Giữa hành trình khám phá đất nước, chào đón ${who} vừa xỏ giày bước vào đoàn đi bộ nhé.`,
+  who => `Đoàn lữ khách vừa có thêm người bạn đồng hành mới, xin chào ${who} nhé.`,
+  who => `Tạm dừng câu chuyện một chút để vẫy tay chào đón ${who} vừa gia nhập đoàn bộ hành.`,
+];
+
+const RACE_JOIN_AFTER_JOIN = [
+  (who, prev) => `Nối bước ngay phía sau ${prev || 'bạn vừa rồi'}, đoàn mình đón thêm ${who} vừa nhập cuộc.`,
+  (who, prev) => `Vừa dứt lời chào ${prev || 'bạn đi trước'} thì có thêm ${who} cũng vừa chạy tới nhập đoàn.`,
+  (who) => `Đông vui quá, cùng nhịp bước chân lúc này xin bắt tay chào đón thêm ${who} nhé.`,
+  (who) => `Thêm một người bạn nữa vừa kịp tới nơi, chào mừng ${who} đồng hành cùng cả nhà.`,
+];
+
+const RACE_JOIN_GROUP = [
+  names => `Đông vui quá, cùng lúc này đoàn mình đón thêm các bạn ${names} vừa nhập cuộc đi bộ cùng anh em.`,
+  names => `Chào đón các bạn ${names} vừa cùng nhau bước vào cung đường xuyên Việt hôm nay.`,
+  names => `Hành trình thêm rộn ràng khi đón liền các bạn ${names} vừa gia nhập đoàn bộ hành.`,
+];
+
+const RACE_JOIN_AFTER_GIFT = [
+  (who, prev) => `Trong không khí sôi nổi sau pha tăng tốc của ${prev || 'bạn vừa rồi'}, chào đón thêm ${who} vừa nhập cuộc.`,
+  (who) => `Nhờ sức nóng trên đường đua lúc này, đoàn mình lại đón thêm ${who} hào hứng bước vào hành trình.`,
+  (who) => `Ngay sau màn tiếp lửa vừa rồi, xin chào mừng ${who} vừa gia nhập đoàn đi bộ xuyên Việt.`,
+];
+
+const RACE_JOIN_AFTER_COMMENT = [
+  (who) => `Vừa trò chuyện rôm rả cùng mọi người xong thì đoàn mình đón thêm ${who} mới nhập cuộc.`,
+  (who, prev) => `Ngay sau lời chia sẻ của ${prev || 'bạn vừa rồi'}, chào mừng ${who} cùng bước vào hành trình.`,
+];
+
+const RACE_GIFT_AFTER_JOIN_SAME = [
+  (who, combo, mount, spec, bonusM, king, chest) =>
+    `Vừa mới nhập đoàn thôi mà ${who} đã tiếp lửa ngay ${combo}, mở khóa ${mount}${spec} và bứt tốc tiến thêm ${bonusM} mét${king}${chest}`,
+  (who, combo, mount, spec, bonusM, king, chest) =>
+    `Vừa đặt chân vào đường đua, ${who} liền gửi tặng ${combo}, nhận ngay ${mount}${spec} phóng vọt thêm ${bonusM} mét${king}${chest}`,
+];
+
+const RACE_GIFT_AFTER_JOIN_OTHER = [
+  (who, prev, combo, mount, spec, bonusM, king, chest) =>
+    `Đang lúc rộn ràng đón ${prev || 'thành viên mới'} vào đoàn, cảm ơn ${who} vừa gửi tặng ngay ${combo}, nhận ${mount}${spec} để vọt lên thêm ${bonusM} mét${king}${chest}`,
+  (who, _prev, combo, mount, spec, bonusM, king, chest) =>
+    `Giữa lúc đoàn đang chào đón anh em mới, ${who} bất ngờ tiếp sức ${combo}, cưỡi ${mount}${spec} tiến thẳng thêm ${bonusM} mét${king}${chest}`,
+];
+
+const RACE_GIFT_AFTER_STORY = [
+  (who, combo, mount, spec, bonusM, king, chest) =>
+    `Tạm gác câu chuyện vùng đất này một nhịp để cảm ơn ${who} vừa gửi tặng ${combo}, nhận ${mount}${spec} và bứt phá thêm ${bonusM} mét${king}${chest}`,
+  (who, combo, mount, spec, bonusM, king, chest) =>
+    `Ngay trên cung đường di sản này, thật ấm lòng khi ${who} vừa tiếp sức ${combo}, kích hoạt ${mount}${spec} tiến thêm ${bonusM} mét${king}${chest}`,
+];
+
+const RACE_GIFT_AFTER_GIFT_SAME = [
+  (who, combo, mount, spec, bonusM, king, chest) =>
+    `Vẫn là ${who} tiếp tục gửi thêm ${combo} nữa, nâng cấp ${mount}${spec} và cộng dồn thêm ${bonusM} mét trên đường đua${king}${chest}`,
+  (who, combo, mount, spec, bonusM, king, chest) =>
+    `Cơn mưa quà tặng từ ${who} vẫn chưa dừng lại với ${combo}, giữ vững ${mount}${spec} và tiến thêm ${bonusM} mét${king}${chest}`,
+];
+
+const RACE_GIFT_AFTER_GIFT_OTHER = [
+  (who, prev, combo, mount, spec, bonusM, king, chest) =>
+    `Tiếp nối màn bứt tốc của ${prev || 'bạn vừa rồi'}, đến lượt ${who} tung ra ${combo}, nhận ${mount}${spec} và rút ngắn thêm ${bonusM} mét${king}${chest}`,
+  (who, prev, combo, mount, spec, bonusM, king, chest) =>
+    `Đường đua đang gay cấn từng mét, sau ${prev || 'bạn đi trước'} thì ${who} cũng vừa gửi tặng ${combo}, mở khóa ${mount}${spec} tiến thêm ${bonusM} mét${king}${chest}`,
+];
+
+const RACE_GIFT_AFTER_COMMENT = [
+  (who, combo, mount, spec, bonusM, king, chest) =>
+    `Hưởng ứng những lời cổ vũ trên khung chat, cảm ơn ${who} đã gửi tặng ${combo}, nhận ${mount}${spec} và tiến thêm ${bonusM} mét${king}${chest}`,
+];
+
+const RACE_COMMENT_OPEN = [
+  (who, text) => `Từ khung chat, bạn ${who} có nhắn: ${text}.`,
+  (who, text) => `Bạn ${who} vừa trò chuyện cùng đoàn mình: ${text}.`,
+  (who, text) => `Trên đường đi, bạn ${who} gửi lời chia sẻ: ${text}.`,
+];
+
+const RACE_COMMENT_AFTER_COMMENT = [
+  (who, prev, text) => `Tiếp lời ${prev || 'bạn vừa rồi'}, bạn ${who} cũng chia sẻ: ${text}.`,
+  (who, _prev, text) => `Còn bạn ${who} thì nhắn cùng cả đoàn là: ${text}.`,
+  (who, _prev, text) => `Hưởng ứng ngay phía dưới, ${who} góp lời: ${text}.`,
+];
+
+const RACE_COMMENT_AFTER_GIFT = [
+  (who, text) => `Cổ vũ cho pha tăng tốc vừa rồi, bạn ${who} nhắn rằng: ${text}.`,
+  (who, text) => `Giữa lúc cả đoàn đang phấn khích, ${who} chia sẻ: ${text}.`,
+];
+
+const RACE_COMMENT_AFTER_JOIN = [
+  (who, text) => `Vừa hòa vào đoàn người, bạn ${who} gửi lời nhắn: ${text}.`,
+  (who, text) => `Cùng lúc đón thành viên mới, bạn ${who} có nhắn: ${text}.`,
+];
+
+const RACE_STORY_RESUME_BRIDGES = {
+  gift: [
+    'Cảm ơn tấm lòng tiếp sức của các bạn rất nhiều, giờ mình lại vừa đi vừa ngắm tiếp cảnh đẹp phía trước nhé.',
+    'Sau màn bứt tốc đầy hứng khởi vừa rồi, đoàn mình lại thong thả nghe tiếp câu chuyện về vùng đất này nhé.',
+  ],
+  join: [
+    'Đông đủ anh em hơn rồi, chúng mình lại tiếp tục câu chuyện về vùng đất phía trước nhé.',
+    'Có thêm bạn đồng hành mới, bước chân cả đoàn như nhẹ nhàng hơn trên cung đường hôm nay.',
+  ],
+  comment: [
+    'Vừa trò chuyện rôm rả cùng mọi người, đoàn mình vừa sải bước tiếp qua cung đường này.',
+  ],
+};
+
+let raceNarrativeCursor = 0;
+
+export function formatContextualRaceSpeech(item, ctxState = {}) {
+  const step = raceNarrativeCursor++;
+  const now = Date.now();
+  const recentWindow = ctxState.lastAt === undefined
+    ? Boolean(ctxState.lastKind && ctxState.lastKind !== 'none')
+    : (now - (ctxState.lastAt || 0) < 25_000);
+  const prevKind = recentWindow ? (ctxState.lastKind || 'none') : 'none';
+  const prevUid = recentWindow ? (ctxState.lastUid || '') : '';
+  const prevName = recentWindow ? (ctxState.lastName || '') : '';
+
+  if (item.kind === 'join') {
+    if (Array.isArray(item.groupNames) && item.groupNames.length >= 2) {
+      const cleanNames = item.groupNames.map(cleanRaceTtsName);
+      const joined = cleanNames.length === 2
+        ? `${cleanNames[0]} và ${cleanNames[1]}`
+        : `${cleanNames.slice(0, -1).join(', ')} và ${cleanNames[cleanNames.length - 1]}`;
+      const fn = RACE_JOIN_GROUP[step % RACE_JOIN_GROUP.length];
+      return fn(joined);
+    }
+    const who = cleanRaceTtsName(item.name || item.who || '');
+    const lmSuffix = item.landmarkName ? ` tại ${item.landmarkName}` : '';
+    if (prevKind === 'join') {
+      const fn = RACE_JOIN_AFTER_JOIN[step % RACE_JOIN_AFTER_JOIN.length];
+      return fn(who, prevName) + lmSuffix;
+    }
+    if (prevKind === 'gift') {
+      const fn = RACE_JOIN_AFTER_GIFT[step % RACE_JOIN_AFTER_GIFT.length];
+      return fn(who, prevName) + lmSuffix;
+    }
+    if (prevKind === 'comment') {
+      const fn = RACE_JOIN_AFTER_COMMENT[step % RACE_JOIN_AFTER_COMMENT.length];
+      return fn(who, prevName) + lmSuffix;
+    }
+    if (prevKind === 'story') {
+      const fn = RACE_JOIN_AFTER_STORY[step % RACE_JOIN_AFTER_STORY.length];
+      return fn(who) + lmSuffix;
+    }
+    return formatWelcomeSpeech(who, false) + lmSuffix;
+  }
+
+  if (item.kind === 'comment') {
+    const who = cleanRaceTtsName(item.name || item.who || '');
+    const cleanText = item.cleanText || cleanCommentForTts(item.rawComment || item.text || '');
+    if (!cleanText) return formatWelcomeSpeech(who, false);
+    if (prevKind === 'comment') {
+      const fn = RACE_COMMENT_AFTER_COMMENT[step % RACE_COMMENT_AFTER_COMMENT.length];
+      return fn(who, prevName, cleanText);
+    }
+    if (prevKind === 'gift') {
+      const fn = RACE_COMMENT_AFTER_GIFT[step % RACE_COMMENT_AFTER_GIFT.length];
+      return fn(who, cleanText);
+    }
+    if (prevKind === 'join') {
+      const fn = RACE_COMMENT_AFTER_JOIN[step % RACE_COMMENT_AFTER_JOIN.length];
+      return fn(who, cleanText);
+    }
+    const fn = RACE_COMMENT_OPEN[step % RACE_COMMENT_OPEN.length];
+    return fn(who, cleanText);
+  }
+
+  if (item.kind === 'gift') {
+    const d = item.donor || item;
+    const who = cleanRaceTtsName(d.name || '');
+    const repeat = Number(d.repeat) || 1;
+    const giftVi = d.giftVi || 'món quà';
+    const combo = repeat > 1 ? `${repeat} ${giftVi}` : giftVi;
+    const mount = d.mountLabel || 'Đôi Cánh Chim Lạc';
+    const spec = d.regionalItem?.name ? ` và ${d.regionalItem.name}` : '';
+    const bonusM = d.bonusM ?? 80;
+    const king = d.overtookKing ? ', chính thức soán ngôi Top 1 Vua Hành Trình!' : '!';
+    const chest = d.chestUnlocked ? ' Đại tiệc Kho Báu Lễ Hội đã nổ, tăng tốc toàn đoàn gấp ba lần!' : '';
+
+    if (prevKind === 'join') {
+      if ((prevUid && d.uid && prevUid === d.uid) || d.isNewJoin) {
+        const fn = RACE_GIFT_AFTER_JOIN_SAME[step % RACE_GIFT_AFTER_JOIN_SAME.length];
+        return fn(who, combo, mount, spec, bonusM, king, chest);
+      }
+      const fn = RACE_GIFT_AFTER_JOIN_OTHER[step % RACE_GIFT_AFTER_JOIN_OTHER.length];
+      return fn(who, prevName, combo, mount, spec, bonusM, king, chest);
+    }
+    if (prevKind === 'gift') {
+      if (prevUid && d.uid && prevUid === d.uid) {
+        const fn = RACE_GIFT_AFTER_GIFT_SAME[step % RACE_GIFT_AFTER_GIFT_SAME.length];
+        return fn(who, combo, mount, spec, bonusM, king, chest);
+      }
+      const fn = RACE_GIFT_AFTER_GIFT_OTHER[step % RACE_GIFT_AFTER_GIFT_OTHER.length];
+      return fn(who, prevName, combo, mount, spec, bonusM, king, chest);
+    }
+    if (prevKind === 'story') {
+      const fn = RACE_GIFT_AFTER_STORY[step % RACE_GIFT_AFTER_STORY.length];
+      return fn(who, combo, mount, spec, bonusM, king, chest);
+    }
+    if (prevKind === 'comment') {
+      const fn = RACE_GIFT_AFTER_COMMENT[step % RACE_GIFT_AFTER_COMMENT.length];
+      return fn(who, combo, mount, spec, bonusM, king, chest);
+    }
+    return formatGiftBoostSpeech(d);
+  }
+
+  return item.text || '';
 }
 
 const GIFT_CTA_SENTENCES = [
@@ -1557,6 +1776,9 @@ const REAL_VN_SONG_TRACKS = {
   // naturally (`src.onended = done`), while purging any *unspoken* story sentences from
   // `speechQueue` and queueing the participant event at the front of `speechQueue` so it
   // speaks immediately after the current sentence finishes.
+  const lastSpokenState = { lastKind: 'none', lastUid: '', lastName: '', lastAt: 0 };
+  let storyResumeBridgeCursor = 0;
+
   function purgeUnspokenLowerPriorityFromQueue(isReal = false) {
     for (let i = speechQueue.length - 1; i >= 0; i--) {
       if (speechQueue[i].kind === 'story') {
@@ -1628,9 +1850,21 @@ const REAL_VN_SONG_TRACKS = {
     // 1. If a province milestone story is pending, speak it sentence by sentence
     if (pendingProvinceSentences.length > 0 && storyStepIdx > 0) {
       const nextProv = pendingProvinceSentences.shift();
+      let text = nextProv.text;
+      if (
+        lastSpokenState.lastKind !== 'none' &&
+        lastSpokenState.lastKind !== 'story' &&
+        Date.now() - lastSpokenState.lastAt < 14_000
+      ) {
+        const bridges = RACE_STORY_RESUME_BRIDGES[lastSpokenState.lastKind] || [];
+        if (bridges.length) {
+          text = `${bridges[storyResumeBridgeCursor++ % bridges.length]} ${text}`;
+        }
+        lastSpokenState.lastKind = 'story';
+      }
       enqueueSpeech({
         uid: '__ai_story_province__',
-        text: nextProv.text,
+        text,
         kind: 'story',
         gender: nextProv.gender,
         priority: 0,
@@ -1655,9 +1889,22 @@ const REAL_VN_SONG_TRACKS = {
     const nextSent = pendingStorySentences.shift();
     if (!nextSent) return;
 
+    let storyText = nextSent.text;
+    if (
+      lastSpokenState.lastKind !== 'none' &&
+      lastSpokenState.lastKind !== 'story' &&
+      Date.now() - lastSpokenState.lastAt < 14_000
+    ) {
+      const bridges = RACE_STORY_RESUME_BRIDGES[lastSpokenState.lastKind] || [];
+      if (bridges.length) {
+        storyText = `${bridges[storyResumeBridgeCursor++ % bridges.length]} ${storyText}`;
+      }
+      lastSpokenState.lastKind = 'story';
+    }
+
     enqueueSpeech({
       uid: '__ai_story__',
-      text: nextSent.text,
+      text: storyText,
       kind: 'story',
       gender: nextSent.gender,
       priority: 0,
@@ -1670,6 +1917,39 @@ const REAL_VN_SONG_TRACKS = {
     nextFlushTimer = null;
     if (!enabled || speaking || !speechQueue.length) return;
     const item = speechQueue.shift();
+
+    // Coalesce up to 3 waiting 'join' items into a single warm group welcome
+    if (item.kind === 'join' && item.name) {
+      const groupNames = [item.name];
+      for (let i = 0; i < speechQueue.length && groupNames.length < 3; ) {
+        if (speechQueue[i].kind === 'join' && speechQueue[i].name) {
+          const nextJoin = speechQueue.splice(i, 1)[0];
+          if (!groupNames.includes(nextJoin.name)) groupNames.push(nextJoin.name);
+        } else {
+          i++;
+        }
+      }
+      if (groupNames.length >= 2) {
+        item.groupNames = groupNames;
+      }
+    }
+
+    // Dynamically compose contextual speech based on what was just spoken right before this item
+    if (item.kind === 'join' || item.kind === 'comment' || item.kind === 'gift') {
+      item.text = formatContextualRaceSpeech(item, lastSpokenState);
+      lastSpokenState.lastKind = item.kind;
+      lastSpokenState.lastUid = item.uid || '';
+      lastSpokenState.lastName = cleanRaceTtsName(
+        Array.isArray(item.groupNames) && item.groupNames.length
+          ? item.groupNames[item.groupNames.length - 1]
+          : item.name || item.donor?.name || ''
+      );
+      lastSpokenState.lastAt = Date.now();
+    } else if (item.kind === 'story') {
+      lastSpokenState.lastKind = 'story';
+      lastSpokenState.lastAt = Date.now();
+    }
+
     const mySeq = ++activeSpeechSeq;
     currentItem = item;
     speaking = true;
@@ -1970,9 +2250,10 @@ const REAL_VN_SONG_TRACKS = {
       }
 
       const gender = interactiveGenderToggle++ % 2 === 0 ? 'female' : 'male';
-      const text = formatWelcomeSpeech(msg.name, false);
+      const who = cleanRaceTtsName(msg.name);
+      const text = formatContextualRaceSpeech({ kind: 'join', uid, name: who }, lastSpokenState);
       // Join priority (10 real / 7 demo) is HIGHER than Comment (9 real / 6 demo) and Story (0)
-      enqueueSpeech({ uid, text, kind: 'join', gender, priority: isReal ? 10 : 7, isReal });
+      enqueueSpeech({ uid, name: who, text, kind: 'join', gender, priority: isReal ? 10 : 7, isReal });
     },
     speakComment(runner, rawComment = '') {
       if (!enabled || !readComments || !runner) return;
@@ -1995,9 +2276,9 @@ const REAL_VN_SONG_TRACKS = {
       }
 
       const gender = interactiveGenderToggle++ % 2 === 0 ? 'male' : 'female';
-      const text = `${who} bình luận: ${cleanText}`;
+      const text = formatContextualRaceSpeech({ kind: 'comment', uid, name: who, cleanText }, lastSpokenState);
       // Comment priority (9 real / 6 demo) is right after Join (10 / 7) and ALWAYS ahead of Story (0)
-      enqueueSpeech({ uid, text, kind: 'comment', gender, priority: isReal ? 9 : 6, isReal });
+      enqueueSpeech({ uid, name: who, cleanText, text, kind: 'comment', gender, priority: isReal ? 9 : 6, isReal });
     },
     announceGift(d) {
       if (!enabled || !d) return;
@@ -2020,13 +2301,15 @@ const REAL_VN_SONG_TRACKS = {
         lastMockGiftAt = now;
       }
 
-      const text = formatGiftBoostSpeech(d);
+      const text = formatContextualRaceSpeech({ kind: 'gift', uid, donor: d }, lastSpokenState);
       const priority = (isReal ? 12 : 8) + (d.tier || 1);
 
       // If this user already has an unspoken gift announcement waiting in speechQueue, coalesce it in-place
       // so rapid gift taps read only the latest combined reward once instead of repeating!
       const existingGift = uid ? speechQueue.find(x => x.uid === uid && x.kind === 'gift') : null;
       if (existingGift) {
+        existingGift.donor = d;
+        existingGift.name = d.name;
         existingGift.text = text;
         existingGift.tier = Math.max(existingGift.tier || 1, d.tier || 1);
         existingGift.priority = Math.max(existingGift.priority || 1, priority);
@@ -2039,6 +2322,8 @@ const REAL_VN_SONG_TRACKS = {
       // Gift priority (13..16 real / 9..12 demo) is the highest priority
       enqueueSpeech({
         uid,
+        name: d.name,
+        donor: d,
         text,
         kind: 'gift',
         tier: d.tier || 1,

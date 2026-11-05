@@ -459,6 +459,7 @@ export async function startAdmin({ port = 8788, host = '127.0.0.1', password, ct
       demoConfig: demo.config?.() ?? { on: demo.state().on, rate: demo.state().rate ?? 3, giftRatio: 0.08, prayerRatio: 0.65 },
       actors: stage.snapshot(),
       wishes: stage.getWishes?.() ?? [],
+      rewardConfig: stage.getRewardConfig?.() ?? { bowMultiplier: 1, tier1MinDiamonds: 5, tier2MinDiamonds: 20, wishRibbonOnChat: true, wishRibbonGoldMinDiamonds: 20, preset: 'standard' },
       pastSessions: ctx.listSessions?.() ?? [],
       config: ctx.getConfig?.() ?? { tiktokUser: process.env.TIKTOK_USER || '' },
     }),
@@ -659,6 +660,12 @@ export async function startAdmin({ port = 8788, host = '127.0.0.1', password, ct
       const msgs = stage.clearWishes?.() ?? [{ t: 'clear_wishes' }];
       broadcast(msgs);
       return { ok: true, wishesCount: 0 };
+    },
+
+    'POST /api/reward-config': async req => {
+      const body = await readJson(req);
+      const rewardConfig = stage.setRewardConfig?.(body) ?? body;
+      return { ok: true, rewardConfig };
     },
 
     'POST /api/fx-emotion': async req => {

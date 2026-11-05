@@ -265,14 +265,57 @@ export class RaceStage {
     this.lastTickAt = now();
     this.stayMinutes = 5;
     this.ttlMap = { ...RACE_TTL };
+    this.rewardConfig = {
+      distanceMultiplier: 1,
+      speedMultiplier: 1,
+      boostDurationMultiplier: 1,
+      chestTargetOverride: 0,
+      turboEveryLikes: 500,
+      preset: 'standard',
+    };
     if (stayMinutes > 0) this.setStayMinutes(stayMinutes);
+  }
+
+  setRewardConfig(patch = {}) {
+    const presetMap = {
+      standard: { distanceMultiplier: 1, speedMultiplier: 1, boostDurationMultiplier: 1, chestTargetOverride: 0, turboEveryLikes: 500 },
+      golden_hour: { distanceMultiplier: 2, speedMultiplier: 1.25, boostDurationMultiplier: 1.5, chestTargetOverride: 20, turboEveryLikes: 300 },
+      festival: { distanceMultiplier: 3, speedMultiplier: 1.5, boostDurationMultiplier: 2, chestTargetOverride: 15, turboEveryLikes: 200 },
+      mega: { distanceMultiplier: 5, speedMultiplier: 1.8, boostDurationMultiplier: 2.5, chestTargetOverride: 10, turboEveryLikes: 100 },
+    };
+    if (patch.preset && presetMap[patch.preset]) {
+      Object.assign(this.rewardConfig, presetMap[patch.preset], { preset: patch.preset });
+    }
+    if (patch.distanceMultiplier !== undefined) {
+      this.rewardConfig.distanceMultiplier = Math.max(0.5, Math.min(10, Math.round(Number(patch.distanceMultiplier) * 10) / 10 || 1));
+    }
+    if (patch.speedMultiplier !== undefined) {
+      this.rewardConfig.speedMultiplier = Math.max(0.8, Math.min(3, Math.round(Number(patch.speedMultiplier) * 100) / 100 || 1));
+    }
+    if (patch.boostDurationMultiplier !== undefined) {
+      this.rewardConfig.boostDurationMultiplier = Math.max(0.5, Math.min(5, Math.round(Number(patch.boostDurationMultiplier) * 10) / 10 || 1));
+    }
+    if (patch.chestTargetOverride !== undefined) {
+      this.rewardConfig.chestTargetOverride = Math.max(0, Math.min(5000, Math.round(Number(patch.chestTargetOverride) || 0)));
+    }
+    if (patch.turboEveryLikes !== undefined) {
+      this.rewardConfig.turboEveryLikes = Math.max(50, Math.min(5000, Math.round(Number(patch.turboEveryLikes) || 500)));
+    }
+    return this.getRewardConfig();
+  }
+
+  getRewardConfig() {
+    return { ...this.rewardConfig };
   }
 
   getGiftChest() {
     const idx = Math.max(0, this.chestLevel - 1);
-    const targetDiamonds = idx < CHEST_TARGETS.length
+    const defaultTarget = idx < CHEST_TARGETS.length
       ? CHEST_TARGETS[idx]
       : CHEST_TARGETS[CHEST_TARGETS.length - 1] + (idx - CHEST_TARGETS.length + 1) * 1000;
+    const targetDiamonds = this.rewardConfig?.chestTargetOverride > 0
+      ? this.rewardConfig.chestTargetOverride
+      : defaultTarget;
     const currentDiamonds = Math.min(targetDiamonds, this.chestDiamonds);
     const remaining = Math.max(0, targetDiamonds - currentDiamonds);
     const pct = Math.min(100, Math.round((currentDiamonds / Math.max(1, targetDiamonds)) * 100));
@@ -283,6 +326,12 @@ export class RaceStage {
       remaining,
       pct,
     };
+  }
+
+  forceUnlockChest(donorName = 'Admin Lễ Hội') {
+    const chestBefore = this.getGiftChest();
+    const needed = Math.max(1, chestBefore.targetDiamonds - this.chestDiamonds);
+    return this.addChestDiamonds(needed, donorName);
   }
 
   addChestDiamonds(addDiamonds = 0, donorName = 'Tay Đua') {
@@ -420,9 +469,10 @@ export class RaceStage {
       if (cheer) existing.cheer = cheer;
       if (giftTierLevel > 0 || boostMs > 0) {
         const bTier = Math.max(giftTierLevel, existing.boostTier || 1);
+        const speedScale = this.rewardConfig?.speedMultiplier || 1;
         existing.boostTier = bTier;
         existing.boostUntil = Math.max(existing.boostUntil, t) + (boostMs || BOOST_MS[bTier] || 8000);
-        existing.speedMult = BOOST_SPEED[bTier] || 1.8;
+        existing.speedMult = Math.round((BOOST_SPEED[bTier] || 1.8) * speedScale * 100) / 100;
       }
       out.push({
         t: 'boost',
@@ -465,8 +515,9 @@ export class RaceStage {
     }
 
     isNewJoin = true;
+    const speedScale = this.rewardConfig?.speedMultiplier || 1;
     const boostUntil = giftTierLevel > 0 ? t + (boostMs || BOOST_MS[giftTierLevel]) : (boostMs > 0 ? t + boostMs : 0);
-    const speedMult = giftTierLevel > 0 ? BOOST_SPEED[giftTierLevel] : (boostMs > 0 ? 1.35 : 1.0);
+    const speedMult = giftTierLevel > 0 ? Math.round(BOOST_SPEED[giftTierLevel] * speedScale * 100) / 100 : (boostMs > 0 ? 1.35 : 1.0);
     const runner = {
       id: uid,
       name,

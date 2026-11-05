@@ -72,7 +72,8 @@ export function createRaceRules({ stage, lists, now = Date.now, turboEveryLikes 
         if (isNewJoin) {
           pushRecent({ uid: e.uid, name, kind: 'join', src, detail: `Thả ❤️ nhập cuộc đua (+${Math.min(30, count * 2)}m)` });
         }
-        if (Math.floor(combinedLikes / turboEveryLikes) > Math.floor(prev / turboEveryLikes)) {
+        const effectiveTurboLikes = Math.max(50, Number(stage.rewardConfig?.turboEveryLikes) || turboEveryLikes);
+        if (Math.floor(combinedLikes / effectiveTurboLikes) > Math.floor(prev / effectiveTurboLikes)) {
           out.push(...stage.triggerGlobalTurbo(8000));
         }
         return out;
@@ -91,8 +92,10 @@ export function createRaceRules({ stage, lists, now = Date.now, turboEveryLikes 
 
         const prevLeader = stage.board(1)[0] || null;
         const tier = raceGiftTier(diamonds);
-        const bonusM = (BONUS_DIST[tier] || 80) * Math.min(repeat, 10);
-        const boostMs = BOOST_MS[tier] || 10_000;
+        const distMult = Number(stage.rewardConfig?.distanceMultiplier) || 1;
+        const durMult = Number(stage.rewardConfig?.boostDurationMultiplier) || 1;
+        const bonusM = Math.round((BONUS_DIST[tier] || 80) * Math.min(repeat, 10) * distMult);
+        const boostMs = Math.round((BOOST_MS[tier] || 10_000) * durMult);
         const mountLabel = TIER_MOUNT_LABEL[tier] || 'Đôi Cánh Năng Lượng';
         const giftVi = translateGiftName(e.giftName);
 

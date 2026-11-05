@@ -843,6 +843,56 @@ function renderAll(state) {
       : `🧧 Đang treo: ${wishCount} dải lụa bình an`;
   }
 
+  // Sync Reward Optimization Config across all 3 Admin tabs
+  const chuaRc = chua.rewardConfig || db.runtimeSettings?.chuaRewardConfig || {
+    bowMultiplier: 1,
+    tier1MinDiamonds: 10,
+    tier2MinDiamonds: 1000,
+    wishRibbonOnChat: true,
+    wishRibbonGoldMinDiamonds: 20,
+    preset: 'standard',
+  };
+  const duaRc = dua.rewardConfig || db.runtimeSettings?.duaRewardConfig || {
+    distanceMultiplier: 1,
+    speedMultiplier: 1,
+    chestTargetOverride: 0,
+    turboLikesTarget: 300,
+    preset: 'standard',
+  };
+  const duaChest = dua.giftChest || { progress: 0, target: 50, level: 1 };
+  const activeChuaSummary = `×${Number(chuaRc.bowMultiplier || 1).toFixed(1)} lạy · Áo Vàng ${chuaRc.tier1MinDiamonds ?? 10}💎 · Hoàng Kim ${chuaRc.tier2MinDiamonds ?? 1000}💎`;
+  const activeDuaSummary = `×${Number(duaRc.distanceMultiplier || 1).toFixed(1)} mét · ×${Number(duaRc.speedMultiplier || 1).toFixed(1)} tốc độ · Rương ${duaChest.progress || 0}/${duaChest.target || 50}💎`;
+  if ($('masterChuaRewardBadge')) $('masterChuaRewardBadge').textContent = `🏯 Chùa 3D: ${activeChuaSummary}`;
+  if ($('masterDuaRewardBadge')) $('masterDuaRewardBadge').textContent = `🏁 Xuyên Việt: ${activeDuaSummary}`;
+  if ($('chuaRewardConfigBadge')) $('chuaRewardConfigBadge').textContent = `Đang áp dụng: ${activeChuaSummary}`;
+  if ($('duaRewardConfigBadge')) $('duaRewardConfigBadge').textContent = `Đang áp dụng: ${activeDuaSummary}`;
+
+  const activeRewardInputs = [
+    'chuaRewardBowMult', 'chuaRewardGoldRibbonMin', 'chuaRewardTier1Min', 'chuaRewardTier2Min',
+    'duaRewardDistMult', 'duaRewardSpeedMult', 'duaRewardChestTarget', 'duaRewardTurboLikes',
+  ];
+  const isEditingRewardInput = activeRewardInputs.some(id => $(id) && document.activeElement === $(id));
+  if (!isEditingRewardInput) {
+    if ($('chuaRewardBowMult')) $('chuaRewardBowMult').value = chuaRc.bowMultiplier ?? 1;
+    if ($('chuaRewardGoldRibbonMin')) $('chuaRewardGoldRibbonMin').value = chuaRc.wishRibbonGoldMinDiamonds ?? 20;
+    if ($('chuaRewardTier1Min')) $('chuaRewardTier1Min').value = chuaRc.tier1MinDiamonds ?? 10;
+    if ($('chuaRewardTier2Min')) $('chuaRewardTier2Min').value = chuaRc.tier2MinDiamonds ?? 1000;
+    if ($('chuaRewardWishOnChat')) $('chuaRewardWishOnChat').checked = chuaRc.wishRibbonOnChat !== false;
+    if ($('duaRewardDistMult')) $('duaRewardDistMult').value = duaRc.distanceMultiplier ?? 1;
+    if ($('duaRewardSpeedMult')) $('duaRewardSpeedMult').value = duaRc.speedMultiplier ?? 1;
+    if ($('duaRewardChestTarget')) $('duaRewardChestTarget').value = duaRc.chestTargetOverride ?? 0;
+    if ($('duaRewardTurboLikes')) $('duaRewardTurboLikes').value = duaRc.turboLikesTarget ?? 300;
+  }
+  document.querySelectorAll('[data-global-reward-preset]').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.globalRewardPreset === (chuaRc.preset || 'standard'));
+  });
+  document.querySelectorAll('[data-chua-reward-preset]').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.chuaRewardPreset === (chuaRc.preset || 'standard'));
+  });
+  document.querySelectorAll('[data-dua-reward-preset]').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.duaRewardPreset === (duaRc.preset || 'standard'));
+  });
+
   // Sync Chua Auto Random FX state
   const autoFx = chua.autoFx || { on: false, intervalSec: 25, withEmotion: true };
   if ($('chuaAutoFxBadge')) {
@@ -1099,7 +1149,7 @@ function renderAll(state) {
       <td style="font-size:12px">${esc(item.duaReward)}</td>
       <td>
         <div class="row-inline">
-          <button class="btn sm" data-edit-gift="${item.giftId}">Sửa</button>
+          <button class="btn sm gold" data-edit-gift="${item.giftId}">✏️ Sửa Nhanh</button>
           <button class="btn sm danger" data-del-gift="${item.giftId}">Xóa</button>
         </div>
       </td>
@@ -1705,6 +1755,116 @@ window.addEventListener('DOMContentLoaded', () => {
     await pollState();
   });
 
+  // ============================================================================
+  // REWARD OPTIMIZER CONTROLS (ALL 3 ADMIN TABS)
+  // ============================================================================
+  const CHUA_REWARD_PRESETS = {
+    standard: { bowMultiplier: 1, tier1MinDiamonds: 10, tier2MinDiamonds: 1000, wishRibbonGoldMinDiamonds: 20, wishRibbonOnChat: true, preset: 'standard' },
+    happy_hour: { bowMultiplier: 2, tier1MinDiamonds: 5, tier2MinDiamonds: 15, wishRibbonGoldMinDiamonds: 10, wishRibbonOnChat: true, preset: 'happy_hour' },
+    climax: { bowMultiplier: 3, tier1MinDiamonds: 3, tier2MinDiamonds: 10, wishRibbonGoldMinDiamonds: 5, wishRibbonOnChat: true, preset: 'climax' },
+    festival: { bowMultiplier: 5, tier1MinDiamonds: 2, tier2MinDiamonds: 5, wishRibbonGoldMinDiamonds: 1, wishRibbonOnChat: true, preset: 'festival' },
+  };
+  const DUA_REWARD_PRESETS = {
+    standard: { distanceMultiplier: 1, speedMultiplier: 1, chestTargetOverride: 0, turboLikesTarget: 300, preset: 'standard' },
+    happy_hour: { distanceMultiplier: 2, speedMultiplier: 1.25, chestTargetOverride: 40, turboLikesTarget: 200, preset: 'happy_hour' },
+    climax: { distanceMultiplier: 3, speedMultiplier: 1.5, chestTargetOverride: 25, turboLikesTarget: 120, preset: 'climax' },
+    festival: { distanceMultiplier: 5, speedMultiplier: 1.8, chestTargetOverride: 15, turboLikesTarget: 80, preset: 'festival' },
+  };
+
+  const applyChuaRewardConfig = async cfg => {
+    if ($('chuaRewardBowMult')) $('chuaRewardBowMult').value = cfg.bowMultiplier;
+    if ($('chuaRewardGoldRibbonMin')) $('chuaRewardGoldRibbonMin').value = cfg.wishRibbonGoldMinDiamonds;
+    if ($('chuaRewardTier1Min')) $('chuaRewardTier1Min').value = cfg.tier1MinDiamonds;
+    if ($('chuaRewardTier2Min')) $('chuaRewardTier2Min').value = cfg.tier2MinDiamonds;
+    if ($('chuaRewardWishOnChat')) $('chuaRewardWishOnChat').checked = cfg.wishRibbonOnChat !== false;
+    await gameAction('cung-chua-online', '/api/reward-config', cfg);
+  };
+
+  const applyDuaRewardConfig = async cfg => {
+    if ($('duaRewardDistMult')) $('duaRewardDistMult').value = cfg.distanceMultiplier;
+    if ($('duaRewardSpeedMult')) $('duaRewardSpeedMult').value = cfg.speedMultiplier;
+    if ($('duaRewardChestTarget')) $('duaRewardChestTarget').value = cfg.chestTargetOverride;
+    if ($('duaRewardTurboLikes')) $('duaRewardTurboLikes').value = cfg.turboLikesTarget;
+    await gameAction('cuoc-dua-ky-thu', '/api/reward-config', cfg);
+  };
+
+  document.querySelectorAll('[data-global-reward-preset]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const key = btn.dataset.globalRewardPreset || 'standard';
+      const chuaCfg = CHUA_REWARD_PRESETS[key] || CHUA_REWARD_PRESETS.standard;
+      const duaCfg = DUA_REWARD_PRESETS[key] || DUA_REWARD_PRESETS.standard;
+      await Promise.all([applyChuaRewardConfig(chuaCfg), applyDuaRewardConfig(duaCfg)]);
+      showToast(`🎁 Đã kích hoạt gói thưởng "${btn.querySelector('.reward-preset-title')?.textContent || key}" cho cả 2 hệ thống Live!`);
+      await pollState();
+    });
+  });
+
+  document.querySelectorAll('[data-chua-reward-preset]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const key = btn.dataset.chuaRewardPreset || 'standard';
+      const chuaCfg = CHUA_REWARD_PRESETS[key] || CHUA_REWARD_PRESETS.standard;
+      await applyChuaRewardConfig(chuaCfg);
+      showToast(`🏯 Đã áp dụng mức thưởng Chùa 3D (${btn.textContent.trim()})!`);
+      await pollState();
+    });
+  });
+
+  $('btnChuaSaveRewardConfig')?.addEventListener('click', async () => {
+    const cfg = {
+      bowMultiplier: Math.max(0.5, Math.min(10, Number($('chuaRewardBowMult')?.value) || 1)),
+      wishRibbonGoldMinDiamonds: Math.max(1, Math.min(500, Math.round(Number($('chuaRewardGoldRibbonMin')?.value) || 20))),
+      tier1MinDiamonds: Math.max(1, Math.min(500, Math.round(Number($('chuaRewardTier1Min')?.value) || 10))),
+      tier2MinDiamonds: Math.max(2, Math.min(5000, Math.round(Number($('chuaRewardTier2Min')?.value) || 1000))),
+      wishRibbonOnChat: $('chuaRewardWishOnChat') ? Boolean($('chuaRewardWishOnChat').checked) : true,
+      preset: 'custom',
+    };
+    await applyChuaRewardConfig(cfg);
+    showToast(`🏯 Đã cập nhật cấu hình phần thưởng Chùa 3D (Nhân ×${cfg.bowMultiplier} lạy · Hoàng Kim từ ${cfg.tier2MinDiamonds}💎)!`);
+    await pollState();
+  });
+
+  document.querySelectorAll('[data-dua-reward-preset]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const key = btn.dataset.duaRewardPreset || 'standard';
+      const duaCfg = DUA_REWARD_PRESETS[key] || DUA_REWARD_PRESETS.standard;
+      await applyDuaRewardConfig(duaCfg);
+      showToast(`🏁 Đã áp dụng mức thưởng Xuyên Việt 3D (${btn.textContent.trim()})!`);
+      await pollState();
+    });
+  });
+
+  $('btnDuaSaveRewardConfig')?.addEventListener('click', async () => {
+    const cfg = {
+      distanceMultiplier: Math.max(0.5, Math.min(10, Number($('duaRewardDistMult')?.value) || 1)),
+      speedMultiplier: Math.max(0.5, Math.min(3, Number($('duaRewardSpeedMult')?.value) || 1)),
+      chestTargetOverride: Math.max(0, Math.min(5000, Math.round(Number($('duaRewardChestTarget')?.value) || 0))),
+      turboLikesTarget: Math.max(20, Math.min(5000, Math.round(Number($('duaRewardTurboLikes')?.value) || 300))),
+      preset: 'custom',
+    };
+    await applyDuaRewardConfig(cfg);
+    showToast(`🏁 Đã lưu cấu hình phần thưởng Xuyên Việt 3D (Quãng đường ×${cfg.distanceMultiplier} · Tốc độ ×${cfg.speedMultiplier})!`);
+    await pollState();
+  });
+
+  $('btnDuaUnlockChestNow')?.addEventListener('click', async () => {
+    await gameAction('cuoc-dua-ky-thu', '/api/chest/unlock', { actorName: 'Admin Lễ Hội' });
+    showToast('🎁 Đã kích nổ Kho Báu Lễ Hội Xuyên Việt: Toàn đoàn tăng tốc ×3.0 & bắn pháo hoa!');
+    await pollState();
+  });
+
+  // Quick Fill Chips for Gift Catalog Rewards
+  document.querySelectorAll('[data-fill-target]').forEach(chip => {
+    chip.addEventListener('click', () => {
+      const targetId = chip.dataset.fillTarget;
+      const val = chip.dataset.fillVal || '';
+      const inp = $(targetId);
+      if (inp) {
+        inp.value = val;
+        inp.focus();
+      }
+    });
+  });
+
   $('btnChuaSaveLists').addEventListener('click', async () => {
     const couplets = $('chuaCoupletsInput').value.split('\n').map(l => l.trim()).filter(Boolean).map(l => l.split('|').map(s => s.trim()));
     const triggers = $('chuaTriggersInput').value.split('\n').map(l => l.trim()).filter(Boolean);
@@ -1819,7 +1979,9 @@ window.addEventListener('DOMContentLoaded', () => {
         $('catDiamonds').value = item.diamonds;
         $('catChuaReward').value = item.chuaReward;
         $('catDuaReward').value = item.duaReward;
-        showToast(`Đang nạp cấu hình quà #${item.giftId} lên biểu mẫu`);
+        $('catChuaReward')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        $('catChuaReward')?.focus();
+        showToast(`✏️ Đã nạp quà "${item.giftVi}" (#${item.giftId}) lên khung chỉnh sửa nhanh!`);
       }
       return;
     }

@@ -18,7 +18,50 @@ export class Stage {
     this.wishes = [];
     this.stayMinutes = 0;
     this.ttlMap = { ...TTL };
+    this.rewardConfig = {
+      bowMultiplier: 1,
+      tier1MinDiamonds: 10,
+      tier2MinDiamonds: 1000,
+      wishRibbonOnChat: true,
+      wishRibbonGoldMinDiamonds: 20,
+      preset: 'standard',
+    };
     if (stayMinutes > 0) this.setStayMinutes(stayMinutes);
+  }
+
+  setRewardConfig(patch = {}) {
+    const presetMap = {
+      standard: { bowMultiplier: 1, tier1MinDiamonds: 5, tier2MinDiamonds: 20, wishRibbonGoldMinDiamonds: 20 },
+      golden_hour: { bowMultiplier: 2, tier1MinDiamonds: 2, tier2MinDiamonds: 10, wishRibbonGoldMinDiamonds: 10 },
+      festival: { bowMultiplier: 3, tier1MinDiamonds: 2, tier2MinDiamonds: 10, wishRibbonGoldMinDiamonds: 5 },
+      mega: { bowMultiplier: 5, tier1MinDiamonds: 1, tier2MinDiamonds: 5, wishRibbonGoldMinDiamonds: 2 },
+    };
+    if (patch.preset && presetMap[patch.preset]) {
+      Object.assign(this.rewardConfig, presetMap[patch.preset], { preset: patch.preset });
+    }
+    if (patch.bowMultiplier !== undefined) {
+      this.rewardConfig.bowMultiplier = Math.max(1, Math.min(10, Math.round(Number(patch.bowMultiplier) || 1)));
+    }
+    if (patch.tier1MinDiamonds !== undefined) {
+      this.rewardConfig.tier1MinDiamonds = Math.max(1, Math.min(500, Math.round(Number(patch.tier1MinDiamonds) || 5)));
+    }
+    if (patch.tier2MinDiamonds !== undefined) {
+      this.rewardConfig.tier2MinDiamonds = Math.max(
+        this.rewardConfig.tier1MinDiamonds,
+        Math.min(5000, Math.round(Number(patch.tier2MinDiamonds) || 20))
+      );
+    }
+    if (patch.wishRibbonOnChat !== undefined) {
+      this.rewardConfig.wishRibbonOnChat = Boolean(patch.wishRibbonOnChat);
+    }
+    if (patch.wishRibbonGoldMinDiamonds !== undefined) {
+      this.rewardConfig.wishRibbonGoldMinDiamonds = Math.max(1, Math.min(500, Math.round(Number(patch.wishRibbonGoldMinDiamonds) || 20)));
+    }
+    return this.getRewardConfig();
+  }
+
+  getRewardConfig() {
+    return { ...this.rewardConfig };
   }
 
   setStayMinutes(mins) {
@@ -201,7 +244,8 @@ export class Stage {
     const cleanWishStr = String(wish || 'Cầu Bình An').trim();
     const cleanTier = Number(tier) || 0;
     const cleanDiamonds = Number(diamonds) || 0;
-    const color = ribbonColor || (cleanDiamonds >= 20 ? 'gold' : cleanDiamonds >= 2 ? 'rose' : 'red');
+    const goldMin = this.rewardConfig?.wishRibbonGoldMinDiamonds ?? 20;
+    const color = ribbonColor || (cleanDiamonds >= goldMin ? 'gold' : cleanDiamonds >= 2 ? 'rose' : 'red');
     const item = {
       id: `w_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
       uid: cleanUid,

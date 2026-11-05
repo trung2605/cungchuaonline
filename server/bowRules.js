@@ -79,10 +79,14 @@ export function createBowRules({
       };
       if (e.kind === 'gift') {
         const total = e.diamonds * e.repeat;
-        const n = Math.min(e.repeat, 10);
+        const rc = stage.rewardConfig || {};
+        const bowMult = Math.max(1, Number(rc.bowMultiplier) || 1);
+        const n = Math.min(e.repeat * bowMult, 25);
         const name = cleanName(e.name, lists);
-        const tier = giftTier(total);
-        const wishText = total >= 20 ? 'Công Đức Vô Lượng' : total >= 2 ? 'Cầu Tài Lộc Hanh Thông' : 'Cầu Bình An & Sức Khỏe';
+        const t1Min = Number(rc.tier1MinDiamonds) || 10;
+        const t2Min = Number(rc.tier2MinDiamonds) || 1000;
+        const tier = total >= t2Min ? 2 : total >= t1Min ? 1 : 0;
+        const wishText = total >= Math.min(20, t2Min) ? 'Công Đức Vô Lượng' : total >= 2 ? 'Cầu Tài Lộc Hanh Thông' : 'Cầu Bình An & Sức Khỏe';
         const msgs = granted(n, stage.enter(e.uid, name, tier, n, {
           addDiamonds: total,
           visit: true,
@@ -136,7 +140,7 @@ export function createBowRules({
           intent,
           src: e.src,
         })));
-        if (emitWishRibbons && stage.addWish) {
+        if (emitWishRibbons && stage.addWish && stage.rewardConfig?.wishRibbonOnChat !== false) {
           const wish = intent || (bubble && bubble.length >= 4 && bubble.length <= 28 ? bubble : 'Cầu Gia Đạo Bình An');
           out.push(...stage.addWish({
             uid: e.uid,
