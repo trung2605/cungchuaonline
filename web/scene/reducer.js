@@ -6,7 +6,7 @@ export const MAX_BUBBLES = 12;
 export const MAX_CLIENT_ACTORS = 60;
 
 export function createWorld() {
-  return { actors: new Map(), queue: new AltarQueue(), bubbles: [] }; // actors: id -> { actor, st }
+  return { actors: new Map(), queue: new AltarQueue(), bubbles: [], wishes: [] }; // actors: id -> { actor, st }
 }
 
 function add(world, actor, now, idle) {
@@ -54,6 +54,9 @@ export function applyMsg(world, msg, now) {
   switch (msg.t) {
     case 'snapshot': {
       Object.assign(world, createWorld());
+      if (Array.isArray(msg.wishes)) {
+        world.wishes = msg.wishes.slice(-50);
+      }
       const cappedActors = (msg.actors || []).slice(-MAX_CLIENT_ACTORS);
       return [
         { op: 'reset' },
@@ -63,6 +66,7 @@ export function applyMsg(world, msg, now) {
         { op: 'scene', scene: msg.scene },
         { op: 'hud', msg: { t: 'board', top: msg.board ?? [] } },
         { op: 'hud', msg: { t: 'couplets', pairs: msg.couplets ?? [] } },
+        ...(Array.isArray(msg.wishes) ? [{ op: 'wishes_snapshot', wishes: world.wishes }] : []),
       ];
     }
     case 'spawn': {
@@ -104,6 +108,19 @@ export function applyMsg(world, msg, now) {
       return [{ op: 'scene', scene: msg.scene }];
     case 'demoPurged':
       return [{ op: 'demoPurged' }];
+    case 'wish_ribbon': {
+      if (msg.wish) {
+        world.wishes.push(msg.wish);
+        if (world.wishes.length > 50) world.wishes.shift();
+      }
+      const uid = msg.wish?.uid;
+      const actorEntry = uid !== undefined ? world.actors.get(uid) : undefined;
+      const fromPos = actorEntry ? pose(actorEntry.st, now).pos : { x: 0, z: -5.5 };
+      return [{ op: 'wish_ribbon', wish: msg.wish, fromPos }];
+    }
+    case 'clear_wishes':
+      world.wishes = [];
+      return [{ op: 'clear_wishes' }];
     case 'counter':
     case 'banner':
     case 'donor':

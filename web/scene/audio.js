@@ -1245,6 +1245,18 @@ export function createAudio({ onSpeak = null } = {}) {
     }
   }
 
+  // Sacred Bodhi Tree Wind Chime (Phong linh chuông gió thanh tịnh khi treo dải lụa ước nguyện)
+  function windChime() {
+    if (!enabled || isPreviewIframe) return;
+    const t = ctx.currentTime;
+    const notes = [1046.5, 1174.66, 1318.51, 1567.98, 2093.0];
+    notes.forEach((freq, idx) => {
+      const start = t + idx * 0.068;
+      tone(freq, start, 1.45, 0.065);
+      tone(freq * 2.0, start, 0.85, 0.025);
+    });
+  }
+
   // Auto-unlock and start meditation music when visible; automatically silence if tab is hidden in background
   // so it never overlaps with Cuộc Đua Kỳ Thú (:8789) when switching tabs
   function syncVisibilityAudio() {
@@ -1398,6 +1410,7 @@ export function createAudio({ onSpeak = null } = {}) {
     chime,
     mediumBell,
     bell,
+    windChime,
     thankPrayer(actor) {
       if (!enabled || !actor) return;
       const now = Date.now();

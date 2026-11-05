@@ -233,7 +233,7 @@ async function initUnifiedRuntime() {
     blocked,
     counters: chuaCounters,
     dedupe: createDedupe(),
-    rules: [createBowRules({ stage: chuaStage, lists, stats: chuaStats, allowAllRealChat: true }), createEffects(), chuaCounters, chuaStats],
+    rules: [createBowRules({ stage: chuaStage, lists, stats: chuaStats, allowAllRealChat: true, emitWishRibbons: true }), createEffects(), chuaCounters, chuaStats],
   });
 
   const broadcastChua = msgs => {

@@ -13,6 +13,7 @@ import { createWorld, applyMsg, stepWorld } from './scene/reducer.js';
 import { buildHall } from './scene/hall.js';
 import { createActors } from './scene/actors.js';
 import { createFx } from './scene/fx.js';
+import { createBodhiTree, BODHI_POS } from './scene/bodhiTree.js';
 import { createAudio } from './scene/audio.js';
 import { createHud } from './hud.js';
 
@@ -91,12 +92,33 @@ const actors = await createActors(scene);
 const fx = createFx(scene, { low, smokeOrigin: hall.smokeOrigin });
 const hud = createHud();
 const audio = createAudio({ onSpeak: (text, on) => hud.showVoice(text, on) });
+const bodhiTree = createBodhiTree(scene, {
+  low,
+  onRibbonTied: wish => {
+    audio.windChime?.();
+    fx.spawn('lotus', { x: BODHI_POS.x, z: BODHI_POS.z }, 3, performance.now());
+  },
+});
+hud.syncBodhiWishes(bodhiTree.getRecentWishes(12), bodhiTree.getWishesCount());
 const world = createWorld();
 
 const soundBtn = document.getElementById('sound');
 if (soundBtn) soundBtn.style.display = 'none';
 const commentTtsBtn = document.getElementById('toggle-comment-tts');
 const chuaBgmBtn = document.getElementById('toggle-chua-bgm');
+const bodhiViewBtn = document.getElementById('toggle-bodhi-view');
+const bodhiDrawer = document.getElementById('bodhi-drawer');
+if (bodhiViewBtn && bodhiDrawer) {
+  bodhiViewBtn.addEventListener('click', e => {
+    e.stopPropagation();
+    const isOpen = bodhiDrawer.classList.toggle('open');
+    bodhiViewBtn.classList.toggle('active', isOpen);
+    if (isOpen) {
+      audio.windChime?.();
+      hud.syncBodhiWishes(bodhiTree.getRecentWishes(12), bodhiTree.getWishesCount());
+    }
+  });
+}
 let liveWs = null;
 
 function syncChuaBgmBtn() {
@@ -152,6 +174,19 @@ function run(cmds, now) {
         break;
       case 'remove': actors.remove(c.id); break;
       case 'demoPurged': audio.purgeMockSpeech?.(); break;
+      case 'wishes_snapshot':
+        bodhiTree.setWishesSnapshot(c.wishes);
+        hud.syncBodhiWishes(bodhiTree.getRecentWishes(12), bodhiTree.getWishesCount());
+        break;
+      case 'wish_ribbon':
+        bodhiTree.flyWishRibbon(c.wish, c.fromPos);
+        hud.showWishToast(c.wish);
+        hud.syncBodhiWishes(bodhiTree.getRecentWishes(12), bodhiTree.getWishesCount());
+        break;
+      case 'clear_wishes':
+        bodhiTree.clearAllRibbons();
+        hud.syncBodhiWishes(bodhiTree.getRecentWishes(12), bodhiTree.getWishesCount());
+        break;
       case 'say': {
         actors.say(c.id, c.text, c.ms);
         const isReal = c.id && !String(c.id).startsWith('bot_') && !String(c.id).startsWith('seed_');
@@ -334,6 +369,7 @@ renderer.setAnimationLoop(() => {
 
   hall.update(now);
   fx.update(now, dt);
+  bodhiTree.update(now, dt);
   updateTempleCamera(poses, now, dt);
   if (composer) composer.render();
   else renderer.render(scene, camera);

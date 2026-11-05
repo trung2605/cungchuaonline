@@ -24,7 +24,7 @@ function card(name, line) {
 }
 
 export function createHud() {
-  let pairs = [], ci = -1, donors = [], donorTimer = null, bannerTimer = null;
+  let pairs = [], ci = -1, donors = [], donorTimer = null, bannerTimer = null, bodhiToastTimer = null;
   const recentPrayers = [];
   const altarActors = [null, null, null];
   let shownAltarId = null;
@@ -129,6 +129,33 @@ const giftVi = g => GIFT_VI[String(g || '').trim().toLowerCase()] || g || 'Lễ 
     setHallCount(n) {
       const el = $('#hall-count');
       if (el) el.textContent = `Đang lễ: ${n} Phật tử`;
+    },
+    showWishToast(wish) {
+      if (!wish) return;
+      const toast = $('#bodhi-ribbon-toast');
+      const nameEl = $('#bodhi-toast-name');
+      const wishEl = $('#bodhi-toast-wish');
+      if (!toast || !nameEl || !wishEl) return;
+      nameEl.textContent = `🙏 ${wish.name || 'Phật Tử'}`;
+      wishEl.textContent = `“${wish.wish || 'Cầu Gia Đạo Bình An'}”`;
+      toast.classList.add('on');
+      clearTimeout(bodhiToastTimer);
+      bodhiToastTimer = setTimeout(() => toast.classList.remove('on'), 4800);
+    },
+    syncBodhiWishes(wishes = [], totalCount = 0) {
+      const countEl = $('#bodhi-wish-count');
+      if (countEl) countEl.textContent = String(totalCount || wishes.length);
+      const listEl = $('#bodhi-wish-list');
+      if (!listEl) return;
+      listEl.replaceChildren(...wishes.slice(0, 12).map(w => {
+        const li = document.createElement('li');
+        const b = document.createElement('b');
+        b.textContent = `🧧 ${w.name || 'Phật Tử'}`;
+        const span = document.createElement('span');
+        span.textContent = w.wish || 'Cầu Bình An';
+        li.append(b, span);
+        return li;
+      }));
     },
     showVoice(text, on) {
       const toast = $('#voice-toast');

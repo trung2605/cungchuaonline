@@ -52,3 +52,29 @@ test('spawn on an already-occupied slot evicts the stale occupant and caps clien
   }
   assert.ok(w.actors.size <= 60);
 });
+
+test('TC-07.11 wish_ribbon and snapshot wishes emit 3D Bodhi Tree draw commands', () => {
+  const w = createWorld();
+  const snapCmds = applyMsg(w, {
+    ...snapshot([actor('pt_an', 20)]),
+    wishes: [{ id: 'w1', uid: 'pt_an', name: 'An Nhiên', wish: 'Cầu Bình An', ribbonColor: 'red', branchIdx: 2 }],
+  }, 0);
+  const snapWishesCmd = snapCmds.find(c => c.op === 'wishes_snapshot');
+  assert.ok(snapWishesCmd);
+  assert.equal(snapWishesCmd.wishes.length, 1);
+  assert.equal(w.wishes.length, 1);
+
+  const ribbonCmds = applyMsg(w, {
+    t: 'wish_ribbon',
+    wish: { id: 'w2', uid: 'pt_an', name: 'An Nhiên', wish: 'Vạn Sự Như Ý', ribbonColor: 'gold', branchIdx: 5 },
+  }, 100);
+  const ribbonCmd = ribbonCmds.find(c => c.op === 'wish_ribbon');
+  assert.ok(ribbonCmd);
+  assert.equal(ribbonCmd.wish.id, 'w2');
+  assert.ok(ribbonCmd.fromPos && typeof ribbonCmd.fromPos.x === 'number');
+  assert.equal(w.wishes.length, 2);
+
+  const clearCmds = applyMsg(w, { t: 'clear_wishes' }, 200);
+  assert.ok(clearCmds.some(c => c.op === 'clear_wishes'));
+  assert.equal(w.wishes.length, 0);
+});

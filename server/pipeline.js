@@ -18,6 +18,7 @@ export function createPipeline({
       scene,
       board: counters?.board() ?? [],
       couplets: lists.couplets,
+      wishes: stage.getWishes ? stage.getWishes() : [],
     }),
     setScene(s) {
       scene = { ...scene, ...s };

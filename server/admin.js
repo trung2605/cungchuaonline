@@ -458,6 +458,7 @@ export async function startAdmin({ port = 8788, host = '127.0.0.1', password, ct
       demo: demo.state(),
       demoConfig: demo.config?.() ?? { on: demo.state().on, rate: demo.state().rate ?? 3, giftRatio: 0.08, prayerRatio: 0.65 },
       actors: stage.snapshot(),
+      wishes: stage.getWishes?.() ?? [],
       pastSessions: ctx.listSessions?.() ?? [],
       config: ctx.getConfig?.() ?? { tiktokUser: process.env.TIKTOK_USER || '' },
     }),
@@ -625,12 +626,39 @@ export async function startAdmin({ port = 8788, host = '127.0.0.1', password, ct
       demo.stop?.();
       stopAutoFx();
       const leaveMsgs = stage.clearAll?.() ?? [];
+      const clearWishMsgs = stage.clearWishes?.() ?? [];
       const counterMsgs = counters?.reset?.() ?? [];
       stats.resetAll?.();
       await ctx.saveHistory?.();
       await ctx.saveSceneConfig?.();
-      broadcast([...leaveMsgs, ...counterMsgs, pipeline.snapshot()]);
+      broadcast([...leaveMsgs, ...clearWishMsgs, ...counterMsgs, pipeline.snapshot()]);
       return { ok: true };
+    },
+
+    'POST /api/bodhi/wish': async req => {
+      const body = await readJson(req);
+      const rawName = (typeof body.name === 'string' && body.name.trim()) ? body.name.trim().slice(0, 24) : 'Phật Tử Thiện Tâm';
+      const rawWish = (typeof body.wish === 'string' && body.wish.trim()) ? body.wish.trim().slice(0, 42) : 'Cầu Gia Đạo Bình An · Vạn Sự Cát Tường';
+      const cleanW = cleanBubble(rawWish, lists, 42) || 'Cầu Gia Đạo Bình An';
+      const diamonds = Math.max(0, Math.min(50000, Number(body.diamonds) || 0));
+      const tier = diamonds >= 20 ? 2 : diamonds >= 5 ? 1 : Number(body.tier) || 0;
+      const uid = body.uid || `bodhi_${Date.now().toString(36)}`;
+      const msgs = stage.addWish?.({
+        uid,
+        name: rawName,
+        wish: cleanW,
+        tier,
+        diamonds,
+        ribbonColor: body.ribbonColor || null,
+      }) ?? [];
+      if (msgs.length) broadcast(msgs);
+      return { ok: true, wish: msgs[0]?.wish ?? null, wishesCount: (stage.getWishes?.() ?? []).length };
+    },
+
+    'POST /api/bodhi/clear': async () => {
+      const msgs = stage.clearWishes?.() ?? [{ t: 'clear_wishes' }];
+      broadcast(msgs);
+      return { ok: true, wishesCount: 0 };
     },
 
     'POST /api/fx-emotion': async req => {

@@ -44,7 +44,7 @@ const stats = createStats({ lists });
 const pipeline = createPipeline({
   stage, lists, blocked, counters,
   dedupe: createDedupe(),
-  rules: [createBowRules({ stage, lists, stats, allowAllRealChat: true }), createEffects(), counters, stats],
+  rules: [createBowRules({ stage, lists, stats, allowAllRealChat: true, emitWishRibbons: true }), createEffects(), counters, stats],
 });
 const srv = await startServer({
   getSnapshot: () => pipeline.snapshot(),

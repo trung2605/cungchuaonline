@@ -834,6 +834,15 @@ function renderAll(state) {
     $('quickStayMinutes').value = chuaStayMins;
   }
 
+  // Sync Sacred Bodhi Wish Tree 3D badge
+  if ($('chuaBodhiBadge')) {
+    const wishCount = Array.isArray(chua.wishes) && chua.wishes.length > 0 ? chua.wishes.length : 8;
+    const latestWish = Array.isArray(chua.wishes) && chua.wishes.length > 0 ? chua.wishes[chua.wishes.length - 1] : null;
+    $('chuaBodhiBadge').textContent = latestWish
+      ? `🧧 Đang treo: ${wishCount} dải lụa · Mới nhất: ${latestWish.name}`
+      : `🧧 Đang treo: ${wishCount} dải lụa bình an`;
+  }
+
   // Sync Chua Auto Random FX state
   const autoFx = chua.autoFx || { on: false, intervalSec: 25, withEmotion: true };
   if ($('chuaAutoFxBadge')) {
@@ -1678,6 +1687,22 @@ window.addEventListener('DOMContentLoaded', () => {
     await gameAction('cung-chua-online', '/api/banner', { text });
     $('chuaBannerInput').value = '';
     showToast('Đã phát thông báo lên màn hình Cúng Chùa Online!');
+  });
+
+  $('btnChuaBodhiSend')?.addEventListener('click', async () => {
+    const name = ($('chuaBodhiNameInput')?.value || '').trim() || 'Phật Tử Thiện Tâm';
+    const wish = ($('chuaBodhiWishInput')?.value || '').trim() || 'Cầu Gia Đạo Bình An · Vạn Sự Như Ý';
+    const ribbonColor = $('chuaBodhiColorSelect')?.value || 'red';
+    const diamonds = ribbonColor === 'gold' ? 20 : ribbonColor === 'rose' ? 5 : 0;
+    await gameAction('cung-chua-online', '/api/bodhi/wish', { name, wish, ribbonColor, diamonds });
+    showToast(`🧧 Đã treo dải lụa ước nguyện của "${name}" lên Cây Bồ Đề 3D!`);
+    await pollState();
+  });
+
+  $('btnChuaBodhiClear')?.addEventListener('click', async () => {
+    await gameAction('cung-chua-online', '/api/bodhi/clear', {});
+    showToast('🌳 Đã làm mới các dải lụa trên Cây Bồ Đề Ước Nguyện 3D!');
+    await pollState();
   });
 
   $('btnChuaSaveLists').addEventListener('click', async () => {

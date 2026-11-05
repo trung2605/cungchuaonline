@@ -15,6 +15,7 @@ export class Stage {
     this.actors = new Map(); // uid -> Actor
     this.occupied = new Array(max).fill(null);
     this.diamondsByUid = new Map(); // survives leave/re-enter for the whole session
+    this.wishes = [];
     this.stayMinutes = 0;
     this.ttlMap = { ...TTL };
     if (stayMinutes > 0) this.setStayMinutes(stayMinutes);
@@ -192,5 +193,38 @@ export class Stage {
 
   snapshot() {
     return [...this.actors.values()].map(a => ({ ...a }));
+  }
+
+  addWish({ uid = '', name = '', wish = '', tier = 0, diamonds = 0, ribbonColor = null } = {}) {
+    const cleanUid = String(uid || '').trim();
+    const cleanNameStr = String(name || 'Phật Tử').trim();
+    const cleanWishStr = String(wish || 'Cầu Bình An').trim();
+    const cleanTier = Number(tier) || 0;
+    const cleanDiamonds = Number(diamonds) || 0;
+    const color = ribbonColor || (cleanDiamonds >= 20 ? 'gold' : cleanDiamonds >= 2 ? 'rose' : 'red');
+    const item = {
+      id: `w_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+      uid: cleanUid,
+      name: cleanNameStr,
+      wish: cleanWishStr,
+      tier: cleanTier,
+      diamonds: cleanDiamonds,
+      ribbonColor: color,
+      ts: this.now(),
+    };
+    this.wishes.push(item);
+    if (this.wishes.length > 50) {
+      this.wishes.splice(0, this.wishes.length - 50);
+    }
+    return [{ t: 'wish_ribbon', wish: item }];
+  }
+
+  getWishes() {
+    return this.wishes.map(w => ({ ...w }));
+  }
+
+  clearWishes() {
+    this.wishes = [];
+    return [{ t: 'clear_wishes' }];
   }
 }
