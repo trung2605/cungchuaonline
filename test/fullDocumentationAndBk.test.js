@@ -584,3 +584,47 @@ test('TC-BK-05: BK (CungChuaOnline) adapters, normalizers, and contextual TTS sp
   assert.equal(bkSpeech(item, { ...ctx }), rootSpeech(item, { ...ctx }));
 });
 
+test('TC-UIUX-01: UI/UX Craft Floor & Accessibility Verification Across All 5 Surfaces (Admin Tổng, Cúng Chùa, Xuyên Việt, 10 Trends, Sub-Admin)', () => {
+  // 1. Admin Tổng CSS Craft Floor
+  const adminCss = fs.readFileSync(path.join(ROOT, 'AdminTong/public/css/admin.css'), 'utf8');
+  assert.ok(adminCss.includes('--radius-sm: 8px;'), 'Admin CSS must define refined --radius-sm');
+  assert.ok(adminCss.includes('--radius-md: 12px;'), 'Admin CSS must define refined --radius-md');
+  assert.ok(adminCss.includes('--radius-lg: 14px;'), 'Admin CSS must define refined --radius-lg');
+  assert.ok(!adminCss.includes('border-radius: 0px !important;'), 'Admin CSS must not force global 0px border-radius');
+  assert.ok(adminCss.includes(':focus-visible'), 'Admin CSS must support keyboard focus-visible ring');
+  assert.ok(adminCss.includes('prefers-reduced-motion: reduce'), 'Admin CSS must respect prefers-reduced-motion');
+
+  const adminHtml = fs.readFileSync(path.join(ROOT, 'AdminTong/index.html'), 'utf8');
+  assert.ok(!adminHtml.includes('border-radius:0px'), 'AdminTong/index.html must not contain inline border-radius:0px');
+
+  // 2. Cúng Chùa Online 3D + Cây Bồ Đề Ước Nguyện HUD (Root & BK)
+  for (const rel of ['web/index.html', 'CungChuaOnline/web/index.html']) {
+    const html = fs.readFileSync(path.join(ROOT, rel), 'utf8');
+    assert.ok(html.includes('#toggle-bodhi-view:focus-visible'), `${rel} must support focus-visible on Bodhi button`);
+    assert.ok(html.includes('#bodhi-wish-list::-webkit-scrollbar'), `${rel} must style Bodhi wish list scrollbar`);
+    assert.ok(html.includes('prefers-reduced-transparency: reduce'), `${rel} must respect prefers-reduced-transparency`);
+  }
+
+  // 3. Hành Trình Đi Bộ Xuyên Việt 3D HUD (CuocDuaKyThu)
+  const vnHtml = fs.readFileSync(path.join(ROOT, 'CuocDuaKyThu/web/index.html'), 'utf8');
+  assert.ok(vnHtml.includes('#toggle-bgm:hover'), 'CuocDuaKyThu #toggle-bgm must have hover feedback');
+  assert.ok(vnHtml.includes('pointer-events: auto; cursor: pointer;'), 'CuocDuaKyThu #toggle-bgm must be clickable');
+  assert.ok(vnHtml.includes('prefers-reduced-motion: reduce'), 'CuocDuaKyThu must respect prefers-reduced-motion');
+  assert.ok(vnHtml.includes('prefers-reduced-transparency: reduce'), 'CuocDuaKyThu must respect prefers-reduced-transparency');
+
+  // 4. Hệ Sinh Thái 10 Website 3D Bắt Trend TikTok (Root & BK)
+  for (const rel of ['web/trends/trends.css', 'CungChuaOnline/web/trends/trends.css']) {
+    const css = fs.readFileSync(path.join(ROOT, rel), 'utf8');
+    assert.ok(css.includes(':focus-visible'), `${rel} must support focus-visible`);
+    assert.ok(css.includes('body:not(.is-live-mode) .trends-workspace'), `${rel} must stack studio docks responsively under 1180px`);
+    assert.ok(css.includes('prefers-reduced-motion: reduce'), `${rel} must respect prefers-reduced-motion`);
+  }
+
+  // 5. Sub-Admin Redirect Pages (Root, BK, CuocDuaKyThu)
+  for (const rel of ['admin/index.html', 'CungChuaOnline/admin/index.html', 'CuocDuaKyThu/admin/index.html']) {
+    const html = fs.readFileSync(path.join(ROOT, rel), 'utf8');
+    assert.ok(html.includes('window.__adminTargetUrl'), `${rel} must use origin-aware redirect target`);
+    assert.ok(html.includes('redirect-card'), `${rel} must render styled redirect card`);
+  }
+});
+

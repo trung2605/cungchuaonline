@@ -1,15 +1,103 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8" />
-  <meta http-equiv="refresh" content="0; url=http://127.0.0.1:8791/#chua" />
-  <title>Chuyển hướng về Admin Hợp Nhất — Live TikTok Studio</title>
-  <script>window.location.replace('http://127.0.0.1:8791/#chua');</script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Đang chuyển hướng về Admin Tổng · Cúng Chùa Online</title>
+<style>
+  :root {
+    --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    background: radial-gradient(circle at 50% 20%, #1e293b 0%, #0f172a 75%);
+    color: #f8fafc;
+    font-family: var(--font-sans);
+    padding: 20px;
+  }
+  .redirect-card {
+    max-width: 480px;
+    width: 100%;
+    text-align: center;
+    background: rgba(30, 41, 59, 0.9);
+    border: 1px solid rgba(245, 158, 11, 0.38);
+    border-radius: 16px;
+    padding: 32px 28px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(12px);
+  }
+  .redirect-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 12px;
+    border-radius: 999px;
+    background: rgba(245, 158, 11, 0.16);
+    border: 1px solid rgba(245, 158, 11, 0.42);
+    color: #fcd34d;
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 14px;
+  }
+  h2 {
+    margin: 0 0 10px;
+    color: #fbbf24;
+    font-size: 21px;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+  }
+  p {
+    color: #94a3b8;
+    font-size: 14px;
+    line-height: 1.6;
+    margin: 0 0 22px;
+  }
+  .btn-go {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    color: #fff;
+    text-decoration: none;
+    padding: 11px 22px;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 14px;
+    box-shadow: 0 6px 18px rgba(37, 99, 235, 0.38);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .btn-go:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 24px rgba(37, 99, 235, 0.5);
+  }
+</style>
+<script>
+  (function () {
+    var host = window.location.hostname || '127.0.0.1';
+    var port = window.location.port;
+    var target = (port === '8788' || port === '8790')
+      ? (window.location.protocol + '//' + host + ':8791/#chua')
+      : '/admin#chua';
+    window.__adminTargetUrl = target;
+    window.location.replace(target);
+  })();
+</script>
 </head>
-<body style="font-family:sans-serif;background:#f4f7fb;color:#0f172a;display:flex;align-items:center;justify-content:center;height:100vh;margin:0">
-  <div style="background:#fff;padding:24px 32px;border-radius:0px;border:1px solid #e2e8f0;text-align:center">
-    <h2 style="margin:0 0 8px">Đang chuyển về Hệ Thống Admin Hợp Nhất...</h2>
-    <p style="margin:0;color:#64748b">Nếu không tự chuyển, bấm vào <a href="http://127.0.0.1:8791/#chua" style="color:#4f46e5;font-weight:700">http://127.0.0.1:8791/#chua</a></p>
+<body>
+  <div class="redirect-card">
+    <div class="redirect-badge">🪷 CÚNG CHÙA ONLINE · ADMIN TỔNG</div>
+    <h2>Hệ Thống Đã Gộp Về Admin Tổng</h2>
+    <p>Toàn bộ trang quản trị của <b>Cúng Chùa Online</b>, <b>Đi Bộ Xuyên Việt</b> và <b>10 Website 3D Trend TikTok</b> đã được hợp nhất tại <b>Admin Tổng (:8791)</b>.</p>
+    <a id="fallback-link" href="http://127.0.0.1:8791/#chua" class="btn-go">Mở Admin Tổng Ngay →</a>
   </div>
+  <script>
+    if (window.__adminTargetUrl) {
+      document.getElementById('fallback-link').href = window.__adminTargetUrl;
+    }
+  </script>
 </body>
 </html>

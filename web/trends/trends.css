@@ -127,6 +127,16 @@ html, body {
   -webkit-font-smoothing: antialiased;
 }
 
+::selection {
+  background: var(--accent-soft);
+  color: var(--accent-bright);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 /* Floating Toggle Button for Pure 9:16 Live Mode */
 .floating-live-toggle {
   position: fixed;
@@ -1137,6 +1147,14 @@ body.is-live-mode .stage-viewport {
 .btn-save-custom:hover {
   background: rgba(46, 229, 157, 0.25);
 }
+.btn-save-custom:active,
+.btn-send-comment:active,
+.chip-btn:active,
+.gift-sim-btn:active,
+.website-nav-card:active,
+.floating-live-toggle:active {
+  transform: scale(0.97);
+}
 .custom-save-status {
   font-size: 11px;
   color: var(--emerald-bright);
@@ -1144,10 +1162,44 @@ body.is-live-mode .stage-viewport {
 }
 
 @media (max-width: 1180px) {
-  .trends-workspace {
-    grid-template-columns: 1fr;
+  body:not(.is-live-mode) {
+    overflow-y: auto;
+    height: auto;
   }
-  .studio-dock {
-    display: none;
+  body:not(.is-live-mode) .trends-workspace {
+    grid-template-columns: 1fr;
+    height: auto;
+    overflow: visible;
+  }
+  body:not(.is-live-mode) .stage-viewport {
+    order: -1;
+    min-height: 620px;
+    padding: 16px 8px;
+  }
+  body:not(.is-live-mode) .studio-dock {
+    height: auto;
+    max-height: none;
+    border-right: none;
+    border-left: none;
+    border-top: 1px solid var(--studio-border);
+  }
+  body:not(.is-live-mode) .dock-right {
+    padding: 16px 14px 28px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .hud-glass {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: #140804;
   }
 }
