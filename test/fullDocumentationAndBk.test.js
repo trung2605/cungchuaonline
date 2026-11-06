@@ -585,7 +585,7 @@ test('TC-BK-05: BK (CungChuaOnline) adapters, normalizers, and contextual TTS sp
 });
 
 test('TC-UIUX-01: UI/UX Craft Floor & Accessibility Verification Across All 5 Surfaces (Admin Tổng, Cúng Chùa, Xuyên Việt, 10 Trends, Sub-Admin)', () => {
-  // 1. Admin Tổng CSS Craft Floor
+  // 1. Admin Tổng CSS Craft Floor & Complete Class Coverage
   const adminCss = fs.readFileSync(path.join(ROOT, 'AdminTong/public/css/admin.css'), 'utf8');
   assert.ok(adminCss.includes('--radius-sm: 8px;'), 'Admin CSS must define refined --radius-sm');
   assert.ok(adminCss.includes('--radius-md: 12px;'), 'Admin CSS must define refined --radius-md');
@@ -593,15 +593,23 @@ test('TC-UIUX-01: UI/UX Craft Floor & Accessibility Verification Across All 5 Su
   assert.ok(!adminCss.includes('border-radius: 0px !important;'), 'Admin CSS must not force global 0px border-radius');
   assert.ok(adminCss.includes(':focus-visible'), 'Admin CSS must support keyboard focus-visible ring');
   assert.ok(adminCss.includes('prefers-reduced-motion: reduce'), 'Admin CSS must respect prefers-reduced-motion');
+  for (const cls of ['.sidebar-logo', '.sidebar-brand-text', '.sidebar-nav', '.nav-label', '.workspace-breadcrumb', '.topbar-right', '.kpi-label', '.grid-4', '.field-label', '.input']) {
+    assert.ok(adminCss.includes(cls), `Admin CSS must style ${cls}`);
+  }
 
   const adminHtml = fs.readFileSync(path.join(ROOT, 'AdminTong/index.html'), 'utf8');
   assert.ok(!adminHtml.includes('border-radius:0px'), 'AdminTong/index.html must not contain inline border-radius:0px');
+  assert.ok(!adminHtml.includes('rgba(15, 23, 42, 0.65)'), 'AdminTong/index.html must not contain low-contrast dark-on-dark panels');
+
+  const adminJs = fs.readFileSync(path.join(ROOT, 'AdminTong/public/js/admin.js'), 'utf8');
+  assert.ok(!adminJs.includes('rgba(15,23,42,0.5)'), 'AdminTong/public/js/admin.js must not render dark-on-dark catalog cards');
 
   // 2. Cúng Chùa Online 3D + Cây Bồ Đề Ước Nguyện HUD (Root & BK)
   for (const rel of ['web/index.html', 'CungChuaOnline/web/index.html']) {
     const html = fs.readFileSync(path.join(ROOT, rel), 'utf8');
     assert.ok(html.includes('#toggle-bodhi-view:focus-visible'), `${rel} must support focus-visible on Bodhi button`);
     assert.ok(html.includes('#bodhi-wish-list::-webkit-scrollbar'), `${rel} must style Bodhi wish list scrollbar`);
+    assert.ok(html.includes('bodhi-drawer-close'), `${rel} must include close button on Bodhi drawer`);
     assert.ok(html.includes('prefers-reduced-transparency: reduce'), `${rel} must respect prefers-reduced-transparency`);
   }
 
@@ -611,6 +619,8 @@ test('TC-UIUX-01: UI/UX Craft Floor & Accessibility Verification Across All 5 Su
   assert.ok(vnHtml.includes('pointer-events: auto; cursor: pointer;'), 'CuocDuaKyThu #toggle-bgm must be clickable');
   assert.ok(vnHtml.includes('prefers-reduced-motion: reduce'), 'CuocDuaKyThu must respect prefers-reduced-motion');
   assert.ok(vnHtml.includes('prefers-reduced-transparency: reduce'), 'CuocDuaKyThu must respect prefers-reduced-transparency');
+  const vnMainJs = fs.readFileSync(path.join(ROOT, 'CuocDuaKyThu/web/main.js'), 'utf8');
+  assert.ok(vnMainJs.includes('audio.nextBgmTrack'), 'CuocDuaKyThu/web/main.js must bind #toggle-bgm click to audio.nextBgmTrack');
 
   // 4. Hệ Sinh Thái 10 Website 3D Bắt Trend TikTok (Root & BK)
   for (const rel of ['web/trends/trends.css', 'CungChuaOnline/web/trends/trends.css']) {
@@ -618,6 +628,10 @@ test('TC-UIUX-01: UI/UX Craft Floor & Accessibility Verification Across All 5 Su
     assert.ok(css.includes(':focus-visible'), `${rel} must support focus-visible`);
     assert.ok(css.includes('body:not(.is-live-mode) .trends-workspace'), `${rel} must stack studio docks responsively under 1180px`);
     assert.ok(css.includes('prefers-reduced-motion: reduce'), `${rel} must respect prefers-reduced-motion`);
+  }
+  for (const rel of ['web/trends/index.html', 'CungChuaOnline/web/trends/index.html']) {
+    const html = fs.readFileSync(path.join(ROOT, rel), 'utf8');
+    assert.ok(html.includes('🇻🇳 Xuyên Việt 3D'), `${rel} must label Xuyên Việt 3D accurately`);
   }
 
   // 5. Sub-Admin Redirect Pages (Root, BK, CuocDuaKyThu)

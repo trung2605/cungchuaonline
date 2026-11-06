@@ -112,11 +112,19 @@ export async function startMasterAdmin({
     return out;
   }
 
+  const serveMasterPage = (_req, res) =>
+    fs.readFile(PAGE, (err, html) =>
+      err ? send(res, 500, { error: 'thiếu AdminTong/index.html' })
+        : res.writeHead(200, { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' }).end(html));
+
   const routes = {
-    'GET /': (req, res) =>
-      fs.readFile(PAGE, (err, html) =>
-        err ? send(res, 500, { error: 'thiếu AdminTong/index.html' })
-          : res.writeHead(200, { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' }).end(html)),
+    'GET /': serveMasterPage,
+    'GET /admin': serveMasterPage,
+    'GET /admin/': serveMasterPage,
+    'GET /chua': (_req, res) => res.writeHead(302, { location: 'http://127.0.0.1:8787/' }).end(),
+    'GET /chua/': (_req, res) => res.writeHead(302, { location: 'http://127.0.0.1:8787/' }).end(),
+    'GET /dua': (_req, res) => res.writeHead(302, { location: 'http://127.0.0.1:8789/' }).end(),
+    'GET /dua/': (_req, res) => res.writeHead(302, { location: 'http://127.0.0.1:8789/' }).end(),
 
     'GET /api/state': async () => {
       const games = await fetchGamesLiveState();

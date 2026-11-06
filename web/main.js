@@ -108,6 +108,7 @@ const commentTtsBtn = document.getElementById('toggle-comment-tts');
 const chuaBgmBtn = document.getElementById('toggle-chua-bgm');
 const bodhiViewBtn = document.getElementById('toggle-bodhi-view');
 const bodhiDrawer = document.getElementById('bodhi-drawer');
+const bodhiDrawerClose = document.getElementById('bodhi-drawer-close');
 if (bodhiViewBtn && bodhiDrawer) {
   bodhiViewBtn.addEventListener('click', e => {
     e.stopPropagation();
@@ -116,6 +117,17 @@ if (bodhiViewBtn && bodhiDrawer) {
     if (isOpen) {
       audio.windChime?.();
       hud.syncBodhiWishes(bodhiTree.getRecentWishes(12), bodhiTree.getWishesCount());
+    }
+  });
+  bodhiDrawerClose?.addEventListener('click', e => {
+    e.stopPropagation();
+    bodhiDrawer.classList.remove('open');
+    bodhiViewBtn.classList.remove('active');
+  });
+  addEventListener('keydown', e => {
+    if (e.key === 'Escape' && bodhiDrawer.classList.contains('open')) {
+      bodhiDrawer.classList.remove('open');
+      bodhiViewBtn.classList.remove('active');
     }
   });
 }

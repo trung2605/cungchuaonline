@@ -106,6 +106,15 @@ function syncBgmBtn() {
   bgmBtn.textContent = audio.getBgmLabel();
   bgmBtn.classList.remove('off');
 }
+if (bgmBtn) {
+  syncBgmBtn();
+  bgmBtn.addEventListener('click', e => {
+    e.stopPropagation();
+    audio.unlock();
+    audio.nextBgmTrack?.();
+    syncBgmBtn();
+  });
+}
 setInterval(syncBgmBtn, 2000);
 
 function syncCommentTtsBtn(on) {

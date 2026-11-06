@@ -281,15 +281,15 @@
   }
 
   #bodhi-ribbon-toast {
-    right: 12px; top: 755px; width: 268px; padding: 11px 13px;
+    position: static; width: 100%; padding: 11px 13px;
     background: linear-gradient(180deg, rgba(145, 18, 26, .95), rgba(68, 7, 12, .96));
     border: 2px solid #facc15; border-radius: 16px;
     box-shadow: 0 0 22px rgba(250, 204, 21, .38), 0 10px 24px rgba(0, 0, 0, .78);
     color: #fffbeb; pointer-events: none; box-sizing: border-box;
-    opacity: 0; transform: translateX(24px) scale(0.96);
+    display: none; opacity: 0; transform: translateX(24px) scale(0.96);
     transition: opacity 360ms var(--ease-out), transform 360ms var(--ease-out);
   }
-  #bodhi-ribbon-toast.on { opacity: 1; transform: none; }
+  #bodhi-ribbon-toast.on { display: block; opacity: 1; transform: none; }
   #bodhi-ribbon-toast .ribbon-toast-hdr {
     font-size: 16px; font-weight: 700; color: #fde047; margin-bottom: 4px;
     display: flex; align-items: center; gap: 6px;
@@ -303,7 +303,7 @@
   }
 
   #bodhi-drawer {
-    right: 12px; top: 880px; width: 268px; max-height: 410px; padding: 12px 13px;
+    position: static; width: 100%; max-height: 390px; padding: 12px 13px;
     background: linear-gradient(180deg, rgba(72, 12, 14, .95), rgba(28, 5, 6, .97));
     border: 2px solid #facc15; border-radius: 16px;
     box-shadow: 0 0 26px rgba(250, 204, 21, .35), 0 12px 28px rgba(0, 0, 0, .82);
@@ -312,10 +312,18 @@
   }
   #bodhi-drawer.open { display: flex; }
   #bodhi-drawer h4 {
-    margin: 0; padding-bottom: 6px; text-align: center;
-    font-size: 18.5px; font-weight: 700; color: #fef08a;
+    margin: 0; padding-bottom: 6px;
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    font-size: 18px; font-weight: 700; color: #fef08a;
     border-bottom: 1.5px solid rgba(250, 204, 21, .55);
   }
+  #bodhi-drawer-close {
+    background: rgba(250, 204, 21, .16); border: 1px solid rgba(250, 204, 21, .6);
+    color: #fef08a; border-radius: 8px; width: 28px; height: 28px;
+    font-size: 15px; font-weight: 700; cursor: pointer; display: inline-grid; place-items: center;
+    padding: 0; font-family: inherit;
+  }
+  #bodhi-drawer-close:hover { background: rgba(250, 204, 21, .32); color: #ffffff; }
   #bodhi-wish-list {
     margin: 0; padding: 0 4px 0 0; list-style: none; overflow-y: auto; max-height: 330px;
     display: flex; flex-direction: column; gap: 6px;
@@ -367,6 +375,10 @@
     </div>
     <button id="toggle-chua-bgm" class="pill" type="button" title="Bấm để đổi nhạc Chánh Điện (Remix / Cổ Phong / Handpan / Thiền)">🎵 🔥 Nam Mô A Di Đà Phật Remix</button>
     <button id="toggle-bodhi-view" class="pill" type="button" title="Bấm để chiêm bái Cây Bồ Đề Ước Nguyện &amp; xem các dải lụa đỏ">🌳 Cây Bồ Đề: <span id="bodhi-wish-count">8</span> Dải Lụa</button>
+    <div id="bodhi-drawer">
+      <h4><span>🌳 DẢI LỤA CÂY BỒ ĐỀ</span><button id="bodhi-drawer-close" type="button" aria-label="Đóng sớ dải lụa">✕</button></h4>
+      <ul id="bodhi-wish-list"></ul>
+    </div>
     <div id="prayers" class="pill">
       <h3>SỚ CẦU NGUYỆN</h3>
       <ul id="prayer-list">
@@ -389,16 +401,11 @@
       <div id="footer-sub" class="cta-line">📿 Cầu: Bình an · Tài lộc · Sức khỏe</div>
     </div>
     <div id="donor"></div>
-  </div>
-
-  <div id="bodhi-ribbon-toast">
-    <div class="ribbon-toast-hdr">🧧 DẢI LỤA ƯỚC NGUYỆN MỚI</div>
-    <div class="ribbon-toast-name" id="bodhi-toast-name">Phật Tử Thiện Tâm</div>
-    <div class="ribbon-toast-wish" id="bodhi-toast-wish">Cầu Gia Đạo Bình An</div>
-  </div>
-  <div id="bodhi-drawer">
-    <h4>🌳 DẢI LỤA CÂY BỒ ĐỀ</h4>
-    <ul id="bodhi-wish-list"></ul>
+    <div id="bodhi-ribbon-toast">
+      <div class="ribbon-toast-hdr">🧧 DẢI LỤA ƯỚC NGUYỆN MỚI</div>
+      <div class="ribbon-toast-name" id="bodhi-toast-name">Phật Tử Thiện Tâm</div>
+      <div class="ribbon-toast-wish" id="bodhi-toast-wish">Cầu Gia Đạo Bình An</div>
+    </div>
   </div>
   <div id="banner" class="pill"></div>
   <div id="voice-toast"><span class="wave"><i></i><i></i><i></i></span><span id="voice-text"></span></div>

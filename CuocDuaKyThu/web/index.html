@@ -98,39 +98,39 @@
   #toggle-bgm:active { transform: scale(0.98); }
   #toggle-bgm:focus-visible { outline: 2.5px solid #fde047; outline-offset: 2px; }
 
-  /* Upper-Left Subtitle & Notification Zone (Right below #top-left-col) */
+  /* Upper-Left Subtitle & Notification Zone (Inside #top-left-col flex column — Zero Overlap!) */
   #welcome-card {
-    left: 16px; top: 232px; bottom: auto; width: 584px; max-width: 584px; padding: 12px 18px;
+    position: static; width: 100%; padding: 12px 18px;
     background: linear-gradient(180deg, rgba(34, 29, 24, .96), rgba(20, 17, 14, .98));
     border: 2px solid var(--gold-line); border-radius: 14px;
     box-shadow: 0 8px 22px rgba(0, 0, 0, .68);
     color: #fff0cc; font-size: 22px; font-weight: 800; text-align: center;
-    opacity: 0; transform: translateY(-6px) scale(.98);
+    display: none; opacity: 0; transform: translateY(-6px) scale(.98);
     transition: opacity 280ms var(--ease-out), transform 280ms var(--ease-out);
     pointer-events: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     box-sizing: border-box;
   }
-  #welcome-card.on { opacity: 1; transform: none; }
+  #welcome-card.on { display: block; opacity: 1; transform: none; }
 
   #banner {
-    left: 16px; top: 232px; bottom: auto; width: 584px; max-width: 584px; padding: 12px 18px;
+    position: static; width: 100%; padding: 12px 18px;
     font-size: 22px; font-weight: 800; color: #fff0cc; text-align: center;
-    opacity: 0; transform: translateY(-6px); transition: opacity 260ms ease, transform 260ms ease;
+    display: none; opacity: 0; transform: translateY(-6px); transition: opacity 260ms ease, transform 260ms ease;
     pointer-events: none; border: 2px solid var(--gold-line);
     box-sizing: border-box;
   }
-  #banner.on { opacity: 1; transform: none; }
+  #banner.on { display: block; opacity: 1; transform: none; }
 
   #voice-toast {
-    left: 16px; top: 232px; bottom: auto; width: 584px; max-width: 584px; padding: 12px 18px;
+    position: static; width: 100%; padding: 12px 18px;
     font-size: 21.5px; font-weight: 800; color: #fff4dc; text-align: left;
     background: rgba(16, 14, 11, .95); border: 2px solid var(--gold-line); border-radius: 14px;
     box-shadow: 0 8px 22px rgba(0, 0, 0, .68);
-    opacity: 0; transform: translateY(-6px); transition: opacity 240ms ease, transform 240ms ease;
-    pointer-events: none; display: flex; align-items: center; gap: 12px; line-height: 1.34;
+    display: none; opacity: 0; transform: translateY(-6px); transition: opacity 240ms ease, transform 240ms ease;
+    pointer-events: none; align-items: center; gap: 12px; line-height: 1.34;
     box-sizing: border-box;
   }
-  #voice-toast.on { opacity: 1; transform: none; }
+  #voice-toast.on { display: flex; opacity: 1; transform: none; }
   #voice-toast.female { border-color: rgba(244, 180, 152, .78); }
   #voice-toast.male { border-color: rgba(148, 202, 238, .78); }
   #voice-badge {
@@ -337,15 +337,15 @@
       <div class="biome-bar"><div id="biome-bar-fill"></div></div>
     </div>
 
-    <button id="toggle-bgm" class="pill" type="button">🎵 Nhạc Việt: Trống Cơm Acoustic</button>
-  </div>
+    <button id="toggle-bgm" class="pill" type="button" title="Bấm để đổi bài hát quê hương Việt Nam">🎵 Nhạc Việt: Trống Cơm Acoustic</button>
 
-  <div id="welcome-card">🇻🇳 <span id="welcome-text">Chào mừng bạn cùng tham gia hành trình đi bộ xuyên Việt!</span></div>
-  <div id="banner" class="pill"></div>
-  <div id="voice-toast">
-    <span class="wave"><i></i><i></i><i></i></span>
-    <span id="voice-badge">👨 MC Minh Quân</span>
-    <span id="voice-text"></span>
+    <div id="welcome-card">🇻🇳 <span id="welcome-text">Chào mừng bạn cùng tham gia hành trình đi bộ xuyên Việt!</span></div>
+    <div id="banner" class="pill"></div>
+    <div id="voice-toast">
+      <span class="wave"><i></i><i></i><i></i></span>
+      <span id="voice-badge">👨 MC Minh Quân</span>
+      <span id="voice-text"></span>
+    </div>
   </div>
 
   <div id="right-col">

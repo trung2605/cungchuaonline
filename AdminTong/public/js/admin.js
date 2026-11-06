@@ -1897,19 +1897,19 @@ function renderTrendsAdmin(trends) {
         `<button type="button" class="btn sm" data-trend-quick-sample="${esc(s)}" data-trend-proj="${esc(p.id)}" style="font-size:11px;padding:3px 8px;">💬 "${esc(s)}"</button>`
       ).join('');
       return `
-        <div class="card" style="margin:0; padding:14px; border:1px solid rgba(255,255,255,0.09); background:rgba(15,23,42,0.5);">
-          <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px; margin-bottom:8px;">
+        <div class="card" style="margin:0; padding:16px; border:1px solid var(--border-strong); background:linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px; margin-bottom:10px;">
             <div style="display:flex; align-items:center; gap:10px;">
-              <span style="font-size:28px;">${esc(p.icon)}</span>
+              <span style="font-size:28px; line-height:1;">${esc(p.icon)}</span>
               <div>
-                <div style="font-weight:800; font-size:15px; color:#fff;">#${p.index}. ${esc(p.name)}</div>
+                <div style="font-weight:800; font-size:15px; color:var(--text-primary);">#${p.index}. ${esc(p.name)}</div>
                 <div style="font-size:12px; color:var(--text-muted);">${esc(p.tagline)}</div>
               </div>
             </div>
             <span class="badge gold">${fmtNum(st.interactions || 0)} giải mã · ${fmtNum(st.microGifts || 0)} 🌹</span>
           </div>
 
-          <div style="font-size:12px; padding:8px 10px; border-radius:8px; background:rgba(0,0,0,0.3); margin-bottom:8px;">
+          <div style="font-size:12.5px; padding:10px 12px; border-radius:var(--radius-sm); background:var(--bg-subtle); border:1px solid var(--border); margin-bottom:10px; color:var(--text-primary);">
             <div><strong style="color:var(--gold);">📌 Format Comment:</strong> ${esc(p.formatPrompt)}</div>
             <div style="margin-top:4px;"><strong style="color:var(--rose);">🌹 Kích cầu 1💎:</strong> ${esc(p.microGiftPrompt)}</div>
             <div style="margin-top:4px; color:var(--text-secondary);"><strong>⚙️ Thuật toán:</strong> ${esc(custom.ruleNote || '')}</div>
@@ -1983,7 +1983,7 @@ function renderTrendsAdmin(trends) {
               <strong>${esc(f.label)}</strong>
               <span style="color:var(--gold); font-weight:700;">${fmtNum(f.count)} lượt (${f.percent}%)</span>
             </div>
-            <div style="height:7px; border-radius:999px; background:rgba(255,255,255,0.08); overflow:hidden;">
+            <div style="height:8px; border-radius:999px; background:var(--bg-subtle); border:1px solid var(--border); overflow:hidden;">
               <div style="height:100%; width:${Math.max(5, f.percent)}%; background:linear-gradient(90deg, var(--gold), var(--rose)); border-radius:999px;"></div>
             </div>
           </div>
