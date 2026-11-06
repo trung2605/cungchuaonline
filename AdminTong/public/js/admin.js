@@ -122,12 +122,14 @@ const MAIN_TAB_LABELS = {
   master: 'Admin Tổng (:8791)',
   chua: 'Cúng Chùa 3D (:8787)',
   dua: 'Đi Bộ Xuyên Việt (:8789)',
+  trends: '10 Web 3D Trend (/trends)',
 };
 
 const activeSubTabByParent = {
   master: 'master-overview',
   chua: 'chua-controls',
   dua: 'dua-controls',
+  trends: 'trends-catalog',
 };
 
 function updateBreadcrumb(parentTab, subTabId) {
@@ -144,7 +146,7 @@ function updateBreadcrumb(parentTab, subTabId) {
 
 function switchMainTab(mainTab, toggleExpandIfSame = false) {
   const clean = (mainTab || 'master').replace(/^#/, '');
-  const target = ['master', 'chua', 'dua'].includes(clean) ? clean : 'master';
+  const target = ['master', 'chua', 'dua', 'trends'].includes(clean) ? clean : 'master';
 
   const currentActiveBtn = document.querySelector('.main-tab-btn.active');
   const isSameTab = currentActiveBtn && currentActiveBtn.dataset.mainTab === target;
@@ -184,7 +186,7 @@ function switchMainTab(mainTab, toggleExpandIfSame = false) {
 window.switchMainTab = switchMainTab;
 
 function switchSubTab(parentTab, subTabId) {
-  const cleanParent = ['master', 'chua', 'dua'].includes(parentTab) ? parentTab : 'master';
+  const cleanParent = ['master', 'chua', 'dua', 'trends'].includes(parentTab) ? parentTab : 'master';
   activeSubTabByParent[cleanParent] = subTabId;
 
   // Ensure parent main view is active and expanded
@@ -219,6 +221,10 @@ let lastStateCache = null;
 const SAMPLE_PREVIEW = {
   chuaDiamonds: 36,
   duaDiamonds: 45,
+  trendDiamonds: 18,
+  trendEvents: 42,
+  trendComments: 30,
+  trendMicroGifts: 12,
   giftsCount: 5,
   namo: 28,
   bows: 64,
@@ -251,11 +257,11 @@ const SAMPLE_PREVIEW = {
     { id: 'sample_dua_2', name: 'Lê Trí Trung (Mẫu)', tier: 2, speedMult: 2.8, distanceM: 680, diamonds: 15, cheer: 'Khám phá thế giới! (Mẫu)', src: 'mock' },
   ],
   gifts: [
-    { time: 'Mẫu Demo', game: 'cung-chua-online', gameLabel: 'Cúng Chùa Online 3D', name: 'Phật Tử Thiện Tâm (Mẫu)', giftVi: 'Nước Hoa', repeat: 1, totalDiamonds: 20, reward: 'Áo tràng Hoàng Kim · Thắp đại hoa đăng, Hào quang & Đại hồng chung', src: 'mock' },
-    { time: 'Mẫu Demo', game: 'cuoc-dua-ky-thu', gameLabel: 'Cuộc Đua Kỳ Thú 3D', name: 'Minh An (Mẫu)', giftVi: 'Bánh Vòng', repeat: 1, totalDiamonds: 30, reward: 'Tên Lửa Hoàng Kim · Tốc độ ×4.8 (+1.500m)', src: 'mock' },
-    { time: 'Mẫu Demo', game: 'cung-chua-online', gameLabel: 'Cúng Chùa Online 3D', name: 'An Nhiên (Mẫu)', giftVi: 'Hoa Rosa', repeat: 1, totalDiamonds: 10, reward: 'Khoác Áo tràng Vàng · Thắp đèn hoa đăng & Chuông chùa', src: 'mock' },
-    { time: 'Mẫu Demo', game: 'cung-chua-online', gameLabel: 'Cúng Chùa Online 3D', name: 'Phật Tử Thiện Tâm (Mẫu)', giftVi: 'Tim Tay', repeat: 1, totalDiamonds: 5, reward: 'Dâng hoa sen & Đèn hoa đăng · Chuông gia trì & Đọc tên', src: 'mock' },
-    { time: 'Mẫu Demo', game: 'cung-chua-online', gameLabel: 'Cúng Chùa Online 3D', name: 'An Nhiên (Mẫu)', giftVi: 'Hoa Hồng', repeat: 1, totalDiamonds: 1, reward: 'Dâng 3 nén hương trầm · Tiếng khánh & Đọc tên cầu an', src: 'mock' },
+    { time: 'Mẫu Demo', game: 'cung-chua-online', gameLabel: 'Cúng Chùa Online 3D', name: 'Phật Tử Thiện Tâm (Mẫu)', giftVi: 'Nước Hoa', repeat: 1, totalDiamonds: 20, tier: 4, reward: 'Áo tràng Hoàng Kim · Thắp đại hoa đăng, Hào quang & Đại hồng chung', src: 'mock' },
+    { time: 'Mẫu Demo', game: 'cuoc-dua-ky-thu', gameLabel: 'Cuộc Đua Kỳ Thú 3D', name: 'Minh An (Mẫu)', giftVi: 'Bánh Vòng', repeat: 1, totalDiamonds: 30, tier: 4, reward: 'Tên Lửa Hoàng Kim · Tốc độ ×4.8 (+1.500m)', src: 'mock' },
+    { time: 'Mẫu Demo', game: 'cung-chua-online', gameLabel: 'Cúng Chùa Online 3D', name: 'An Nhiên (Mẫu)', giftVi: 'Hoa Rosa', repeat: 1, totalDiamonds: 10, tier: 3, reward: 'Khoác Áo tràng Vàng · Thắp đèn hoa đăng & Chuông chùa', src: 'mock' },
+    { time: 'Mẫu Demo', game: 'cung-chua-online', gameLabel: 'Cúng Chùa Online 3D', name: 'Phật Tử Thiện Tâm (Mẫu)', giftVi: 'Tim Tay', repeat: 1, totalDiamonds: 5, tier: 2, reward: 'Dâng hoa sen & Đèn hoa đăng · Chuông gia trì & Đọc tên', src: 'mock' },
+    { time: 'Mẫu Demo', game: 'cung-chua-online', gameLabel: 'Cúng Chùa Online 3D', name: 'An Nhiên (Mẫu)', giftVi: 'Hoa Hồng', repeat: 1, totalDiamonds: 1, tier: 1, reward: 'Dâng 3 nén hương trầm · Tiếng khánh & Đọc tên cầu an', src: 'mock' },
   ],
 };
 
@@ -275,11 +281,14 @@ function toggleMockDataMode() {
   historySeries.labels.length = 0;
   historySeries.chuaDiamonds.length = 0;
   historySeries.duaDiamonds.length = 0;
+  historySeries.trendDiamonds.length = 0;
   historySeries.chuaNamo.length = 0;
   historySeries.chuaActors.length = 0;
+  historySeries.duaDistM.length = 0;
+  historySeries.duaLikes.length = 0;
   showToast(
     showMockData
-      ? 'Đã BẬT hiển thị dữ liệu mẫu (Thống kê bao gồm cả dữ liệu Fake/Mẫu trên cả 3 trang)'
+      ? 'Đã BẬT hiển thị dữ liệu mẫu (Thống kê bao gồm cả dữ liệu Fake/Mẫu trên cả 4 phân hệ)'
       : 'Đã TẮT dữ liệu mẫu — Chỉ hiển thị 100% thông số người dùng thật!'
   );
   if (lastStateCache) renderAll(lastStateCache);
@@ -287,15 +296,18 @@ function toggleMockDataMode() {
 window.toggleMockDataMode = toggleMockDataMode;
 
 // ============================================================================
-// APEXCHARTS ENGINE (7 Interactive Charts)
+// APEXCHARTS ENGINE (21 Interactive Statistical Charts Across All Subsystems)
 // ============================================================================
 const charts = {};
 const historySeries = {
   labels: [],
   chuaDiamonds: [],
   duaDiamonds: [],
+  trendDiamonds: [],
   chuaNamo: [],
   chuaActors: [],
+  duaDistM: [],
+  duaLikes: [],
 };
 
 function initApexCharts() {
@@ -303,129 +315,385 @@ function initApexCharts() {
 
   const baseFont = "'Plus Jakarta Sans', 'Be Vietnam Pro', sans-serif";
 
-  // 1. Global Real-Time Diamond Timeline (Area Spline)
-  charts.globalTimeline = new ApexCharts($('chartGlobalTimeline'), {
-    chart: { type: 'area', height: 280, fontFamily: baseFont, toolbar: { show: false }, animations: { enabled: true, easing: 'easeinout', speed: 400 } },
-    colors: ['#2563eb', '#60a5fa'],
-    dataLabels: { enabled: false },
-    stroke: { curve: 'smooth', width: 2.5 },
-    fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.35, opacityTo: 0.03, stops: [0, 95, 100] } },
-    series: [
-      { name: 'Cúng Chùa Online (💎)', data: [] },
-      { name: 'Cuộc Đua Kỳ Thú (💎)', data: [] },
-    ],
-    xaxis: { categories: [], labels: { style: { colors: '#64748b', fontSize: '11px' } } },
-    yaxis: { min: 0, labels: { formatter: v => fmtNum(Math.round(v)), style: { colors: '#64748b', fontSize: '11px' } } },
-    grid: { borderColor: '#f1f5f9', strokeDashArray: 4 },
-    legend: { position: 'top', horizontalAlign: 'right', fontWeight: 700 },
-  });
-  charts.globalTimeline.render();
+  // 1. Global Real-Time Diamond Timeline (Area Spline - 3 Systems)
+  if ($('chartGlobalTimeline')) {
+    charts.globalTimeline = new ApexCharts($('chartGlobalTimeline'), {
+      chart: { type: 'area', height: 280, fontFamily: baseFont, toolbar: { show: false }, animations: { enabled: true, easing: 'easeinout', speed: 400 } },
+      colors: ['#2563eb', '#0d9488', '#d97706'],
+      dataLabels: { enabled: false },
+      stroke: { curve: 'smooth', width: 2.5 },
+      fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.35, opacityTo: 0.03, stops: [0, 95, 100] } },
+      series: [
+        { name: 'Cúng Chùa 3D (💎)', data: [] },
+        { name: 'Đi Bộ Xuyên Việt (💎)', data: [] },
+        { name: '10 Web 3D Trend (💎)', data: [] },
+      ],
+      xaxis: { categories: [], labels: { style: { colors: '#64748b', fontSize: '11px' } } },
+      yaxis: { min: 0, labels: { formatter: v => fmtNum(Math.round(v)), style: { colors: '#64748b', fontSize: '11px' } } },
+      grid: { borderColor: '#f1f5f9', strokeDashArray: 4 },
+      legend: { position: 'top', horizontalAlign: 'right', fontWeight: 700 },
+    });
+    charts.globalTimeline.render();
+  }
 
-  // 2. Global Game Share (Donut)
-  charts.globalShare = new ApexCharts($('chartGlobalShare'), {
-    chart: { type: 'donut', height: 280, fontFamily: baseFont },
-    colors: ['#2563eb', '#93c5fd'],
-    labels: ['Cúng Chùa Online 3D', 'Cuộc Đua Kỳ Thú 3D'],
-    series: [0, 0],
-    plotOptions: {
-      pie: {
-        donut: {
-          size: '66%',
-          labels: {
-            show: true,
-            total: { show: true, label: 'Tổng Kim Cương', fontWeight: 700, formatter: w => fmtNum(w.globals.seriesTotals.reduce((a, b) => a + b, 0)) + ' 💎' },
+  // 2. Global Game Share (Donut - 3 Systems)
+  if ($('chartGlobalShare')) {
+    charts.globalShare = new ApexCharts($('chartGlobalShare'), {
+      chart: { type: 'donut', height: 280, fontFamily: baseFont },
+      colors: ['#2563eb', '#0d9488', '#d97706'],
+      labels: ['Cúng Chùa Online 3D', 'Đi Bộ Xuyên Việt 3D', '10 Web 3D Trend'],
+      series: [0, 0, 0],
+      plotOptions: {
+        pie: {
+          donut: {
+            size: '66%',
+            labels: {
+              show: true,
+              total: { show: true, label: 'Tổng Kim Cương', fontWeight: 700, formatter: w => fmtNum(w.globals.seriesTotals.reduce((a, b) => a + b, 0)) + ' 💎' },
+            },
           },
         },
       },
-    },
-    dataLabels: { enabled: false },
-    legend: { position: 'bottom', fontWeight: 600 },
-  });
-  charts.globalShare.render();
+      dataLabels: { enabled: false },
+      legend: { position: 'bottom', fontWeight: 600 },
+    });
+    charts.globalShare.render();
+  }
 
   // 3. Global Top Donors (Horizontal Bar)
-  charts.globalTopDonors = new ApexCharts($('chartGlobalTopDonors'), {
-    chart: { type: 'bar', height: 260, fontFamily: baseFont, toolbar: { show: false } },
-    colors: ['#2563eb'],
-    plotOptions: { bar: { horizontal: true, borderRadius: 0, barHeight: '62%' } },
-    dataLabels: { enabled: true, formatter: v => fmtNum(v) + ' 💎', style: { fontSize: '11px', fontWeight: 700 } },
-    series: [{ name: 'Kim cương', data: [] }],
-    xaxis: { categories: [], labels: { style: { colors: '#475569', fontSize: '11px' } } },
-    grid: { borderColor: '#f1f5f9' },
-  });
-  charts.globalTopDonors.render();
+  if ($('chartGlobalTopDonors')) {
+    charts.globalTopDonors = new ApexCharts($('chartGlobalTopDonors'), {
+      chart: { type: 'bar', height: 260, fontFamily: baseFont, toolbar: { show: false } },
+      colors: ['#2563eb'],
+      plotOptions: { bar: { horizontal: true, borderRadius: 4, barHeight: '62%' } },
+      dataLabels: { enabled: true, formatter: v => fmtNum(v) + ' 💎', style: { fontSize: '11px', fontWeight: 700 } },
+      series: [{ name: 'Kim cương', data: [] }],
+      xaxis: { categories: [], labels: { style: { colors: '#475569', fontSize: '11px' } } },
+      grid: { borderColor: '#f1f5f9' },
+    });
+    charts.globalTopDonors.render();
+  }
 
-  // 4. Cúng Chùa Online: Niệm Phật & Phật tử Timeline
-  charts.chuaTimeline = new ApexCharts($('chartChuaTimeline'), {
-    chart: { type: 'area', height: 260, fontFamily: baseFont, toolbar: { show: false } },
-    colors: ['#2563eb', '#60a5fa'],
-    dataLabels: { enabled: false },
-    stroke: { curve: 'smooth', width: 2.5 },
-    fill: { type: 'gradient', gradient: { opacityFrom: 0.3, opacityTo: 0.02 } },
-    series: [
-      { name: 'Tổng Niệm Nam Mô', data: [] },
-      { name: 'Phật tử trong điện', data: [] },
-    ],
-    xaxis: { categories: [] },
-    yaxis: { min: 0 },
-    grid: { borderColor: '#f1f5f9' },
-    legend: { position: 'top', horizontalAlign: 'right' },
-  });
-  charts.chuaTimeline.render();
+  // 4. Global Conversion Funnel Across All Systems
+  if ($('chartGlobalFunnel')) {
+    charts.globalFunnel = new ApexCharts($('chartGlobalFunnel'), {
+      chart: { type: 'bar', height: 260, fontFamily: baseFont, toolbar: { show: false } },
+      colors: ['#3b82f6', '#0d9488', '#8b5cf6', '#ec4899', '#f59e0b'],
+      plotOptions: { bar: { horizontal: true, distributed: true, borderRadius: 4, barHeight: '64%' } },
+      dataLabels: { enabled: true, formatter: v => fmtNum(v) + ' lượt', style: { fontSize: '11px', fontWeight: 700 } },
+      series: [{ name: 'Số lượng', data: [0, 0, 0, 0, 0] }],
+      xaxis: {
+        categories: [
+          '1. Tổng Tương Tác Toàn Hệ Thống',
+          '2. Bình Luận / Niệm Phật / Giải Mã',
+          '3. Nhân Vật & Dải Lụa 3D Hiện Diện',
+          '4. Quà Nhỏ Kích Cầu (1💎–5💎)',
+          '5. Quà Lớn Vinh Danh (10💎+)',
+        ],
+        labels: { style: { colors: '#475569', fontSize: '11px' } },
+      },
+      legend: { show: false },
+      grid: { borderColor: '#f1f5f9' },
+    });
+    charts.globalFunnel.render();
+  }
 
-  // 5. Cúng Chùa Online: Phân Bố Lời Cầu Nguyện
-  charts.chuaPrayers = new ApexCharts($('chartChuaPrayers'), {
-    chart: { type: 'donut', height: 260, fontFamily: baseFont },
-    colors: ['#1d4ed8', '#2563eb', '#3b82f6', '#60a5fa', '#93c5fd', '#bfdbfe'],
-    labels: ['Chưa có dữ liệu'],
-    series: [1],
-    plotOptions: { pie: { donut: { size: '64%' } } },
-    dataLabels: { enabled: false },
-    legend: { position: 'bottom' },
-  });
-  charts.chuaPrayers.render();
-
-  // 6. Cuộc Đua Kỳ Thú: Phân Bố Trang Bị / Phương Tiện
-  charts.duaTiers = new ApexCharts($('chartDuaTiers'), {
-    chart: { type: 'donut', height: 260, fontFamily: baseFont },
-    colors: ['#bfdbfe', '#93c5fd', '#60a5fa', '#3b82f6', '#1d4ed8'],
-    labels: ['Đi bộ (x1.0)', 'Cánh Chim Lạc (x1.8)', 'Xe Cub Phượt (x2.8)', 'Chiến Mã Thánh Gióng (x4.2)', 'Rồng Vàng (x6.5)'],
-    series: [0, 0, 0, 0, 0],
-    plotOptions: { pie: { donut: { size: '64%' } } },
-    dataLabels: { enabled: false },
-    legend: { position: 'bottom' },
-  });
-  charts.duaTiers.render();
-
-  // 7. Cuộc Đua Kỳ Thú: Top Tay Đua Dẫn Đầu (m)
-  charts.duaTopRacers = new ApexCharts($('chartDuaTopRacers'), {
-    chart: { type: 'bar', height: 260, fontFamily: baseFont, toolbar: { show: false } },
-    colors: ['#2563eb'],
-    plotOptions: { bar: { horizontal: true, borderRadius: 0, barHeight: '62%' } },
-    dataLabels: { enabled: true, formatter: v => fmtNum(v) + ' m', style: { fontSize: '11px', fontWeight: 700 } },
-    series: [{ name: 'Quãng đường (m)', data: [] }],
-    xaxis: { categories: [] },
-    grid: { borderColor: '#f1f5f9' },
-  });
-  charts.duaTopRacers.render();
-
-  // 8. System Balance Chart: Real Users vs Demo Users vs Target Threshold
+  // 5. System Balance Chart: Real Users vs Demo Users vs Target Threshold
   if ($('chartSystemBalance')) {
     charts.systemBalance = new ApexCharts($('chartSystemBalance'), {
-      chart: { type: 'bar', height: 140, fontFamily: baseFont, toolbar: { show: false } },
+      chart: { type: 'bar', height: 155, fontFamily: baseFont, toolbar: { show: false } },
       colors: ['#059669', '#d97706', '#2563eb'],
-      plotOptions: { bar: { horizontal: true, borderRadius: 0, barHeight: '72%' } },
+      plotOptions: { bar: { horizontal: true, borderRadius: 3, barHeight: '72%' } },
       dataLabels: { enabled: true, formatter: v => fmtNum(v), style: { fontSize: '10.5px', fontWeight: 700 } },
       series: [
-        { name: 'Người thật', data: [0, 0] },
-        { name: 'Mẫu bù tự động', data: [0, 0] },
-        { name: 'Ngưỡng đủ', data: [8, 8] },
+        { name: 'Người thật', data: [0, 0, 0] },
+        { name: 'Mẫu bù tự động', data: [0, 0, 0] },
+        { name: 'Ngưỡng đủ', data: [8, 8, 10] },
       ],
-      xaxis: { categories: ['Chùa 3D (:8787)', 'Xuyên Việt (:8789)'], labels: { style: { colors: '#64748b', fontSize: '10.5px' } } },
+      xaxis: { categories: ['Chùa 3D (:8787)', 'Xuyên Việt (:8789)', '10 Web Trend'], labels: { style: { colors: '#64748b', fontSize: '10.5px' } } },
       grid: { borderColor: '#f1f5f9', padding: { top: -10, bottom: -8 } },
       legend: { position: 'top', horizontalAlign: 'right', fontSize: '11px', fontWeight: 700 },
     });
     charts.systemBalance.render();
+  }
+
+  // 6. Gift Tier Distribution (Donut - #sub-master-gifts)
+  if ($('chartGiftTierDistribution')) {
+    charts.giftTierDistribution = new ApexCharts($('chartGiftTierDistribution'), {
+      chart: { type: 'donut', height: 260, fontFamily: baseFont },
+      colors: ['#ec4899', '#0d9488', '#2563eb', '#d97706'],
+      labels: ['Tier 1: Quà Nhỏ (1–4💎)', 'Tier 2: Quà Vừa (5–9💎)', 'Tier 3: Quà Lớn (10–19💎)', 'Tier 4: Đại Lễ (20💎+)'],
+      series: [0, 0, 0, 0],
+      plotOptions: {
+        pie: {
+          donut: {
+            size: '64%',
+            labels: {
+              show: true,
+              total: { show: true, label: 'Tổng Lượt Quà', fontWeight: 700, formatter: w => fmtNum(w.globals.seriesTotals.reduce((a, b) => a + b, 0)) },
+            },
+          },
+        },
+      },
+      dataLabels: { enabled: false },
+      legend: { position: 'bottom', fontWeight: 600 },
+    });
+    charts.giftTierDistribution.render();
+  }
+
+  // 7. Top Gift Items by Revenue (Horizontal Bar - #sub-master-gifts)
+  if ($('chartTopGiftItems')) {
+    charts.topGiftItems = new ApexCharts($('chartTopGiftItems'), {
+      chart: { type: 'bar', height: 260, fontFamily: baseFont, toolbar: { show: false } },
+      colors: ['#d97706'],
+      plotOptions: { bar: { horizontal: true, borderRadius: 4, barHeight: '62%' } },
+      dataLabels: { enabled: true, formatter: v => fmtNum(v) + ' 💎', style: { fontSize: '11px', fontWeight: 700 } },
+      series: [{ name: 'Kim cương', data: [] }],
+      xaxis: { categories: [], labels: { style: { colors: '#475569', fontSize: '11px' } } },
+      grid: { borderColor: '#f1f5f9' },
+    });
+    charts.topGiftItems.render();
+  }
+
+  // 8. Work Logs By Category (Donut - #sub-master-worklogs)
+  if ($('chartWorkLogsByCategory')) {
+    charts.workLogsByCategory = new ApexCharts($('chartWorkLogsByCategory'), {
+      chart: { type: 'donut', height: 250, fontFamily: baseFont },
+      colors: ['#2563eb', '#0d9488', '#d97706', '#8b5cf6', '#ec4899', '#059669', '#64748b'],
+      labels: ['Architecture', 'Feature', '3D & UI/UX', 'Voice & Audio', 'Analytics', 'Database'],
+      series: [1, 1, 1, 1, 1, 1],
+      plotOptions: {
+        pie: {
+          donut: {
+            size: '62%',
+            labels: {
+              show: true,
+              total: { show: true, label: 'Hạng Mục', fontWeight: 700, formatter: w => fmtNum(w.globals.seriesTotals.reduce((a, b) => a + b, 0)) },
+            },
+          },
+        },
+      },
+      dataLabels: { enabled: false },
+      legend: { position: 'bottom', fontWeight: 600 },
+    });
+    charts.workLogsByCategory.render();
+  }
+
+  // 9. Work Logs By Subsystem Scope (Bar - #sub-master-worklogs)
+  if ($('chartWorkLogsByScope')) {
+    charts.workLogsByScope = new ApexCharts($('chartWorkLogsByScope'), {
+      chart: { type: 'bar', height: 250, fontFamily: baseFont, toolbar: { show: false } },
+      colors: ['#2563eb', '#d97706', '#0d9488', '#8b5cf6'],
+      plotOptions: { bar: { horizontal: false, distributed: true, borderRadius: 5, columnWidth: '52%' } },
+      dataLabels: { enabled: true, formatter: v => fmtNum(v) + ' việc', style: { fontSize: '11px', fontWeight: 700 } },
+      series: [{ name: 'Hạng mục công việc', data: [0, 0, 0, 0] }],
+      xaxis: {
+        categories: ['Toàn Hệ Thống (all)', 'Cúng Chùa 3D', 'Đi Bộ Xuyên Việt', '10 Web 3D Trend'],
+        labels: { style: { colors: '#475569', fontSize: '11px' } },
+      },
+      legend: { show: false },
+      grid: { borderColor: '#f1f5f9' },
+    });
+    charts.workLogsByScope.render();
+  }
+
+  // 10. Database Collections Breakdown (Bar - #sub-master-mongodb)
+  if ($('chartDatabaseCollections')) {
+    charts.databaseCollections = new ApexCharts($('chartDatabaseCollections'), {
+      chart: { type: 'bar', height: 250, fontFamily: baseFont, toolbar: { show: false } },
+      colors: ['#2563eb', '#d97706', '#059669', '#0d9488', '#8b5cf6', '#ec4899'],
+      plotOptions: { bar: { horizontal: true, distributed: true, borderRadius: 4, barHeight: '64%' } },
+      dataLabels: { enabled: true, formatter: v => fmtNum(v) + ' bản ghi', style: { fontSize: '11px', fontWeight: 700 } },
+      series: [{ name: 'Số bản ghi', data: [0, 0, 0, 0, 0, 0] }],
+      xaxis: {
+        categories: [
+          'events (Sự kiện Live)',
+          'gifts (Lịch sử Quà tặng)',
+          'users (Hồ sơ Người dùng)',
+          'giftCatalog (Danh mục Quà)',
+          'workLogs (Nhật ký Công việc)',
+          'trendsCustomData (Kho Data 10 Web)',
+        ],
+        labels: { style: { colors: '#475569', fontSize: '11px' } },
+      },
+      legend: { show: false },
+      grid: { borderColor: '#f1f5f9' },
+    });
+    charts.databaseCollections.render();
+  }
+
+  // 11. Cúng Chùa Online: Niệm Phật & Phật tử Timeline
+  if ($('chartChuaTimeline')) {
+    charts.chuaTimeline = new ApexCharts($('chartChuaTimeline'), {
+      chart: { type: 'area', height: 260, fontFamily: baseFont, toolbar: { show: false } },
+      colors: ['#2563eb', '#d97706'],
+      dataLabels: { enabled: false },
+      stroke: { curve: 'smooth', width: 2.5 },
+      fill: { type: 'gradient', gradient: { opacityFrom: 0.3, opacityTo: 0.02 } },
+      series: [
+        { name: 'Tổng Niệm Nam Mô', data: [] },
+        { name: 'Phật tử trong điện', data: [] },
+      ],
+      xaxis: { categories: [] },
+      yaxis: { min: 0 },
+      grid: { borderColor: '#f1f5f9' },
+      legend: { position: 'top', horizontalAlign: 'right' },
+    });
+    charts.chuaTimeline.render();
+  }
+
+  // 12. Cúng Chùa Online: Phân Bố Lời Cầu Nguyện
+  if ($('chartChuaPrayers')) {
+    charts.chuaPrayers = new ApexCharts($('chartChuaPrayers'), {
+      chart: { type: 'donut', height: 260, fontFamily: baseFont },
+      colors: ['#1d4ed8', '#2563eb', '#3b82f6', '#0d9488', '#d97706', '#ec4899'],
+      labels: ['Chưa có dữ liệu'],
+      series: [1],
+      plotOptions: { pie: { donut: { size: '64%' } } },
+      dataLabels: { enabled: false },
+      legend: { position: 'bottom' },
+    });
+    charts.chuaPrayers.render();
+  }
+
+  // 13. Cúng Chùa Online: Phân Bố Pháp Phục & Dải Lụa Cây Bồ Đề (#chartChuaRobeAndSilk)
+  if ($('chartChuaRobeAndSilk')) {
+    charts.chuaRobeAndSilk = new ApexCharts($('chartChuaRobeAndSilk'), {
+      chart: { type: 'bar', height: 260, fontFamily: baseFont, toolbar: { show: false } },
+      colors: ['#64748b', '#3b82f6', '#d97706', '#ef4444', '#ec4899', '#f59e0b'],
+      plotOptions: { bar: { horizontal: false, distributed: true, borderRadius: 4, columnWidth: '55%' } },
+      dataLabels: { enabled: true, formatter: v => fmtNum(v), style: { fontSize: '11px', fontWeight: 700 } },
+      series: [{ name: 'Số lượng', data: [0, 0, 0, 0, 0, 0] }],
+      xaxis: {
+        categories: ['Áo Lam', 'Áo Vàng', 'Hoàng Kim', 'Lụa Đỏ', 'Lụa Hồng Sen', 'Lụa Hoàng Kim'],
+        labels: { style: { colors: '#475569', fontSize: '11px' } },
+      },
+      legend: { show: false },
+      grid: { borderColor: '#f1f5f9' },
+    });
+    charts.chuaRobeAndSilk.render();
+  }
+
+  // 14. Cúng Chùa Online: Bảng Vàng Công Đức Chánh Điện (#chartChuaTopDonors)
+  if ($('chartChuaTopDonors')) {
+    charts.chuaTopDonors = new ApexCharts($('chartChuaTopDonors'), {
+      chart: { type: 'bar', height: 260, fontFamily: baseFont, toolbar: { show: false } },
+      colors: ['#d97706'],
+      plotOptions: { bar: { horizontal: true, borderRadius: 4, barHeight: '62%' } },
+      dataLabels: { enabled: true, formatter: v => fmtNum(v) + ' 💎', style: { fontSize: '11px', fontWeight: 700 } },
+      series: [{ name: 'Kim cương công đức', data: [] }],
+      xaxis: { categories: [], labels: { style: { colors: '#475569', fontSize: '11px' } } },
+      grid: { borderColor: '#f1f5f9' },
+    });
+    charts.chuaTopDonors.render();
+  }
+
+  // 15. Cuộc Đua Kỳ Thú: Phân Bố Trang Bị / Phương Tiện
+  if ($('chartDuaTiers')) {
+    charts.duaTiers = new ApexCharts($('chartDuaTiers'), {
+      chart: { type: 'donut', height: 260, fontFamily: baseFont },
+      colors: ['#94a3b8', '#38bdf8', '#0d9488', '#2563eb', '#d97706'],
+      labels: ['Đi bộ (x1.0)', 'Nón Lá / Cánh Chim (x1.8)', 'Xe Đạp / Cub (x2.8)', 'Xích Lô / Chiến Mã (x4.2)', 'Mô Tô Phượt / Rồng Vàng (x6.5)'],
+      series: [0, 0, 0, 0, 0],
+      plotOptions: { pie: { donut: { size: '64%' } } },
+      dataLabels: { enabled: false },
+      legend: { position: 'bottom' },
+    });
+    charts.duaTiers.render();
+  }
+
+  // 16. Cuộc Đua Kỳ Thú: Top Tay Đua Dẫn Đầu (m)
+  if ($('chartDuaTopRacers')) {
+    charts.duaTopRacers = new ApexCharts($('chartDuaTopRacers'), {
+      chart: { type: 'bar', height: 260, fontFamily: baseFont, toolbar: { show: false } },
+      colors: ['#0d9488'],
+      plotOptions: { bar: { horizontal: true, borderRadius: 4, barHeight: '62%' } },
+      dataLabels: { enabled: true, formatter: v => fmtNum(v) + ' m', style: { fontSize: '11px', fontWeight: 700 } },
+      series: [{ name: 'Quãng đường (m)', data: [] }],
+      xaxis: { categories: [] },
+      grid: { borderColor: '#f1f5f9' },
+    });
+    charts.duaTopRacers.render();
+  }
+
+  // 17. Cuộc Đua Kỳ Thú: Biểu Đồ Quãng Đường & Tim Tiếp Sức Theo Thời Gian (#chartDuaTimeline)
+  if ($('chartDuaTimeline')) {
+    charts.duaTimeline = new ApexCharts($('chartDuaTimeline'), {
+      chart: { type: 'area', height: 260, fontFamily: baseFont, toolbar: { show: false } },
+      colors: ['#0d9488', '#ec4899'],
+      dataLabels: { enabled: false },
+      stroke: { curve: 'smooth', width: 2.5 },
+      fill: { type: 'gradient', gradient: { opacityFrom: 0.3, opacityTo: 0.02 } },
+      series: [
+        { name: 'Quãng đường đoàn (m)', data: [] },
+        { name: 'Lượt Thả Tim tiếp sức', data: [] },
+      ],
+      xaxis: { categories: [] },
+      yaxis: { min: 0 },
+      grid: { borderColor: '#f1f5f9' },
+      legend: { position: 'top', horizontalAlign: 'right' },
+    });
+    charts.duaTimeline.render();
+  }
+
+  // 18. Cuộc Đua Kỳ Thú: Tiến Độ Qua 12 Địa Danh Việt Nam (#chartDuaBiomesProgress)
+  if ($('chartDuaBiomesProgress')) {
+    charts.duaBiomesProgress = new ApexCharts($('chartDuaBiomesProgress'), {
+      chart: { type: 'bar', height: 260, fontFamily: baseFont, toolbar: { show: false } },
+      colors: ['#0d9488'],
+      plotOptions: { bar: { horizontal: false, borderRadius: 3, columnWidth: '58%' } },
+      dataLabels: { enabled: false },
+      series: [{ name: 'Mốc hành trình (m)', data: [] }],
+      xaxis: { categories: [], labels: { rotate: -35, style: { colors: '#475569', fontSize: '10px' } } },
+      grid: { borderColor: '#f1f5f9' },
+    });
+    charts.duaBiomesProgress.render();
+  }
+
+  // 19. 10 Website 3D Trend: Thống Kê Tương Tác & Quà Nhỏ Theo Từng Website (#chartTrendsByProject)
+  if ($('chartTrendsByProject')) {
+    charts.trendsByProject = new ApexCharts($('chartTrendsByProject'), {
+      chart: { type: 'bar', height: 270, fontFamily: baseFont, toolbar: { show: false } },
+      colors: ['#2563eb', '#ec4899'],
+      plotOptions: { bar: { horizontal: false, borderRadius: 3, columnWidth: '62%' } },
+      dataLabels: { enabled: false },
+      series: [
+        { name: 'Lượt Giải Mã Thuật Toán', data: [] },
+        { name: 'Hoa Hồng Kích Cầu (1💎)', data: [] },
+      ],
+      xaxis: { categories: [], labels: { rotate: -30, style: { colors: '#475569', fontSize: '10px' } } },
+      grid: { borderColor: '#f1f5f9' },
+      legend: { position: 'top', horizontalAlign: 'right' },
+    });
+    charts.trendsByProject.render();
+  }
+
+  // 20. 10 Website 3D Trend: Tỷ Trọng Mẫu Format Bình Luận (#chartTrendsFormatDonut)
+  if ($('chartTrendsFormatDonut')) {
+    charts.trendsFormatDonut = new ApexCharts($('chartTrendsFormatDonut'), {
+      chart: { type: 'donut', height: 250, fontFamily: baseFont },
+      colors: ['#d97706', '#2563eb', '#ec4899', '#0d9488', '#8b5cf6', '#059669'],
+      labels: ['Ngày sinh', 'Cặp đôi', 'Biển số', 'Con số', 'Họ tên', 'Tự do'],
+      series: [1, 1, 1, 1, 1, 1],
+      plotOptions: { pie: { donut: { size: '62%' } } },
+      dataLabels: { enabled: false },
+      legend: { position: 'bottom', fontSize: '11px' },
+    });
+    charts.trendsFormatDonut.render();
+  }
+
+  // 21. 10 Website 3D Trend: Top Người Tương Tác & Tặng Quà Nhỏ (#chartTrendsTopUsers)
+  if ($('chartTrendsTopUsers')) {
+    charts.trendsTopUsers = new ApexCharts($('chartTrendsTopUsers'), {
+      chart: { type: 'bar', height: 250, fontFamily: baseFont, toolbar: { show: false } },
+      colors: ['#ec4899'],
+      plotOptions: { bar: { horizontal: true, borderRadius: 4, barHeight: '62%' } },
+      dataLabels: { enabled: true, formatter: v => fmtNum(v) + ' điểm', style: { fontSize: '10.5px', fontWeight: 700 } },
+      series: [{ name: 'Điểm tương tác', data: [] }],
+      xaxis: { categories: [], labels: { style: { colors: '#475569', fontSize: '10.5px' } } },
+      grid: { borderColor: '#f1f5f9' },
+    });
+    charts.trendsTopUsers.render();
   }
 }
 
@@ -518,19 +786,29 @@ function computeViewMetrics(state) {
   const t = db.totals || {};
   const chua = state.games?.['cung-chua-online']?.data || {};
   const dua = state.games?.['cuoc-dua-ky-thu']?.data || {};
+  const trendsInsights = state.trends?.insights || {};
 
   const realChuaActors = (chua.actors || []).filter(a => a.src !== 'mock');
   const realDuaRunners = (dua.runners || []).filter(r => r.src !== 'mock');
   const realGifts = db.realGifts || (db.recentGifts || []).filter(g => g.src !== 'mock');
   const realTopDonors = (db.realTopDonors || []).map(d => ({ name: d.name, totalDiamonds: d.realDiamonds ?? d.totalDiamonds }));
 
+  const realTrendDiamonds = trendsInsights.totalDiamonds || 0;
+  const realTrendEvents = trendsInsights.totalEvents || 0;
+  const realTrendComments = trendsInsights.totalComments || 0;
+  const realTrendMicroGifts = trendsInsights.totalMicroGifts || 0;
+
   if (!showMockData) {
     return {
-      totalDiamonds: t.realDiamonds || 0,
-      totalGiftsCount: t.realGiftsCount || 0,
+      totalDiamonds: (t.realDiamonds || 0) + realTrendDiamonds,
+      totalGiftsCount: (t.realGiftsCount || 0) + realTrendMicroGifts,
       giftRecordsCount: t.realGiftRecords ?? realGifts.length,
       chuaDiamonds: t.realChuaDiamonds || 0,
       duaDiamonds: t.realDuaDiamonds || 0,
+      trendDiamonds: realTrendDiamonds,
+      trendEvents: realTrendEvents,
+      trendComments: realTrendComments,
+      trendMicroGifts: realTrendMicroGifts,
       chuaNamo: chua.stats?.realNamo ?? 0,
       chuaBows: chua.stats?.bows || 0,
       chuaBowers: chua.stats?.uniqueBowers || 0,
@@ -551,6 +829,7 @@ function computeViewMetrics(state) {
   const hasServerMock = (t.mockDiamonds || 0) > 0 || (chua.stats?.demoStats?.events || 0) > 0 || (dua.stats?.demoStats?.chats || 0) > 0;
   const extraChuaDiamonds = (t.mockChuaDiamonds || 0) + (hasServerMock ? 0 : SAMPLE_PREVIEW.chuaDiamonds);
   const extraDuaDiamonds = (t.mockDuaDiamonds || 0) + (hasServerMock ? 0 : SAMPLE_PREVIEW.duaDiamonds);
+  const extraTrendDiamonds = realTrendDiamonds > 0 ? 0 : SAMPLE_PREVIEW.trendDiamonds;
   const extraGiftsCount = (t.mockGiftsCount || 0) + (hasServerMock ? 0 : SAMPLE_PREVIEW.giftsCount);
 
   const serverAllActors = chua.actors || [];
@@ -564,11 +843,15 @@ function computeViewMetrics(state) {
   const serverAllRacers = dua.stats?.allTopRacers || dua.stats?.topRacers || [];
 
   return {
-    totalDiamonds: (t.realDiamonds || 0) + extraChuaDiamonds + extraDuaDiamonds,
-    totalGiftsCount: (t.realGiftsCount || 0) + extraGiftsCount,
+    totalDiamonds: (t.realDiamonds || 0) + extraChuaDiamonds + extraDuaDiamonds + realTrendDiamonds + extraTrendDiamonds,
+    totalGiftsCount: (t.realGiftsCount || 0) + extraGiftsCount + realTrendMicroGifts + (realTrendMicroGifts > 0 ? 0 : SAMPLE_PREVIEW.trendMicroGifts),
     giftRecordsCount: serverAllGifts.length + (hasServerMock ? 0 : SAMPLE_PREVIEW.gifts.length),
     chuaDiamonds: (t.realChuaDiamonds || 0) + extraChuaDiamonds,
     duaDiamonds: (t.realDuaDiamonds || 0) + extraDuaDiamonds,
+    trendDiamonds: realTrendDiamonds + extraTrendDiamonds,
+    trendEvents: realTrendEvents + (realTrendEvents > 0 ? 0 : SAMPLE_PREVIEW.trendEvents),
+    trendComments: realTrendComments + (realTrendComments > 0 ? 0 : SAMPLE_PREVIEW.trendComments),
+    trendMicroGifts: realTrendMicroGifts + (realTrendMicroGifts > 0 ? 0 : SAMPLE_PREVIEW.trendMicroGifts),
     chuaNamo: (chua.stats?.realNamo ?? 0) + (chua.stats?.demoStats?.namo || 0) + (hasServerMock ? 0 : SAMPLE_PREVIEW.namo),
     chuaBows: (chua.stats?.bows || 0) + (chua.stats?.demoStats?.bows || 0) + (hasServerMock ? 0 : SAMPLE_PREVIEW.bows),
     chuaBowers: (chua.stats?.uniqueBowers || 0) + (chua.stats?.demoStats?.uniqueBowers || 0) + (hasServerMock ? 0 : SAMPLE_PREVIEW.bowers),
@@ -587,93 +870,261 @@ function computeViewMetrics(state) {
 
 function updateAllCharts(state, vm) {
   if (!charts.globalTimeline) return;
+  const db = state.db || {};
+  const t = db.totals || {};
+  const chua = state.games?.['cung-chua-online']?.data || {};
+  const dua = state.games?.['cuoc-dua-ky-thu']?.data || {};
   const nowLabel = new Date().toLocaleTimeString('vi-VN', { hour12: false });
 
   historySeries.labels.push(nowLabel);
   historySeries.chuaDiamonds.push(vm.chuaDiamonds);
   historySeries.duaDiamonds.push(vm.duaDiamonds);
+  historySeries.trendDiamonds.push(vm.trendDiamonds || 0);
   historySeries.chuaNamo.push(vm.chuaNamo);
   historySeries.chuaActors.push(vm.chuaActors.length);
+  historySeries.duaDistM.push(Math.round(vm.duaDistM || 0));
+  historySeries.duaLikes.push(vm.duaLikes || 0);
 
   if (historySeries.labels.length > 20) {
     historySeries.labels.shift();
     historySeries.chuaDiamonds.shift();
     historySeries.duaDiamonds.shift();
+    historySeries.trendDiamonds.shift();
     historySeries.chuaNamo.shift();
     historySeries.chuaActors.shift();
+    historySeries.duaDistM.shift();
+    historySeries.duaLikes.shift();
   }
 
-  // 1. Global Timeline
+  // 1. Global Timeline (3 Systems)
   charts.globalTimeline.updateOptions({ xaxis: { categories: [...historySeries.labels] } }, false, false);
   charts.globalTimeline.updateSeries([
-    { name: 'Cúng Chùa Online (💎)', data: [...historySeries.chuaDiamonds] },
-    { name: 'Cuộc Đua Kỳ Thú (💎)', data: [...historySeries.duaDiamonds] },
+    { name: 'Cúng Chùa 3D (💎)', data: [...historySeries.chuaDiamonds] },
+    { name: 'Đi Bộ Xuyên Việt (💎)', data: [...historySeries.duaDiamonds] },
+    { name: '10 Web 3D Trend (💎)', data: [...historySeries.trendDiamonds] },
   ], false);
 
-  // 2. Global Share
-  charts.globalShare.updateSeries([vm.chuaDiamonds, vm.duaDiamonds], false);
+  // 2. Global Share (3 Systems)
+  if (charts.globalShare) {
+    charts.globalShare.updateSeries([vm.chuaDiamonds, vm.duaDiamonds, vm.trendDiamonds || 0], false);
+  }
 
   // 3. Global Top Donors
   const topDonors = (vm.topDonors || []).slice(0, 7);
-  charts.globalTopDonors.updateOptions({
-    xaxis: { categories: topDonors.length ? topDonors.map(d => d.name) : ['Chưa có dữ liệu'] },
-  }, false, false);
-  charts.globalTopDonors.updateSeries([
-    { name: 'Kim cương', data: topDonors.length ? topDonors.map(d => d.totalDiamonds) : [0] },
-  ], false);
-
-  // 4. Chua Timeline
-  charts.chuaTimeline.updateOptions({ xaxis: { categories: [...historySeries.labels] } }, false, false);
-  charts.chuaTimeline.updateSeries([
-    { name: 'Tổng Niệm Nam Mô', data: [...historySeries.chuaNamo] },
-    { name: 'Phật tử trong điện', data: [...historySeries.chuaActors] },
-  ], false);
-
-  // 5. Chua Prayers
-  const topPrayers = (vm.topPrayers || []).slice(0, 6);
-  if (topPrayers.length) {
-    charts.chuaPrayers.updateOptions({ labels: topPrayers.map(p => p.text) }, false, false);
-    charts.chuaPrayers.updateSeries(topPrayers.map(p => p.count), false);
-  } else {
-    charts.chuaPrayers.updateOptions({ labels: ['Chưa có lời cầu nguyện'] }, false, false);
-    charts.chuaPrayers.updateSeries([1], false);
+  if (charts.globalTopDonors) {
+    charts.globalTopDonors.updateOptions({
+      xaxis: { categories: topDonors.length ? topDonors.map(d => d.name) : ['Chưa có dữ liệu'] },
+    }, false, false);
+    charts.globalTopDonors.updateSeries([
+      { name: 'Kim cương', data: topDonors.length ? topDonors.map(d => d.totalDiamonds) : [0] },
+    ], false);
   }
 
-  // 6. Dua Tiers
-  const tierCounts = [0, 0, 0, 0, 0];
-  for (const r of vm.duaRunners) {
-    const tr = Math.max(0, Math.min(4, Number(r.tier) || 0));
-    tierCounts[tr]++;
+  // 4. Global Conversion Funnel
+  if (charts.globalFunnel) {
+    const wishesCount = Array.isArray(chua.wishes) && chua.wishes.length ? chua.wishes.length : 8;
+    const totalCommentsAndPrayers = (vm.chuaNamo || 0) + (vm.duaChats || 0) + (vm.trendComments || 0);
+    const totalInteractions = totalCommentsAndPrayers + (vm.duaLikes || 0) + (vm.chuaBows || 0) + (vm.totalGiftsCount || 0);
+    const activeEntities3D = (vm.chuaActors || []).length + (vm.duaRunners || []).length + wishesCount;
+    const microGiftsTotal = (vm.gifts || []).filter(g => (Number(g.totalDiamonds) || 0) <= 5).length + (vm.trendMicroGifts || 0);
+    const majorGiftsTotal = (vm.gifts || []).filter(g => (Number(g.totalDiamonds) || 0) >= 10).length;
+    charts.globalFunnel.updateSeries([{
+      name: 'Số lượng',
+      data: [totalInteractions, totalCommentsAndPrayers, activeEntities3D, microGiftsTotal, majorGiftsTotal],
+    }], false);
   }
-  charts.duaTiers.updateSeries(tierCounts, false);
 
-  // 7. Dua Top Racers
-  const topRacers = (vm.topRacers || []).slice(0, 7);
-  charts.duaTopRacers.updateOptions({
-    xaxis: { categories: topRacers.length ? topRacers.map(r => r.name) : ['Chưa có tay đua'] },
-  }, false, false);
-  charts.duaTopRacers.updateSeries([
-    { name: 'Quãng đường (m)', data: topRacers.length ? topRacers.map(r => r.distanceM) : [0] },
-  ], false);
-
-  // 8. System Balance Chart (Real Users vs Demo Users vs Target Threshold)
+  // 5. System Balance Chart (Real Users vs Demo Users vs Target Threshold across 3 Systems)
   if (charts.systemBalance) {
-    const chuaData = state.games?.['cung-chua-online']?.data || {};
-    const duaData = state.games?.['cuoc-dua-ky-thu']?.data || {};
-    const chuaAb = chuaData.autoBalance || {};
-    const duaAb = duaData.autoBalance || {};
-    const chuaReal = chuaAb.realActive ?? (chuaData.actors || []).filter(a => a.src !== 'mock').length;
-    const chuaDemo = chuaAb.demoActive ?? (chuaData.actors || []).filter(a => a.src === 'mock').length;
+    const chuaAb = chua.autoBalance || {};
+    const duaAb = dua.autoBalance || {};
+    const chuaReal = chuaAb.realActive ?? (chua.actors || []).filter(a => a.src !== 'mock').length;
+    const chuaDemo = chuaAb.demoActive ?? (chua.actors || []).filter(a => a.src === 'mock').length;
     const chuaTarget = chuaAb.targetRealUsers || 8;
-    const duaReal = duaAb.realActive ?? (duaData.runners || []).filter(r => r.src !== 'mock').length;
-    const duaDemo = duaAb.demoActive ?? (duaData.runners || []).filter(r => r.src === 'mock').length;
+    const duaReal = duaAb.realActive ?? (dua.runners || []).filter(r => r.src !== 'mock').length;
+    const duaDemo = duaAb.demoActive ?? (dua.runners || []).filter(r => r.src === 'mock').length;
     const duaTarget = duaAb.targetRealUsers || 8;
+    const trendRealUsers = (state.trends?.leaderboard || []).length;
 
     charts.systemBalance.updateSeries([
-      { name: 'Người thật', data: [chuaReal, duaReal] },
-      { name: 'Mẫu bù tự động', data: [chuaDemo, duaDemo] },
-      { name: 'Ngưỡng đủ', data: [chuaTarget, duaTarget] },
+      { name: 'Người thật', data: [chuaReal, duaReal, trendRealUsers] },
+      { name: 'Mẫu bù tự động', data: [chuaDemo, duaDemo, 0] },
+      { name: 'Ngưỡng đủ', data: [chuaTarget, duaTarget, 10] },
     ], false);
+  }
+
+  // 6 & 7. Gift Tier Distribution & Top Gift Items (#sub-master-gifts)
+  const giftsList = vm.gifts || [];
+  const tierDist = [0, 0, 0, 0];
+  const giftItemMap = new Map();
+  for (const g of giftsList) {
+    const d = Number(g.totalDiamonds) || 1;
+    const tierIdx = d >= 20 ? 3 : d >= 10 ? 2 : d >= 5 ? 1 : 0;
+    tierDist[tierIdx] += Number(g.repeat) || 1;
+    const label = g.giftVi || g.giftName || 'Hoa Hồng';
+    giftItemMap.set(label, (giftItemMap.get(label) || 0) + d);
+  }
+  if ((vm.trendMicroGifts || 0) > 0) {
+    tierDist[0] += vm.trendMicroGifts;
+    giftItemMap.set('Hoa Hồng (10 Web Trend)', (giftItemMap.get('Hoa Hồng (10 Web Trend)') || 0) + (vm.trendDiamonds || vm.trendMicroGifts));
+  }
+  if (charts.giftTierDistribution) {
+    const hasAnyGift = tierDist.some(v => v > 0);
+    charts.giftTierDistribution.updateSeries(hasAnyGift ? tierDist : [12, 5, 3, 2], false);
+  }
+  if (charts.topGiftItems) {
+    let sortedGiftItems = [...giftItemMap.entries()].sort((a, b) => b[1] - a[1]).slice(0, 7);
+    if (!sortedGiftItems.length && (db.giftCatalog || []).length) {
+      sortedGiftItems = (db.giftCatalog || []).slice(0, 7).map(c => [`${c.giftVi} (Danh mục)`, c.diamonds]);
+    }
+    charts.topGiftItems.updateOptions({
+      xaxis: { categories: sortedGiftItems.map(x => x[0]) },
+    }, false, false);
+    charts.topGiftItems.updateSeries([{
+      name: 'Kim cương',
+      data: sortedGiftItems.map(x => x[1]),
+    }], false);
+  }
+
+  // 8 & 9. Work Logs By Category & Scope (#sub-master-worklogs)
+  const workLogs = db.workLogs || [];
+  if (charts.workLogsByCategory && workLogs.length) {
+    const catCounts = new Map();
+    for (const w of workLogs) {
+      const cat = w.category || 'Feature';
+      catCounts.set(cat, (catCounts.get(cat) || 0) + 1);
+    }
+    const entries = [...catCounts.entries()];
+    charts.workLogsByCategory.updateOptions({ labels: entries.map(e => e[0]) }, false, false);
+    charts.workLogsByCategory.updateSeries(entries.map(e => e[1]), false);
+  }
+  if (charts.workLogsByScope) {
+    const scopeCounts = { all: 0, 'cung-chua-online': 0, 'cuoc-dua-ky-thu': 0, 'trends-10-webs': 0 };
+    for (const w of workLogs) {
+      const g = w.game || 'all';
+      if (scopeCounts[g] !== undefined) scopeCounts[g]++;
+      else scopeCounts.all++;
+    }
+    charts.workLogsByScope.updateSeries([{
+      name: 'Hạng mục công việc',
+      data: [
+        scopeCounts.all,
+        scopeCounts['cung-chua-online'],
+        scopeCounts['cuoc-dua-ky-thu'],
+        scopeCounts['trends-10-webs'],
+      ],
+    }], false);
+  }
+
+  // 10. Database Collections Chart (#sub-master-mongodb)
+  if (charts.databaseCollections) {
+    const eventsCount = (t.totalEventRecords ?? t.realEventRecords ?? 0) + (vm.trendEvents || 0);
+    const giftsRecCount = (t.totalGiftRecords ?? giftsList.length) + (vm.trendMicroGifts || 0);
+    const usersCount = (t.uniqueUsers || 0) + (state.trends?.leaderboard || []).length;
+    const catCount = (db.giftCatalog || []).length;
+    const workCount = workLogs.length;
+    const trendCustomCount = Object.keys(state.trends?.customData || {}).length || 10;
+    charts.databaseCollections.updateSeries([{
+      name: 'Số bản ghi',
+      data: [eventsCount, giftsRecCount, usersCount, catCount, workCount, trendCustomCount],
+    }], false);
+  }
+
+  // 11. Chua Timeline
+  if (charts.chuaTimeline) {
+    charts.chuaTimeline.updateOptions({ xaxis: { categories: [...historySeries.labels] } }, false, false);
+    charts.chuaTimeline.updateSeries([
+      { name: 'Tổng Niệm Nam Mô', data: [...historySeries.chuaNamo] },
+      { name: 'Phật tử trong điện', data: [...historySeries.chuaActors] },
+    ], false);
+  }
+
+  // 12. Chua Prayers
+  if (charts.chuaPrayers) {
+    const topPrayers = (vm.topPrayers || []).slice(0, 6);
+    if (topPrayers.length) {
+      charts.chuaPrayers.updateOptions({ labels: topPrayers.map(p => p.text) }, false, false);
+      charts.chuaPrayers.updateSeries(topPrayers.map(p => p.count), false);
+    } else {
+      charts.chuaPrayers.updateOptions({ labels: ['Cầu Bình An', 'Cầu Sức Khỏe', 'Cầu Tài Lộc'] }, false, false);
+      charts.chuaPrayers.updateSeries([1, 1, 1], false);
+    }
+  }
+
+  // 13. Chua Robe Tiers & Bodhi Silk Ribbons (#chartChuaRobeAndSilk)
+  if (charts.chuaRobeAndSilk) {
+    const actors = vm.chuaActors || [];
+    const r0 = actors.filter(a => (Number(a.tier) || 0) === 0).length;
+    const r1 = actors.filter(a => Number(a.tier) === 1).length;
+    const r2 = actors.filter(a => Number(a.tier) >= 2).length;
+    const wishes = Array.isArray(chua.wishes) ? chua.wishes : [];
+    const sRed = wishes.filter(w => !w.ribbonColor || w.ribbonColor === 'red').length;
+    const sRose = wishes.filter(w => w.ribbonColor === 'rose').length;
+    const sGold = wishes.filter(w => w.ribbonColor === 'gold' || (Number(w.diamonds) || 0) >= 20).length;
+    charts.chuaRobeAndSilk.updateSeries([{
+      name: 'Số lượng',
+      data: [r0, r1, r2, sRed, sRose, sGold],
+    }], false);
+  }
+
+  // 14. Chua Top Donors (#chartChuaTopDonors)
+  if (charts.chuaTopDonors) {
+    const chuaDonors = (chua.stats?.topDonors || []).length
+      ? chua.stats.topDonors.slice(0, 7)
+      : topDonors.slice(0, 7);
+    charts.chuaTopDonors.updateOptions({
+      xaxis: { categories: chuaDonors.length ? chuaDonors.map(d => d.name) : ['Chưa có thí chủ'] },
+    }, false, false);
+    charts.chuaTopDonors.updateSeries([{
+      name: 'Kim cương công đức',
+      data: chuaDonors.length ? chuaDonors.map(d => d.diamonds ?? d.totalDiamonds ?? 0) : [0],
+    }], false);
+  }
+
+  // 15. Dua Tiers
+  if (charts.duaTiers) {
+    const tierCounts = [0, 0, 0, 0, 0];
+    for (const r of vm.duaRunners) {
+      const tr = Math.max(0, Math.min(4, Number(r.tier) || 0));
+      tierCounts[tr]++;
+    }
+    charts.duaTiers.updateSeries(tierCounts, false);
+  }
+
+  // 16. Dua Top Racers
+  if (charts.duaTopRacers) {
+    const topRacers = (vm.topRacers || []).slice(0, 7);
+    charts.duaTopRacers.updateOptions({
+      xaxis: { categories: topRacers.length ? topRacers.map(r => r.name) : ['Chưa có tay đua'] },
+    }, false, false);
+    charts.duaTopRacers.updateSeries([
+      { name: 'Quãng đường (m)', data: topRacers.length ? topRacers.map(r => r.distanceM) : [0] },
+    ], false);
+  }
+
+  // 17. Dua Timeline (#chartDuaTimeline)
+  if (charts.duaTimeline) {
+    charts.duaTimeline.updateOptions({ xaxis: { categories: [...historySeries.labels] } }, false, false);
+    charts.duaTimeline.updateSeries([
+      { name: 'Quãng đường đoàn (m)', data: [...historySeries.duaDistM] },
+      { name: 'Lượt Thả Tim tiếp sức', data: [...historySeries.duaLikes] },
+    ], false);
+  }
+
+  // 18. Dua 12 Biomes Progress (#chartDuaBiomesProgress)
+  if (charts.duaBiomesProgress) {
+    const biomes = (dua.biomes || []).length ? dua.biomes : [
+      { name: 'Hồ Gươm' }, { name: 'Sa Pa' }, { name: 'Hạ Long' }, { name: 'Ninh Bình' },
+      { name: 'Huế' }, { name: 'Đà Nẵng' }, { name: 'Hội An' }, { name: 'Đà Lạt' },
+      { name: 'Nha Trang' }, { name: 'Tây Nguyên' }, { name: 'Sài Gòn' }, { name: 'Miền Tây' },
+    ];
+    charts.duaBiomesProgress.updateOptions({
+      xaxis: { categories: biomes.map((b, i) => `${i + 1}. ${b.name.split('—')[0].trim()}`) },
+    }, false, false);
+    charts.duaBiomesProgress.updateSeries([{
+      name: 'Mốc hành trình (m)',
+      data: biomes.map((_, i) => (i + 1) * 600),
+    }], false);
   }
 }
 
@@ -682,19 +1133,48 @@ function updateAllCharts(state, vm) {
 // ============================================================================
 let chuaListsHydrated = false;
 let catalogCache = [];
+let workLogsCache = [];
 
 let stayInputProtectedUntil = 0;
 let pendingChuaStayMins = null;
 let pendingDuaStayMins = null;
 
+function renderWorkLogsTable() {
+  const bodyEl = $('workLogsBody');
+  if (!bodyEl) return;
+  const catFilter = ($('workLogFilterCat')?.value || 'all').trim();
+  const q = ($('workLogSearchInput')?.value || '').trim().toLowerCase();
+  const filtered = workLogsCache.filter(w => {
+    if (catFilter !== 'all' && w.category !== catFilter) return false;
+    if (q) {
+      const hay = `${w.title || ''} ${w.detail || ''} ${w.category || ''} ${w.game || ''}`.toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  });
+
+  bodyEl.innerHTML = filtered.length
+    ? filtered.map(w => `
+      <tr>
+        <td style="color:var(--text-muted);font-size:12px;white-space:nowrap">${esc(w.time)}</td>
+        <td><span class="badge brand">${esc(w.category)}</span></td>
+        <td><span class="badge ${w.game === 'cuoc-dua-ky-thu' ? 'teal' : w.game === 'cung-chua-online' ? 'gold' : w.game === 'trends-10-webs' ? 'rose' : 'emerald'}">${esc(w.game)}</span></td>
+        <td><strong>${esc(w.title)}</strong><div style="font-size:12px;color:var(--text-secondary);margin-top:2px">${esc(w.detail)}</div></td>
+      </tr>
+    `).join('')
+    : '<tr><td colspan="4" style="text-align:center;color:var(--text-muted)">Không tìm thấy hạng mục công việc phù hợp với bộ lọc</td></tr>';
+}
+
 function renderAll(state) {
   lastStateCache = state;
   const db = state.db || {};
+  const t = db.totals || {};
   const mongo = db.mongo || {};
   const chuaOnline = state.games?.['cung-chua-online']?.online;
   const chua = state.games?.['cung-chua-online']?.data || {};
   const duaOnline = state.games?.['cuoc-dua-ky-thu']?.online;
   const dua = state.games?.['cuoc-dua-ky-thu']?.data || {};
+  const trendsOnline = Array.isArray(state.trends?.projects) && state.trends.projects.length > 0;
   const vm = computeViewMetrics(state);
   const modeNote = showMockData ? 'Gồm dữ liệu mẫu (Fake)' : 'Chỉ tính người thật';
 
@@ -722,7 +1202,7 @@ function renderAll(state) {
   $('navBadgeDua').textContent = `${vm.duaRunners.length} đua`;
   $('navBadgeGifts').textContent = `${fmtNum(vm.giftRecordsCount)} quà`;
 
-  // Tab 1: Overview KPIs (Animated Counting Numbers)
+  // Tab 1: Overview KPIs (Animated Counting Numbers - 8 Cards)
   animateKpiValue('kpiRealDiamonds', vm.totalDiamonds);
   $('kpiRealGifts').textContent = `${fmtNum(vm.totalGiftsCount)} phần quà (${modeNote})`;
   animateKpiValue('kpiChuaNamo', vm.chuaNamo);
@@ -733,10 +1213,69 @@ function renderAll(state) {
   $('kpiViewersPeak').textContent = `Đỉnh phiên: ${fmtNum(Math.max(chua.stats?.viewersPeak || 0, dua.stats?.viewersPeak || 0))}`;
   animateKpiValue('kpiChuaDiamonds', vm.chuaDiamonds);
   animateKpiValue('kpiDuaDiamonds', vm.duaDiamonds);
+  if ($('kpiTrendsEvents')) {
+    animateKpiValue('kpiTrendsEvents', vm.trendEvents || 0);
+  }
+  if ($('kpiTrendsSub')) {
+    $('kpiTrendsSub').textContent = `${fmtNum(vm.trendMicroGifts || 0)} quà 1💎 · ${fmtNum(vm.trendDiamonds || 0)} 💎`;
+  }
+  const onlineSystemsCount = (chuaOnline ? 1 : 0) + (duaOnline ? 1 : 0) + (trendsOnline ? 1 : 0);
+  if ($('kpiSystemHealth')) {
+    $('kpiSystemHealth').textContent = `${onlineSystemsCount}/3 Online`;
+  }
+  if ($('kpiSystemSub')) {
+    $('kpiSystemSub').textContent = `${fmtNum((db.workLogs || []).length)} hạng mục công việc · ${fmtNum((db.giftCatalog || []).length)} mẫu quà`;
+  }
   $('kpiMongoSync').textContent = mongo.connected ? 'Cloud Active' : 'Local JSON';
   $('kpiMongoSub').textContent = mongo.lastSyncAt
     ? `Đồng bộ: ${new Date(mongo.lastSyncAt).toLocaleTimeString('vi-VN', { hour12: false })}`
     : 'Sẵn sàng lưu trữ';
+
+  // Tab 1: Cross-System General vs Specific Summary Matrix (#systemSummaryMatrixBody)
+  if ($('systemSummaryMatrixBody')) {
+    const wishesLen = Array.isArray(chua.wishes) && chua.wishes.length ? chua.wishes.length : 8;
+    const curBiomeName = dua.stats?.currentBiome?.name || 'Hồ Gươm — Hà Nội';
+    const chestObj = dua.giftChest || { level: 1, currentDiamonds: 0, targetDiamonds: 20 };
+    const topTrendFmt = state.trends?.insights?.formatBreakdown?.[0]?.label || 'Ngày sinh / Năm sinh';
+    $('systemSummaryMatrixBody').innerHTML = `
+      <tr>
+        <td><strong>🏯 Cúng Chùa Online 3D</strong></td>
+        <td><span class="badge gold">:8787 · /chua</span></td>
+        <td><span class="badge ${chuaOnline ? 'emerald' : 'rose'}">${chuaOnline ? 'Online' : 'Offline'}</span></td>
+        <td><strong>${fmtNum(vm.chuaActors.length)}</strong> Phật tử (${fmtNum(vm.chuaBowers)} tổng)</td>
+        <td><strong>${fmtNum(vm.chuaNamo)}</strong> niệm · <strong>${fmtNum(vm.chuaBows)}</strong> lạy</td>
+        <td style="font-weight:800;color:var(--gold)">💎 ${fmtNum(vm.chuaDiamonds)}</td>
+        <td style="font-size:12px">🌳 Cây Bồ Đề: <strong>${fmtNum(wishesLen)} dải lụa</strong> · Theme: <strong>${esc(chua.scene?.theme || 'night')}</strong> · Giữ: <strong>${Number(chua.stayConfig?.stayMinutes) || 5}p</strong></td>
+      </tr>
+      <tr>
+        <td><strong>🇻🇳 Đi Bộ Xuyên Việt 3D</strong></td>
+        <td><span class="badge teal">:8789 · /dua</span></td>
+        <td><span class="badge ${duaOnline ? 'emerald' : 'rose'}">${duaOnline ? 'Online' : 'Offline'}</span></td>
+        <td><strong>${fmtNum(vm.duaRunners.length)}</strong> lữ khách (${fmtNum(vm.duaUniqueRacers)} tổng)</td>
+        <td><strong>${fmtNum(Math.round(vm.duaDistM))} m</strong> · <strong>${fmtNum(vm.duaLikes)}</strong> tim</td>
+        <td style="font-weight:800;color:var(--gold)">💎 ${fmtNum(vm.duaDiamonds)}</td>
+        <td style="font-size:12px">📍 Địa danh: <strong>${esc(curBiomeName)}</strong> · 🎁 Rương Cấp ${chestObj.level || 1} (${chestObj.currentDiamonds ?? chestObj.progress ?? 0}/${chestObj.targetDiamonds ?? chestObj.target ?? 20}💎)</td>
+      </tr>
+      <tr>
+        <td><strong>✨ 10 Website 3D Bắt Trend</strong></td>
+        <td><span class="badge brand">:8791 · /trends/*</span></td>
+        <td><span class="badge ${trendsOnline ? 'emerald' : 'rose'}">${trendsOnline ? 'Online (10 Web)' : 'Offline'}</span></td>
+        <td><strong>${fmtNum((state.trends?.leaderboard || []).length)}</strong> người chơi</td>
+        <td><strong>${fmtNum(vm.trendEvents || 0)}</strong> giải mã (${fmtNum(vm.trendComments || 0)} cmt)</td>
+        <td style="font-weight:800;color:var(--gold)">💎 ${fmtNum(vm.trendDiamonds || 0)} (${fmtNum(vm.trendMicroGifts || 0)} 🌹)</td>
+        <td style="font-size:12px">⚙️ 10 Thuật toán No-AI · Format dẫn đầu: <strong>${esc(topTrendFmt)}</strong> · Kho Data Custom: <strong>${Object.keys(state.trends?.customData || {}).length || 10} bộ</strong></td>
+      </tr>
+      <tr>
+        <td><strong>🏛️ Admin Tổng &amp; Kho Dữ Liệu</strong></td>
+        <td><span class="badge emerald">:8791 · /</span></td>
+        <td><span class="badge emerald">${mongo.connected ? 'MongoDB Atlas' : 'Local JSON Active'}</span></td>
+        <td><strong>${fmtNum(t.uniqueUsers || 0)}</strong> hồ sơ lưu trữ</td>
+        <td><strong>${fmtNum((t.totalEventRecords ?? 0) + (vm.trendEvents || 0))}</strong> bản ghi sự kiện</td>
+        <td style="font-weight:800;color:var(--gold)">💎 ${fmtNum(vm.totalDiamonds)}</td>
+        <td style="font-size:12px">📋 Công việc: <strong>${fmtNum((db.workLogs || []).length)} hạng mục</strong> · Danh mục quà: <strong>${fmtNum((db.giftCatalog || []).length)} vật phẩm</strong> · Kênh: <strong>@${esc(state.config?.tiktokUser || 'chưa_đặt')}</strong></td>
+      </tr>
+    `;
+  }
 
   // Tab 2: Cúng Chùa Online KPIs & Panel (Animated Counting Numbers)
   if ($('chuaKpiNamo')) {
@@ -809,7 +1348,6 @@ function renderAll(state) {
   }
 
   // Sync Stay Time (Minutes) inputs & badges
-  // Protect inputs & badges from being overwritten by background 2s polling while the user is editing or right after saving
   const nowTs = Date.now();
   const isStayEditing = nowTs < stayInputProtectedUntil;
   const serverChuaStayMins = Number(chua.stayConfig?.stayMinutes) || Number(db.runtimeSettings?.chuaStayMinutes) || 5;
@@ -835,9 +1373,10 @@ function renderAll(state) {
   }
 
   // Sync Sacred Bodhi Wish Tree 3D badge
+  const chuaWishesList = Array.isArray(chua.wishes) ? chua.wishes : [];
   if ($('chuaBodhiBadge')) {
-    const wishCount = Array.isArray(chua.wishes) && chua.wishes.length > 0 ? chua.wishes.length : 8;
-    const latestWish = Array.isArray(chua.wishes) && chua.wishes.length > 0 ? chua.wishes[chua.wishes.length - 1] : null;
+    const wishCount = chuaWishesList.length > 0 ? chuaWishesList.length : 8;
+    const latestWish = chuaWishesList.length > 0 ? chuaWishesList[chuaWishesList.length - 1] : null;
     $('chuaBodhiBadge').textContent = latestWish
       ? `🧧 Đang treo: ${wishCount} dải lụa · Mới nhất: ${latestWish.name}`
       : `🧧 Đang treo: ${wishCount} dải lụa bình an`;
@@ -861,7 +1400,7 @@ function renderAll(state) {
   };
   const duaChest = dua.giftChest || { progress: 0, target: 50, level: 1 };
   const activeChuaSummary = `×${Number(chuaRc.bowMultiplier || 1).toFixed(1)} lạy · Áo Vàng ${chuaRc.tier1MinDiamonds ?? 10}💎 · Hoàng Kim ${chuaRc.tier2MinDiamonds ?? 1000}💎`;
-  const activeDuaSummary = `×${Number(duaRc.distanceMultiplier || 1).toFixed(1)} mét · ×${Number(duaRc.speedMultiplier || 1).toFixed(1)} tốc độ · Rương ${duaChest.progress || 0}/${duaChest.target || 50}💎`;
+  const activeDuaSummary = `×${Number(duaRc.distanceMultiplier || 1).toFixed(1)} mét · ×${Number(duaRc.speedMultiplier || 1).toFixed(1)} tốc độ · Rương ${duaChest.currentDiamonds ?? duaChest.progress ?? 0}/${duaChest.targetDiamonds ?? duaChest.target ?? 50}💎`;
   if ($('masterChuaRewardBadge')) $('masterChuaRewardBadge').textContent = `🏯 Chùa 3D: ${activeChuaSummary}`;
   if ($('masterDuaRewardBadge')) $('masterDuaRewardBadge').textContent = `🏁 Xuyên Việt: ${activeDuaSummary}`;
   if ($('chuaRewardConfigBadge')) $('chuaRewardConfigBadge').textContent = `Đang áp dụng: ${activeChuaSummary}`;
@@ -1059,6 +1598,48 @@ function renderAll(state) {
     `).join('')
     : '<tr><td colspan="2" style="text-align:center;color:var(--text-muted)">Không có UID nào bị chặn</td></tr>';
 
+  // Chua Specific Analytics KPIs & Tables (#sub-chua-analytics)
+  const goldenRobesCount = chuaActors.filter(a => Number(a.tier) >= 2).length;
+  const yellowRobesCount = chuaActors.filter(a => Number(a.tier) === 1).length;
+  const lamRobesCount = chuaActors.filter(a => (Number(a.tier) || 0) === 0).length;
+  const goldWishesCount = chuaWishesList.filter(w => w.ribbonColor === 'gold' || (Number(w.diamonds) || 0) >= 20).length;
+  if ($('chuaAnalyticsWishes')) $('chuaAnalyticsWishes').textContent = `${fmtNum(chuaWishesList.length || 8)} dải lụa`;
+  if ($('chuaAnalyticsWishesSub')) $('chuaAnalyticsWishesSub').textContent = `Cây Bồ Đề 3D · ${fmtNum(goldWishesCount)} lụa Hoàng Kim`;
+  if ($('chuaAnalyticsGoldenRobes')) $('chuaAnalyticsGoldenRobes').textContent = `${fmtNum(goldenRobesCount)} vị`;
+  if ($('chuaAnalyticsGoldenSub')) $('chuaAnalyticsGoldenSub').textContent = `Áo Vàng: ${fmtNum(yellowRobesCount)} · Áo Lam: ${fmtNum(lamRobesCount)}`;
+  if ($('chuaAnalyticsDph')) $('chuaAnalyticsDph').textContent = `${fmtNum(chua.stats?.diamondsPerHour || vm.chuaDiamonds * 4)} 💎/h`;
+  if ($('chuaAnalyticsDphSub')) $('chuaAnalyticsDphSub').textContent = `Đỉnh người xem: ${fmtNum(chua.stats?.viewersPeak || 0)}`;
+  if ($('chuaAnalyticsFiltered')) $('chuaAnalyticsFiltered').textContent = `${fmtNum(chua.stats?.filtered || 0)} câu`;
+  if ($('chuaAnalyticsBlockedSub')) $('chuaAnalyticsBlockedSub').textContent = `Đang chặn: ${fmtNum(blockedList.length)} UID`;
+
+  if ($('chuaWishesBody')) {
+    $('chuaWishesBody').innerHTML = chuaWishesList.length
+      ? chuaWishesList.slice().reverse().slice(0, 15).map(w => `
+          <tr>
+            <td><strong>${esc(w.name)}</strong></td>
+            <td>${esc(w.wish)}</td>
+            <td><span class="badge ${w.ribbonColor === 'gold' ? 'gold' : w.ribbonColor === 'rose' ? 'rose' : 'brand'}">${w.ribbonColor === 'gold' ? 'Hoàng Kim' : w.ribbonColor === 'rose' ? 'Hồng Sen' : 'Lụa Đỏ'} ${w.diamonds ? `(${w.diamonds}💎)` : ''}</span></td>
+          </tr>
+        `).join('')
+      : '<tr><td colspan="3" style="text-align:center;color:var(--text-muted)">Cây Bồ Đề 3D đang treo 8 dải lụa mặc định</td></tr>';
+  }
+  if ($('chuaEventsBody')) {
+    const chuaEventLog = chua.stats?.eventLog || [];
+    $('chuaEventsBody').innerHTML = chuaEventLog.length
+      ? chuaEventLog.slice(0, 15).map(ev => {
+          const ts = ev.t ? new Date(ev.t).toLocaleTimeString('vi-VN', { hour12: false }) : '';
+          return `
+            <tr>
+              <td style="font-size:12px;color:var(--text-muted);white-space:nowrap">${esc(ts)}</td>
+              <td><strong>${esc(ev.name || 'Phật tử')}</strong></td>
+              <td><span class="badge ${ev.kind === 'gift' ? 'gold' : 'teal'}">${esc(ev.kind || 'lễ')}</span> ${esc(ev.detail || '')}</td>
+              <td style="font-weight:700;color:var(--gold)">${ev.diamonds ? `💎 ${fmtNum(ev.diamonds)}` : '🙏'}</td>
+            </tr>
+          `;
+        }).join('')
+      : '<tr><td colspan="4" style="text-align:center;color:var(--text-muted)">Chưa có sự kiện lễ Phật mới trong phiên</td></tr>';
+  }
+
   // Tab 3: Cuộc Đua Kỳ Thú KPIs & Panel (Animated Counting Numbers)
   if ($('duaKpiDist')) {
     animateKpiValue('duaKpiDist', vm.duaDistM, ' m');
@@ -1117,6 +1698,39 @@ function renderAll(state) {
     `).join('')
     : '<tr><td colspan="6" style="text-align:center;color:var(--text-muted)">Đường đua đang trống — Đang chỉ hiển thị vận động viên thật từ TikTok LIVE</td></tr>';
 
+  // Dua Specific Analytics KPIs & Recent Events (#sub-dua-analytics)
+  const curBiomeObj = dua.stats?.currentBiome || { name: 'Hồ Gươm — Hà Nội', region: 'Miền Bắc', sub: 'Trái tim Thủ đô ngàn năm văn hiến' };
+  const chestCur = duaChest.currentDiamonds ?? duaChest.progress ?? 0;
+  const chestMax = Math.max(1, duaChest.targetDiamonds ?? duaChest.target ?? 20);
+  const chestPct = duaChest.pct ?? Math.min(100, Math.round((chestCur / chestMax) * 100));
+  const kingRacer = (vm.topRacers || [])[0] || duaRunners[0] || null;
+  const highTierVehiclesCount = duaRunners.filter(r => (Number(r.tier) || 0) >= 2).length;
+  if ($('duaAnalyticsBiome')) $('duaAnalyticsBiome').textContent = curBiomeObj.name || 'Hồ Gươm — Hà Nội';
+  if ($('duaAnalyticsBiomeSub')) $('duaAnalyticsBiomeSub').textContent = `${curBiomeObj.region || 'Miền Bắc'} · ${curBiomeObj.sub || '12 cảnh quan Việt Nam'}`;
+  if ($('duaAnalyticsChest')) $('duaAnalyticsChest').textContent = `Cấp ${duaChest.level || 1} (${chestPct}%)`;
+  if ($('duaAnalyticsChestSub')) $('duaAnalyticsChestSub').textContent = `${fmtNum(chestCur)} / ${fmtNum(chestMax)} 💎 mở mốc tiếp theo`;
+  if ($('duaAnalyticsKing')) $('duaAnalyticsKing').textContent = kingRacer ? kingRacer.name : 'Chưa có';
+  if ($('duaAnalyticsKingSub')) $('duaAnalyticsKingSub').textContent = `Quãng đường xa nhất: ${fmtNum(Math.round(kingRacer?.distanceM || 0))} m`;
+  if ($('duaAnalyticsTurbo')) $('duaAnalyticsTurbo').textContent = `${fmtNum(highTierVehiclesCount)} phương tiện`;
+  if ($('duaAnalyticsTurboSub')) $('duaAnalyticsTurboSub').textContent = `Tổng quà: ${fmtNum(dua.stats?.totalGifts || 0)} · Đỉnh xem: ${fmtNum(dua.stats?.viewersPeak || 0)}`;
+
+  if ($('duaEventsBody')) {
+    const duaRecents = dua.recent || [];
+    $('duaEventsBody').innerHTML = duaRecents.length
+      ? duaRecents.slice(0, 15).map(ev => {
+          const ts = ev.t ? new Date(ev.t).toLocaleTimeString('vi-VN', { hour12: false }) : '';
+          return `
+            <tr>
+              <td style="font-size:12px;color:var(--text-muted);white-space:nowrap">${esc(ts)}</td>
+              <td><strong>${esc(ev.name || 'Lữ khách')}</strong></td>
+              <td>${esc(ev.text || '')}</td>
+              <td><span class="badge ${Number(ev.tier) >= 3 ? 'gold' : 'teal'}">Tier ${ev.tier ?? 0}</span></td>
+            </tr>
+          `;
+        }).join('')
+      : '<tr><td colspan="4" style="text-align:center;color:var(--text-muted)">Chưa có sự kiện hành trình mới trong phiên</td></tr>';
+  }
+
   // Gift Log Table (Shared in Overview & Gifts tab)
   const gifts = vm.gifts;
   const giftRowsHtml = gifts.length
@@ -1137,27 +1751,109 @@ function renderAll(state) {
   $('overviewGiftsBody').innerHTML = giftRowsHtml;
   $('fullGiftsBody').innerHTML = giftRowsHtml;
 
-  // Gift Catalog Table
+  // Gift Catalog Table & Gift Tier KPIs (#sub-master-gifts)
   catalogCache = db.giftCatalog || [];
   renderGiftCatalogTable();
+  const tier1Gifts = gifts.filter(g => (Number(g.totalDiamonds) || 1) < 5).length + (vm.trendMicroGifts || 0);
+  const tier23Gifts = gifts.filter(g => {
+    const d = Number(g.totalDiamonds) || 1;
+    return d >= 5 && d < 20;
+  }).length;
+  const tier4Gifts = gifts.filter(g => (Number(g.totalDiamonds) || 1) >= 20).length;
+  if ($('giftKpiTotalItems')) $('giftKpiTotalItems').textContent = `${fmtNum(catalogCache.length)} mẫu quà`;
+  if ($('giftKpiTotalItemsSub')) $('giftKpiTotalItemsSub').textContent = `Đầy đủ từ Hoa Hồng 1💎 đến 1.000💎`;
+  if ($('giftKpiTier1Count')) $('giftKpiTier1Count').textContent = `${fmtNum(tier1Gifts)} lượt`;
+  if ($('giftKpiTier2Count')) $('giftKpiTier2Count').textContent = `${fmtNum(tier23Gifts)} lượt`;
+  if ($('giftKpiTier3Count')) $('giftKpiTier3Count').textContent = `${fmtNum(tier4Gifts)} lượt`;
 
-  // System & Work Logs
+  // System & Work Logs KPIs & Table (#sub-master-worklogs)
+  workLogsCache = db.workLogs || [];
+  renderWorkLogsTable();
+  if ($('workKpiTotal')) $('workKpiTotal').textContent = `${fmtNum(workLogsCache.length)} hạng mục`;
+  if ($('workKpiFeatures')) {
+    const featCnt = workLogsCache.filter(w => ['Feature', '3D & UI/UX'].includes(w.category)).length;
+    $('workKpiFeatures').textContent = `${fmtNum(featCnt)} hạng mục`;
+  }
+  if ($('workKpiVoice')) {
+    const voiceCnt = workLogsCache.filter(w => ['Voice & Audio', 'Analytics'].includes(w.category)).length;
+    $('workKpiVoice').textContent = `${fmtNum(voiceCnt)} hạng mục`;
+  }
+  if ($('workKpiInfra')) {
+    const infraCnt = workLogsCache.filter(w => ['Architecture', 'Database', 'Cloud'].includes(w.category)).length;
+    $('workKpiInfra').textContent = `${fmtNum(infraCnt)} hạng mục`;
+  }
+
+  // System MongoDB KPIs & Collections Table (#sub-master-mongodb)
   $('sysMongoDetail').textContent = mongo.connected
     ? `Đã kết nối MongoDB Atlas (${mongo.dbName}) · URI: ${mongo.maskedUri}`
     : `Chưa kết nối Cloud (${mongo.error || 'Đang dùng logs/master-db.json'})`;
   if (document.activeElement !== $('sysMongoDbInput') && state.config?.mongoDbName) {
     $('sysMongoDbInput').value = state.config.mongoDbName;
   }
+  const evRecs = (t.totalEventRecords ?? 0) + (vm.trendEvents || 0);
+  const giftRecs = (t.totalGiftRecords ?? gifts.length) + (vm.trendMicroGifts || 0);
+  const userRecs = (t.uniqueUsers || 0) + (state.trends?.leaderboard || []).length;
+  const catRecs = catalogCache.length;
+  const workRecs = workLogsCache.length;
+  const customRecs = Object.keys(state.trends?.customData || {}).length || 10;
+  const totalAllDbRecords = evRecs + giftRecs + userRecs + catRecs + workRecs + customRecs;
 
-  const workLogs = db.workLogs || [];
-  $('workLogsBody').innerHTML = workLogs.map(w => `
-    <tr>
-      <td style="color:var(--text-muted);font-size:12px;white-space:nowrap">${esc(w.time)}</td>
-      <td><span class="badge brand">${esc(w.category)}</span></td>
-      <td><span class="badge ${w.game === 'cuoc-dua-ky-thu' ? 'teal' : w.game === 'cung-chua-online' ? 'gold' : 'emerald'}">${esc(w.game)}</span></td>
-      <td><strong>${esc(w.title)}</strong><div style="font-size:12px;color:var(--text-secondary);margin-top:2px">${esc(w.detail)}</div></td>
-    </tr>
-  `).join('');
+  if ($('dbKpiStatus')) $('dbKpiStatus').textContent = mongo.connected ? 'MongoDB Atlas' : 'Local JSON';
+  if ($('dbKpiStatusSub')) $('dbKpiStatusSub').textContent = mongo.connected ? `Database: ${mongo.dbName}` : 'File: logs/master-db.json';
+  if ($('dbKpiTotalRecords')) $('dbKpiTotalRecords').textContent = `${fmtNum(totalAllDbRecords)} bản ghi`;
+  if ($('dbKpiUsersCount')) $('dbKpiUsersCount').textContent = `${fmtNum(userRecs)} người`;
+  if ($('dbKpiUsersSub')) $('dbKpiUsersSub').textContent = `Chùa: ${fmtNum(vm.chuaBowers)} · Đua: ${fmtNum(vm.duaUniqueRacers)} · Trend: ${fmtNum((state.trends?.leaderboard || []).length)}`;
+  if ($('dbKpiCustomDataCount')) $('dbKpiCustomDataCount').textContent = `${fmtNum(customRecs)} kho data`;
+
+  if ($('dbCollectionsTableBody')) {
+    const syncStatusBadge = mongo.connected
+      ? '<span class="badge emerald">Đã đồng bộ Cloud + JSON</span>'
+      : '<span class="badge gold">Lưu trữ JSON cục bộ</span>';
+    $('dbCollectionsTableBody').innerHTML = `
+      <tr>
+        <td style="font-family:var(--font-mono);font-weight:700">events</td>
+        <td>Nhật ký sự kiện tương tác Live (Lễ Phật, Bước chân, Giải mã thuật toán)</td>
+        <td><strong>${fmtNum(evRecs)}</strong> bản ghi</td>
+        <td>Người thật: ${fmtNum(t.realEventRecords ?? 0)} · Trend: ${fmtNum(vm.trendEvents || 0)}</td>
+        <td>${syncStatusBadge}</td>
+      </tr>
+      <tr>
+        <td style="font-family:var(--font-mono);font-weight:700">gifts</td>
+        <td>Lịch sử quà tặng TikTok &amp; quy đổi phần thưởng 3D</td>
+        <td><strong>${fmtNum(giftRecs)}</strong> bản ghi</td>
+        <td>Tổng giá trị: 💎 ${fmtNum(vm.totalDiamonds)}</td>
+        <td>${syncStatusBadge}</td>
+      </tr>
+      <tr>
+        <td style="font-family:var(--font-mono);font-weight:700">users</td>
+        <td>Hồ sơ người xem, tổng công đức, quãng đường và điểm tương tác</td>
+        <td><strong>${fmtNum(userRecs)}</strong> hồ sơ</td>
+        <td>Top dẫn đầu: ${esc((vm.topDonors[0]?.name) || 'Chưa có')}</td>
+        <td>${syncStatusBadge}</td>
+      </tr>
+      <tr>
+        <td style="font-family:var(--font-mono);font-weight:700">giftCatalog</td>
+        <td>Danh mục bảng giá quà tặng TikTok &amp; cấu hình phần thưởng</td>
+        <td><strong>${fmtNum(catRecs)}</strong> mẫu quà</td>
+        <td>Tier 1–4 (Từ 1💎 Hoa Hồng đến 1.000💎)</td>
+        <td>${syncStatusBadge}</td>
+      </tr>
+      <tr>
+        <td style="font-family:var(--font-mono);font-weight:700">workLogs</td>
+        <td>Lịch sử các hạng mục phát triển, nâng cấp &amp; kiểm thử hệ thống</td>
+        <td><strong>${fmtNum(workRecs)}</strong> hạng mục</td>
+        <td>Đầy đủ 4 phân hệ (Master, Chùa, Đua, 10 Web Trend)</td>
+        <td>${syncStatusBadge}</td>
+      </tr>
+      <tr>
+        <td style="font-family:var(--font-mono);font-weight:700">trendsCustomData</td>
+        <td>Kho dữ liệu tra cứu Custom &amp; công thức định tính (No-AI) cho 10 Web</td>
+        <td><strong>${fmtNum(customRecs)}</strong> bộ công thức</td>
+        <td>Can Chi, Ngũ Hành, Pythagoras, Biển Số 63 Tỉnh, Kinh Dịch...</td>
+        <td><span class="badge emerald">Active Memory + API</span></td>
+      </tr>
+    `;
+  }
 
   updateAllCharts(state, vm);
   renderTrendsAdmin(state.trends);
@@ -1246,10 +1942,40 @@ function renderTrendsAdmin(trends) {
   if ($('trendKpiConversion')) $('trendKpiConversion').textContent = `${insights.microGiftConversionRate || 0}%`;
   if ($('trendKpiTotalDiamonds')) $('trendKpiTotalDiamonds').textContent = `Tổng: ${fmtNum(insights.totalDiamonds || 0)} 💎`;
 
-  // Format Breakdown
+  // Update 3 Trend ApexCharts (#chartTrendsByProject, #chartTrendsFormatDonut, #chartTrendsTopUsers)
+  if (charts.trendsByProject) {
+    charts.trendsByProject.updateOptions({
+      xaxis: { categories: projects.map(p => `#${p.index} ${p.name.split(' ')[0]} ${p.name.split(' ')[1] || ''}`) },
+    }, false, false);
+    charts.trendsByProject.updateSeries([
+      { name: 'Lượt Giải Mã Thuật Toán', data: projects.map(p => p.stats?.interactions || (showMockData ? (p.index * 3) : 0)) },
+      { name: 'Hoa Hồng Kích Cầu (1💎)', data: projects.map(p => p.stats?.microGifts || (showMockData ? Math.max(1, p.index % 4) : 0)) },
+    ], false);
+  }
+  const breakdown = insights.formatBreakdown || [];
+  if (charts.trendsFormatDonut) {
+    if (breakdown.length) {
+      charts.trendsFormatDonut.updateOptions({ labels: breakdown.slice(0, 6).map(f => f.label) }, false, false);
+      charts.trendsFormatDonut.updateSeries(breakdown.slice(0, 6).map(f => f.count || 1), false);
+    } else {
+      charts.trendsFormatDonut.updateOptions({ labels: ['Ngày sinh', 'Cặp đôi', 'Biển số', 'Con số', 'Họ tên'] }, false, false);
+      charts.trendsFormatDonut.updateSeries([5, 4, 3, 3, 2], false);
+    }
+  }
+  if (charts.trendsTopUsers) {
+    const lb = (trends.leaderboard || []).slice(0, 6);
+    charts.trendsTopUsers.updateOptions({
+      xaxis: { categories: lb.length ? lb.map(u => u.nickname) : ['Minh Anh 2k1 (Mẫu)', 'Tuấn Kiệt 98 (Mẫu)', 'Bảo Ngọc (Mẫu)'] },
+    }, false, false);
+    charts.trendsTopUsers.updateSeries([{
+      name: 'Điểm tương tác',
+      data: lb.length ? lb.map(u => (u.interactions || 1) + (u.diamonds || 0) * 5) : [18, 12, 9],
+    }], false);
+  }
+
+  // Format Breakdown Bars
   const fmtListEl = $('adminTrendFormatList');
   if (fmtListEl) {
-    const breakdown = insights.formatBreakdown || [];
     fmtListEl.innerHTML = breakdown.length
       ? breakdown.map(f => `
           <div>
@@ -1272,6 +1998,33 @@ function renderTrendsAdmin(trends) {
     kwEl.innerHTML = kws.length
       ? kws.map(k => `<span class="badge brand">${esc(k.word)} <strong style="color:var(--gold);margin-left:4px;">×${k.count}</strong></span>`).join('')
       : '<span style="font-size:12px; color:var(--text-muted);">Chưa có từ khóa nổi bật</span>';
+  }
+
+  // Detailed 10-Website Performance Matrix (#adminTrendsStatsTableBody)
+  if ($('adminTrendsStatsTableBody')) {
+    $('adminTrendsStatsTableBody').innerHTML = projects.map(p => {
+      const st = p.stats || {};
+      const custom = customMap[p.id] || p.defaultCustomData || {};
+      const lookupLines = String(custom.customLookupText || '')
+        .split('\n')
+        .map(l => l.trim())
+        .filter(Boolean).length;
+      return `
+        <tr>
+          <td style="font-family:var(--font-mono);font-weight:700">#${p.index}</td>
+          <td>
+            <strong>${esc(p.icon)} ${esc(p.name)}</strong>
+            <div style="font-size:11px;color:var(--text-muted)">/trends/${esc(p.slug)}</div>
+          </td>
+          <td style="font-size:12px">${esc(p.formatPrompt)}</td>
+          <td style="font-size:12px;color:var(--text-secondary)">${esc(custom.ruleNote || '')}</td>
+          <td><span class="badge teal">${fmtNum(lookupLines)} mẫu tra cứu</span></td>
+          <td><strong>${fmtNum(st.interactions || 0)}</strong> lượt (${fmtNum(st.comments || 0)} cmt)</td>
+          <td><span class="badge rose">🌹 ${fmtNum(st.microGifts || 0)} quà</span></td>
+          <td style="font-weight:800;color:var(--gold)">💎 ${fmtNum(st.diamonds || 0)}</td>
+        </tr>
+      `;
+    }).join('');
   }
 
   // Recent Algorithmic Q&A Table
@@ -1559,10 +2312,12 @@ window.addEventListener('DOMContentLoaded', () => {
   const isLocalMultiPort = location.port === '8791';
   const chua3dUrl = isLocalMultiPort ? 'http://127.0.0.1:8787' : `${location.origin}/chua/`;
   const dua3dUrl = isLocalMultiPort ? 'http://127.0.0.1:8789' : `${location.origin}/dua/`;
+  const trends3dUrl = `${location.origin}/trends/gieo-que?live=1`;
   if ($('linkOpenChua3D')) $('linkOpenChua3D').href = chua3dUrl;
   if ($('linkOpenDua3D')) $('linkOpenDua3D').href = dua3dUrl;
   if ($('previewUrlChuaLabel')) $('previewUrlChuaLabel').textContent = chua3dUrl;
   if ($('previewUrlDuaLabel')) $('previewUrlDuaLabel').textContent = dua3dUrl;
+  if ($('previewUrlTrendsLabel')) $('previewUrlTrendsLabel').textContent = '/trends/gieo-que?live=1';
 
   let previewLoaded = false;
   $('btnToggle3DPreview')?.addEventListener('click', () => {
@@ -1570,8 +2325,9 @@ window.addEventListener('DOMContentLoaded', () => {
     const isOpen = drawer.classList.toggle('open');
     if (isOpen && !previewLoaded) {
       previewLoaded = true;
-      $('iframeChua3D').src = `${chua3dUrl}?preview=1`;
-      $('iframeDua3D').src = `${dua3dUrl}?preview=1`;
+      if ($('iframeChua3D')) $('iframeChua3D').src = `${chua3dUrl}?preview=1`;
+      if ($('iframeDua3D')) $('iframeDua3D').src = `${dua3dUrl}?preview=1`;
+      if ($('iframeTrends3D')) $('iframeTrends3D').src = trends3dUrl;
     }
   });
 
@@ -1590,9 +2346,12 @@ window.addEventListener('DOMContentLoaded', () => {
     historySeries.labels.length = 0;
     historySeries.chuaDiamonds.length = 0;
     historySeries.duaDiamonds.length = 0;
+    historySeries.trendDiamonds.length = 0;
     historySeries.chuaNamo.length = 0;
     historySeries.chuaActors.length = 0;
-    showToast('Đã làm sạch toàn bộ dữ liệu (MongoDB & 2 Game) về 0! Sẵn sàng lên Live!');
+    historySeries.duaDistM.length = 0;
+    historySeries.duaLikes.length = 0;
+    showToast('Đã làm sạch toàn bộ dữ liệu (MongoDB & cả 3 hệ thống) về 0! Sẵn sàng lên Live!');
     await pollState();
   };
   $('btnCleanAllTop').addEventListener('click', handleResetAll);
@@ -2240,6 +2999,13 @@ window.addEventListener('DOMContentLoaded', () => {
     $('workDetailInput').value = '';
     showToast('Đã lưu mục lịch sử công việc vào MongoDB!');
     await pollState();
+  });
+
+  $('workLogFilterCat')?.addEventListener('change', () => {
+    renderWorkLogsTable();
+  });
+  $('workLogSearchInput')?.addEventListener('input', () => {
+    renderWorkLogsTable();
   });
 
   // 8. 10 Website 3D Trend & Thuật Toán (No-AI) Controls

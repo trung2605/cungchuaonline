@@ -68,7 +68,62 @@ test('TC-MASTER-01: Database records gifts, aggregates top donors, manages catal
     detail: 'Đầy đủ tính năng quản lý đa game và quà tặng',
   });
   assert.equal(log.title, 'Kiểm thử Admin Tổng');
-  assert.equal(db.summary().workLogs[0].title, 'Kiểm thử Admin Tổng');
+  const sumAfter = db.summary();
+  assert.equal(sumAfter.workLogs[0].title, 'Kiểm thử Admin Tổng');
+  assert.ok(Array.isArray(sumAfter.giftBreakdownByName));
+  assert.ok(sumAfter.giftBreakdownByName.length >= 2);
+  assert.ok(sumAfter.giftBreakdownByTier);
+  assert.ok(sumAfter.workLogsByCategory);
+  assert.ok(sumAfter.workLogsByGame);
+  assert.ok(sumAfter.workLogs.length >= 9);
+});
+
+test('TC-MASTER-03: AdminTong UI includes all 21 statistical charts & general/specific matrices', async () => {
+  const fs = await import('node:fs');
+  const html = fs.readFileSync(new URL('../AdminTong/index.html', import.meta.url), 'utf8');
+  const js = fs.readFileSync(new URL('../AdminTong/public/js/admin.js', import.meta.url), 'utf8');
+
+  const expectedChartIds = [
+    'chartGlobalTimeline',
+    'chartGlobalShare',
+    'chartGlobalTopDonors',
+    'chartGlobalFunnel',
+    'chartSystemBalance',
+    'chartGiftTierDistribution',
+    'chartTopGiftItems',
+    'chartWorkLogsByCategory',
+    'chartWorkLogsByScope',
+    'chartDatabaseCollections',
+    'chartChuaTimeline',
+    'chartChuaPrayers',
+    'chartChuaRobeAndSilk',
+    'chartChuaTopDonors',
+    'chartDuaTiers',
+    'chartDuaTopRacers',
+    'chartDuaTimeline',
+    'chartDuaBiomesProgress',
+    'chartTrendsByProject',
+    'chartTrendsFormatDonut',
+    'chartTrendsTopUsers',
+  ];
+
+  for (const id of expectedChartIds) {
+    assert.ok(html.includes(`id="${id}"`), `Missing chart container #${id} in AdminTong/index.html`);
+    assert.ok(js.includes(id), `Missing chart wiring for #${id} in AdminTong/public/js/admin.js`);
+  }
+
+  const expectedTableIds = [
+    'systemSummaryMatrixBody',
+    'dbCollectionsTableBody',
+    'chuaWishesBody',
+    'chuaEventsBody',
+    'duaEventsBody',
+    'adminTrendsStatsTableBody',
+  ];
+  for (const tid of expectedTableIds) {
+    assert.ok(html.includes(`id="${tid}"`), `Missing table body #${tid} in AdminTong/index.html`);
+    assert.ok(js.includes(tid), `Missing table rendering for #${tid} in AdminTong/public/js/admin.js`);
+  }
 });
 
 test('TC-MASTER-02: Master Admin HTTP API (state, ingest, gift-catalog, work-log, tiktok-user, mongodb)', async () => {

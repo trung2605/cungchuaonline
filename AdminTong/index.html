@@ -179,8 +179,8 @@
           <a class="btn sm rose" id="linkOpenTrends3D" href="/trends/gieo-que" target="_blank" rel="noopener" title="Mở Hệ Sinh Thái 10 Website 3D Bắt Trend TikTok Live (Thuật Toán Không Dùng AI)">
             <i data-lucide="sparkles"></i> Mở 10 Web 3D Trend
           </a>
-          <button type="button" class="btn sm primary" id="btnToggle3DPreview" title="Xem trực tiếp 2 màn hình 3D ngay trong trang này mà không cần mở tab mới">
-            <i data-lucide="monitor-play"></i> Xem 2 Màn Hình 3D
+          <button type="button" class="btn sm primary" id="btnToggle3DPreview" title="Xem trực tiếp 3 màn hình 3D ngay trong trang này mà không cần mở tab mới">
+            <i data-lucide="monitor-play"></i> Xem 3 Màn Hình 3D
           </button>
           <button type="button" class="btn sm danger" id="btnCleanAllTop" title="Reset toàn bộ dữ liệu hệ thống & MongoDB về 0 để bắt đầu phiên Live mới">
             <i data-lucide="rotate-ccw"></i> Reset Về 0
@@ -190,7 +190,7 @@
 
       <!-- Collapsible In-Page 3D Live Preview Drawer (Không cần mở tab mới) -->
       <section class="preview-drawer" id="previewDrawer">
-        <div class="preview-grid">
+        <div class="preview-grid" style="grid-template-columns:repeat(auto-fit,minmax(300px,1fr))">
           <div class="preview-frame-card">
             <div class="preview-frame-head">
               <span><i data-lucide="landmark" style="width:14px;height:14px;vertical-align:-2px;color:var(--gold)"></i> Màn Hình 3D Cúng Chùa Online</span>
@@ -204,6 +204,13 @@
               <span style="font-size:11px;color:var(--text-muted)" id="previewUrlDuaLabel">/dua/</span>
             </div>
             <iframe id="iframeDua3D" title="Màn hình 3D Đi Bộ Xuyên Việt"></iframe>
+          </div>
+          <div class="preview-frame-card">
+            <div class="preview-frame-head">
+              <span><i data-lucide="sparkles" style="width:14px;height:14px;vertical-align:-2px;color:var(--rose)"></i> Màn Hình 3D 10 Web Bắt Trend</span>
+              <span style="font-size:11px;color:var(--text-muted)" id="previewUrlTrendsLabel">/trends/gieo-que?live=1</span>
+            </div>
+            <iframe id="iframeTrends3D" title="Màn hình 3D 10 Web Trend"></iframe>
           </div>
         </div>
       </section>
@@ -555,59 +562,77 @@
           </div>
         </div>
 
-        <div class="kpi-grid">
+        <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr)">
           <div class="kpi-card">
             <div class="kpi-top">
-              <span>Kim Cương Thực Tế</span>
+              <span>Tổng Kim Cương Toàn Hệ Thống</span>
               <div class="kpi-icon gold"><i data-lucide="gem"></i></div>
             </div>
             <div class="kpi-value" id="kpiRealDiamonds">0</div>
-            <div class="kpi-sub" id="kpiRealGifts">0 phần quà thật</div>
+            <div class="kpi-sub" id="kpiRealGifts">0 phần quà · 0 💎/giờ</div>
           </div>
 
           <div class="kpi-card">
             <div class="kpi-top">
-              <span>Cúng Chùa Online</span>
+              <span>Cúng Chùa Online 3D (:8787)</span>
               <div class="kpi-icon brand"><i data-lucide="landmark"></i></div>
             </div>
             <div class="kpi-value" id="kpiChuaNamo">0</div>
-            <div class="kpi-sub" id="kpiChuaSub">0 đang quỳ · 0 lạy</div>
+            <div class="kpi-sub" id="kpiChuaSub">0 đang quỳ · 0 lạy · 8 lụa Bồ Đề</div>
           </div>
 
           <div class="kpi-card">
             <div class="kpi-top">
-              <span>Cuộc Đua Kỳ Thú</span>
+              <span>Đi Bộ Xuyên Việt 3D (:8789)</span>
               <div class="kpi-icon teal"><i data-lucide="compass"></i></div>
             </div>
             <div class="kpi-value" id="kpiDuaDist">0 m</div>
-            <div class="kpi-sub" id="kpiDuaSub">0 đang chạy · 0 tim</div>
+            <div class="kpi-sub" id="kpiDuaSub">0 đang chạy · 0 tim · Kho báu Lv.1</div>
           </div>
 
           <div class="kpi-card">
             <div class="kpi-top">
-              <span>Người Xem Trực Tuyến</span>
+              <span>10 Web 3D Trend (No-AI)</span>
+              <div class="kpi-icon rose"><i data-lucide="sparkles"></i></div>
+            </div>
+            <div class="kpi-value" id="kpiTrendsDecodes">0</div>
+            <div class="kpi-sub" id="kpiTrendsSub">0 quà 1💎 · Tỷ lệ: 0%</div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-top">
+              <span>Người Xem &amp; Tương Tác Live</span>
               <div class="kpi-icon emerald"><i data-lucide="users"></i></div>
             </div>
             <div class="kpi-value" id="kpiViewers">0</div>
-            <div class="kpi-sub" id="kpiViewersPeak">Đỉnh phiên: 0</div>
+            <div class="kpi-sub" id="kpiViewersPeak">Đỉnh phiên: 0 · 0 sự kiện</div>
           </div>
 
           <div class="kpi-card">
             <div class="kpi-top">
-              <span>Kim Cương Theo Game</span>
+              <span>Kim Cương Theo 3 Phân Hệ</span>
               <div class="kpi-icon purple"><i data-lucide="pie-chart"></i></div>
             </div>
-            <div class="kpi-value"><span id="kpiChuaDiamonds">0</span> / <span id="kpiDuaDiamonds">0</span></div>
-            <div class="kpi-sub">Chùa 3D vs Đua 3D (💎)</div>
+            <div class="kpi-value" style="font-size:20px"><span id="kpiChuaDiamonds">0</span> / <span id="kpiDuaDiamonds">0</span> / <span id="kpiTrendsDiamonds">0</span></div>
+            <div class="kpi-sub">Chùa 3D / Xuyên Việt / 10 Web Trend (💎)</div>
           </div>
 
           <div class="kpi-card">
             <div class="kpi-top">
-              <span>Đồng Bộ MongoDB</span>
+              <span>Kiểm Duyệt &amp; An Toàn Live</span>
+              <div class="kpi-icon gold"><i data-lucide="shield-alert"></i></div>
+            </div>
+            <div class="kpi-value" id="kpiModerationCount">0</div>
+            <div class="kpi-sub" id="kpiModerationSub">0 tin lọc · 0 UID chặn · 18 quà</div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-top">
+              <span>Hạ Tầng Cloud &amp; Phiên Live</span>
               <div class="kpi-icon emerald"><i data-lucide="cloud-check"></i></div>
             </div>
             <div class="kpi-value" id="kpiMongoSync">Cloud</div>
-            <div class="kpi-sub" id="kpiMongoSub">Đã kết nối Atlas</div>
+            <div class="kpi-sub" id="kpiMongoSub">Đã kết nối Atlas · 9 hạng mục</div>
           </div>
         </div>
 
@@ -615,8 +640,8 @@
           <div class="card">
             <div class="card-header">
               <div>
-                <h2 class="card-title"><i data-lucide="trending-up"></i> Biểu Đồ Xu Hướng Kim Cương Thời Gian Thực (ApexCharts)</h2>
-                <div class="card-subtitle">Theo dõi trực tiếp luồng kim cương nhận được ở Cúng Chùa Online và Cuộc Đua Kỳ Thú</div>
+                <h2 class="card-title"><i data-lucide="trending-up"></i> Biểu Đồ Xu Hướng Kim Cương Thời Gian Thực (3 Phân Hệ Hợp Nhất)</h2>
+                <div class="card-subtitle">Theo dõi trực tiếp luồng kim cương nhận được ở Cúng Chùa 3D, Đi Bộ Xuyên Việt 3D và 10 Web 3D Trend</div>
               </div>
             </div>
             <div id="chartGlobalTimeline"></div>
@@ -625,19 +650,19 @@
           <div class="card">
             <div class="card-header">
               <div>
-                <h2 class="card-title"><i data-lucide="pie-chart"></i> Tỷ Trọng Quà Tặng Giữa Các Trò Chơi</h2>
-                <div class="card-subtitle">Phân bổ kim cương tích lũy theo từng game</div>
+                <h2 class="card-title"><i data-lucide="pie-chart"></i> Tỷ Trọng Quà Tặng Giữa 3 Phân Hệ Livestream</h2>
+                <div class="card-subtitle">Phân bổ kim cương tích lũy giữa Chùa 3D, Xuyên Việt 3D và 10 Web Trend</div>
               </div>
             </div>
             <div id="chartGlobalShare"></div>
           </div>
         </div>
 
-        <div class="grid-2">
+        <div class="grid-2" style="margin-bottom:18px">
           <div class="card">
             <div class="card-header">
               <div>
-                <h2 class="card-title"><i data-lucide="award"></i> Bảng Vàng Top Đại Thí Chủ &amp; Tay Đua</h2>
+                <h2 class="card-title"><i data-lucide="award"></i> Bảng Vàng Top Đại Thí Chủ &amp; Tay Đua Toàn Hệ Thống</h2>
                 <div class="card-subtitle">Xếp hạng người dùng tặng nhiều kim cương nhất toàn hệ thống</div>
               </div>
             </div>
@@ -647,11 +672,46 @@
           <div class="card">
             <div class="card-header">
               <div>
-                <h2 class="card-title"><i data-lucide="sparkles"></i> Nhật Ký Quà Tặng Livestream Mới Nhất</h2>
-                <div class="card-subtitle">Tự động cập nhật từ cả 2 trò chơi và lưu vào MongoDB Atlas</div>
+                <h2 class="card-title"><i data-lucide="bar-chart-big"></i> Biểu Đồ Cấu Trúc &amp; Phễu Tương Tác Toàn Hệ Thống</h2>
+                <div class="card-subtitle">Thống kê toàn diện từ Bình luận/Chat, Niệm Phật, Giải mã thuật toán, Lượt lạy, Thả tim đến Quà tặng</div>
               </div>
             </div>
-            <div class="table-wrap" style="max-height:260px">
+            <div id="chartGlobalFunnel"></div>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h2 class="card-title"><i data-lucide="layers"></i> Bảng Tổng Hợp Thông Tin Chung &amp; Thông Tin Riêng Của Toàn Hệ Thống</h2>
+                <div class="card-subtitle">Đối chiếu trực tiếp trạng thái, cấu hình phần thưởng, nhạc nền, thời gian ở lại và chỉ số riêng của từng phân hệ</div>
+              </div>
+            </div>
+            <div class="table-wrap" style="max-height:285px">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Phân hệ</th>
+                    <th>Trạng thái</th>
+                    <th>Bối cảnh / Địa danh riêng</th>
+                    <th>Cấu hình Thưởng &amp; Lưu trú</th>
+                    <th>Nhân sự &amp; Chỉ số riêng</th>
+                  </tr>
+                </thead>
+                <tbody id="systemSummaryMatrixBody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h2 class="card-title"><i data-lucide="sparkles"></i> Nhật Ký Quà Tặng Livestream Mới Nhất</h2>
+                <div class="card-subtitle">Tự động cập nhật từ tất cả trò chơi và lưu vào MongoDB Atlas</div>
+              </div>
+            </div>
+            <div class="table-wrap" style="max-height:285px">
               <table>
                 <thead>
                   <tr>
@@ -907,6 +967,63 @@
 
       <!-- SUB-TAB 1.3: QUÀ LIVESTREAM & DANH MỤC -->
       <section class="sub-tab-panel" id="sub-master-gifts">
+        <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:14px">
+          <div class="kpi-card">
+            <div class="kpi-top">
+              <span>Danh Mục Quà Đang Áp Dụng</span>
+              <div class="kpi-icon brand"><i data-lucide="package-check"></i></div>
+            </div>
+            <div class="kpi-value" id="giftKpiCatalogCount">18</div>
+            <div class="kpi-sub" id="giftKpiCatalogSub">Đủ 4 cấp quà TikTok VN</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-top">
+              <span>Quà Kích Cầu Nhỏ (Tier 1: 1–2💎)</span>
+              <div class="kpi-icon rose"><i data-lucide="flower-2"></i></div>
+            </div>
+            <div class="kpi-value" id="giftKpiTier1">0 💎</div>
+            <div class="kpi-sub" id="giftKpiTier1Sub">0 lượt (Hoa Hồng, TikTok, Hoa Sen)</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-top">
+              <span>Quà Tầm Trung &amp; Lớn (Tier 2–3: 5–50💎)</span>
+              <div class="kpi-icon gold"><i data-lucide="gift"></i></div>
+            </div>
+            <div class="kpi-value" id="giftKpiTier23">0 💎</div>
+            <div class="kpi-sub" id="giftKpiTier23Sub">0 lượt (Tim Tay, Hoa Rosa, Nước Hoa)</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-top">
+              <span>Quà Đại Thí Chủ (Tier 4: 99+💎)</span>
+              <div class="kpi-icon purple"><i data-lucide="crown"></i></div>
+            </div>
+            <div class="kpi-value" id="giftKpiTier4">0 💎</div>
+            <div class="kpi-sub" id="giftKpiTier4Sub">0 lượt (Hạc Giấy, Siêu Cấp)</div>
+          </div>
+        </div>
+
+        <div class="grid-2" style="margin-bottom:18px">
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h2 class="card-title"><i data-lucide="bar-chart-3"></i> Biểu Đồ Phân Bổ Kim Cương &amp; Lượt Gửi Theo 4 Cấp Quà Tặng</h2>
+                <div class="card-subtitle">So sánh tỷ trọng đóng góp giữa Quà nhỏ 1💎 kích cầu và các cấp quà lớn</div>
+              </div>
+            </div>
+            <div id="chartGiftTierDistribution"></div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h2 class="card-title"><i data-lucide="flame"></i> Biểu Đồ Top Vật Phẩm Quà Tặng Được Gửi Nhiều Nhất</h2>
+                <div class="card-subtitle">Thống kê chi tiết từng loại quà TikTok theo tổng kim cương và số lượt gửi</div>
+              </div>
+            </div>
+            <div id="chartTopGiftItems"></div>
+          </div>
+        </div>
+
         <div class="card" style="margin-bottom:18px">
           <div class="card-header">
             <div>
@@ -1015,25 +1132,88 @@
 
       <!-- SUB-TAB 1.4: LỊCH SỬ CÔNG VIỆC -->
       <section class="sub-tab-panel" id="sub-master-worklogs">
+        <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:14px">
+          <div class="kpi-card">
+            <div class="kpi-top">
+              <span>Tổng Hạng Mục Công Việc</span>
+              <div class="kpi-icon brand"><i data-lucide="clipboard-list"></i></div>
+            </div>
+            <div class="kpi-value" id="workKpiTotal">9</div>
+            <div class="kpi-sub" id="workKpiTotalSub">Lưu trữ bền vững trên DB</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-top">
+              <span>Nâng Cấp Tính Năng &amp; 3D UI/UX</span>
+              <div class="kpi-icon gold"><i data-lucide="sparkles"></i></div>
+            </div>
+            <div class="kpi-value" id="workKpiFeature">0</div>
+            <div class="kpi-sub" id="workKpiFeatureSub">Giao diện, Hiệu ứng &amp; Game 3D</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-top">
+              <span>Điều Khiển Live &amp; Phần Thưởng</span>
+              <div class="kpi-icon teal"><i data-lucide="sliders"></i></div>
+            </div>
+            <div class="kpi-value" id="workKpiLiveOps">0</div>
+            <div class="kpi-sub" id="workKpiLiveOpsSub">Phiên Live, Quà &amp; Kênh TikTok</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-top">
+              <span>Thuật Toán 10 Web &amp; Database</span>
+              <div class="kpi-icon emerald"><i data-lucide="cpu"></i></div>
+            </div>
+            <div class="kpi-value" id="workKpiDataAlgo">0</div>
+            <div class="kpi-sub" id="workKpiDataAlgoSub">Kho Data No-AI &amp; MongoDB</div>
+          </div>
+        </div>
+
+        <div class="grid-2" style="margin-bottom:18px">
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h2 class="card-title"><i data-lucide="bar-chart-2"></i> Biểu Đồ Thống Kê Khối Lượng Công Việc Theo Danh Mục</h2>
+                <div class="card-subtitle">Phân tích số lượng hạng mục đã triển khai theo từng nhóm nghiệp vụ kỹ thuật &amp; vận hành</div>
+              </div>
+            </div>
+            <div id="chartWorkLogsByCategory"></div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h2 class="card-title"><i data-lucide="pie-chart"></i> Biểu Đồ Tỷ Trọng Công Việc Theo Phân Hệ Dự Án</h2>
+                <div class="card-subtitle">Phân bổ công việc giữa Toàn hệ thống, Cúng Chùa 3D, Đi Bộ Xuyên Việt và 10 Web 3D Trend</div>
+              </div>
+            </div>
+            <div id="chartWorkLogsByScope"></div>
+          </div>
+        </div>
+
         <div class="card" style="margin-bottom:18px">
           <div class="card-header">
             <div>
               <h2 class="card-title"><i data-lucide="clipboard-plus"></i> Ghi Chú Thêm Hạng Mục Công Việc / Phiên Live Mới</h2>
-              <div class="card-subtitle">Lưu trực tiếp vào bảng work_logs trên MongoDB Atlas</div>
+              <div class="card-subtitle">Lưu trực tiếp vào bảng work_logs trên MongoDB Atlas và cập nhật biểu đồ tức thì</div>
             </div>
           </div>
 
           <div class="row-inline">
-            <select id="workCatSelect" style="width:180px">
-              <option value="live_session">Phiên Livestream</option>
-              <option value="ui_ux">Nâng cấp UI/UX</option>
-              <option value="database">Cơ sở dữ liệu</option>
-              <option value="system">Hệ thống</option>
+            <select id="workCatSelect" style="width:195px">
+              <option value="live_session">🎙️ Phiên Livestream</option>
+              <option value="ui_ux">🎨 Nâng cấp UI/UX 3D</option>
+              <option value="trends_3d">🔮 10 Web 3D Trend &amp; Thuật Toán</option>
+              <option value="fx_emotion">✨ Hiệu ứng 3D &amp; Emotion</option>
+              <option value="gift_catalog">🎁 Danh mục Quà &amp; Thưởng</option>
+              <option value="control">🎛️ Điều khiển Vận hành</option>
+              <option value="tiktok">📱 Tài khoản TikTok LIVE</option>
+              <option value="database">🗄️ Cơ sở dữ liệu MongoDB</option>
+              <option value="system">⚙️ Hệ thống &amp; Server</option>
             </select>
-            <select id="workGameSelect" style="width:200px">
-              <option value="all">Toàn hệ thống</option>
-              <option value="cung-chua-online">Cúng Chùa Online 3D</option>
-              <option value="cuoc-dua-ky-thu">Cuộc Đua Kỳ Thú 3D</option>
+            <select id="workGameSelect" style="width:210px">
+              <option value="all">🌐 Toàn hệ thống</option>
+              <option value="cung-chua-online">🏯 Cúng Chùa Online 3D</option>
+              <option value="cuoc-dua-ky-thu">🏁 Đi Bộ Xuyên Việt 3D</option>
+              <option value="trends-10-web">🔮 10 Web 3D Trend (No-AI)</option>
             </select>
             <input type="text" id="workTitleInput" placeholder="Tiêu đề phần việc / phiên Live..." style="flex:1;min-width:220px" />
             <input type="text" id="workDetailInput" placeholder="Chi tiết nội dung, cấu hình hoặc ghi chú..." style="flex:1.4;min-width:260px" />
@@ -1044,8 +1224,28 @@
         </div>
 
         <div class="card">
-          <div class="card-header">
-            <h2 class="card-title"><i data-lucide="scroll-text"></i> Nhật Ký Lịch Sử Các Phần Đã Thực Hiện (Work Logs)</h2>
+          <div class="card-header" style="flex-wrap:wrap;gap:10px">
+            <div>
+              <h2 class="card-title"><i data-lucide="scroll-text"></i> Nhật Ký Chi Tiết Tất Cả Các Phần Công Việc Đã Thực Hiện (Work Logs)</h2>
+              <div class="card-subtitle">Hỗ trợ lọc theo danh mục công việc, phân hệ và tìm kiếm từ khóa</div>
+            </div>
+            <div class="row-inline" style="gap:8px;flex-wrap:wrap">
+              <select id="workLogFilterCat" style="width:185px;padding:6px 10px;font-size:12.5px">
+                <option value="all">Tất cả danh mục</option>
+                <option value="system">Hệ thống &amp; Server</option>
+                <option value="ui_ux">Nâng cấp UI/UX 3D</option>
+                <option value="new_game">Xây dựng Game 3D</option>
+                <option value="master_admin">Admin Tổng</option>
+                <option value="fx_emotion">Hiệu ứng &amp; Cây Bồ Đề</option>
+                <option value="gift_catalog">Quà &amp; Tối ưu thưởng</option>
+                <option value="trends_3d">10 Web 3D Trend</option>
+                <option value="database">Cơ sở dữ liệu</option>
+                <option value="control">Điều khiển Live</option>
+                <option value="tiktok">Đổi kênh TikTok</option>
+                <option value="live_session">Phiên Livestream</option>
+              </select>
+              <input type="text" id="workLogSearchInput" placeholder="🔍 Tìm tiêu đề hoặc nội dung công việc..." style="width:240px;padding:6px 10px;font-size:12.5px" />
+            </div>
           </div>
           <div class="table-wrap">
             <table>
@@ -1063,8 +1263,77 @@
         </div>
       </section>
 
-      <!-- SUB-TAB 1.5: KẾT NỐI MONGODB -->
+      <!-- SUB-TAB 1.5: KẾT NỐI MONGODB & THỐNG KÊ KHO DỮ LIỆU -->
       <section class="sub-tab-panel" id="sub-master-mongodb">
+        <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:14px">
+          <div class="kpi-card">
+            <div class="kpi-top">
+              <span>Chế Độ Lưu Trữ Hiện Tại</span>
+              <div class="kpi-icon emerald"><i data-lucide="database"></i></div>
+            </div>
+            <div class="kpi-value" id="dbKpiStatus">Local JSON</div>
+            <div class="kpi-sub" id="dbKpiStatusSub">Tự động sao lưu kép</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-top">
+              <span>Bản Ghi Quà &amp; Sự Kiện Live</span>
+              <div class="kpi-icon gold"><i data-lucide="gift"></i></div>
+            </div>
+            <div class="kpi-value" id="dbKpiGiftEvents">0</div>
+            <div class="kpi-sub" id="dbKpiGiftEventsSub">0 quà · 0 sự kiện tương tác</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-top">
+              <span>Bản Ghi Công Việc &amp; Danh Mục</span>
+              <div class="kpi-icon brand"><i data-lucide="clipboard-check"></i></div>
+            </div>
+            <div class="kpi-value" id="dbKpiWorkCatalog">27</div>
+            <div class="kpi-sub" id="dbKpiWorkCatalogSub">9 công việc · 18 mục quà</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-top">
+              <span>Kho Data 10 Web &amp; Cây Bồ Đề</span>
+              <div class="kpi-icon purple"><i data-lucide="sparkles"></i></div>
+            </div>
+            <div class="kpi-value" id="dbKpiTrendsWishes">0</div>
+            <div class="kpi-sub" id="dbKpiTrendsWishesSub">Luật tra cứu No-AI &amp; Lụa ước</div>
+          </div>
+        </div>
+
+        <div class="grid-2" style="margin-bottom:18px">
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h2 class="card-title"><i data-lucide="bar-chart-horizontal"></i> Biểu Đồ Thống Kê Số Lượng Bản Ghi Trong Các Bảng Dữ Liệu (Collections)</h2>
+                <div class="card-subtitle">Theo dõi trực tiếp số lượng bản ghi đang lưu trong từng bảng của hệ thống</div>
+              </div>
+            </div>
+            <div id="chartDatabaseCollections"></div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h2 class="card-title"><i data-lucide="hard-drive"></i> Bảng Kiểm Kê Chi Tiết Các Kho Dữ Liệu Hệ Thống</h2>
+                <div class="card-subtitle">Tổng hợp trạng thái đồng bộ của toàn bộ 8 bảng dữ liệu chung &amp; riêng</div>
+              </div>
+            </div>
+            <div class="table-wrap" style="max-height:280px">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Tên Bảng / Collection</th>
+                    <th>Phân hệ</th>
+                    <th>Số bản ghi</th>
+                    <th>Trạng thái</th>
+                  </tr>
+                </thead>
+                <tbody id="dbCollectionsTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
         <div class="card">
           <div class="card-header">
             <div>
@@ -1510,12 +1779,47 @@
 
       <!-- SUB-TAB 2.2: THỐNG KÊ & DANH SÁCH PHẬT TỬ -->
       <section class="sub-tab-panel" id="sub-chua-analytics">
-        <div class="grid-2">
+        <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:14px">
+          <div class="kpi-card">
+            <div class="kpi-top">
+              <span>Dải Lụa Cây Bồ Đề 3D</span>
+              <div class="kpi-icon gold"><i data-lucide="sparkles"></i></div>
+            </div>
+            <div class="kpi-value" id="chuaAnalyticsBodhiCount">8</div>
+            <div class="kpi-sub" id="chuaAnalyticsBodhiSub">Đỏ · Hồng Sen · Hoàng Kim</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-top">
+              <span>Tốc Độ Công Đức &amp; Thưởng</span>
+              <div class="kpi-icon brand"><i data-lucide="trending-up"></i></div>
+            </div>
+            <div class="kpi-value" id="chuaAnalyticsRate">0 💎/h</div>
+            <div class="kpi-sub" id="chuaAnalyticsRateSub">×1.0 lạy · Hoàng Kim 1000💎</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-top">
+              <span>Không Gian &amp; Nhạc Chánh Điện</span>
+              <div class="kpi-icon teal"><i data-lucide="music"></i></div>
+            </div>
+            <div class="kpi-value" id="chuaAnalyticsScene" style="font-size:19px">🌙 Đêm Trang Nghiêm</div>
+            <div class="kpi-sub" id="chuaAnalyticsSceneSub">Giữ nhân vật: 5 phút</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-top">
+              <span>An Toàn &amp; Kiểm Duyệt Chùa</span>
+              <div class="kpi-icon rose"><i data-lucide="shield-check"></i></div>
+            </div>
+            <div class="kpi-value" id="chuaAnalyticsFiltered">0</div>
+            <div class="kpi-sub" id="chuaAnalyticsFilteredSub">0 tin lọc · 0 UID bị chặn</div>
+          </div>
+        </div>
+
+        <div class="grid-2" style="margin-bottom:18px">
           <div class="card">
             <div class="card-header">
               <div>
-                <h2 class="card-title"><i data-lucide="activity"></i> Nhịp Độ Niệm Phật &amp; Phật Tử Hiện Diện</h2>
-                <div class="card-subtitle">Biểu đồ thời gian thực của Chánh Điện 3D</div>
+                <h2 class="card-title"><i data-lucide="activity"></i> Nhịp Độ Niệm Phật &amp; Phật Tử Hiện Diện Thời Gian Thực</h2>
+                <div class="card-subtitle">Biểu đồ thời gian thực theo dõi lượt niệm Nam Mô và số Phật tử trong Chánh Điện</div>
               </div>
             </div>
             <div id="chartChuaTimeline"></div>
@@ -1524,11 +1828,79 @@
           <div class="card">
             <div class="card-header">
               <div>
-                <h2 class="card-title"><i data-lucide="pie-chart"></i> Phân Bố Ý Nguyện Cầu Phúc</h2>
-                <div class="card-subtitle">Thống kê tỷ lệ lời cầu nguyện của Phật tử</div>
+                <h2 class="card-title"><i data-lucide="pie-chart"></i> Phân Bố Ý Nguyện Cầu Phúc Của Phật Tử</h2>
+                <div class="card-subtitle">Thống kê tỷ lệ lời cầu nguyện (Bình an, Sức khỏe, Tài lộc, Học hành, Duyên lành...)</div>
               </div>
             </div>
             <div id="chartChuaPrayers"></div>
+          </div>
+        </div>
+
+        <div class="grid-2" style="margin-bottom:18px">
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h2 class="card-title"><i data-lucide="bar-chart-3"></i> Thống Kê Pháp Phục Phật Tử &amp; Dải Lụa Cây Bồ Đề 3D</h2>
+                <div class="card-subtitle">Phân tầng Áo Lam, Áo Tràng Vàng, Pháp Phục Hoàng Kim và Lụa Đỏ / Hồng / Vàng</div>
+              </div>
+            </div>
+            <div id="chartChuaRobeAndSilk"></div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h2 class="card-title"><i data-lucide="award"></i> Bảng Vàng Top Thí Chủ Công Đức Chùa 3D</h2>
+                <div class="card-subtitle">Xếp hạng Phật tử dâng lễ nhiều kim cương nhất tại Chánh Điện</div>
+              </div>
+            </div>
+            <div id="chartChuaTopDonors"></div>
+          </div>
+        </div>
+
+        <div class="grid-2" style="margin-bottom:18px">
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h2 class="card-title"><i data-lucide="tree-deciduous"></i> Danh Sách Dải Lụa Ước Nguyện Trên Cây Bồ Đề 3D</h2>
+                <div class="card-subtitle">Các dải lụa đang treo và đung đưa trên cành Bồ Đề cổ thụ trong Chánh Điện</div>
+              </div>
+            </div>
+            <div class="table-wrap" style="max-height:260px">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Phật tử</th>
+                    <th>Loại lụa</th>
+                    <th>Điều ước / Lời cầu nguyện</th>
+                    <th>Công đức</th>
+                  </tr>
+                </thead>
+                <tbody id="chuaWishesBody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h2 class="card-title"><i data-lucide="history"></i> Nhật Ký Hoạt Động Chánh Điện Trực Tiếp</h2>
+                <div class="card-subtitle">Lịch sử vào lễ, niệm Phật và dâng phẩm vật mới nhất tại Chùa 3D</div>
+              </div>
+            </div>
+            <div class="table-wrap" style="max-height:260px">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Loại</th>
+                    <th>Phật tử</th>
+                    <th>Chi tiết lễ nghi / Ý nguyện</th>
+                    <th>Nguồn</th>
+                  </tr>
+                </thead>
+                <tbody id="chuaEventsBody"></tbody>
+              </table>
+            </div>
           </div>
         </div>
 
@@ -1929,7 +2301,42 @@
 
       <!-- SUB-TAB 3.2: THỐNG KÊ & BẢNG VÀNG LỮ KHÁCH -->
       <section class="sub-tab-panel" id="sub-dua-analytics">
-        <div class="grid-2">
+        <div class="kpi-grid" style="margin-bottom: 18px;">
+          <div class="kpi-card">
+            <div class="kpi-top">
+              <div class="kpi-label">Địa Danh Đang Đi Qua</div>
+              <div class="kpi-icon cyan"><i data-lucide="map-pin"></i></div>
+            </div>
+            <div class="kpi-value" id="duaAnalyticsBiome" style="font-size: 18px;">Hồ Gươm — Hà Nội</div>
+            <div class="kpi-sub" id="duaAnalyticsBiomeSub">Mốc số 1 / 12 cảnh quan Việt Nam</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-top">
+              <div class="kpi-label">Tiến Độ Rương Báu Xuyên Việt</div>
+              <div class="kpi-icon gold"><i data-lucide="gift"></i></div>
+            </div>
+            <div class="kpi-value" id="duaAnalyticsChest" style="color: var(--gold);">Cấp 1 (0%)</div>
+            <div class="kpi-sub" id="duaAnalyticsChestSub">0 / 20 💎 mở mốc tiếp theo</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-top">
+              <div class="kpi-label">Vua Đường Trường Dẫn Đầu</div>
+              <div class="kpi-icon amber"><i data-lucide="crown"></i></div>
+            </div>
+            <div class="kpi-value" id="duaAnalyticsKing" style="font-size: 18px; color: var(--amber);">Chưa có</div>
+            <div class="kpi-sub" id="duaAnalyticsKingSub">Quãng đường xa nhất: 0 m</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-top">
+              <div class="kpi-label">Phương Tiện Cao Cấp (Tier 3–5)</div>
+              <div class="kpi-icon emerald"><i data-lucide="zap"></i></div>
+            </div>
+            <div class="kpi-value" id="duaAnalyticsTurbo" style="color: var(--emerald);">0 xe</div>
+            <div class="kpi-sub" id="duaAnalyticsTurboSub">Xe Đạp / Xích Lô / Mô Tô Phượt</div>
+          </div>
+        </div>
+
+        <div class="grid-2" style="margin-bottom: 18px;">
           <div class="card">
             <div class="card-header">
               <div>
@@ -1951,27 +2358,73 @@
           </div>
         </div>
 
-        <div class="card">
-          <div class="card-header">
-            <div>
-              <h2 class="card-title"><i data-lucide="footprints"></i> Danh Sách Người Đang Đi Bộ Xuyên Việt (:8789)</h2>
-              <div class="card-subtitle">Theo dõi tốc độ, quãng đường và quản lý từng nhân vật</div>
+        <div class="grid-2" style="margin-bottom: 18px;">
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h2 class="card-title"><i data-lucide="activity"></i> Biểu Đồ Tốc Độ Quà Tiếp Sức &amp; Bước Chân Theo Thời Gian</h2>
+                <div class="card-subtitle">Theo dõi nhịp độ tặng quà và tăng tốc hành trình Xuyên Việt</div>
+              </div>
+            </div>
+            <div id="chartDuaTimeline"></div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h2 class="card-title"><i data-lucide="compass"></i> Phân Bố Quãng Đường Qua 12 Địa Danh Việt Nam</h2>
+                <div class="card-subtitle">Mốc km yêu cầu của từng danh lam thắng cảnh từ Bắc vào Nam</div>
+              </div>
+            </div>
+            <div id="chartDuaBiomesProgress"></div>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h2 class="card-title"><i data-lucide="footprints"></i> Danh Sách Người Đang Đi Bộ Xuyên Việt (:8789)</h2>
+                <div class="card-subtitle">Theo dõi tốc độ, quãng đường và quản lý từng nhân vật</div>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Người tham gia</th>
+                    <th>Trang bị</th>
+                    <th>Quãng đường</th>
+                    <th>Kim cương</th>
+                    <th>Khẩu hiệu</th>
+                    <th>Thao tác</th>
+                  </tr>
+                </thead>
+                <tbody id="duaRunnersBody"></tbody>
+              </table>
             </div>
           </div>
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Người tham gia</th>
-                  <th>Trang bị</th>
-                  <th>Quãng đường</th>
-                  <th>Kim cương</th>
-                  <th>Khẩu hiệu</th>
-                  <th>Thao tác</th>
-                </tr>
-              </thead>
-              <tbody id="duaRunnersBody"></tbody>
-            </table>
+
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h2 class="card-title"><i data-lucide="scroll-text"></i> Nhật Ký Sự Kiện &amp; Đặc Sản Vùng Miền Gần Đây</h2>
+                <div class="card-subtitle">Các mốc vượt mặt Vua Đường Trường, nhận đặc sản và tiếp sức</div>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Thời gian</th>
+                    <th>Lữ khách</th>
+                    <th>Sự kiện / Đặc sản</th>
+                    <th>Trang bị</th>
+                  </tr>
+                </thead>
+                <tbody id="duaEventsBody"></tbody>
+              </table>
+            </div>
           </div>
         </div>
       </section>
@@ -2067,6 +2520,31 @@
           </div>
         </div>
 
+        <div class="grid-2" style="margin-bottom: 16px;">
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h2 class="card-title"><i data-lucide="bar-chart-3"></i> Thống Kê Tương Tác &amp; Quà Nhỏ Theo Từng Website 3D (10 Dự Án)</h2>
+                <div class="card-subtitle">So sánh lượt comment giải mã thuật toán và số Hoa Hồng 1💎 thu về trên 10 website</div>
+              </div>
+            </div>
+            <div id="chartTrendsByProject"></div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h2 class="card-title"><i data-lucide="pie-chart"></i> Tỷ Trọng 10 Mẫu Format Bình Luận Người Xem &amp; Bảng Vàng Fan</h2>
+                <div class="card-subtitle">Phân tích hành vi người xem hay comment ngày sinh, cặp đôi, biển số hay con số</div>
+              </div>
+            </div>
+            <div class="grid-2" style="gap: 10px; align-items: center;">
+              <div id="chartTrendsFormatDonut"></div>
+              <div id="chartTrendsTopUsers"></div>
+            </div>
+          </div>
+        </div>
+
         <div class="grid-2">
           <!-- Insight Format Breakdown & Top Keywords -->
           <div class="card">
@@ -2117,6 +2595,33 @@
                 <i data-lucide="save"></i> Lưu Cấu Hình Kho Dữ Liệu Thuật Toán
               </button>
             </div>
+          </div>
+        </div>
+
+        <!-- Bảng Thống Kê Chi Tiết 10 Website 3D Trend -->
+        <div class="card" style="margin-top: 16px;">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title"><i data-lucide="table"></i> Bảng Tổng Hợp Hiệu Suất Chi Tiết 10 Website 3D Bắt Trend</h2>
+              <div class="card-subtitle">Thông tin riêng từng dự án: Công thức thuật toán, mẫu câu comment, số dữ liệu custom, lượt tương tác và tỷ lệ chuyển đổi quà nhỏ</div>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Website 3D Trend</th>
+                  <th>Mẫu Comment Nhận Diện</th>
+                  <th>Thuật Toán Định Tính</th>
+                  <th>Kho Data Custom</th>
+                  <th>Lượt Giải Mã</th>
+                  <th>Quà Nhỏ (1💎)</th>
+                  <th>Kim Cương</th>
+                </tr>
+              </thead>
+              <tbody id="adminTrendsStatsTableBody"></tbody>
+            </table>
           </div>
         </div>
 

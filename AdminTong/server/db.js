@@ -46,8 +46,8 @@ export const DEFAULT_GIFT_CATALOG = [
 export const INITIAL_WORK_LOGS = [
   {
     id: 'work_1',
-    ts: Date.now() - 3600_000 * 3,
-    time: new Date(Date.now() - 3600_000 * 3).toLocaleString('vi-VN', { hour12: false }),
+    ts: Date.now() - 3600_000 * 8,
+    time: new Date(Date.now() - 3600_000 * 8).toLocaleString('vi-VN', { hour12: false }),
     category: 'system',
     game: 'all',
     title: 'Khắc phục kết nối TikTok LIVE & Chuyển kênh trực tiếp (@adidaphat20266)',
@@ -55,30 +55,75 @@ export const INITIAL_WORK_LOGS = [
   },
   {
     id: 'work_2',
-    ts: Date.now() - 3600_000 * 2,
-    time: new Date(Date.now() - 3600_000 * 2).toLocaleString('vi-VN', { hour12: false }),
+    ts: Date.now() - 3600_000 * 7,
+    time: new Date(Date.now() - 3600_000 * 7).toLocaleString('vi-VN', { hour12: false }),
     category: 'ui_ux',
     game: 'cung-chua-online',
     title: 'Cải thiện UI/UX Cúng Chùa Online & Đồng bộ quà tặng TikTok',
-    detail: 'Căn chỉnh Safe Zone tránh vùng Daily Ranking của TikTok LIVE Studio (top: 238px), nâng cấp Áo tràng Vàng (10-999💎) & Áo tràng Hoàng Kim (1000+💎), đồng bộ 14+ loại quà TikTok Việt Nam.',
+    detail: 'Căn chỉnh Safe Zone tránh vùng Daily Ranking của TikTok LIVE Studio (top: 238px), nâng cấp Áo tràng Vàng (10-999💎) & Áo tràng Hoàng Kim (1000+💎), đồng bộ 18+ loại quà TikTok Việt Nam.',
   },
   {
     id: 'work_3',
-    ts: Date.now() - 3600_000,
-    time: new Date(Date.now() - 3600_000).toLocaleString('vi-VN', { hour12: false }),
+    ts: Date.now() - 3600_000 * 6,
+    time: new Date(Date.now() - 3600_000 * 6).toLocaleString('vi-VN', { hour12: false }),
     category: 'new_game',
     game: 'cuoc-dua-ky-thu',
-    title: 'Xây dựng Game 3D mới: Cuộc Đua Kỳ Thú (Chạy Vô Hạn Khám Phá Thế Giới)',
-    detail: 'Tạo đường đua 3D xuyên qua 6 kỳ quan thế giới (Việt Nam, Nhật Bản, Ai Cập, Pháp, Mỹ, Ngân Hà), lời chào AI "Chào user [tên] đã tham gia cuộc đua cùng chúng tôi" và 4 cấp trang bị tăng tốc (Đôi Cánh, Ván Trượt Vàng, Tên Lửa, Phi Thuyền).',
+    title: 'Xây dựng Game 3D: Hành Trình Đi Bộ Xuyên Việt (12 Địa Danh 3 Miền)',
+    detail: 'Tạo hành trình 3D xuyên 12 danh thắng Việt Nam (Hà Giang, Hạ Long, Hội An, Đà Lạt, Miền Tây...), vật phẩm đặc sản vùng miền và 5 cấp phương tiện tăng tốc.',
   },
   {
     id: 'work_4',
-    ts: Date.now(),
-    time: new Date().toLocaleString('vi-VN', { hour12: false }),
+    ts: Date.now() - 3600_000 * 5,
+    time: new Date(Date.now() - 3600_000 * 5).toLocaleString('vi-VN', { hour12: false }),
     category: 'master_admin',
     game: 'all',
     title: 'Xây dựng Admin Tổng (AdminTong) & Tích hợp Cơ sở dữ liệu MongoDB',
     detail: 'Quản lý tập trung toàn bộ các trò chơi, quản lý danh mục & lịch sử quà tặng livestream, lưu vết lịch sử công việc và đồng bộ tự động với MongoDB qua biến môi trường MONGODB_URI.',
+  },
+  {
+    id: 'work_5',
+    ts: Date.now() - 3600_000 * 4,
+    time: new Date(Date.now() - 3600_000 * 4).toLocaleString('vi-VN', { hour12: false }),
+    category: 'fx_emotion',
+    game: 'cung-chua-online',
+    title: 'Xây dựng Cây Bồ Đề Ước Nguyện 3D (Treo Dải Lụa Đỏ Mang Tên Phật Tử)',
+    detail: 'Đặt Cây Bồ Đề cổ thụ tỏa ánh hoàng kim trong khuôn viên chánh điện; mỗi lời chúc/quà tặng tạo hiệu ứng dải lụa 3D (Đỏ, Hồng Sen, Hoàng Kim) bay lên cành cây và đung đưa theo gió.',
+  },
+  {
+    id: 'work_6',
+    ts: Date.now() - 3600_000 * 3,
+    time: new Date(Date.now() - 3600_000 * 3).toLocaleString('vi-VN', { hour12: false }),
+    category: 'ui_ux',
+    game: 'all',
+    title: 'Nâng cấp Giọng Đọc AI Tình Huống & Câu Dẫn Đệm Tự Nhiên (Humanized Narrative)',
+    detail: 'Tự động chọn câu dẫn chuyển mạch khi Chào đón nối tiếp Chào đón, Đang chào đón có người tặng quà xen ngang, và Đang kể chuyện vùng miền có quà tặng rồi quay lại mạch truyện.',
+  },
+  {
+    id: 'work_7',
+    ts: Date.now() - 3600_000 * 2,
+    time: new Date(Date.now() - 3600_000 * 2).toLocaleString('vi-VN', { hour12: false }),
+    category: 'gift_catalog',
+    game: 'all',
+    title: 'Trung Tâm Tối Ưu Phần Thưởng Giờ Vàng & Kho Báu Lễ Hội 2 Hệ Thống',
+    detail: 'Bổ sung 4 gói cấu hình thưởng 1 chạm (Chuẩn ×1.0, Giờ Vàng ×2.0, Cao Trào ×3.0, Đại Lễ ×5.0) giúp hạ mốc lên Áo Hoàng Kim và mở Kho Báu Lễ Hội ngay trên sóng Live.',
+  },
+  {
+    id: 'work_8',
+    ts: Date.now() - 3600_000,
+    time: new Date(Date.now() - 3600_000).toLocaleString('vi-VN', { hour12: false }),
+    category: 'trends_3d',
+    game: 'trends-10-web',
+    title: 'Xây dựng Hệ Sinh Thái 10 Website 3D Bắt Trend TikTok Live (Thuật Toán Không Dùng AI)',
+    detail: 'Ra mắt 10 website tương tác 3D (/trends/gieo-que, duyen-so, than-so, linh-thu, dai-chien, giai-ma-ten, con-so-may-man, cay-tai-loc, be-ca-zen, phao-hoa-sky) kết hợp kích cầu quà nhỏ 1💎 Hoa Hồng.',
+  },
+  {
+    id: 'work_9',
+    ts: Date.now(),
+    time: new Date().toLocaleString('vi-VN', { hour12: false }),
+    category: 'database',
+    game: 'all',
+    title: 'Nâng cấp Kho Dữ Liệu Tra Cứu Custom & Hệ Thống 21 Biểu Đồ Thống Kê Toàn Diện',
+    detail: 'Bổ sung bảng tra cứu dữ liệu tùy chỉnh (customLookupText) cho 10 thuật toán comment và hoàn thiện 21 biểu đồ thống kê chi tiết cho toàn bộ dữ liệu chung, riêng và lịch sử công việc.',
   },
 ];
 
@@ -148,7 +193,13 @@ export function createDatabase({
       const raw = JSON.parse(fs.readFileSync(storeFile, 'utf8'));
       if (Array.isArray(raw.gifts)) state.gifts = raw.gifts.slice(0, 2000);
       if (Array.isArray(raw.events)) state.events = raw.events.slice(0, 1000);
-      if (Array.isArray(raw.workLogs) && raw.workLogs.length) state.workLogs = raw.workLogs.slice(0, 500);
+      if (Array.isArray(raw.workLogs) && raw.workLogs.length) {
+        const wMap = new Map(INITIAL_WORK_LOGS.map(w => [w.id, { ...w }]));
+        for (const item of raw.workLogs) {
+          if (item && item.id) wMap.set(item.id, item);
+        }
+        state.workLogs = [...wMap.values()].sort((a, b) => (b.ts || 0) - (a.ts || 0)).slice(0, 500);
+      }
       if (Array.isArray(raw.giftCatalog) && raw.giftCatalog.length) {
         // Keep custom user-added gifts under 200💎, and ensure all 1–20+💎 DEFAULT_GIFT_CATALOG items are present & updated
         const map = new Map(DEFAULT_GIFT_CATALOG.map(g => [g.giftId, { ...g }]));
@@ -424,11 +475,65 @@ export function createDatabase({
       .sort((a, b) => b.totalDiamonds - a.totalDiamonds)
       .slice(0, 15);
 
+    const giftItemMap = new Map();
+    const tierStats = {
+      1: { tier: 1, label: 'Tier 1 (1–2💎)', catalogCount: 0, giftCount: 0, realGiftCount: 0, totalDiamonds: 0, realDiamonds: 0 },
+      2: { tier: 2, label: 'Tier 2 (5–15💎)', catalogCount: 0, giftCount: 0, realGiftCount: 0, totalDiamonds: 0, realDiamonds: 0 },
+      3: { tier: 3, label: 'Tier 3 (20–50💎)', catalogCount: 0, giftCount: 0, realGiftCount: 0, totalDiamonds: 0, realDiamonds: 0 },
+      4: { tier: 4, label: 'Tier 4 (99+💎)', catalogCount: 0, giftCount: 0, realGiftCount: 0, totalDiamonds: 0, realDiamonds: 0 },
+    };
+
+    for (const c of state.giftCatalog) {
+      const tr = c.tier >= 1 && c.tier <= 4 ? c.tier : (c.diamonds >= 99 ? 4 : c.diamonds >= 20 ? 3 : c.diamonds >= 5 ? 2 : 1);
+      tierStats[tr].catalogCount++;
+    }
+
+    for (const g of state.gifts) {
+      const isMock = g.src === 'mock';
+      const unitD = Number(g.diamonds) || 1;
+      const tr = unitD >= 99 ? 4 : unitD >= 20 ? 3 : unitD >= 5 ? 2 : 1;
+      tierStats[tr].giftCount += g.repeat || 1;
+      tierStats[tr].totalDiamonds += g.totalDiamonds || unitD;
+      if (!isMock) {
+        tierStats[tr].realGiftCount += g.repeat || 1;
+        tierStats[tr].realDiamonds += g.totalDiamonds || unitD;
+      }
+
+      const key = String(g.giftVi || g.giftName || 'Quà tặng');
+      const cur = giftItemMap.get(key) || {
+        giftVi: key,
+        giftName: g.giftName || key,
+        tier: tr,
+        count: 0,
+        realCount: 0,
+        totalDiamonds: 0,
+        realDiamonds: 0,
+      };
+      cur.count += g.repeat || 1;
+      cur.totalDiamonds += g.totalDiamonds || unitD;
+      if (!isMock) {
+        cur.realCount += g.repeat || 1;
+        cur.realDiamonds += g.totalDiamonds || unitD;
+      }
+      giftItemMap.set(key, cur);
+    }
+
+    const workLogsByCategory = {};
+    const workLogsByGame = {};
+    for (const w of state.workLogs) {
+      const cat = w.category || 'system';
+      const gm = w.game || 'all';
+      workLogsByCategory[cat] = (workLogsByCategory[cat] || 0) + 1;
+      workLogsByGame[gm] = (workLogsByGame[gm] || 0) + 1;
+    }
+
     return {
       mongo: { ...mongoStatus },
       totals: {
         totalGiftRecords: state.gifts.length,
         realGiftRecords: state.gifts.filter(g => g.src !== 'mock').length,
+        totalEventRecords: state.events.length,
+        realEventRecords: state.events.filter(e => e.src !== 'mock').length,
         realGiftsCount,
         realDiamonds,
         mockGiftsCount,
@@ -442,6 +547,10 @@ export function createDatabase({
         workLogsCount: state.workLogs.length,
         catalogCount: state.giftCatalog.length,
       },
+      giftBreakdownByName: [...giftItemMap.values()].sort((a, b) => b.totalDiamonds - a.totalDiamonds).slice(0, 12),
+      giftBreakdownByTier: Object.values(tierStats),
+      workLogsByCategory,
+      workLogsByGame,
       topDonors: allTopDonors,
       realTopDonors,
       allTopDonors,
