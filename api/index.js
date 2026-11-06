@@ -31,6 +31,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = path.resolve(__dirname, '..');
 const CHUA_WEB_DIR = path.join(ROOT_DIR, 'web');
 const DUA_WEB_DIR = path.join(ROOT_DIR, 'CuocDuaKyThu/web');
+const TRENDS_WEB_DIR = path.join(ROOT_DIR, 'web/trends');
 const ADMIN_PUBLIC_DIR = path.join(ROOT_DIR, 'AdminTong/public');
 const ADMIN_HTML_FILE = path.join(ROOT_DIR, 'AdminTong/index.html');
 
@@ -768,6 +769,15 @@ export default async function handler(req, res) {
   if (urlPath.startsWith('/dua/')) {
     const rel = urlPath.slice('/dua/'.length);
     if (serveStaticFile(req, res, DUA_WEB_DIR, rel)) return;
+  }
+
+  // 6b. 10 Website 3D Trend TikTok Live (/trends and /trends/*)
+  if (req.method === 'GET' && (urlPath === '/trends' || urlPath.startsWith('/trends/'))) {
+    const rel = urlPath.replace(/^\/trends\/?/, '');
+    if (rel === 'trends.css' || rel === 'trendsApp.js') {
+      if (serveStaticFile(req, res, TRENDS_WEB_DIR, rel, 'no-store')) return;
+    }
+    if (serveStaticFile(req, res, TRENDS_WEB_DIR, 'index.html', 'no-store')) return;
   }
 
   // 7. Admin Tổng Master UI (/ and /admin)

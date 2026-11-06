@@ -1160,7 +1160,155 @@ function renderAll(state) {
   `).join('');
 
   updateAllCharts(state, vm);
+  renderTrendsAdmin(state.trends);
   if (window.lucide) window.lucide.createIcons();
+}
+
+let trendsCache = null;
+function renderTrendsAdmin(trends) {
+  if (!trends || !Array.isArray(trends.projects)) return;
+  trendsCache = trends;
+  const projects = trends.projects;
+  const insights = trends.insights || {};
+  const customMap = trends.customData || {};
+
+  if ($('navBadgeTrends')) {
+    $('navBadgeTrends').textContent = `${fmtNum(insights.totalEvents || 0)} lượt`;
+  }
+
+  // Populate selects if empty
+  const projSelect = $('adminTrendProjectSelect');
+  if (projSelect && !projSelect.options.length) {
+    projSelect.innerHTML = projects
+      .map(p => `<option value="${esc(p.id)}">#${p.index}. ${esc(p.icon)} ${esc(p.name)}</option>`)
+      .join('');
+  }
+  const customSelect = $('adminCustomProjectSelect');
+  if (customSelect && !customSelect.options.length) {
+    customSelect.innerHTML = projects
+      .map(p => `<option value="${esc(p.id)}">#${p.index}. ${esc(p.icon)} ${esc(p.name)}</option>`)
+      .join('');
+    syncAdminCustomEditorFields(customSelect.value || projects[0]?.id);
+  }
+
+  // Render 10 Websites Grid
+  const gridEl = $('adminTrendsCatalogGrid');
+  if (gridEl) {
+    gridEl.innerHTML = projects.map(p => {
+      const st = p.stats || {};
+      const custom = customMap[p.id] || p.defaultCustomData || {};
+      const samplesHtml = (p.sampleComments || []).slice(0, 3).map(s =>
+        `<button type="button" class="btn sm" data-trend-quick-sample="${esc(s)}" data-trend-proj="${esc(p.id)}" style="font-size:11px;padding:3px 8px;">💬 "${esc(s)}"</button>`
+      ).join('');
+      return `
+        <div class="card" style="margin:0; padding:14px; border:1px solid rgba(255,255,255,0.09); background:rgba(15,23,42,0.5);">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px; margin-bottom:8px;">
+            <div style="display:flex; align-items:center; gap:10px;">
+              <span style="font-size:28px;">${esc(p.icon)}</span>
+              <div>
+                <div style="font-weight:800; font-size:15px; color:#fff;">#${p.index}. ${esc(p.name)}</div>
+                <div style="font-size:12px; color:var(--text-muted);">${esc(p.tagline)}</div>
+              </div>
+            </div>
+            <span class="badge gold">${fmtNum(st.interactions || 0)} giải mã · ${fmtNum(st.microGifts || 0)} 🌹</span>
+          </div>
+
+          <div style="font-size:12px; padding:8px 10px; border-radius:8px; background:rgba(0,0,0,0.3); margin-bottom:8px;">
+            <div><strong style="color:var(--gold);">📌 Format Comment:</strong> ${esc(p.formatPrompt)}</div>
+            <div style="margin-top:4px;"><strong style="color:var(--rose);">🌹 Kích cầu 1💎:</strong> ${esc(p.microGiftPrompt)}</div>
+            <div style="margin-top:4px; color:var(--text-secondary);"><strong>⚙️ Thuật toán:</strong> ${esc(custom.ruleNote || '')}</div>
+          </div>
+
+          <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px;">
+            ${samplesHtml}
+          </div>
+
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <a href="/trends/${esc(p.slug)}" target="_blank" rel="noopener" class="btn sm primary">
+              🌐 Mở Web 3D (#${p.index})
+            </a>
+            <a href="/trends/${esc(p.slug)}?live=1" target="_blank" rel="noopener" class="btn sm">
+              📱 Chế Độ 9:16 Live
+            </a>
+            <button type="button" class="btn sm gold" data-trend-quick-rose="${esc(p.id)}">
+              🌹 Bắn Thử 1💎 Hoa Hồng
+            </button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  // Render Insight KPIs
+  if ($('trendKpiTotalEvents')) $('trendKpiTotalEvents').textContent = fmtNum(insights.totalEvents || 0);
+  if ($('trendKpiComments')) $('trendKpiComments').textContent = fmtNum(insights.totalComments || 0);
+  if ($('trendKpiMicroGifts')) $('trendKpiMicroGifts').textContent = `${fmtNum(insights.totalMicroGifts || 0)} 🌹`;
+  if ($('trendKpiConversion')) $('trendKpiConversion').textContent = `${insights.microGiftConversionRate || 0}%`;
+  if ($('trendKpiTotalDiamonds')) $('trendKpiTotalDiamonds').textContent = `Tổng: ${fmtNum(insights.totalDiamonds || 0)} 💎`;
+
+  // Format Breakdown
+  const fmtListEl = $('adminTrendFormatList');
+  if (fmtListEl) {
+    const breakdown = insights.formatBreakdown || [];
+    fmtListEl.innerHTML = breakdown.length
+      ? breakdown.map(f => `
+          <div>
+            <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:4px;">
+              <strong>${esc(f.label)}</strong>
+              <span style="color:var(--gold); font-weight:700;">${fmtNum(f.count)} lượt (${f.percent}%)</span>
+            </div>
+            <div style="height:7px; border-radius:999px; background:rgba(255,255,255,0.08); overflow:hidden;">
+              <div style="height:100%; width:${Math.max(5, f.percent)}%; background:linear-gradient(90deg, var(--gold), var(--rose)); border-radius:999px;"></div>
+            </div>
+          </div>
+        `).join('')
+      : '<div style="font-size:12px; color:var(--text-muted);">Chưa có dữ liệu phân loại format bình luận. Bấm "Bắn Thử" ở tab 10 Website để xem thống kê!</div>';
+  }
+
+  // Top Keywords
+  const kwEl = $('adminTrendKeywordsList');
+  if (kwEl) {
+    const kws = insights.topKeywords || [];
+    kwEl.innerHTML = kws.length
+      ? kws.map(k => `<span class="badge brand">${esc(k.word)} <strong style="color:var(--gold);margin-left:4px;">×${k.count}</strong></span>`).join('')
+      : '<span style="font-size:12px; color:var(--text-muted);">Chưa có từ khóa nổi bật</span>';
+  }
+
+  // Recent Algorithmic Q&A Table
+  const recentBody = $('adminTrendRecentBody');
+  if (recentBody) {
+    const recents = insights.recentInteractions || trends.recentEvents || [];
+    recentBody.innerHTML = recents.length
+      ? recents.slice(0, 20).map(ev => {
+          const timeStr = ev.timestamp ? new Date(ev.timestamp).toLocaleTimeString('vi-VN') : '';
+          return `
+            <tr>
+              <td style="font-size:12px; color:var(--text-muted); white-space:nowrap;">${esc(timeStr)}</td>
+              <td><span class="badge gold">${esc(ev.projectId)}</span></td>
+              <td><strong>${esc(ev.nickname)}</strong></td>
+              <td>
+                ${ev.isMicroGift ? `<span class="badge rose">🌹 ${esc(ev.giftName || 'Hoa Hồng')} (${ev.diamondCount}💎)</span> ` : ''}
+                <span>${esc(ev.rawText || '')}</span>
+              </td>
+              <td><span class="badge teal">${esc(ev.formatLabel || ev.format)}</span></td>
+              <td style="font-size:12px;">
+                <strong style="color:var(--gold);">${esc(ev.result?.badge || ev.badge || '')}</strong> —
+                ${esc(ev.result?.headline || ev.headline || '')}
+              </td>
+            </tr>
+          `;
+        }).join('')
+      : '<tr><td colspan="6" style="text-align:center; color:var(--text-muted);">Chưa có lượt giải mã bình luận nào trong phiên.</td></tr>';
+  }
+}
+
+function syncAdminCustomEditorFields(projectId) {
+  if (!trendsCache || !projectId) return;
+  const proj = (trendsCache.projects || []).find(p => p.id === projectId);
+  const custom = (trendsCache.customData || {})[projectId] || proj?.defaultCustomData || {};
+  if ($('adminCustomRuleNote')) $('adminCustomRuleNote').value = custom.ruleNote || '';
+  if ($('adminCustomBlessing')) $('adminCustomBlessing').value = custom.bonusBlessing || '';
+  if ($('adminCustomMicroTitle')) $('adminCustomMicroTitle').value = custom.microGiftTitle || '';
 }
 
 function renderGiftCatalogTable() {
@@ -2090,6 +2238,95 @@ window.addEventListener('DOMContentLoaded', () => {
     $('workTitleInput').value = '';
     $('workDetailInput').value = '';
     showToast('Đã lưu mục lịch sử công việc vào MongoDB!');
+    await pollState();
+  });
+
+  // 8. 10 Website 3D Trend & Thuật Toán (No-AI) Controls
+  const triggerAdminTrendInteract = async (projectId, text, isRose1 = false) => {
+    const nickname = ($('adminTrendNickname')?.value || 'Minh Anh 2k1').trim();
+    const res = await api('POST', '/api/trends/interact', {
+      projectId,
+      nickname,
+      text,
+      type: isRose1 ? 'gift' : 'comment',
+      giftName: isRose1 ? 'Hoa Hồng' : '',
+      diamondCount: isRose1 ? 1 : 0,
+    });
+    if (res?.ok && res.event) {
+      const ev = res.event;
+      const outBox = $('adminTrendLastOutput');
+      if (outBox) {
+        outBox.innerHTML =
+          `✅ <strong>[${esc(ev.formatLabel)}]</strong> <span class="badge gold">${esc(ev.result?.badge)}</span> ` +
+          `<strong>${esc(ev.result?.headline)}</strong><br>` +
+          `📝 <em>Kết quả hiển thị:</em> ${esc(ev.result?.detailText)}<br>` +
+          `🔊 <em>Giọng đọc TTS:</em> “${esc(ev.result?.spokenText)}”`;
+      }
+      showToast(`${isRose1 ? '🌹' : '💬'} Đã giải mã thuật toán trên Web #${projectId}: ${ev.result?.badge}!`);
+      await pollState();
+    }
+  };
+
+  $('adminTrendProjectSelect')?.addEventListener('change', () => {
+    const pid = $('adminTrendProjectSelect').value;
+    const proj = (trendsCache?.projects || []).find(p => p.id === pid);
+    if (proj?.sampleComments?.[0] && $('adminTrendCommentInput')) {
+      $('adminTrendCommentInput').value = proj.sampleComments[0];
+    }
+  });
+
+  $('btnAdminTrendComment')?.addEventListener('click', () => {
+    const pid = $('adminTrendProjectSelect')?.value || 'gieo-que';
+    const txt = $('adminTrendCommentInput')?.value || '2001';
+    triggerAdminTrendInteract(pid, txt, false);
+  });
+
+  $('btnAdminTrendRose')?.addEventListener('click', () => {
+    const pid = $('adminTrendProjectSelect')?.value || 'gieo-que';
+    const txt = $('adminTrendCommentInput')?.value || '2001';
+    triggerAdminTrendInteract(pid, txt, true);
+  });
+
+  $('adminTrendsCatalogGrid')?.addEventListener('click', e => {
+    const sampleBtn = e.target.closest('[data-trend-quick-sample]');
+    if (sampleBtn) {
+      const pid = sampleBtn.dataset.trendProj;
+      const sample = sampleBtn.dataset.trendQuickSample;
+      if ($('adminTrendProjectSelect')) $('adminTrendProjectSelect').value = pid;
+      if ($('adminTrendCommentInput')) $('adminTrendCommentInput').value = sample;
+      triggerAdminTrendInteract(pid, sample, false);
+      return;
+    }
+    const roseBtn = e.target.closest('[data-trend-quick-rose]');
+    if (roseBtn) {
+      const pid = roseBtn.dataset.trendQuickRose;
+      const proj = (trendsCache?.projects || []).find(p => p.id === pid);
+      const sample = proj?.sampleComments?.[0] || '2001';
+      if ($('adminTrendProjectSelect')) $('adminTrendProjectSelect').value = pid;
+      if ($('adminTrendCommentInput')) $('adminTrendCommentInput').value = sample;
+      triggerAdminTrendInteract(pid, sample, true);
+    }
+  });
+
+  $('adminCustomProjectSelect')?.addEventListener('change', e => {
+    syncAdminCustomEditorFields(e.target.value);
+  });
+
+  $('btnSaveAdminCustomData')?.addEventListener('click', async () => {
+    const projectId = $('adminCustomProjectSelect')?.value || 'gieo-que';
+    const patch = {
+      ruleNote: ($('adminCustomRuleNote')?.value || '').trim(),
+      bonusBlessing: ($('adminCustomBlessing')?.value || '').trim(),
+      microGiftTitle: ($('adminCustomMicroTitle')?.value || '').trim(),
+    };
+    await api('POST', '/api/trends/custom-data', { projectId, patch });
+    showToast(`💾 Đã lưu Kho Dữ Liệu Custom & Công thức thuật toán cho #${projectId}!`);
+    await pollState();
+  });
+
+  $('btnResetTrendsEngine')?.addEventListener('click', async () => {
+    await api('POST', '/api/trends/reset', {});
+    showToast('🔄 Đã làm mới bộ đếm & bảng xếp hạng của 10 Website 3D Trend!');
     await pollState();
   });
 

@@ -3,10 +3,21 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import crypto from 'node:crypto';
+import { createTrendEngine } from '../../server/trendEngine.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PAGE = new URL('../index.html', import.meta.url);
 const PUBLIC_DIR = path.resolve(__dirname, '../public');
+const ROOT_DIR = path.resolve(__dirname, '../..');
+const TRENDS_WEB_DIR = path.resolve(ROOT_DIR, 'web/trends');
+const VENDOR_MOUNTS = [
+  ['/vendor/three/', path.resolve(ROOT_DIR, 'node_modules/three')],
+  ['/vendor/three-vrm/', path.resolve(ROOT_DIR, 'node_modules/@pixiv/three-vrm')],
+  ['/vendor/gsap/', path.resolve(ROOT_DIR, 'node_modules/gsap')],
+  ['/vendor/canvas-confetti/', path.resolve(ROOT_DIR, 'node_modules/canvas-confetti')],
+  ['/vendor/simplex-noise/', path.resolve(ROOT_DIR, 'node_modules/simplex-noise')],
+  ['/vendor/font/', path.resolve(ROOT_DIR, 'node_modules/@fontsource/be-vietnam-pro')],
+];
 const BODY_MAX = 128 * 1024;
 
 class HttpError extends Error {
@@ -63,6 +74,7 @@ export async function startMasterAdmin({
 }) {
   let okHosts = new Set();
   const authHeader = 'Basic ' + Buffer.from(`admin:${password}`).toString('base64');
+  const trendEngine = createTrendEngine();
 
   async function callSubAdmin(gameKey, method, path, body) {
     const base = gameAdmins[gameKey];
@@ -111,6 +123,7 @@ export async function startMasterAdmin({
       return {
         games,
         db: db.summary(),
+        trends: trendEngine.getSnapshot(),
         config: {
           tiktokUser: process.env.TIKTOK_USER || '',
           mongoDbName: process.env.MONGODB_DB || 'live_tiktok',
@@ -123,10 +136,77 @@ export async function startMasterAdmin({
       const body = await readJson(req);
       if (body.kind === 'gift') {
         const doc = db.recordGift(body);
+        trendEngine.interact({
+          nickname: body.nickname || body.userId || 'Khách TikTok',
+          text: body.text || body.giftName || '',
+          type: 'gift',
+          giftName: body.giftName || 'Hoa Hồng',
+          diamondCount: Number(body.diamonds ?? body.diamondCount ?? 1),
+        });
         return { ok: true, gift: doc };
       }
       const doc = db.recordEvent(body);
+      if (body.text || body.type === 'comment') {
+        trendEngine.interact({
+          nickname: body.nickname || body.userId || 'Khách TikTok',
+          text: body.text || '',
+          type: 'comment',
+          diamondCount: 0,
+        });
+      }
       return { ok: true, event: doc };
+    },
+
+    // 10 Interactive 3D Websites & Deterministic Comment Algorithm Endpoints
+    'GET /api/trends/state': async req => {
+      const u = new URL(req.url, 'http://localhost');
+      const project = u.searchParams.get('project') || 'gieo-que';
+      return trendEngine.getSnapshot(project);
+    },
+
+    'GET /api/trends/poll': async req => {
+      const u = new URL(req.url, 'http://localhost');
+      const since = Number(u.searchParams.get('since') || 0);
+      const project = u.searchParams.get('project') || 'gieo-que';
+      return trendEngine.pollSince(since, project);
+    },
+
+    'POST /api/trends/interact': async req => {
+      const body = await readJson(req);
+      const out = trendEngine.interact(body);
+      if (out.event?.isMicroGift) {
+        db.addWorkLog({
+          category: 'trends_3d',
+          game: out.event.projectId,
+          title: `[10 Web 3D Trend] ${out.event.nickname} tương tác + tặng ${out.event.giftName || 'Hoa Hồng'} (${out.event.diamondCount}💎)`,
+          detail: `${out.event.formatLabel}: "${out.event.rawText}" -> ${out.event.result?.badge}`,
+        });
+      }
+      return out;
+    },
+
+    'POST /api/trends/custom-data': async req => {
+      const body = await readJson(req);
+      if (!body.projectId) throw bad('Thiếu projectId');
+      const out = trendEngine.setCustomData(body.projectId, body.patch || {});
+      db.addWorkLog({
+        category: 'trends_3d',
+        game: body.projectId,
+        title: `Cập nhật kho dữ liệu & công thức thuật toán cho Web 3D #${body.projectId}`,
+        detail: JSON.stringify(body.patch || {}).slice(0, 180),
+      });
+      return out;
+    },
+
+    'POST /api/trends/reset': async () => {
+      const out = trendEngine.resetAll();
+      db.addWorkLog({
+        category: 'trends_3d',
+        game: 'all',
+        title: 'Làm mới bộ đếm & bảng xếp hạng của 10 Website 3D Trend',
+        detail: '',
+      });
+      return out;
     },
 
     // Switch TikTok account across ALL games simultaneously
@@ -246,6 +326,7 @@ export async function startMasterAdmin({
         })
       );
       await db.resetAllData?.();
+      trendEngine.resetAll();
       db.addWorkLog({
         category: 'database',
         game: 'all',
@@ -303,10 +384,16 @@ export async function startMasterAdmin({
 
   const CHUA_ASSETS_DIR = path.resolve(__dirname, '../../web/assets');
   const MIME = {
+    '.html': 'text/html; charset=utf-8',
     '.css': 'text/css; charset=utf-8',
     '.js': 'text/javascript; charset=utf-8',
+    '.mjs': 'text/javascript; charset=utf-8',
     '.json': 'application/json; charset=utf-8',
     '.svg': 'image/svg+xml',
+    '.png': 'image/png',
+    '.jpg': 'image/jpeg',
+    '.woff': 'font/woff',
+    '.woff2': 'font/woff2',
     '.mp3': 'audio/mpeg',
     '.wav': 'audio/wav',
     '.ogg': 'audio/ogg',
@@ -314,10 +401,58 @@ export async function startMasterAdmin({
 
   const server = http.createServer(async (req, res) => {
     if (!okHosts.has(req.headers.host)) return send(res, 403, { error: 'host không hợp lệ' });
-    if (!authorized(req.headers.authorization, password)) {
+    const urlPath = req.url.split('?')[0];
+    const isPublicTrendRoute =
+      urlPath === '/trends' ||
+      urlPath.startsWith('/trends/') ||
+      urlPath.startsWith('/vendor/') ||
+      urlPath.startsWith('/api/trends/');
+
+    if (!isPublicTrendRoute && !authorized(req.headers.authorization, password)) {
       return res.writeHead(401, { 'www-authenticate': 'Basic realm="live-tiktok-master-admin", charset="UTF-8"' }).end();
     }
-    const urlPath = req.url.split('?')[0];
+
+    if (req.method === 'GET' && urlPath.startsWith('/vendor/')) {
+      for (const [prefix, dir] of VENDOR_MOUNTS) {
+        if (urlPath.startsWith(prefix)) {
+          const rel = urlPath.slice(prefix.length);
+          const safeTarget = path.resolve(dir, rel);
+          if (safeTarget.startsWith(dir) && fs.existsSync(safeTarget) && fs.statSync(safeTarget).isFile()) {
+            const ext = path.extname(safeTarget).toLowerCase();
+            return fs.readFile(safeTarget, (err, buf) => {
+              if (err) return send(res, 404, { error: 'not found' });
+              res.writeHead(200, {
+                'content-type': MIME[ext] || 'application/octet-stream',
+                'cache-control': 'public, max-age=31536000, immutable',
+              }).end(buf);
+            });
+          }
+        }
+      }
+      return send(res, 404, { error: 'not found' });
+    }
+
+    if (req.method === 'GET' && (urlPath === '/trends' || urlPath.startsWith('/trends/'))) {
+      const rel = urlPath.replace(/^\/trends\/?/, '');
+      if (rel === 'trends.css' || rel === 'trendsApp.js') {
+        const assetFile = path.resolve(TRENDS_WEB_DIR, rel);
+        if (assetFile.startsWith(TRENDS_WEB_DIR) && fs.existsSync(assetFile)) {
+          const ext = path.extname(assetFile).toLowerCase();
+          return fs.readFile(assetFile, (err, buf) => {
+            if (err) return send(res, 404, { error: 'not found' });
+            res.writeHead(200, {
+              'content-type': MIME[ext] || 'application/octet-stream',
+              'cache-control': 'no-store',
+            }).end(buf);
+          });
+        }
+      }
+      const indexHtml = path.resolve(TRENDS_WEB_DIR, 'index.html');
+      return fs.readFile(indexHtml, (err, buf) => {
+        if (err) return send(res, 500, { error: 'thiếu web/trends/index.html' });
+        res.writeHead(200, { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' }).end(buf);
+      });
+    }
 
     if (req.method === 'GET' && urlPath.startsWith('/assets/')) {
       const rel = urlPath.slice('/assets/'.length);

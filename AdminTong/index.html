@@ -107,6 +107,26 @@
             </button>
           </div>
         </div>
+
+        <!-- GROUP 4: 10 WEBSITE 3D TREND & THUẬT TOÁN (NO-AI) -->
+        <div class="nav-group" data-nav-group="trends">
+          <button type="button" class="main-tab-btn" data-main-tab="trends">
+            <i data-lucide="sparkles" class="nav-icon"></i>
+            <span class="nav-label">10 Web 3D Trend (No-AI)</span>
+            <span class="tab-pill-count" id="navBadgeTrends">10 web</span>
+            <i data-lucide="chevron-down" class="nav-chevron"></i>
+          </button>
+          <div class="sidebar-subnav" role="tablist">
+            <button type="button" class="sub-tab-btn active" data-parent="trends" data-sub="trends-catalog">
+              <i data-lucide="boxes"></i>
+              <span>10 Website 3D &amp; Bắn Thử</span>
+            </button>
+            <button type="button" class="sub-tab-btn" data-parent="trends" data-sub="trends-insights">
+              <i data-lucide="cpu"></i>
+              <span>Insight Comment &amp; Kho Data</span>
+            </button>
+          </div>
+        </div>
       </nav>
 
       <div class="sidebar-footer">
@@ -1948,6 +1968,179 @@
                 </tr>
               </thead>
               <tbody id="duaRunnersBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- ==================================================================== -->
+    <!-- MAIN VIEW 4: 10 WEBSITE 3D TREND TIKTOK & THUẬT TOÁN (NO-AI)         -->
+    <!-- ==================================================================== -->
+    <main class="main-view" id="main-view-trends" aria-label="10 Website 3D Trend TikTok & Thuật Toán">
+      <div class="sub-nav" role="tablist">
+        <button type="button" class="sub-tab-btn active" data-parent="trends" data-sub="trends-catalog">
+          <i data-lucide="boxes"></i> 10 Website 3D Trend &amp; Bắn Thử Nhanh
+        </button>
+        <button type="button" class="sub-tab-btn" data-parent="trends" data-sub="trends-insights">
+          <i data-lucide="cpu"></i> Insight Comment TikTok &amp; Tùy Chỉnh Kho Data (No-AI)
+        </button>
+      </div>
+
+      <!-- SUB-TAB 4.1: 10 WEBSITE 3D TREND CATALOG & LIVE SIMULATOR -->
+      <section class="sub-tab-panel active" id="sub-trends-catalog">
+        <div class="card" style="margin-bottom: 18px; border-color: rgba(245, 185, 66, 0.45);">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title"><i data-lucide="sparkles"></i> Hệ Sinh Thái 10 Website 3D Bắt Trend TikTok Live (100% Thuật Toán Định Tính • Không Dùng AI)</h2>
+              <div class="card-subtitle">
+                Mỗi website sử dụng 1 công thức thuật toán riêng (Can Chi, Ngũ Hành, Pythagoras, Biển Số 63 Tỉnh, Hán-Việt, Kinh Dịch 80 Số...) để trả lời người xem ngay khi họ comment đúng format, kết hợp kích cầu quà nhỏ <strong>1💎 Hoa Hồng / 1 Đồng</strong>.
+              </div>
+            </div>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+              <a href="/trends/gieo-que" target="_blank" rel="noopener" class="btn primary">
+                <i data-lucide="external-link"></i> Mở Cổng 10 Web 3D (/trends)
+              </a>
+              <button type="button" class="btn sm" id="btnResetTrendsEngine">
+                <i data-lucide="rotate-ccw"></i> Làm Mới Bộ Đếm 10 Web
+              </button>
+            </div>
+          </div>
+
+          <!-- Bàn Bắn Thử Tương Tác & Quà Nhỏ 1💎 Ngay Tại Admin -->
+          <div style="padding: 14px; border-radius: 12px; background: rgba(15, 23, 42, 0.65); border: 1px solid rgba(255,255,255,0.08); margin-bottom: 16px;">
+            <div style="font-weight:700; margin-bottom:10px; color: var(--gold);">
+              ⚡ Bàn Bắn Thử Bình Luận Theo Format &amp; Quà Nhỏ 1💎 Hoa Hồng (Đồng bộ trực tiếp ra màn hình 3D)
+            </div>
+            <div class="grid-4" style="gap:10px; align-items:end;">
+              <div>
+                <label class="field-label">Chọn Website 3D Mục Tiêu</label>
+                <select id="adminTrendProjectSelect" class="input"></select>
+              </div>
+              <div>
+                <label class="field-label">Tên Người Xem TikTok</label>
+                <input id="adminTrendNickname" type="text" class="input" value="Minh Anh 2k1" placeholder="VD: Minh Anh 2k1" />
+              </div>
+              <div>
+                <label class="field-label">Bình Luận Theo Format</label>
+                <input id="adminTrendCommentInput" type="text" class="input" value="15/08/2001" placeholder="VD: 15/08/2001 hoặc Nam + Lan" />
+              </div>
+              <div style="display:flex; gap:8px;">
+                <button type="button" class="btn" id="btnAdminTrendComment" style="flex:1;">
+                  💬 Giải Mã (0💎)
+                </button>
+                <button type="button" class="btn primary" id="btnAdminTrendRose" style="flex:1;">
+                  🌹 Kèm Hoa Hồng (1💎)
+                </button>
+              </div>
+            </div>
+            <div id="adminTrendLastOutput" style="margin-top: 10px; padding: 10px 12px; border-radius: 8px; background: rgba(0,0,0,0.35); font-size: 13px; color: #e2e8f0;">
+              💡 Chọn 1 trong 10 website bên dưới hoặc bấm <strong>🌹 Kèm Hoa Hồng (1💎)</strong> để kiểm tra kết quả thuật toán và câu đọc giọng nói ngay lập tức!
+            </div>
+          </div>
+
+          <!-- Grid 10 Websites -->
+          <div id="adminTrendsCatalogGrid" class="grid-2" style="gap: 14px;">
+            <!-- Populated dynamically by admin.js -->
+          </div>
+        </div>
+      </section>
+
+      <!-- SUB-TAB 4.2: INSIGHT COMMENT TIKTOK & CUSTOM DATA EDITOR -->
+      <section class="sub-tab-panel" id="sub-trends-insights">
+        <div class="kpi-grid" style="margin-bottom: 16px;">
+          <div class="kpi-card">
+            <div class="kpi-label">Tổng Lượt Giải Mã Thuật Toán</div>
+            <div class="kpi-value" id="trendKpiTotalEvents">0</div>
+            <div class="kpi-sub">Trên toàn bộ 10 Website 3D</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Tổng Bình Luận Theo Format</div>
+            <div class="kpi-value" id="trendKpiComments">0</div>
+            <div class="kpi-sub">Tự động nhận diện 10 mẫu câu</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Quà Nhỏ Kích Cầu (1💎–5💎)</div>
+            <div class="kpi-value" id="trendKpiMicroGifts" style="color:var(--rose)">0 🌹</div>
+            <div class="kpi-sub">Hoa Hồng 1💎 / Quà 1 Đồng</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Tỷ Lệ Chuyển Đổi Quà Nhỏ</div>
+            <div class="kpi-value" id="trendKpiConversion" style="color:var(--gold)">0%</div>
+            <div class="kpi-sub" id="trendKpiTotalDiamonds">Tổng: 0 💎</div>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <!-- Insight Format Breakdown & Top Keywords -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h2 class="card-title"><i data-lucide="bar-chart-horizontal"></i> Tổng Hợp Insight Format Bình Luận Người Xem</h2>
+                <div class="card-subtitle">Thống kê người xem đang comment theo mẫu thông tin nào nhiều nhất để bắt trend</div>
+              </div>
+            </div>
+            <div id="adminTrendFormatList" style="display:flex; flex-direction:column; gap:10px; margin-bottom:16px;"></div>
+
+            <div style="border-top:1px solid rgba(255,255,255,0.08); padding-top:12px;">
+              <div style="font-weight:700; font-size:13px; margin-bottom:8px;">🔥 Từ Khóa Nổi Bật Người Xem Đang Nhắc Tới</div>
+              <div id="adminTrendKeywordsList" style="display:flex; flex-wrap:wrap; gap:6px;"></div>
+            </div>
+          </div>
+
+          <!-- Custom Data & Algorithmic Formula Editor (No-AI) -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h2 class="card-title"><i data-lucide="database"></i> Cấu Hình Kho Data Custom &amp; Công Thức Trả Lời (No-AI)</h2>
+                <div class="card-subtitle">Tùy chỉnh ghi chú công thức, lời chúc đính kèm và danh hiệu khi khách tặng 1💎 cho từng Website</div>
+              </div>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:12px;">
+              <div>
+                <label class="field-label">Chọn Website 3D Cần Chỉnh Sửa Kho Data</label>
+                <select id="adminCustomProjectSelect" class="input"></select>
+              </div>
+              <div>
+                <label class="field-label">Ghi chú công thức thuật toán hiển thị trên màn hình 3D</label>
+                <input id="adminCustomRuleNote" type="text" class="input" placeholder="VD: Thuật toán Can Chi 60 Hoa Giáp + Ngũ Hành..." />
+              </div>
+              <div>
+                <label class="field-label">Câu chúc / Thông điệp chèn vào cuối câu trả lời &amp; giọng đọc</label>
+                <input id="adminCustomBlessing" type="text" class="input" placeholder="VD: Chúc bạn vạn sự hanh thông..." />
+              </div>
+              <div>
+                <label class="field-label">Danh hiệu vinh danh khi tặng Hoa Hồng 1💎</label>
+                <input id="adminCustomMicroTitle" type="text" class="input" placeholder="VD: QUẺ THƯỢNG THƯỢNG HOÀNG KIM (1💎)" />
+              </div>
+              <button type="button" class="btn primary" id="btnSaveAdminCustomData">
+                <i data-lucide="save"></i> Lưu Cấu Hình Kho Dữ Liệu Thuật Toán
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Algorithmic Q&A Stream Table -->
+        <div class="card" style="margin-top: 16px;">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title"><i data-lucide="message-square-code"></i> Nhật Ký Giải Mã Bình Luận Theo Thuật Toán Gần Đây</h2>
+              <div class="card-subtitle">Đối chiếu nội dung người dùng comment, format nhận diện được và kết quả thuật toán trả về</div>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Thời gian</th>
+                  <th>Website 3D</th>
+                  <th>Người xem</th>
+                  <th>Comment / Quà</th>
+                  <th>Format nhận diện</th>
+                  <th>Kết quả thuật toán &amp; Lời đọc</th>
+                </tr>
+              </thead>
+              <tbody id="adminTrendRecentBody"></tbody>
             </table>
           </div>
         </div>
