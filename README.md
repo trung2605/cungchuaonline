@@ -34,7 +34,24 @@ Dự án **Live TikTok** bao gồm **Admin Tổng (`AdminTong/`)** và **2 tựa
   ```bash
   npm start
   ```
-- **Chạy kiểm thử tự động (155 Unit & Integration Tests):**
+- **Chạy kiểm thử tự động (193 Unit & Integration Tests — 100% Pass):**
   ```bash
   npm test
   ```
+
+---
+
+## 🧪 Ma Trận Kiểm Thử Toàn Diện (193/193 Ca Kiểm Thử — Đạt 100%)
+
+Toàn bộ tài liệu đặc tả kiểm thử tại [`docs/fr/FR-01..FR-10/test.md`](./docs/fr/README.md) và [`docs/superpowers/plans/2026-11-05-cay-bo-de-uoc-nguyen.md`](./docs/superpowers/plans/2026-11-05-cay-bo-de-uoc-nguyen.md) được kiểm chứng tự động qua 24 bộ test (`test/*.test.js`):
+
+1. **Đồng bộ & Đối sánh 100% giữa bản Gốc (Non-BK: `server/`, `web/`, `admin/`) và bản Dự phòng (`CungChuaOnline/` — BK):**
+   - Kiểm tra đồng nhất danh sách file và mã băm MD5 100% giữa `server/`, `web/`, `admin/` và `CungChuaOnline/server/`, `CungChuaOnline/web/`, `CungChuaOnline/admin/` (`TC-BK-01`).
+   - Chạy song song toàn bộ Pipeline, Stage, BowRules, Filter, Effects, Counters, Stats, World Reducer, ActorFSM, TrendEngine, HTTP/WebSocket Server và Admin API trên cả bản Non-BK và bản BK (`TC-BK-02` .. `TC-BK-05`).
+2. **Kiểm thử Chế độ PK (Đối kháng / Đua Top) & Non-PK (Tâm linh / Tương tác bình luận):**
+   - **PK / Đua Top:** `CuocDuaKyThu` (soán ngôi Top 1 Vua Hành Trình `overtookKing`, mở Kho Báu Lễ Hội, 63 đặc sản tỉnh thành, 12 kỳ quan) và Trend `#5: Đại Chiến Gia Tộc 3D` (`dai-chien`) (`test/race.test.js`, `TC-PK-01`, `TC-PK-02`).
+   - **Non-PK:** `Cúng Chùa Online 3D` (Chánh điện, Cây Bồ Đề Ước Nguyện 3D 50 dải lụa FIFO) và 9 Website 3D Bắt Trend TikTok còn lại (`test/bodhiTree.test.js`, `test/trendEngine.test.js`).
+3. **Kiểm thử Tách biệt Nguồn Giả lập (`src: 'mock'`) & Nguồn Thật (`src: 'tiktok'` / `src: 'tikfinity'`):**
+   - Quà tặng và bình luận từ `mock` vẫn hiển thị hiệu ứng 3D trên sân khấu nhưng **tuyệt đối không cộng vào doanh thu Kim cương thật hay Bảng Vàng Tri Ân thật** ở cả 3 hệ thống (`TC-06.6`, `TC-09.5`, `TC-MASTER-01`, `TC-PK-01`, `TC-VERCEL-03`).
+4. **Kiểm thử Toàn bộ 10 FR (`FR-01` → `FR-10`), Admin Tổng (21 Biểu đồ ApexCharts) & Unified Vercel Runtime (`api/index.js`):**
+   - Bao phủ đầy đủ `TC-01.*` đến `TC-10.*`, kiểm thử chống XSS (`TC-09.16`), kiểm thử `CREDITS.md` (`TC-07.19`), và kiểm thử tích hợp Serverless (`test/vercel.test.js`, `test/masterAdmin.test.js`).

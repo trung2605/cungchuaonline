@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>10 Website 3D Trend TikTok Live — Thuật Toán Tương Tác (No-AI)</title>
+  <link rel="stylesheet" href="/vendor/font/400.css">
+  <link rel="stylesheet" href="/vendor/font/700.css">
+  <link rel="stylesheet" href="/trends/trends.css">
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "/vendor/three/build/three.module.js",
+      "three/addons/": "/vendor/three/examples/jsm/",
+      "gsap": "/vendor/gsap/index.js",
+      "canvas-confetti": "/vendor/canvas-confetti/dist/confetti.module.mjs",
+      "simplex-noise": "/vendor/simplex-noise/dist/esm/simplex-noise.js"
+    }
+  }
+  </script>
+</head>
+<body data-theme="gold">
+  <!-- Floating Toggle Button for OBS / Pure 9:16 Live Mode -->
+  <button id="btn-toggle-live-mode" class="floating-live-toggle" title="Bật/Tắt chế độ Quay Live 9:16 toàn màn hình (Phím L)">
+    📱 Chế Độ Quay Live 9:16
+  </button>
+
+  <div id="trends-workspace" class="trends-workspace">
+    <!-- ==================== LEFT DOCK: 10 WEBSITES SWITCHER ==================== -->
+    <aside id="dock-left" class="studio-dock dock-left" aria-label="Danh sách 10 Website 3D Trend">
+      <div class="dock-brand">
+        <div class="dock-brand-top">
+          <span class="dock-badge-live"><span class="pulse-dot"></span> 10 WEB 3D TREND</span>
+          <a href="/admin" class="dock-admin-link" title="Về trang Admin Tổng">⚙️ Admin Tổng</a>
+        </div>
+        <h1 class="dock-title">Hệ Sinh Thái 10 Web 3D Bắt Trend TikTok</h1>
+        <p class="dock-subtitle">100% Thuật Toán Định Tính Theo Format Comment &amp; Quà Nhỏ 1💎 (Không Dùng AI)</p>
+      </div>
+
+      <div id="project-nav-list" class="project-nav-list" role="tablist">
+        <!-- Populated dynamically by trendsApp.js -->
+      </div>
+
+      <div class="dock-footer">
+        <div class="dock-footer-Links">
+          <a href="/chua/" target="_blank" rel="noopener" class="mini-portal-btn">🪷 Chùa 3D</a>
+          <a href="/dua/" target="_blank" rel="noopener" class="mini-portal-btn">🐎 Đua Vịt 3D</a>
+          <a href="/admin" class="mini-portal-btn mini-portal-btn-primary">🎛️ Quản Trị</a>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ==================== CENTER: 9:16 TIKTOK LIVE 3D STAGE ==================== -->
+    <main id="stage-viewport" class="stage-viewport">
+      <div id="stage" class="tiktok-stage">
+        <canvas id="trend-canvas"></canvas>
+
+        <!-- Safe-zone Top Header (Starts at 130px below TikTok Host Avatar & Ranking) -->
+        <header id="hud-top" class="hud-top">
+          <div class="hud-title-pill">
+            <span id="hud-project-icon" class="hud-project-icon">🔮</span>
+            <div class="hud-title-text">
+              <div class="hud-title-row">
+                <h2 id="hud-project-name">Đài Gieo Quẻ Kỳ Môn 3D</h2>
+                <span id="hud-project-code" class="hud-code-tag">#1 • NO-AI ALGO</span>
+              </div>
+              <p id="hud-project-tagline">Nhập Năm Sinh hoặc Ngày Sinh — Máy tính Can Chi &amp; Ngũ Hành giải quẻ 3D</p>
+            </div>
+          </div>
+
+          <div class="hud-prompt-banner">
+            <span class="prompt-chip">💬 CÚ PHÁP</span>
+            <p id="hud-format-prompt">Gõ NĂM SINH (VD: 2001) hoặc NGÀY SINH (VD: 15/08/2001) để gieo quẻ 3D!</p>
+          </div>
+        </header>
+
+        <!-- Left HUD Column: Guide + Micro-Gift 1💎 Callout + Live Stats -->
+        <section id="hud-left" class="hud-left">
+          <div class="hud-card hud-microgift-card">
+            <div class="hud-card-head">
+              <span class="rose-icon">🌹</span>
+              <h3>KÍCH TƯƠNG TÁC 1💎</h3>
+            </div>
+            <p id="hud-microgift-prompt" class="hud-microgift-text">
+              🌹 Tặng 1 Hoa Hồng (1💎): Thỉnh Quẻ Thượng Thượng Hoàng Kim + Đọc Tên Ưu Tiên!
+            </p>
+            <div class="hud-rule-box">
+              <span class="rule-label">⚙️ Thuật toán đang chạy:</span>
+              <span id="hud-rule-note" class="rule-value">Thuật toán Can Chi 60 Hoa Giáp + Ngũ Hành Nạp Âm.</span>
+            </div>
+          </div>
+
+          <div class="hud-card hud-stats-card">
+            <div class="hud-stat-row">
+              <span>Tổng giải mã</span>
+              <strong id="hud-stat-interactions">0</strong>
+            </div>
+            <div class="hud-stat-row">
+              <span>Quà 1💎 Hoa Hồng</span>
+              <strong id="hud-stat-microgifts" class="stat-rose">0 🌹</strong>
+            </div>
+            <div class="hud-stat-row">
+              <span>Tổng Kim Cương</span>
+              <strong id="hud-stat-diamonds" class="stat-gold">0 💎</strong>
+            </div>
+          </div>
+        </section>
+
+        <!-- Right HUD Column: Leaderboard Top Interactive Viewers / Provinces -->
+        <section id="hud-right" class="hud-right">
+          <div class="hud-card hud-board-card">
+            <div class="hud-card-head">
+              <span>🏆</span>
+              <h3 id="hud-board-title">BẢNG VÀNG TƯƠNG TÁC</h3>
+            </div>
+            <ol id="hud-leaderboard" class="hud-leaderboard">
+              <li class="board-empty">Hãy comment theo cú pháp để lên bảng vàng 3D!</li>
+            </ol>
+          </div>
+        </section>
+
+        <!-- Center Floating 3D Action Callout Toast (When 1💎 Gift or VIP Event Happens) -->
+        <div id="hud-gift-burst" class="hud-gift-burst" aria-live="polite">
+          <div class="gift-burst-inner">
+            <span id="gift-burst-icon" class="gift-burst-icon">🌹</span>
+            <div>
+              <div id="gift-burst-user" class="gift-burst-user">Phật Tử Hoan Hỷ</div>
+              <div id="gift-burst-title" class="gift-burst-title">THƯỢNG THƯỢNG HOÀNG KIM (1💎)</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bottom Safe-Zone HUD: Live Algorithmic Result Card + Recent Stream Ticker -->
+        <section id="hud-bottom" class="hud-bottom">
+          <article id="hud-result-card" class="hud-result-card">
+            <div class="result-card-header">
+              <div class="result-user-wrap">
+                <span id="result-user-avatar" class="result-user-avatar">✨</span>
+                <div>
+                  <div class="result-user-line">
+                    <strong id="result-user-name">Đang chờ bình luận...</strong>
+                    <span id="result-format-tag" class="result-format-tag">Sẵn sàng</span>
+                  </div>
+                  <div id="result-raw-comment" class="result-raw-comment">Bình luận theo cú pháp trên màn hình để thuật toán 3D giải mã ngay!</div>
+                </div>
+              </div>
+              <div id="result-badge" class="result-badge">CHỜ TÍN HIỆU</div>
+            </div>
+
+            <h3 id="result-headline" class="result-headline">🔮 HỆ THỐNG THUẬT TOÁN 3D ĐÃ SẴN SÀNG</h3>
+
+            <div id="result-metrics-grid" class="result-metrics-grid">
+              <div class="metric-box">
+                <span class="metric-label">Trạng Thái</span>
+                <strong class="metric-val">Trực Tuyến</strong>
+              </div>
+              <div class="metric-box">
+                <span class="metric-label">Động Cơ</span>
+                <strong class="metric-val">Thuật Toán 100%</strong>
+              </div>
+              <div class="metric-box">
+                <span class="metric-label">Quà Kích Cầu</span>
+                <strong class="metric-val">1💎 Hoa Hồng</strong>
+              </div>
+              <div class="metric-box">
+                <span class="metric-label">Tốc Độ Xử Lý</span>
+                <strong class="metric-val">&lt; 5ms</strong>
+              </div>
+            </div>
+
+            <p id="result-detail-text" class="result-detail-text">
+              Chọn 1 mẫu bình luận bên phải hoặc nhập trực tiếp vào ô thử nghiệm để xem hiệu ứng 3D và lời đọc thuật toán tự động!
+            </p>
+          </article>
+
+          <div id="hud-feed-strip" class="hud-feed-strip">
+            <span class="feed-strip-label">⚡ Vừa giải mã:</span>
+            <div id="hud-feed-items" class="hud-feed-items">
+              <span class="feed-chip">Chưa có lượt giải mã mới</span>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <!-- ==================== RIGHT DOCK: SIMULATOR, INSIGHTS & CUSTOM DATA ==================== -->
+    <aside id="dock-right" class="studio-dock dock-right" aria-label="Bàn điều khiển thuật toán &amp; Insight TikTok">
+      <!-- Block 1: Live Comment & 1💎 Micro-Gift Simulator -->
+      <section class="studio-panel">
+        <div class="panel-head">
+          <h2>⚡ Bàn Thử Tương Tác &amp; Quà Nhỏ 1💎</h2>
+          <div class="panel-controls-inline">
+            <button id="btn-auto-demo" class="chip-toggle is-active" title="Tự động mô phỏng người xem comment &amp; tặng quà 1💎">
+              🤖 Auto Demo: BẬT
+            </button>
+            <button id="btn-tts-voice" class="chip-toggle is-active" title="Bật/Tắt giọng đọc tiếng Việt">
+              🔊 Giọng Đọc: BẬT
+            </button>
+          </div>
+        </div>
+
+        <form id="sim-comment-form" class="sim-form">
+          <div class="sim-row-2">
+            <label class="sim-field">
+              <span>Tên người xem TikTok</span>
+              <input id="sim-nickname" type="text" value="Minh Anh 2k1" placeholder="VD: Minh Anh 2k1">
+            </label>
+            <label class="sim-field">
+              <span>Loại tương tác</span>
+              <select id="sim-gift-select">
+                <option value="comment">💬 Chỉ Bình Luận (0💎)</option>
+                <option value="rose_1" selected>🌹 Kèm Hoa Hồng (1💎 - Kích Cầu)</option>
+                <option value="coin_1">🪙 Kèm Quà 1 Đồng (1💎)</option>
+                <option value="lotus_5">🪷 Kèm Hoa Sen (5💎)</option>
+                <option value="confetti_10">🎉 Kèm Pháo Giấy (10💎)</option>
+              </select>
+            </label>
+          </div>
+
+          <label class="sim-field">
+            <span>Nội dung bình luận theo Format (Thuật toán sẽ tự bóc tách)</span>
+            <div class="sim-input-group">
+              <input id="sim-comment-text" type="text" placeholder="Nhập bình luận theo cú pháp..." required>
+              <button type="submit" class="btn-fire-comment">🚀 Giải Mã 3D</button>
+            </div>
+          </label>
+        </form>
+
+        <div class="sample-chips-wrap">
+          <span class="sample-chips-label">💡 Bấm thử nhanh Comment chuẩn Format của Web này:</span>
+          <div id="sample-chips-list" class="sample-chips-list">
+            <!-- Populated dynamically per project -->
+          </div>
+        </div>
+
+        <div class="quick-gift-bar">
+          <button id="btn-quick-rose" type="button" class="btn-quick-gift btn-rose">
+            🌹 Bắn Nhanh 1 Hoa Hồng (1💎)
+          </button>
+          <button id="btn-quick-burst" type="button" class="btn-quick-gift btn-gold">
+            🔥 Bắn Combo 5 Người Xem Liên Tiếp
+          </button>
+        </div>
+      </section>
+
+      <!-- Block 2: TikTok Live Comment Format & Trend Insight Aggregator -->
+      <section class="studio-panel">
+        <div class="panel-head">
+          <h2>📊 Tổng Hợp Insight Comment TikTok Live</h2>
+          <span id="insight-total-badge" class="panel-badge">0 sự kiện</span>
+        </div>
+        <p class="panel-desc">
+          Phân loại tự động người xem đang comment theo mẫu (format) nào nhiều nhất để bắt trend và tối ưu kịch bản kêu gọi quà 1💎.
+        </p>
+
+        <div class="insight-kpi-grid">
+          <div class="insight-kpi">
+            <span>Tổng Comment</span>
+            <strong id="kpi-total-comments">0</strong>
+          </div>
+          <div class="insight-kpi">
+            <span>Quà Nhỏ 1💎–5💎</span>
+            <strong id="kpi-micro-gifts" class="text-rose">0</strong>
+          </div>
+          <div class="insight-kpi">
+            <span>Tỷ Lệ Chuyển Đổi</span>
+            <strong id="kpi-conversion-rate" class="text-gold">0%</strong>
+          </div>
+        </div>
+
+        <div class="insight-subhead">Phân Bổ Format Bình Luận Người Xem</div>
+        <div id="insight-format-bars" class="insight-format-bars">
+          <!-- Populated dynamically -->
+        </div>
+
+        <div class="insight-subhead">Từ Khóa Đang Lên Trend Trong Phiên Live</div>
+        <div id="insight-keywords-cloud" class="insight-keywords-cloud">
+          <span class="kw-chip">Chưa có dữ liệu</span>
+        </div>
+      </section>
+
+      <!-- Block 3: Custom Data & Algorithmic Rules Editor (No-AI) -->
+      <section class="studio-panel">
+        <div class="panel-head">
+          <h2>🧠 Tùy Chỉnh Kho Data &amp; Thuật Toán (No-AI)</h2>
+          <span class="panel-badge badge-emerald">Custom Data</span>
+        </div>
+        <p class="panel-desc">
+          Chỉnh sửa công thức trả lời, câu chúc đính kèm và danh hiệu khi khách tặng 1💎 cho website đang mở.
+        </p>
+
+        <form id="custom-data-form" class="sim-form">
+          <label class="sim-field">
+            <span>Ghi chú công thức thuật toán hiển thị trên Live</span>
+            <input id="custom-rule-note" type="text" placeholder="VD: Thuật toán Can Chi 60 Hoa Giáp...">
+          </label>
+          <label class="sim-field">
+            <span>Câu chúc / Thông điệp chèn vào cuối kết quả giải mã</span>
+            <input id="custom-bonus-blessing" type="text" placeholder="VD: Chúc bạn vạn sự hanh thông...">
+          </label>
+          <label class="sim-field">
+            <span>Danh hiệu vinh danh khi tặng Hoa Hồng 1💎</span>
+            <input id="custom-microgift-title" type="text" placeholder="VD: QUẺ THƯỢNG THƯỢNG HOÀNG KIM (1💎)">
+          </label>
+          <label class="sim-field">
+            <span>Bảng Dữ Liệu Tra Cứu Custom (Mỗi dòng: Từ khóa/Format = Câu trả lời | Chỉ số)</span>
+            <textarea id="custom-lookup-text" rows="4" placeholder="VD: 1998 = Tuổi Mậu Dần năm 2026 đại cát | 99/100"></textarea>
+          </label>
+          <button type="submit" class="btn-save-custom">💾 Lưu Kho Data &amp; Thuật Toán Cho Web Này</button>
+          <div id="custom-save-status" class="custom-save-status" aria-live="polite"></div>
+        </form>
+      </section>
+    </aside>
+  </div>
+
+  <script type="module" src="/trends/trendsApp.js"></script>
+</body>
+</html>

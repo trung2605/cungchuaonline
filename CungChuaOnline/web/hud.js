@@ -24,7 +24,7 @@ function card(name, line) {
 }
 
 export function createHud() {
-  let pairs = [], ci = -1, donors = [], donorTimer = null, bannerTimer = null;
+  let pairs = [], ci = -1, donors = [], donorTimer = null, bannerTimer = null, bodhiToastTimer = null;
   const recentPrayers = [];
   const altarActors = [null, null, null];
   let shownAltarId = null;
@@ -95,7 +95,7 @@ const giftVi = g => GIFT_VI[String(g || '').trim().toLowerCase()] || g || 'Lễ 
         case 'board': {
           const empty = $('#board-empty');
           if (empty) empty.style.display = msg.top.length ? 'none' : 'block';
-          $('#board ol').replaceChildren(...msg.top.slice(0, 5).map(r => {
+          $('#board ol').replaceChildren(...msg.top.slice(0, 10).map(r => {
             const li = document.createElement('li');
             li.textContent = `${r.name} · 💎${r.diamonds.toLocaleString('vi-VN')}`;
             return li;
@@ -107,6 +107,31 @@ const giftVi = g => GIFT_VI[String(g || '').trim().toLowerCase()] || g || 'Lễ 
           ci = -1;
           nextCouplet();
           break;
+        case 'reward_config': {
+          const cfg = msg.config || {};
+          const bowMult = Number(cfg.bowMultiplier) || 1;
+          const t1 = Number(cfg.tier1MinDiamonds ?? cfg.tier1Threshold) || 5;
+          const t2 = Number(cfg.tier2MinDiamonds ?? cfg.tier2Threshold) || 20;
+          const goldRibbon = Number(cfg.wishRibbonGoldMinDiamonds ?? cfg.goldRibbonThreshold) || 10;
+          const titleEl = $('#chua-guide-title') || $('#guide h3');
+          if (titleEl) {
+            titleEl.textContent = bowMult > 1 ? `🔥 ĐẠI LỄ ×${bowMult} CÔNG ĐỨC` : 'NGHI LỄ DÂNG LỄ';
+          }
+          const r1b = document.querySelector('#guide [data-chua-tier="1b"]');
+          if (r1b) {
+            r1b.textContent = `🪷 2–${Math.max(2, t1 - 1)} 💎 (Hoa Sen, Tim Tay): Hoa đăng`;
+          }
+          const r1 = document.querySelector('#guide [data-chua-tier="1"]');
+          if (r1) {
+            const silkTag = goldRibbon <= t1 ? ' + Lụa Vàng' : '';
+            r1.textContent = `🌺 ${t1}–${Math.max(t1, t2 - 1)} 💎 (Rosa, Tim Đôi): Áo Vàng${silkTag}`;
+          }
+          const r2 = document.querySelector('#guide [data-chua-tier="2"]');
+          if (r2) {
+            r2.textContent = `🏮 ${t2}+ 💎 (Nước Hoa, Bánh Vòng): Chuông lớn`;
+          }
+          break;
+        }
       }
     },
     notePrayer(actor) {
@@ -129,6 +154,33 @@ const giftVi = g => GIFT_VI[String(g || '').trim().toLowerCase()] || g || 'Lễ 
     setHallCount(n) {
       const el = $('#hall-count');
       if (el) el.textContent = `Đang lễ: ${n} Phật tử`;
+    },
+    showWishToast(wish) {
+      if (!wish) return;
+      const toast = $('#bodhi-ribbon-toast');
+      const nameEl = $('#bodhi-toast-name');
+      const wishEl = $('#bodhi-toast-wish');
+      if (!toast || !nameEl || !wishEl) return;
+      nameEl.textContent = `🙏 ${wish.name || 'Phật Tử'}`;
+      wishEl.textContent = `“${wish.wish || 'Cầu Gia Đạo Bình An'}”`;
+      toast.classList.add('on');
+      clearTimeout(bodhiToastTimer);
+      bodhiToastTimer = setTimeout(() => toast.classList.remove('on'), 4800);
+    },
+    syncBodhiWishes(wishes = [], totalCount = 0) {
+      const countEl = $('#bodhi-wish-count');
+      if (countEl) countEl.textContent = String(totalCount || wishes.length);
+      const listEl = $('#bodhi-wish-list');
+      if (!listEl) return;
+      listEl.replaceChildren(...wishes.slice(0, 12).map(w => {
+        const li = document.createElement('li');
+        const b = document.createElement('b');
+        b.textContent = `🧧 ${w.name || 'Phật Tử'}`;
+        const span = document.createElement('span');
+        span.textContent = w.wish || 'Cầu Bình An';
+        li.append(b, span);
+        return li;
+      }));
     },
     showVoice(text, on) {
       const toast = $('#voice-toast');

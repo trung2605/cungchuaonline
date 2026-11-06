@@ -6,16 +6,23 @@ import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js'
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { VignetteShader } from 'three/addons/shaders/VignetteShader.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { gsap } from 'gsap';
+import confetti from 'canvas-confetti';
 import { createWorld, applyMsg, stepWorld } from './scene/reducer.js';
 import { buildHall } from './scene/hall.js';
 import { createActors } from './scene/actors.js';
 import { createFx } from './scene/fx.js';
+import { createBodhiTree, BODHI_POS } from './scene/bodhiTree.js';
 import { createAudio } from './scene/audio.js';
 import { createHud } from './hud.js';
 
 const W = 1080, H = 1920;
 const params = new URLSearchParams(location.search);
-const low = params.get('quality') === 'low';
+const low = params.get('quality') !== 'high';
+const RENDER_SCALE = params.get('hd') === '1' ? 1.0 : 0.67;
+const ENABLE_BLOOM = params.get('bloom') === '1';
+const ENABLE_SHADOWS = params.get('shadows') === '1';
 const RECONNECT_MS = 2000;
 
 // Fit the fixed 1080x1920 stage into the window and center it horizontally/vertically.
@@ -31,42 +38,109 @@ const fit = () => {
 addEventListener('resize', fit);
 fit();
 
-const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('c'), antialias: !low });
-renderer.setPixelRatio(1);
+const renderer = new THREE.WebGLRenderer({
+  canvas: document.getElementById('c'),
+  powerPreference: 'high-performance',
+  antialias: false,
+  stencil: false,
+});
+renderer.setPixelRatio(RENDER_SCALE);
 renderer.setSize(W, H, true);
-renderer.shadowMap.enabled = !low;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.shadowMap.enabled = ENABLE_SHADOWS;
+if (ENABLE_SHADOWS) renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.15;
 const labels = new CSS2DRenderer({ element: document.getElementById('labels') });
 labels.setSize(W, H);
 
 const scene = new THREE.Scene();
-// BR-07.1: from the gate, raised, looking at the altar; statue in the top third.
+if (!low) {
+  const pmremGenerator = new THREE.PMREMGenerator(renderer);
+  scene.environment = pmremGenerator.fromScene(new RoomEnvironment(), 0.04).texture;
+  pmremGenerator.dispose();
+  scene.environmentIntensity = 0.45;
+}
+// Fixed Sanctuary Master Camera (no panning / angle switching)
 const camera = new THREE.PerspectiveCamera(50, W / H, 0.1, 120);
 const CAM = new THREE.Vector3(0, 12, 21), LOOK = new THREE.Vector3(0, 1.2, -4);
+camera.position.copy(CAM);
+camera.lookAt(LOOK);
 
-const composer = new EffectComposer(renderer);
-composer.addPass(new RenderPass(scene, camera));
-// Bloom only on flames and lanterns: high threshold so gilt highlights stay crisp.
-if (params.get('bloom') !== '0') composer.addPass(new UnrealBloomPass(new THREE.Vector2(W / 2, H / 2), 0.55, 0.5, 0.9));
-// Candlelit interiors fall off toward the frame edge; the vignette keeps the eye on the altar.
-const vignette = new ShaderPass(VignetteShader);
-// darkness mixes toward (1 - darkness): above 1 that color goes negative and tints the edges cyan.
-vignette.uniforms.offset.value = 1.1;
-vignette.uniforms.darkness.value = 1;
-composer.addPass(vignette);
-composer.addPass(new OutputPass());
+const coupletL = document.getElementById('couplet-l');
+const coupletR = document.getElementById('couplet-r');
+
+function triggerTempleCameraFocus() {
+  // Camera panning disabled — keep steady sanctuary master perspective
+}
+
+let composer = null;
+let bloomPass = null;
+if (ENABLE_BLOOM) {
+  composer = new EffectComposer(renderer);
+  composer.addPass(new RenderPass(scene, camera));
+  bloomPass = new UnrealBloomPass(new THREE.Vector2(W / 2, H / 2), 0.55, 0.5, 0.9);
+  composer.addPass(bloomPass);
+  const vignette = new ShaderPass(VignetteShader);
+  vignette.uniforms.offset.value = 1.1;
+  vignette.uniforms.darkness.value = 1;
+  composer.addPass(vignette);
+  composer.addPass(new OutputPass());
+}
 
 const hall = buildHall(scene, { low, renderer });
 const actors = await createActors(scene);
 const fx = createFx(scene, { low, smokeOrigin: hall.smokeOrigin });
 const hud = createHud();
 const audio = createAudio({ onSpeak: (text, on) => hud.showVoice(text, on) });
+const bodhiTree = createBodhiTree(scene, {
+  low,
+  onRibbonTied: wish => {
+    audio.windChime?.();
+    fx.spawn('lotus', { x: BODHI_POS.x, z: BODHI_POS.z }, 3, performance.now());
+  },
+});
+hud.syncBodhiWishes(bodhiTree.getRecentWishes(12), bodhiTree.getWishesCount());
 const world = createWorld();
 
 const soundBtn = document.getElementById('sound');
 if (soundBtn) soundBtn.style.display = 'none';
+const commentTtsBtn = document.getElementById('toggle-comment-tts');
+const chuaBgmBtn = document.getElementById('toggle-chua-bgm');
+const bodhiViewBtn = document.getElementById('toggle-bodhi-view');
+const bodhiDrawer = document.getElementById('bodhi-drawer');
+if (bodhiViewBtn && bodhiDrawer) {
+  bodhiViewBtn.addEventListener('click', e => {
+    e.stopPropagation();
+    const isOpen = bodhiDrawer.classList.toggle('open');
+    bodhiViewBtn.classList.toggle('active', isOpen);
+    if (isOpen) {
+      audio.windChime?.();
+      hud.syncBodhiWishes(bodhiTree.getRecentWishes(12), bodhiTree.getWishesCount());
+    }
+  });
+}
+let liveWs = null;
+
+function syncChuaBgmBtn() {
+  if (chuaBgmBtn && audio.getMusicLabel) {
+    chuaBgmBtn.textContent = audio.getMusicLabel();
+  }
+}
+if (chuaBgmBtn) {
+  syncChuaBgmBtn();
+  chuaBgmBtn.addEventListener('click', e => {
+    e.stopPropagation();
+    audio.unlock();
+    audio.nextMusicTrack?.();
+    syncChuaBgmBtn();
+  });
+  setInterval(syncChuaBgmBtn, 1500);
+}
+
+function syncCommentTtsBtn(on) {
+  audio.setReadComments(on);
+}
+
 // Auto-unlock audio by default on load and on any interaction (mouse move, key, touch, focus)
 audio.unlock();
 const autoUnlock = () => {
@@ -83,26 +157,114 @@ function run(cmds, now) {
       case 'add':
         actors.add(c.actor);
         hud.notePrayer(c.actor);
-        if (c.actor && !c.idle) audio.thankPrayer(c.actor);
+        if (c.actor && !c.idle) {
+          const isReal = !String(c.actor.id || '').startsWith('bot_') && !String(c.actor.id || '').startsWith('seed_');
+          if (isReal || (c.actor.diamonds || 0) > 0) {
+            triggerTempleCameraFocus(
+              Math.random() < 0.45 ? 'front_reverse_worshippers' : 'vip_worshipper_focus',
+              c.actor.id,
+              5400,
+              Boolean(c.actor.diamonds)
+            );
+          }
+        }
+        if (c.actor && !c.idle && !c.actor.diamonds && (!audio.readComments || !c.actor.prayer)) {
+          audio.thankPrayer(c.actor);
+        }
         break;
       case 'remove': actors.remove(c.id); break;
-      case 'say': actors.say(c.id, c.text, c.ms); break;
+      case 'demoPurged': audio.purgeMockSpeech?.(); break;
+      case 'wishes_snapshot':
+        bodhiTree.setWishesSnapshot(c.wishes);
+        hud.syncBodhiWishes(bodhiTree.getRecentWishes(12), bodhiTree.getWishesCount());
+        break;
+      case 'wish_ribbon':
+        bodhiTree.flyWishRibbon(c.wish, c.fromPos);
+        hud.showWishToast(c.wish);
+        hud.syncBodhiWishes(bodhiTree.getRecentWishes(12), bodhiTree.getWishesCount());
+        break;
+      case 'clear_wishes':
+        bodhiTree.clearAllRibbons();
+        hud.syncBodhiWishes(bodhiTree.getRecentWishes(12), bodhiTree.getWishesCount());
+        break;
+      case 'say': {
+        actors.say(c.id, c.text, c.ms);
+        const isReal = c.id && !String(c.id).startsWith('bot_') && !String(c.id).startsWith('seed_');
+        triggerTempleCameraFocus(
+          Math.random() < 0.4 ? 'front_reverse_worshippers' : 'vip_worshipper_focus',
+          c.id,
+          isReal ? 5800 : 4800,
+          Boolean(isReal)
+        );
+        if (audio.readComments) {
+          const actor = actors.actor(c.id) || world.actors.get(c.id)?.actor;
+          if (actor && c.text) audio.speakComment(actor, c.text);
+        }
+        break;
+      }
       case 'unsay': actors.unsay(c.id); break;
-      case 'badge': actors.badge(c.id, c.diamonds); break;
+      case 'badge':
+        actors.badge(c.id, c.diamonds);
+        triggerTempleCameraFocus(
+          Math.random() < 0.5 ? 'vip_worshipper_focus' : 'front_reverse_worshippers',
+          c.id,
+          6500,
+          true
+        );
+        break;
       case 'scene':
         hall.setTheme(c.scene.theme, now);
         audio.setEnabled(c.scene.sound);
+        if (c.scene.readComments !== undefined) syncCommentTtsBtn(Boolean(c.scene.readComments));
+        if (c.scene.bgmTrack) {
+          audio.setMusicTrack?.(c.scene.bgmTrack, c.scene.bgmSeq ?? null);
+          syncChuaBgmBtn();
+        }
+        if (c.scene.bgmVocal !== undefined || c.scene.bgmVocalVolume !== undefined) {
+          audio.setBgmVocal?.(c.scene.bgmVocal, c.scene.bgmVocalVolume);
+        }
         break;
       case 'hud':
         hud.handle(c.msg);
         if (c.msg.t === 'donor') audio.thankDonor(c.msg);
-        else if (c.msg.t === 'banner' && c.msg.src && c.msg.src !== 'mock') audio.thankJoin(c.msg);
         break;
       case 'fx':
-        if (c.kind === 'halo' && c.id) actors.halo(c.id, now);
-        else fx.spawn(c.kind, c.pos, c.power, now);
-        // Standalone bell trigger (e.g. from admin panel when no donor message is present)
-        if (c.kind === 'bell' && !c.id) audio.bell();
+        if (c.kind === 'halo' && c.id) {
+          actors.halo(c.id, now);
+          triggerTempleCameraFocus('vip_worshipper_focus', c.id, 6200, true);
+        } else {
+          fx.spawn(c.kind, c.pos, c.power, now);
+          if (c.kind === 'bell') {
+            triggerTempleCameraFocus('diag_right_bell', null, 5800, false);
+          } else if (c.kind === 'buddha_aura' || c.kind === 'dharma_wheel') {
+            triggerTempleCameraFocus('buddha_sacred_low', null, 6200, false);
+          } else if (c.kind === 'golden_rain' || c.kind === 'lantern_festival') {
+            triggerTempleCameraFocus('high_crane_mandala', null, 6000, false);
+          } else if (c.kind === 'lotus' || c.kind === 'lamp') {
+            triggerTempleCameraFocus('altar_devotion_zoom', null, 5200, false);
+          }
+        }
+        if (c.kind === 'bell' || c.kind === 'buddha_aura' || c.kind === 'golden_rain' || c.kind === 'dharma_wheel') {
+          if (bloomPass) {
+            gsap.fromTo(bloomPass, { strength: 0.82 }, { strength: 0.55, duration: 1.5, ease: 'power2.out' });
+          }
+          try {
+            confetti({
+              particleCount: 40,
+              spread: 70,
+              origin: { x: 0.5, y: 0.25 },
+              colors: ['#facc15', '#fef08a', '#f472b6', '#fb923c'],
+              disableForReducedMotion: true,
+            });
+          } catch {}
+        }
+        // Standalone temple sound resonance when FX is triggered from Admin or Auto-FX
+        if (!c.id) {
+          if (c.kind === 'bell' || c.kind === 'buddha_aura') audio.bell();
+          else if (c.kind === 'dharma_wheel' || c.kind === 'lantern_festival' || c.kind === 'golden_rain') audio.mediumBell();
+          else if (c.kind === 'lotus' || c.kind === 'lamp' || c.kind === 'peach_blossom') audio.chime();
+          else if (c.kind === 'smoke') audio.softBowl();
+        }
         break;
     }
   }
@@ -112,20 +274,89 @@ const receive = msg => { const now = performance.now(); run(applyMsg(world, msg,
 // Manual tests (TC-07.15/16) fire StageMsg from the console: stageMsg({t:'fx',kind:'bell',power:1}).
 if (params.get('debug') === '1') window.stageMsg = receive;
 
-// BR-07.11: reconnect every 2 s; the server sends a fresh snapshot on connect.
+// Hybrid Real-Time Transport: Local WebSocket (:8787) + Vercel Cloud HTTP Polling (/api/chua/poll)
+let cloudPollingActive = false;
+let cloudSeq = 0;
+const seenChuaCloudEvents = new Set();
+
+async function pollChuaCloud() {
+  try {
+    const res = await fetch(`/api/chua/poll?since=${cloudSeq}`, { cache: 'no-store' });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.snapshot) receive(data.snapshot);
+      if (Array.isArray(data.messages)) {
+        for (const m of data.messages) {
+          if (m?._eid) {
+            if (seenChuaCloudEvents.has(m._eid)) continue;
+            seenChuaCloudEvents.add(m._eid);
+            if (seenChuaCloudEvents.size > 400) {
+              seenChuaCloudEvents.delete(seenChuaCloudEvents.values().next().value);
+            }
+          }
+          receive(m);
+        }
+      }
+      if (typeof data.seq === 'number' && data.seq > cloudSeq) {
+        cloudSeq = data.seq;
+      }
+    }
+  } catch {}
+  if (cloudPollingActive) setTimeout(pollChuaCloud, 1200);
+}
+
+function startChuaCloudPolling() {
+  if (cloudPollingActive) return;
+  cloudPollingActive = true;
+  pollChuaCloud();
+}
+
 (function connect() {
-  const ws = new WebSocket(`ws://${location.host}`);
+  if (location.protocol === 'https:' || location.pathname.startsWith('/chua')) {
+    startChuaCloudPolling();
+    return;
+  }
+  let opened = false;
+  const wsProto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+  const ws = new WebSocket(`${wsProto}//${location.host}`);
+  liveWs = ws;
+  ws.onopen = () => { opened = true; };
   ws.onmessage = e => receive(JSON.parse(e.data));
-  ws.onclose = () => setTimeout(connect, RECONNECT_MS);
+  ws.onclose = () => {
+    if (!opened && location.port !== '8787') {
+      startChuaCloudPolling();
+      return;
+    }
+    setTimeout(connect, RECONNECT_MS);
+  };
 })();
 
 const fpsEl = document.getElementById('fps');
 if (params.get('fps') === '1') fpsEl.style.display = 'block';
 let frames = 0, fpsT = performance.now(), last = performance.now();
 
+function updateTempleCamera() {
+  camera.position.copy(CAM);
+  camera.lookAt(LOOK);
+  camera.rotation.z = 0;
+  if (Math.abs(camera.fov - 50) > 0.02) {
+    camera.fov = 50;
+    camera.updateProjectionMatrix();
+  }
+  if (coupletL && coupletL.style.opacity !== '1') coupletL.style.opacity = '1';
+  if (coupletR && coupletR.style.opacity !== '1') coupletR.style.opacity = '1';
+}
+
+const FRAME_INTERVAL_MS = 1000 / 30;
 renderer.setAnimationLoop(() => {
   const now = performance.now();
-  const dt = Math.min(0.1, (now - last) / 1000);
+  if (document.hidden) {
+    last = now;
+    return;
+  }
+  const elapsedMs = now - last;
+  if (elapsedMs < FRAME_INTERVAL_MS) return;
+  const dt = Math.min(0.1, elapsedMs / 1000);
   last = now;
 
   const { poses, removed } = stepWorld(world, now);
@@ -138,11 +369,10 @@ renderer.setAnimationLoop(() => {
 
   hall.update(now);
   fx.update(now, dt);
-  // Very slow sway: ≤ 1°, 24 s period.
-  const sway = Math.sin(now / 24000 * Math.PI * 2) * THREE.MathUtils.degToRad(1);
-  camera.position.copy(CAM).applyAxisAngle(THREE.Object3D.DEFAULT_UP, sway);
-  camera.lookAt(LOOK);
-  composer.render();
+  bodhiTree.update(now, dt);
+  updateTempleCamera(poses, now, dt);
+  if (composer) composer.render();
+  else renderer.render(scene, camera);
   labels.render(scene, camera);
 
   frames++;

@@ -35,15 +35,27 @@ const stamp = () => new Date().toLocaleTimeString('vi-VN', { hour12: false });
 const log = createLog();
 const lists = loadLists();
 const blocked = new Set(JSON.parse(fs.readFileSync(new URL('./data/blocked.json', import.meta.url), 'utf8')));
-const stage = new Stage({ max: Number(process.env.MAX_ACTORS || 150) });
-const counters = createCounters({ lists });
+const stage = new Stage({
+  max: Number(process.env.MAX_ACTORS || 150),
+  stayMinutes: Number(process.env.STAY_MINUTES || 5),
+});
+const counters = createCounters({ lists, boardSize: 12 });
 const stats = createStats({ lists });
 const pipeline = createPipeline({
   stage, lists, blocked, counters,
   dedupe: createDedupe(),
-  rules: [createBowRules({ stage, lists, stats }), createEffects(), counters, stats],
+  rules: [createBowRules({ stage, lists, stats, allowAllRealChat: true, emitWishRibbons: true }), createEffects(), counters, stats],
 });
-const srv = await startServer({ getSnapshot: () => pipeline.snapshot() });
+const srv = await startServer({
+  getSnapshot: () => pipeline.snapshot(),
+  onClientMsg: msg => {
+    if (msg?.t === 'setReadComments' && typeof msg.readComments === 'boolean') {
+      const msgs = pipeline.setScene({ readComments: msg.readComments });
+      srv.broadcast(msgs);
+      try { saveSceneConfig(); } catch {}
+    }
+  },
+});
 console.log(`[${stamp()}] Render + WS: http://127.0.0.1:${srv.port}`);
 
 // Per-source state (BR-10.5); admin shows it.
@@ -123,7 +135,7 @@ const ingest = e => {
   log.write(e);
   const msgs = pipeline.handle(e);
   srv.broadcast(msgs);
-  if (e.kind === 'gift' && msgs.length) notifyMaster(e);
+  if ((e.kind === 'gift' || (e.kind === 'chat' && e.src !== 'mock')) && msgs.length) notifyMaster(e);
   if (e.kind === 'end') writeStats();
 };
 const ticker = setInterval(() => srv.broadcast(pipeline.tick()), 1000);
@@ -211,7 +223,10 @@ const demo = {
 const saveSceneConfig = () => {
   try {
     const sc = pipeline.snapshot().scene;
-    fs.writeFileSync(SCENE_FILE, JSON.stringify({ scene: sc, demo: demo.config() }, null, 2) + '\n');
+    fs.writeFileSync(
+      SCENE_FILE,
+      JSON.stringify({ scene: sc, demo: demo.config(), stayMinutes: stage.getStayConfig().stayMinutes }, null, 2) + '\n'
+    );
   } catch {}
 };
 
@@ -220,6 +235,7 @@ try {
   if (fs.existsSync(SCENE_FILE)) {
     const saved = JSON.parse(fs.readFileSync(SCENE_FILE, 'utf8'));
     if (saved?.scene) pipeline.setScene(saved.scene);
+    if (Number(saved?.stayMinutes) >= 0.1) stage.setStayMinutes(Number(saved.stayMinutes));
   }
 } catch {}
 
@@ -237,6 +253,7 @@ if (!password) {
       password,
       ctx: {
         pipeline, stage, lists, blocked, stats, counters, status, demo, ingest,
+        initialAutoBalance: { enabled: Boolean(args.mock), targetRealUsers: 8, maxDemoRate: 0.20, giftRatio: 0.12, prayerRatio: 0.70 },
         broadcast: m => srv.broadcast(m),
         saveLists: l => saveLists(l),
         saveBlocked: b => saveBlocked(b),

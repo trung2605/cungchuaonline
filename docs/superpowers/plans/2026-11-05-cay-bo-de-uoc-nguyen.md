@@ -32,40 +32,40 @@
 ## Tasks
 
 ### Task 1: Server Wish Registry & Event Protocol
-- [ ] Viết test `test/bodhiTree.test.js` kiểm tra thêm lời ước nguyện, giới hạn tối đa dải lụa, tạo sự kiện `wish_ribbon` và snapshot.
-- [ ] Cập nhật `server/stage.js`: Bổ sung `wishes` map/queue, hàm `addWish(uid, name, wish, tier, diamonds)` và đưa vào `snapshot()`.
-- [ ] Cập nhật `server/bowRules.js`: Khi Phật tử niệm Phật, gửi lời cầu an hoặc dâng lễ, tự động kích hoạt lời ước vào Cây Bồ Đề.
-- [ ] Chạy `node --test test/bodhiTree.test.js` xác nhận đạt 100%.
+- [x] Viết test `test/bodhiTree.test.js` kiểm tra thêm lời ước nguyện, giới hạn tối đa dải lụa, tạo sự kiện `wish_ribbon` và snapshot.
+- [x] Cập nhật `server/stage.js`: Bổ sung `wishes` map/queue, hàm `addWish(uid, name, wish, tier, diamonds)` và đưa vào `snapshot()`.
+- [x] Cập nhật `server/bowRules.js`: Khi Phật tử niệm Phật, gửi lời cầu an hoặc dâng lễ, tự động kích hoạt lời ước vào Cây Bồ Đề.
+- [x] Chạy `node --test test/bodhiTree.test.js` xác nhận đạt 100%.
 
 ### Task 2: 3D Procedural Bodhi Tree & Wind Ribbon Engine
-- [ ] Tạo module `web/scene/bodhiTree.js`:
+- [x] Tạo module `web/scene/bodhiTree.js`:
   - Dựng chậu đá sen cổ, thân cây bồ đề cổ thụ xoắn rễ uy nghiêm tại góc sân chánh điện (`x: 5.6`, `z: -2.8`, `y: 0`).
   - Dựng các cành cây vươn nhẹ nhàng, tán lá bồ đề tim ngọc với ánh hào quang vàng kim ấm áp.
   - Tạo hệ thống hạt bụi sáng / đom đóm thần tiên lơ lửng quanh tán lá bồ đề.
-- [ ] Xây dựng bộ dựng Dải Lụa Đỏ Ước Nguyện:
+- [x] Xây dựng bộ dựng Dải Lụa Đỏ Ước Nguyện:
   - Tạo texture dải lụa đỏ thêu viền vàng, chữ thư pháp tên Phật tử + lời ước.
   - Geometry dải lụa nhiều đốt uốn lượn tự nhiên theo sóng gió (sin wave physics).
   - Hàm `flyRibbon({ name, wish, tier, fromPos })` tạo hoạt cảnh dải lụa phát sáng bay từ vị trí người lễ lượn sóng lên cành bồ đề.
-- [ ] Tích hợp `bodhiTree` vào `web/scene/hall.js` hoặc `web/main.js`.
+- [x] Tích hợp `bodhiTree` vào `web/scene/hall.js` hoặc `web/main.js`.
 
 ### Task 3: Sacred Wind Chime Audio & Ribbon Sound Effects
-- [ ] Bổ sung âm thanh phong linh / chuông gió thánh thót trong `web/scene/audio.js` (`audio.windChime()`).
-- [ ] Kích hoạt âm thanh khi dải lụa vừa chạm và buộc vào cành cây bồ đề.
+- [x] Bổ sung âm thanh phong linh / chuông gió thánh thót trong `web/scene/audio.js` (`audio.windChime()`).
+- [x] Kích hoạt âm thanh khi dải lụa vừa chạm và buộc vào cành cây bồ đề.
 
 ### Task 4: UI Wish Ribbon Pill & Inspection View
-- [ ] Cập nhật `web/index.html` và `web/hud.js`:
+- [x] Cập nhật `web/index.html` và `web/hud.js`:
   - Thêm huy hiệu trang nhã `🌳 Cây Bồ Đề: [N] Dải Lụa` trên HUD.
   - Popup danh sách lời ước gần nhất khi người xem muốn đọc các điều ước tốt lành.
-- [ ] Cập nhật góc máy chiêm bái Cây Bồ Đề mềm mại qua GSAP camera transition.
+- [x] Cập nhật góc máy chiêm bái Cây Bồ Đề mềm mại qua GSAP camera transition.
 
 ### Task 5: Admin Tổng Management & Simulation Controls
-- [ ] Thêm cụm điều khiển Cây Bồ Đề trong `AdminTong/index.html` và `AdminTong/public/js/admin.js`:
+- [x] Thêm cụm điều khiển Cây Bồ Đề trong `AdminTong/index.html` và `AdminTong/public/js/admin.js`:
   - Thống kê số dải lụa trên cây bồ đề.
   - Nút "Treo Dải Lụa Ước Nguyện (Mẫu)".
   - Nút "Làm Mới Cây Bồ Đề".
-- [ ] Cập nhật `server/admin.js` và `api/index.js` hỗ trợ các route `/api/bodhi/wish`, `/api/bodhi/clear`.
+- [x] Cập nhật `server/admin.js` và `api/index.js` hỗ trợ các route `/api/bodhi/wish`, `/api/bodhi/clear`.
 
 ### Task 6: End-to-End Verification, Test Suite & Deployment
-- [ ] Chạy toàn bộ test suite `node --test` đảm bảo 100% pass.
-- [ ] Khởi động test server, kiểm tra tải trang `/chua`, kiểm tra sự kiện dải lụa bay và đung đưa trên trình duyệt.
-- [ ] Commit và push lên `master` và `main` để triển khai tự động lên Vercel.
+- [x] Chạy toàn bộ test suite `node --test` đảm bảo 100% pass.
+- [x] Khởi động test server, kiểm tra tải trang `/chua`, kiểm tra sự kiện dải lụa bay và đung đưa trên trình duyệt.
+- [x] Commit và push lên `master` và `main` để triển khai tự động lên Vercel.

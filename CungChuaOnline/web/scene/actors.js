@@ -27,10 +27,40 @@ const emberMat = new THREE.MeshBasicMaterial({ color: 0xff6a1a });
 const trayMat = std(0xb8862e, { metalness: 0.8, roughness: 0.35 });
 const lotusMat = std(0xf49ac0, { emissive: 0x3a0c1e, roughness: 0.5 });
 
+const SHARED_ACTOR_MATS = new Set([
+  skinMat,
+  hairMat,
+  pantsMat,
+  ...robeMats,
+  ...robeTier1Mats,
+  ...robeTier2Mats,
+  stickMat,
+  emberMat,
+  trayMat,
+  lotusMat,
+]);
+
+function disposeActorHierarchy(root) {
+  if (!root) return;
+  root.traverse(obj => {
+    if (obj.geometry && typeof obj.geometry.dispose === 'function') {
+      obj.geometry.dispose();
+    }
+    if (obj.material) {
+      const mats = Array.isArray(obj.material) ? obj.material : [obj.material];
+      for (const m of mats) {
+        if (m && !SHARED_ACTOR_MATS.has(m) && typeof m.dispose === 'function') {
+          m.dispose();
+        }
+      }
+    }
+  });
+}
+
 function part(geo, mat, parent, x = 0, y = 0) {
   const m = new THREE.Mesh(geo, mat);
   m.position.set(x, y, 0);
-  m.castShadow = true;
+  m.castShadow = false;
   parent.add(m);
   return m;
 }
@@ -233,6 +263,7 @@ export async function createActors(scene) {
     if (!e) return;
     clearTimeout(e.bubbleTimer);
     e.label.element.remove();
+    disposeActorHierarchy(e.holder);
     e.holder.removeFromParent();
     live.delete(id);
   }
@@ -313,6 +344,60 @@ export async function createActors(scene) {
       }
     },
     actor: id => live.get(id)?.actor,
+    getPos(id) {
+      const e = live.get(id);
+      if (!e) return null;
+      return {
+        id,
+        x: e.holder.position.x,
+        y: e.holder.position.y,
+        z: e.holder.position.z,
+        rotY: e.holder.rotation.y,
+        tier: e.actor.tier || 0,
+        diamonds: e.actor.diamonds || 0,
+        name: e.actor.name || '',
+        hasBubble: e.bubbleEl.style.display !== 'none',
+      };
+    },
+    getCameraFocusActor(poses, now) {
+      let best = null;
+      let bestScore = -1;
+      for (const [id, p] of poses) {
+        const e = live.get(id);
+        if (!e) continue;
+        const hasBubble = e.bubbleEl.style.display !== 'none';
+        const hasHalo = (e.haloUntil || 0) > now;
+        const isRecent = (e.activeUntil || 0) > now;
+        const tier = e.actor.tier || 0;
+        const isReal = id && !String(id).startsWith('bot_') && !String(id).startsWith('seed_');
+        let score = 0;
+        if (hasBubble) score += 120;
+        if (hasHalo) score += 100;
+        if (p.phase === 'altar') score += 75;
+        else if (p.phase === 'enter') score += 65;
+        if (isRecent) score += 50;
+        score += tier * 30;
+        if (isReal) score += 20;
+        // Slight deterministic jitter so different worshippers get spotlighted over time
+        score += (Math.sin(now / 4500 + e.seed) + 1) * 8;
+        if (score > bestScore) {
+          bestScore = score;
+          best = {
+            id,
+            phase: p.phase,
+            spot: p.spot,
+            x: e.holder.position.x,
+            y: e.holder.position.y,
+            z: e.holder.position.z,
+            rotY: e.holder.rotation.y,
+            tier,
+            hasBubble,
+            hasHalo,
+          };
+        }
+      }
+      return best;
+    },
     // Applies poses; returns how many bows started this frame (wood block sound).
     update(poses, now, dt) {
       let bowsStarted = 0;

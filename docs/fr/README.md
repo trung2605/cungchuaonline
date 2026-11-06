@@ -129,3 +129,19 @@ admin/index.html                                                        FR-09
 docs/runbook.md                                                         FR-08
 test/*.test.js
 ```
+
+## Báo cáo đối chiếu kiểm thử tự động (100% Pass — 193/193 Tests)
+
+| Hạng mục / FR | Tài liệu `test.md` | File kiểm thử tự động | Trạng thái |
+|---|---|---|---|
+| **FR-01** Nền tảng & Kết nối | [FR-01/test.md](FR-01-nen-tang-va-ket-noi/test.md) (`TC-01.1..01.8`) | `test/server.test.js`, `test/log.test.js`, `test/mock.test.js`, `test/tiktok.test.js` | ✅ 100% Pass |
+| **FR-02** Chuẩn hóa & Chống trùng | [FR-02/test.md](FR-02-chuan-hoa-chong-trung/test.md) (`TC-02.1..02.13`) | `test/mapTiktok.test.js`, `test/dedupe.test.js` | ✅ 100% Pass |
+| **FR-03** Lọc nội dung & TTS tiếng Việt | [FR-03/test.md](FR-03-loc-noi-dung/test.md) (`TC-03.1..03.13`) | `test/filter.test.js`, `test/lists.test.js` | ✅ 100% Pass |
+| **FR-04** Lên chánh điện & Luật lạy | [FR-04/test.md](FR-04-len-chanh-dien/test.md) (`TC-04.1..04.23`) | `test/stage.test.js`, `test/bowRules.test.js`, `test/pipeline.test.js` | ✅ 100% Pass |
+| **FR-05** Hiệu ứng quà & Like | [FR-05/test.md](FR-05-hieu-ung-qua-like/test.md) (`TC-05.1..05.11`) | `test/effects.test.js` | ✅ 100% Pass |
+| **FR-06** Bộ đếm, Bảng tri ân & Thông báo | [FR-06/test.md](FR-06-bo-dem-thong-bao/test.md) (`TC-06.1..06.9`) | `test/counters.test.js` | ✅ 100% Pass |
+| **FR-07** Render 3D, Reducer, ActorFSM & Credits | [FR-07/test.md](FR-07-render-3d/test.md) (`TC-07.1..07.19`) | `test/bodhiTree.test.js`, `test/fullDocumentationAndBk.test.js` | ✅ 100% Pass |
+| **FR-08** Phát live & Vận hành | [FR-08/test.md](FR-08-phat-live-van-hanh/test.md) (`TC-08.1..08.8`) | `test/prune.test.js`, `test/vercel.test.js` | ✅ 100% Pass |
+| **FR-09** Admin UI, Thống kê & Chống XSS | [FR-09/test.md](FR-09-admin/test.md) (`TC-09.1..09.16`) | `test/admin.test.js`, `test/stats.test.js`, `test/masterAdmin.test.js`, `test/fullDocumentationAndBk.test.js` | ✅ 100% Pass |
+| **FR-10** Nguồn dự phòng TikFinity | [FR-10/test.md](FR-10-nguon-du-phong/test.md) (`TC-10.1..10.5`) | `test/mapTikfinity.test.js`, `test/tikfinityAdapter.test.js`, `test/pipeline.test.js` | ✅ 100% Pass |
+| **BK vs Non-BK & PK vs Non-PK** | Đồng bộ `CungChuaOnline/` (BK) & Root (Non-BK), PK (`CuocDuaKyThu`, `dai-chien`) & Non-PK | `test/fullDocumentationAndBk.test.js`, `test/race.test.js`, `test/trendEngine.test.js` | ✅ 100% Pass |

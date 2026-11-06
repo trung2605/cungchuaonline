@@ -223,8 +223,8 @@ export async function startRaceAdmin({ port = 8790, host = '127.0.0.1', password
       rewardConfig: stage.getRewardConfig?.() ?? { distanceMultiplier: 1, speedMultiplier: 1, boostDurationMultiplier: 1, chestTargetOverride: 0, turboEveryLikes: 500, preset: 'standard' },
       giftChest: stage.getGiftChest?.() ?? { level: 1, currentDiamonds: 0, targetDiamonds: 25, remaining: 25, pct: 0 },
       autoBalance: evaluateAutoBalance(false),
-      demo: demo.state(),
-      demoConfig: demo.config(),
+      demo: demo.state?.() ?? { on: false, rate: null },
+      demoConfig: demo.config?.() ?? demo.state?.() ?? { on: false, rate: null },
       config: ctx.getConfig(),
     }),
 

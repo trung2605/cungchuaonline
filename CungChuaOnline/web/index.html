@@ -13,7 +13,10 @@
 { "imports": {
   "three": "/vendor/three/build/three.module.js",
   "three/addons/": "/vendor/three/examples/jsm/",
-  "@pixiv/three-vrm": "/vendor/three-vrm/lib/three-vrm.module.js"
+  "@pixiv/three-vrm": "/vendor/three-vrm/lib/three-vrm.module.js",
+  "gsap": "/vendor/gsap/index.js",
+  "canvas-confetti": "/vendor/canvas-confetti/dist/confetti.module.mjs",
+  "simplex-noise": "/vendor/simplex-noise/dist/esm/simplex-noise.js"
 } }
 </script>
 <style>
@@ -64,6 +67,27 @@
     text-shadow: 0 2px 4px rgba(0, 0, 0, .9);
   }
   #guide .tier:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
+  #toggle-chua-bgm, #toggle-bodhi-view {
+    width: 100%; padding: 9px 12px; font-family: inherit;
+    font-size: 16.5px; font-weight: 700; color: var(--gilt-bright);
+    text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    cursor: pointer; pointer-events: auto;
+    transition: transform 0.15s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+  #toggle-chua-bgm:hover, #toggle-bodhi-view:hover { border-color: #ffe082; transform: translateY(-1px); }
+  #toggle-bodhi-view {
+    background: linear-gradient(180deg, rgba(136, 19, 28, .92), rgba(62, 8, 12, .95));
+    border-color: rgba(250, 204, 21, .82);
+  }
+  #toggle-bodhi-view.active {
+    border-color: #fde047;
+    box-shadow: 0 0 18px rgba(250, 204, 21, .5), 0 8px 20px rgba(0, 0, 0, .75);
+  }
+  #bodhi-wish-count {
+    display: inline-block; padding: 1px 7px; margin: 0 2px; border-radius: 999px;
+    background: rgba(250, 204, 21, .22); border: 1px solid rgba(250, 204, 21, .75);
+    color: #fef08a; font-variant-numeric: tabular-nums;
+  }
 
   /* Consolidated into #guide & #altar-cards to eliminate redundant boxes */
   #prayers { display: none; }
@@ -86,20 +110,22 @@
   #namo.bump span { animation: bump 600ms var(--ease-out); }
   @keyframes bump { 30% { transform: scale(1.16); color: #fff2c4; } }
 
-  #board { width: 100%; padding: 13px 14px; }
+  #board { width: 100%; min-height: 365px; padding: 14px 14px 16px; display: flex; flex-direction: column; }
   #board h3 {
-    margin: 0 0 8px; padding-bottom: 7px; text-align: center;
+    margin: 0 0 10px; padding-bottom: 8px; text-align: center;
     color: var(--gilt-bright); letter-spacing: 0.8px; font-size: 23.5px; font-weight: 700;
     border-bottom: 2px solid var(--gilt-line);
     text-shadow: 0 2px 4px rgba(0, 0, 0, .85);
   }
-  #board ol { margin: 0; padding-left: 25px; font-variant-numeric: tabular-nums; }
+  #board ol { margin: 0; padding-left: 26px; font-variant-numeric: tabular-nums; flex: 1; }
   #board li {
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    line-height: 1.46; color: var(--gilt-bright); font-size: 21.5px; font-weight: 700;
+    line-height: 1.52; padding: 3px 0; border-bottom: 1px dashed rgba(240, 202, 114, .18);
+    color: var(--gilt-bright); font-size: 21.5px; font-weight: 700;
   }
+  #board li:last-child { border-bottom: none; }
   #board li::marker { color: var(--gilt-bright); font-weight: 700; }
-  #board .empty-board { font-size: 21px; font-weight: 700; color: var(--gilt-bright); text-align: center; line-height: 1.32; padding: 4px 2px; }
+  #board .empty-board { font-size: 21px; font-weight: 700; color: var(--gilt-bright); text-align: center; line-height: 1.38; padding: 14px 4px; margin: auto 0; }
 
   #donor { width: 100%; }
   #donor .card {
@@ -156,16 +182,16 @@
   .card span { font-size: 21px; font-weight: 700; color: var(--gilt-bright); }
 
   #banner {
-    left: 50%; top: 822px; translate: -50% 0; max-width: 460px; padding: 11px 22px;
-    font-size: 24px; font-weight: 700; color: var(--gilt-bright); text-align: center;
+    left: 50%; bottom: 135px; top: auto; translate: -50% 0; max-width: 480px; padding: 11px 22px;
+    font-size: 23px; font-weight: 700; color: var(--gilt-bright); text-align: center;
     opacity: 0; transform: translateY(8px) scale(.98);
     transition: opacity var(--out) ease-in, transform var(--out) ease-in; pointer-events: none;
   }
   #banner.on { opacity: 1; transform: none; transition: opacity var(--in) var(--ease-out), transform var(--in) var(--ease-out); }
 
   #voice-toast {
-    left: 50%; top: 822px; translate: -50% 0; width: 470px; max-width: 470px; padding: 12px 20px;
-    font-size: 22.5px; font-weight: 700; color: var(--gilt-bright); text-align: center;
+    left: 50%; bottom: 135px; top: auto; translate: -50% 0; width: 500px; max-width: 500px; padding: 12px 20px;
+    font-size: 22px; font-weight: 700; color: var(--gilt-bright); text-align: center;
     opacity: 0; transform: translateY(8px) scale(.97);
     background: linear-gradient(180deg, rgba(64, 20, 6, .96), rgba(26, 7, 2, .96));
     border: 2px solid rgba(255, 218, 118, .92); border-radius: 20px;
@@ -213,7 +239,91 @@
     text-shadow: 0 2px 4px rgba(0, 0, 0, .85);
     box-shadow: 0 8px 20px rgba(0, 0, 0, .7); transition: opacity .6s;
   }
-  #sound { right: 24px; bottom: 24px; padding: 14px 24px; font-size: 22px; font-weight: 700; display: none; color: var(--gilt-bright); font-family: inherit; cursor: pointer; }
+
+  /* ==========================================================================
+     SACRED BODHI TREE 3D SILK RIBBON TAGS & FLOATING SCROLL DRAWER
+     ========================================================================== */
+  .bodhi-tree-title-tag {
+    padding: 5px 14px; border-radius: 999px;
+    background: linear-gradient(180deg, rgba(88, 14, 14, .95), rgba(38, 6, 6, .96));
+    border: 2px solid #facc15;
+    box-shadow: 0 0 18px rgba(250, 204, 21, .45), 0 6px 16px rgba(0, 0, 0, .8);
+    color: #fef08a; font-size: 19px; font-weight: 700; letter-spacing: 0.5px;
+    white-space: nowrap; text-shadow: 0 2px 4px #000;
+  }
+  .bodhi-tree-title-tag .bodhi-count-inline {
+    display: inline-block; margin-left: 5px; padding: 1px 8px; border-radius: 999px;
+    background: #facc15; color: #450a0a; font-size: 17px; font-weight: 700;
+  }
+  .bodhi-wish-tag {
+    padding: 5px 11px; border-radius: 10px;
+    background: linear-gradient(180deg, rgba(168, 20, 28, .94), rgba(88, 8, 14, .96));
+    border: 1.5px solid #fde047;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, .75);
+    color: #fffbeb; text-align: center; white-space: nowrap;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, .9);
+  }
+  .bodhi-wish-tag.gold {
+    background: linear-gradient(180deg, rgba(180, 83, 9, .96), rgba(113, 42, 8, .96));
+    border: 2px solid #fef08a;
+    box-shadow: 0 0 14px rgba(250, 204, 21, .5), 0 4px 14px rgba(0, 0, 0, .8);
+  }
+  .bodhi-wish-tag b {
+    display: block; font-size: 16.5px; font-weight: 700; color: #fef08a;
+    max-width: 175px; overflow: hidden; text-overflow: ellipsis;
+  }
+  .bodhi-wish-tag span {
+    display: block; font-size: 15px; font-weight: 700; color: #fffbeb;
+    max-width: 185px; overflow: hidden; text-overflow: ellipsis;
+  }
+
+  #bodhi-ribbon-toast {
+    right: 12px; top: 755px; width: 268px; padding: 11px 13px;
+    background: linear-gradient(180deg, rgba(145, 18, 26, .95), rgba(68, 7, 12, .96));
+    border: 2px solid #facc15; border-radius: 16px;
+    box-shadow: 0 0 22px rgba(250, 204, 21, .38), 0 10px 24px rgba(0, 0, 0, .78);
+    color: #fffbeb; pointer-events: none; box-sizing: border-box;
+    opacity: 0; transform: translateX(24px) scale(0.96);
+    transition: opacity 360ms var(--ease-out), transform 360ms var(--ease-out);
+  }
+  #bodhi-ribbon-toast.on { opacity: 1; transform: none; }
+  #bodhi-ribbon-toast .ribbon-toast-hdr {
+    font-size: 16px; font-weight: 700; color: #fde047; margin-bottom: 4px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  #bodhi-ribbon-toast .ribbon-toast-name {
+    font-size: 20px; font-weight: 700; color: #ffffff;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  #bodhi-ribbon-toast .ribbon-toast-wish {
+    font-size: 18px; font-weight: 700; color: #fef08a; line-height: 1.28; margin-top: 2px;
+  }
+
+  #bodhi-drawer {
+    right: 12px; top: 880px; width: 268px; max-height: 410px; padding: 12px 13px;
+    background: linear-gradient(180deg, rgba(72, 12, 14, .95), rgba(28, 5, 6, .97));
+    border: 2px solid #facc15; border-radius: 16px;
+    box-shadow: 0 0 26px rgba(250, 204, 21, .35), 0 12px 28px rgba(0, 0, 0, .82);
+    box-sizing: border-box; display: none; flex-direction: column; gap: 8px;
+    pointer-events: auto;
+  }
+  #bodhi-drawer.open { display: flex; }
+  #bodhi-drawer h4 {
+    margin: 0; padding-bottom: 6px; text-align: center;
+    font-size: 18.5px; font-weight: 700; color: #fef08a;
+    border-bottom: 1.5px solid rgba(250, 204, 21, .55);
+  }
+  #bodhi-wish-list {
+    margin: 0; padding: 0; list-style: none; overflow-y: auto; max-height: 330px;
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  #bodhi-wish-list li {
+    padding: 6px 9px; border-radius: 10px;
+    background: rgba(153, 27, 27, .55); border: 1px solid rgba(250, 204, 21, .45);
+    font-size: 16.5px; line-height: 1.28; color: #fffbeb;
+  }
+  #bodhi-wish-list li b { color: #fde047; display: block; font-size: 17px; }
+  #sound, #toggle-comment-tts { display: none !important; pointer-events: none !important; }
   @media (prefers-reduced-motion: reduce) {
     #banner, #banner.on { transform: none; transition: opacity .2s; }
     .card, #donor .card, #namo.bump span { animation: none; }
@@ -231,14 +341,16 @@
   <!-- Left Safe-Zone Flex Column (Never Overlaps!) -->
   <div id="left-col">
     <div id="guide" class="pill">
-      <h3>NGHI LỄ DÂNG LỄ</h3>
-      <div class="tier">💬 Gõ "Nam Mô": Quỳ lễ</div>
-      <div class="tier">❤️ Thả Tim: Dâng trầm</div>
-      <div class="tier">🌹 1 💎 (Hoa Hồng, TikTok): Dâng hương</div>
-      <div class="tier">🪷 2–5 💎 (Hoa Sen, Tim Tay): Hoa đăng</div>
-      <div class="tier">🌺 10–15 💎 (Rosa, Tim Đôi): Áo Vàng</div>
-      <div class="tier">🏮 20+ 💎 (Nước Hoa, Bánh Vòng): Chuông lớn</div>
+      <h3 id="chua-guide-title">NGHI LỄ DÂNG LỄ</h3>
+      <div class="tier" data-chua-tier="namo">💬 Gõ "Nam Mô": Quỳ lễ</div>
+      <div class="tier" data-chua-tier="like">❤️ Thả Tim: Dâng trầm</div>
+      <div class="tier" data-chua-tier="0">🌹 1 💎 (Hoa Hồng, TikTok): Dâng hương</div>
+      <div class="tier" data-chua-tier="1b">🪷 2–5 💎 (Hoa Sen, Tim Tay): Hoa đăng</div>
+      <div class="tier" data-chua-tier="1">🌺 10–15 💎 (Rosa, Tim Đôi): Áo Vàng</div>
+      <div class="tier" data-chua-tier="2">🏮 20+ 💎 (Nước Hoa, Bánh Vòng): Chuông lớn</div>
     </div>
+    <button id="toggle-chua-bgm" class="pill" type="button" title="Bấm để đổi nhạc Chánh Điện (Remix / Cổ Phong / Handpan / Thiền)">🎵 🔥 Nam Mô A Di Đà Phật Remix</button>
+    <button id="toggle-bodhi-view" class="pill" type="button" title="Bấm để chiêm bái Cây Bồ Đề Ước Nguyện &amp; xem các dải lụa đỏ">🌳 Cây Bồ Đề: <span id="bodhi-wish-count">8</span> Dải Lụa</button>
     <div id="prayers" class="pill">
       <h3>SỚ CẦU NGUYỆN</h3>
       <ul id="prayer-list">
@@ -263,11 +375,21 @@
     <div id="donor"></div>
   </div>
 
+  <div id="bodhi-ribbon-toast">
+    <div class="ribbon-toast-hdr">🧧 DẢI LỤA ƯỚC NGUYỆN MỚI</div>
+    <div class="ribbon-toast-name" id="bodhi-toast-name">Phật Tử Thiện Tâm</div>
+    <div class="ribbon-toast-wish" id="bodhi-toast-wish">Cầu Gia Đạo Bình An</div>
+  </div>
+  <div id="bodhi-drawer">
+    <h4>🌳 DẢI LỤA CÂY BỒ ĐỀ</h4>
+    <ul id="bodhi-wish-list"></ul>
+  </div>
   <div id="banner" class="pill"></div>
   <div id="voice-toast"><span class="wave"><i></i><i></i><i></i></span><span id="voice-text"></span></div>
   <div id="credit"></div>
   <div id="fps"></div>
   <button id="sound" class="pill">🔊 Bật âm thanh</button>
+  <button id="toggle-comment-tts" class="pill off" type="button" title="Bật / Tắt giọng đọc nội dung bình luận">🔇 Đọc bình luận: TẮT</button>
 </div>
 <script type="module" src="main.js"></script>
 </body>

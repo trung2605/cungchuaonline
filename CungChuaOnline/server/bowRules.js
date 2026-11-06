@@ -55,7 +55,15 @@ export function giftOffering(giftName = '', total = 0) {
   return 'dâng hoa';
 }
 
-export function createBowRules({ stage, lists, stats = null, now = Date.now, cooldownMs = 600_000 }) {
+export function createBowRules({
+  stage,
+  lists,
+  stats = null,
+  now = Date.now,
+  cooldownMs = 600_000,
+  allowAllRealChat = false,
+  emitWishRibbons = false,
+}) {
   const lastFree = new Map(); // uid -> ts of last free bow; gifts never touch it
 
   return {
@@ -71,16 +79,42 @@ export function createBowRules({ stage, lists, stats = null, now = Date.now, coo
       };
       if (e.kind === 'gift') {
         const total = e.diamonds * e.repeat;
-        const n = Math.min(e.repeat, 10);
-        return granted(n, stage.enter(e.uid, cleanName(e.name, lists), giftTier(total), n, {
+        const rc = stage.rewardConfig || {};
+        const bowMult = Math.max(1, Number(rc.bowMultiplier) || 1);
+        const n = Math.min(e.repeat * bowMult, 25);
+        const name = cleanName(e.name, lists);
+        const t1Min = Number(rc.tier1MinDiamonds) || 10;
+        const t2Min = Number(rc.tier2MinDiamonds) || 1000;
+        const tier = total >= t2Min ? 2 : total >= t1Min ? 1 : 0;
+        const wishText = total >= Math.min(20, t2Min) ? 'Công Đức Vô Lượng' : total >= 2 ? 'Cầu Tài Lộc Hanh Thông' : 'Cầu Bình An & Sức Khỏe';
+        const msgs = granted(n, stage.enter(e.uid, name, tier, n, {
           addDiamonds: total,
           visit: true,
           src: e.src,
         }));
+        if (emitWishRibbons && stage.addWish) {
+          msgs.push(...stage.addWish({
+            uid: e.uid,
+            name,
+            wish: `${wishText} (${translateGiftName(e.giftName)})`,
+            tier,
+            diamonds: total,
+          }));
+        }
+        return msgs;
       }
       if (e.kind === 'join') {
         // Real viewers joining the livestream immediately enter the 3D hall and are welcomed by name
-        if (e.src && e.src !== 'mock') {
+        if (e.src && e.src !== 'mock' && !stage.has(e.uid)) {
+          return granted(1, stage.enter(e.uid, cleanName(e.name, lists), 0, 1, {
+            src: e.src,
+          }));
+        }
+        return [];
+      }
+      if (e.kind === 'like') {
+        // Real viewers tapping likes who are not yet in the hall also enter and queue to bow
+        if (allowAllRealChat && e.src && e.src !== 'mock' && !stage.has(e.uid)) {
           return granted(1, stage.enter(e.uid, cleanName(e.name, lists), 0, 1, {
             src: e.src,
           }));
@@ -92,14 +126,31 @@ export function createBowRules({ stage, lists, stats = null, now = Date.now, coo
       const out = [];
       const t = now();
       const last = lastFree.get(e.uid);
-      if (isTrigger(e.text, lists) && (last === undefined || t - last >= cooldownMs)) {
+      const isReal = Boolean(e.src && e.src !== 'mock');
+      const bubble = cleanBubble(e.text, lists);
+      const effectiveCooldown = allowAllRealChat && isReal
+        ? (stage.has(e.uid) ? 5_000 : 0)
+        : cooldownMs;
+      // Real viewers who write ANY non-sensitive comment (when allowAllRealChat is enabled) or anyone matching trigger words enter the hall
+      if ((isTrigger(e.text, lists) || (allowAllRealChat && isReal && bubble)) && (last === undefined || t - last >= effectiveCooldown)) {
         lastFree.set(e.uid, t);
-        out.push(...granted(1, stage.enter(e.uid, cleanName(e.name, lists), 0, 1, {
-          intent: detectIntent(e.text, lists) ?? undefined,
+        const name = cleanName(e.name, lists);
+        const intent = detectIntent(e.text, lists) ?? undefined;
+        out.push(...granted(1, stage.enter(e.uid, name, 0, 1, {
+          intent,
           src: e.src,
         })));
+        if (emitWishRibbons && stage.addWish && stage.rewardConfig?.wishRibbonOnChat !== false) {
+          const wish = intent || (bubble && bubble.length >= 4 && bubble.length <= 28 ? bubble : 'Cầu Gia Đạo Bình An');
+          out.push(...stage.addWish({
+            uid: e.uid,
+            name,
+            wish,
+            tier: 0,
+            diamonds: 0,
+          }));
+        }
       }
-      const bubble = cleanBubble(e.text, lists);
       if (bubble) out.push(...stage.say(e.uid, bubble));
       else st?.noteFiltered();
       return out;
