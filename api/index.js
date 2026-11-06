@@ -314,6 +314,7 @@ async function initUnifiedRuntime() {
   const duaStatus = { tiktok: 'off', tikfinity: 'off', tiktokUser: currentTiktokUser };
   let tiktokAdapter = null;
   let TikTokLiveConnection = null;
+  let masterAdminRef = null;
 
   async function connectTiktokChannel(user) {
     const clean = String(user || '').trim().replace(/^@/, '');
@@ -332,6 +333,11 @@ async function initUnifiedRuntime() {
         e => {
           ingestChua(e);
           ingestDua(e);
+          for (const item of Array.isArray(e) ? e : [e]) {
+            if (item && (item.kind === 'chat' || item.kind === 'gift')) {
+              masterAdminRef?.trendEngine?.interact(item);
+            }
+          }
         },
         {
           signApiKey: process.env.EULER_KEY || undefined,
@@ -644,6 +650,7 @@ async function initUnifiedRuntime() {
       'cuoc-dua-ky-thu': `http://127.0.0.1:${duaAdmin.port}`,
     },
   });
+  masterAdminRef = masterAdmin;
 
   return {
     authHeader,

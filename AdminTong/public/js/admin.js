@@ -1309,6 +1309,7 @@ function syncAdminCustomEditorFields(projectId) {
   if ($('adminCustomRuleNote')) $('adminCustomRuleNote').value = custom.ruleNote || '';
   if ($('adminCustomBlessing')) $('adminCustomBlessing').value = custom.bonusBlessing || '';
   if ($('adminCustomMicroTitle')) $('adminCustomMicroTitle').value = custom.microGiftTitle || '';
+  if ($('adminCustomLookupText')) $('adminCustomLookupText').value = custom.customLookupText || '';
 }
 
 function renderGiftCatalogTable() {
@@ -2318,6 +2319,7 @@ window.addEventListener('DOMContentLoaded', () => {
       ruleNote: ($('adminCustomRuleNote')?.value || '').trim(),
       bonusBlessing: ($('adminCustomBlessing')?.value || '').trim(),
       microGiftTitle: ($('adminCustomMicroTitle')?.value || '').trim(),
+      customLookupText: ($('adminCustomLookupText')?.value || '').trim(),
     };
     await api('POST', '/api/trends/custom-data', { projectId, patch });
     showToast(`💾 Đã lưu Kho Dữ Liệu Custom & Công thức thuật toán cho #${projectId}!`);

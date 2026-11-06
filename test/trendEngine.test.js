@@ -100,8 +100,20 @@ test('createTrendEngine allows customizing data tables & formulas per website at
     ruleNote: 'Công thức Can Chi Custom 2026',
     bonusBlessing: 'Lộc vàng ngập tràn cả năm!',
     microGiftTitle: 'SIÊU QUẺ KIM CƯƠNG 1💎',
+    customLookupText: '1989 = Tuổi Kỷ Tỵ Đại Lâm Mộc: Tháng 10 mở kho vàng 9999 | Đỉnh Cao 100/100',
   });
   assert.equal(updated.ok, true);
+
+  const outLookup = engine.interact({
+    projectId: 'gieo-que',
+    nickname: 'Hoàng Nam',
+    text: '1989 Nam xin quẻ',
+    type: 'comment',
+    diamondCount: 0,
+  });
+  assert.equal(outLookup.event.result.matchedCustomKey, '1989');
+  assert.equal(outLookup.event.result.badge, 'Đỉnh Cao 100/100');
+  assert.ok(outLookup.event.result.detailText.includes('Tháng 10 mở kho vàng 9999'));
 
   const out = engine.interact({
     projectId: 'gieo-que',

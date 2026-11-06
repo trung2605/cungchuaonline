@@ -325,6 +325,61 @@ export const TREND_PROJECTS = [
 
 const PROJECT_ICONS = ['🔮', '💘', '🌌', '🐉', '⚔️', '📜', '🎰', '💰', '🐠', '🎆'];
 const PROJECT_THEMES = ['gold', 'rose', 'violet', 'emerald', 'crimson', 'amber', 'cyan', 'lime', 'teal', 'indigo'];
+const DEFAULT_LOOKUP_TABLES = {
+  1: [
+    '1998 = Tuổi Mậu Dần Thành Đầu Thổ: Năm 2026 mở vận tậu nhà, quý nhân phương Nam nâng đỡ | Đại Cát 98/100',
+    '2001 = Tuổi Tân Tỵ Bạch Lạp Kim: Tháng 8 âm lịch bứt phá tài chính, tình duyên nở hoa | Thượng Cát 96/100',
+    '2003 = Tuổi Quý Mùi Dương Liễu Mộc: Thi cử đỗ đạt, công việc thăng tiến vượt bậc | Đại Cát 97/100',
+    '1995 = Tuổi Ất Hợi Sơn Đầu Hỏa: Lộc kinh doanh hồng phát, gia đạo viên mãn | Đại Cát 98/100',
+  ].join('\n'),
+  2: [
+    'minh + lan = Cặp đôi Kim - Mộc tương trợ, cưới nhau về tiền vào như nước | Hợp 99%',
+    'hung + thao = Duyên tiền định 3 kiếp, sóng gió nào cũng nắm tay vượt qua | Hợp 98%',
+    'tuan + mai = Tâm đầu ý hợp, năm 2026 có tin vui hỷ sự | Hợp 97%',
+  ].join('\n'),
+  3: [
+    '26/05/1999 = Số Chủ Đạo 8 Nam Châm Tài Chính: Năm 2026 bùng nổ doanh thu và cơ hội làm chủ | Đỉnh Cao 99%',
+    '15/08/2001 = Số Chủ Đạo 8 Quyền Lực: Quý 3/2026 mở rộng sự nghiệp, quý nhân dẫn lối | Vượng Phát 97%',
+    '08/03/2001 = Số Chủ Đạo 6 Yêu Thương: Gia đạo viên mãn, tài chính tích lũy bền vững | Cát Tường 96%',
+  ].join('\n'),
+  4: [
+    'rong lua = Triệu hồi Hỏa Long Viêm Đế SSR: Hộ mệnh công danh rực sáng bốn phương | Lực Chiến 9999',
+    'ky lan = Triệu hồi Kỳ Lân Ngọc Bích SSR: Mang bình an và lộc quý nhân | Lực Chiến 9750',
+    'thanh long = Triệu hồi Thanh Long Hoàng Kim SSR: Đứng đầu bảng vàng thần thú | Lực Chiến 9999',
+  ].join('\n'),
+  5: [
+    '36 = Quê hương 36 Thanh Hóa địa linh nhân kiệt, hào khí Lam Sơn dẫn đầu bảng vàng | +200 Điểm',
+    '37 = Quê hương 37 Nghệ An ân tình sâu nặng, núi Hồng sông La rạng danh | +200 Điểm',
+    '29 = Thủ đô 29 Hà Nội ngàn năm văn hiến, trái tim cả nước tỏa sáng | +200 Điểm',
+    '59 = Thành phố 59 Sài Gòn năng động nghĩa tình, hòn ngọc Viễn Đông bứt phá | +200 Điểm',
+  ].join('\n'),
+  6: [
+    'minh tuan = Chữ Minh là trí tuệ sáng ngời, chữ Tuấn là hào kiệt xuất chúng | Ấn Rồng Vàng 99/100',
+    'bao ngoc = Chữ Bảo là quốc bảo trân quý, chữ Ngọc là viên ngọc sáng vô giá | Ấn Phượng Hoàng 99/100',
+    'khanh vy = Chữ Khánh là tiếng chuông báo hỷ, chữ Vy là thanh tao quý phái | Ấn Ngọc Bích 98/100',
+  ].join('\n'),
+  7: [
+    '6868 = Cặp đại thần tài Lộc Phát - Lộc Phát: Tiền tài nhân đôi, vạn sự đại cát | 10/10 Điểm',
+    '7939 = Ông Địa Lớn kết hợp Thần Tài Nhỏ: Khai trương hồng phát, giữ đất giữ vàng | 10/10 Điểm',
+    '8686 = Phát Lộc Song Hành: Dãy số vượng khí bậc nhất cho người kinh doanh | 10/10 Điểm',
+  ].join('\n'),
+  8: [
+    'no 100 don = Cây Kim Tiền rụng 100 thỏi vàng Kim Nguyên Bảo: Hôm nay đơn đi mỏi tay | Lộc Đỉnh 9999',
+    'my pham = Ngành làm đẹp & mỹ phẩm gặp vận Đào Hoa Lộc: Khách cũ quay lại, khách mới chốt nhanh | Vượng Lộc 98%',
+    'bds = Ngành Bất Động Sản gặp vận Thổ Sinh Kim: Chốt giao dịch lớn trong tháng | Đại Lộc 99%',
+  ].join('\n'),
+  9: [
+    'do dai hoc = Cá Koi Tancho Đỏ Trắng nhảy qua Vũ Môn: Đỗ Nguyện Vọng 1 điểm cao chót vót | Hóa Rồng 100%',
+    'thang chuc = Cá Koi Ogon Hoàng Kim vượt thác: Thăng chức tăng lương ngay quý tới | Hóa Rồng 99%',
+    'binh an = Cá Koi Kohaku Trường Thọ: Gia đình mạnh khỏe, tâm an vạn sự lành | An Lạc 99%',
+  ].join('\n'),
+  10: [
+    'sinh nhat = Đội hình 500 Drone xếp hình Bánh Kem & Vương Miện Vàng chúc mừng tuổi mới rực rỡ | Pháo Hoa VIP',
+    'hanh phuc = Đội hình 500 Drone xếp Trái Tim Đôi Ngân Hà chúc gia đình trăm năm hạnh phúc | Pháo Hoa Đại Lễ',
+    'dai thang = Đội hình 500 Drone xếp Ngôi Sao Chiến Thắng rực sáng bầu trời đêm | Pháo Hoa Hoàng Kim',
+  ].join('\n'),
+};
+
 for (let i = 0; i < TREND_PROJECTS.length; i++) {
   const p = TREND_PROJECTS[i];
   p.index = p.id;
@@ -335,6 +390,41 @@ for (let i = 0; i < TREND_PROJECTS.length; i++) {
   p.shortName = p.title.replace(/\s*3D$/i, '');
   p.tagline = p.subtitle;
   p.sceneMode = p.sceneType;
+  p.defaultCustomData.customLookupText = DEFAULT_LOOKUP_TABLES[p.id] || '';
+}
+
+export function parseCustomLookupTable(rawTableText = '') {
+  const rows = [];
+  const lines = String(rawTableText || '').split(/\r?\n/);
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith('#') || !trimmed.includes('=')) continue;
+    const eqIdx = trimmed.indexOf('=');
+    const keyRaw = trimmed.slice(0, eqIdx).trim();
+    const rest = trimmed.slice(eqIdx + 1).trim();
+    if (!keyRaw || !rest) continue;
+    const [answerRaw, metricRaw] = rest.split('|').map(s => s.trim());
+    rows.push({
+      patternRaw: keyRaw,
+      patternFolded: foldVi(keyRaw),
+      answer: answerRaw || rest,
+      metric: metricRaw || 'Khớp Kho Data',
+    });
+  }
+  return rows;
+}
+
+export function findCustomLookupMatch(rawComment = '', rawTableText = '') {
+  const foldedComment = foldVi(rawComment);
+  if (!foldedComment) return null;
+  const rows = parseCustomLookupTable(rawTableText);
+  for (const row of rows) {
+    if (!row.patternFolded) continue;
+    if (foldedComment === row.patternFolded || foldedComment.includes(row.patternFolded)) {
+      return row;
+    }
+  }
+  return null;
 }
 
 export function foldVi(str = '') {
@@ -963,20 +1053,40 @@ export function createTrendEngine({ initialCustomData = {} } = {}) {
 
     const baseScore = 80 + (hashStr(`${cleanName}:${cleanText}:${project.id}`) % 18);
     const computedScore = isMicroGift ? baseScore + totalGiftDiamonds * 25 : baseScore;
+    const customMatch = findCustomLookupMatch(cleanText, customData?.customLookupText || '');
+
     const resolvedBadge = isMicroGift
       ? (customData?.microGiftTitle || algoOut.badge)
-      : algoOut.badge;
-    const detailWithBlessing = customData?.bonusBlessing && !String(algoOut.replyText || '').includes(customData.bonusBlessing)
-      ? `${algoOut.replyText} (${customData.bonusBlessing})`
+      : (customMatch?.metric || algoOut.badge);
+
+    const baseDetail = customMatch
+      ? `📌 [Kho Data: "${customMatch.patternRaw}"] ${customMatch.answer} — ${algoOut.replyText}`
       : algoOut.replyText;
+
+    const detailWithBlessing = customData?.bonusBlessing && !String(baseDetail || '').includes(customData.bonusBlessing)
+      ? `${baseDetail} (${customData.bonusBlessing})`
+      : baseDetail;
+
+    const resolvedSpeech = customMatch
+      ? `${isMicroGift ? 'Cảm ơn món quà lộc phát! ' : ''}Giải mã dữ liệu cho ${cleanName}: ${customMatch.answer}.`
+      : algoOut.speechText;
+
+    const resolvedMetrics = Array.isArray(algoOut.metrics) ? [...algoOut.metrics] : [];
+    if (customMatch && resolvedMetrics.length > 0) {
+      resolvedMetrics[resolvedMetrics.length - 1] = {
+        label: 'Kho Data Custom',
+        value: customMatch.metric || 'Khớp 100%',
+      };
+    }
 
     const resultObj = {
       badge: resolvedBadge,
       headline: algoOut.headline,
       detailText: detailWithBlessing,
-      spokenText: algoOut.speechText,
-      metrics: algoOut.metrics || [],
+      spokenText: resolvedSpeech,
+      metrics: resolvedMetrics,
       score: computedScore,
+      matchedCustomKey: customMatch ? customMatch.patternRaw : null,
     };
 
     seq++;
@@ -1118,6 +1228,7 @@ export function createTrendEngine({ initialCustomData = {} } = {}) {
       ...(typeof patch.ruleNote === 'string' ? { ruleNote: patch.ruleNote.trim().slice(0, 240) } : {}),
       ...(typeof patch.bonusBlessing === 'string' ? { bonusBlessing: patch.bonusBlessing.trim().slice(0, 240) } : {}),
       ...(typeof patch.microGiftTitle === 'string' ? { microGiftTitle: patch.microGiftTitle.trim().slice(0, 120) } : {}),
+      ...(typeof patch.customLookupText === 'string' ? { customLookupText: patch.customLookupText.trim().slice(0, 12000) } : {}),
     };
     customDataByTrend.set(project.id, next);
     return { ok: true, trendId: project.id, projectId: project.slug, slug: project.slug, customData: next };

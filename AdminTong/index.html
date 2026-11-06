@@ -176,6 +176,9 @@
           <a class="btn sm teal" id="linkOpenDua3D" href="/dua/" target="_blank" rel="noopener" title="Mở toàn màn hình 3D Đi Bộ Xuyên Việt để phát TikTok LIVE">
             <i data-lucide="external-link"></i> Mở Xuyên Việt 3D
           </a>
+          <a class="btn sm rose" id="linkOpenTrends3D" href="/trends/gieo-que" target="_blank" rel="noopener" title="Mở Hệ Sinh Thái 10 Website 3D Bắt Trend TikTok Live (Thuật Toán Không Dùng AI)">
+            <i data-lucide="sparkles"></i> Mở 10 Web 3D Trend
+          </a>
           <button type="button" class="btn sm primary" id="btnToggle3DPreview" title="Xem trực tiếp 2 màn hình 3D ngay trong trang này mà không cần mở tab mới">
             <i data-lucide="monitor-play"></i> Xem 2 Màn Hình 3D
           </button>
@@ -1973,20 +1976,13 @@
         </div>
       </section>
     </main>
+  </div>
 
-    <!-- ==================================================================== -->
-    <!-- MAIN VIEW 4: 10 WEBSITE 3D TREND TIKTOK & THUẬT TOÁN (NO-AI)         -->
-    <!-- ==================================================================== -->
-    <main class="main-view" id="main-view-trends" aria-label="10 Website 3D Trend TikTok & Thuật Toán">
-      <div class="sub-nav" role="tablist">
-        <button type="button" class="sub-tab-btn active" data-parent="trends" data-sub="trends-catalog">
-          <i data-lucide="boxes"></i> 10 Website 3D Trend &amp; Bắn Thử Nhanh
-        </button>
-        <button type="button" class="sub-tab-btn" data-parent="trends" data-sub="trends-insights">
-          <i data-lucide="cpu"></i> Insight Comment TikTok &amp; Tùy Chỉnh Kho Data (No-AI)
-        </button>
-      </div>
-
+  <!-- ==================================================================== -->
+  <!-- MAIN TAB 4: 10 WEBSITE 3D TREND TIKTOK & THUẬT TOÁN (NO-AI)          -->
+  <!-- ==================================================================== -->
+  <div class="main-tab-view" id="main-view-trends" aria-label="10 Website 3D Trend TikTok & Thuật Toán">
+    <main class="content-area">
       <!-- SUB-TAB 4.1: 10 WEBSITE 3D TREND CATALOG & LIVE SIMULATOR -->
       <section class="sub-tab-panel active" id="sub-trends-catalog">
         <div class="card" style="margin-bottom: 18px; border-color: rgba(245, 185, 66, 0.45);">
@@ -2112,6 +2108,10 @@
               <div>
                 <label class="field-label">Danh hiệu vinh danh khi tặng Hoa Hồng 1💎</label>
                 <input id="adminCustomMicroTitle" type="text" class="input" placeholder="VD: QUẺ THƯỢNG THƯỢNG HOÀNG KIM (1💎)" />
+              </div>
+              <div>
+                <label class="field-label">Bảng Dữ Liệu Tra Cứu Custom (Mỗi dòng: Từ khóa/Format = Câu trả lời | Chỉ số)</label>
+                <textarea id="adminCustomLookupText" rows="5" class="input" style="font-family:var(--font-mono);font-size:12px;" placeholder="VD: 1998 = Tuổi Mậu Dần năm 2026 đại cát | 99/100"></textarea>
               </div>
               <button type="button" class="btn primary" id="btnSaveAdminCustomData">
                 <i data-lucide="save"></i> Lưu Cấu Hình Kho Dữ Liệu Thuật Toán

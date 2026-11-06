@@ -936,7 +936,8 @@ body.is-live-mode .stage-viewport {
   color: var(--studio-muted);
 }
 .sim-field input,
-.sim-field select {
+.sim-field select,
+.sim-field textarea {
   width: 100%;
   padding: 8px 10px;
   border-radius: 8px;
@@ -945,9 +946,11 @@ body.is-live-mode .stage-viewport {
   color: #fff;
   font-family: var(--font-sans);
   font-size: 12px;
+  resize: vertical;
 }
 .sim-field input:focus,
-.sim-field select:focus {
+.sim-field select:focus,
+.sim-field textarea:focus {
   outline: none;
   border-color: var(--accent);
 }

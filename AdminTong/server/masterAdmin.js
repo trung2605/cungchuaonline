@@ -137,21 +137,26 @@ export async function startMasterAdmin({
       if (body.kind === 'gift') {
         const doc = db.recordGift(body);
         trendEngine.interact({
-          nickname: body.nickname || body.userId || 'Khách TikTok',
+          uid: body.uid || body.userId || '',
+          nickname: body.name || body.nickname || body.userId || 'Khách TikTok',
           text: body.text || body.giftName || '',
           type: 'gift',
           giftName: body.giftName || 'Hoa Hồng',
           diamondCount: Number(body.diamonds ?? body.diamondCount ?? 1),
+          repeat: Number(body.repeat || 1),
+          src: body.src || 'tiktok',
         });
         return { ok: true, gift: doc };
       }
       const doc = db.recordEvent(body);
-      if (body.text || body.type === 'comment') {
+      if (body.text || body.kind === 'chat' || body.type === 'comment') {
         trendEngine.interact({
-          nickname: body.nickname || body.userId || 'Khách TikTok',
+          uid: body.uid || body.userId || '',
+          nickname: body.name || body.nickname || body.userId || 'Khách TikTok',
           text: body.text || '',
           type: 'comment',
           diamondCount: 0,
+          src: body.src || 'tiktok',
         });
       }
       return { ok: true, event: doc };
@@ -496,6 +501,7 @@ export async function startMasterAdmin({
 
   return {
     port: real,
+    trendEngine,
     close: () => new Promise(r => server.close(() => r())),
   };
 }

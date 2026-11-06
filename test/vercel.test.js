@@ -125,3 +125,55 @@ test('TC-VERCEL-03: Turning off Auto-Balance or Demo immediately stops demo, pur
   assert.equal(stOff.games['cung-chua-online'].data.demo.on, false);
   assert.equal(stOff.games['cung-chua-online'].data.actors.filter(a => a.src === 'mock').length, 0);
 });
+
+test('TC-VERCEL-04: Unified Vercel handler serves all 10 3D Trend Websites (/trends/:slug) and /api/trends/* endpoints', async () => {
+  const slugs = [
+    'gieo-que',
+    'duyen-so',
+    'than-so',
+    'linh-thu',
+    'dai-chien',
+    'giai-ma-ten',
+    'con-so-may-man',
+    'cay-tai-loc',
+    'be-ca-zen',
+    'phao-hoa-sky',
+  ];
+
+  for (const slug of slugs) {
+    const res = await fetch(`${base}/trends/${slug}`);
+    assert.equal(res.status, 200);
+    const html = await res.text();
+    assert.ok(html.includes('Hệ Sinh Thái 10 Web 3D Bắt Trend TikTok'));
+  }
+
+  const cssRes = await fetch(`${base}/trends/trends.css`);
+  assert.equal(cssRes.status, 200);
+
+  const jsRes = await fetch(`${base}/trends/trendsApp.js`);
+  assert.equal(jsRes.status, 200);
+
+  const stRes = await fetch(`${base}/api/trends/state?project=dai-chien`);
+  assert.equal(stRes.status, 200);
+  const stData = await stRes.json();
+  assert.equal(stData.ok, true);
+  assert.equal(stData.projects.length, 10);
+
+  const interactRes = await fetch(`${base}/api/trends/interact`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({
+      projectId: 'dai-chien',
+      nickname: 'Thanh Hóa Idol',
+      text: '36 Thanh Hóa mãi đỉnh',
+      type: 'gift',
+      giftName: 'Hoa Hồng',
+      diamondCount: 1,
+    }),
+  });
+  assert.equal(interactRes.status, 200);
+  const interactData = await interactRes.json();
+  assert.equal(interactData.ok, true);
+  assert.equal(interactData.event.format, 'province_code');
+  assert.equal(interactData.event.isMicroGift, true);
+});

@@ -135,7 +135,7 @@ const ingest = e => {
   log.write(e);
   const msgs = pipeline.handle(e);
   srv.broadcast(msgs);
-  if (e.kind === 'gift' && msgs.length) notifyMaster(e);
+  if ((e.kind === 'gift' || (e.kind === 'chat' && e.src !== 'mock')) && msgs.length) notifyMaster(e);
   if (e.kind === 'end') writeStats();
 };
 const ticker = setInterval(() => srv.broadcast(pipeline.tick()), 1000);

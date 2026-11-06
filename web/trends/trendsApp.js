@@ -97,6 +97,7 @@ const dom = {
   customRuleNote: document.getElementById('custom-rule-note'),
   customBonusBlessing: document.getElementById('custom-bonus-blessing'),
   customMicrogiftTitle: document.getElementById('custom-microgift-title'),
+  customLookupText: document.getElementById('custom-lookup-text'),
   customSaveStatus: document.getElementById('custom-save-status'),
 };
 
@@ -707,6 +708,7 @@ function selectProject(projectId, pushUrl = false) {
   if (dom.customRuleNote) dom.customRuleNote.value = custom.ruleNote || '';
   if (dom.customBonusBlessing) dom.customBonusBlessing.value = custom.bonusBlessing || '';
   if (dom.customMicrogiftTitle) dom.customMicrogiftTitle.value = custom.microGiftTitle || '';
+  if (dom.customLookupText) dom.customLookupText.value = custom.customLookupText || '';
 
   if (changed) {
     buildSceneWorld(proj.sceneMode, proj.theme);
@@ -1049,6 +1051,7 @@ if (dom.customDataForm) {
             ruleNote: dom.customRuleNote.value,
             bonusBlessing: dom.customBonusBlessing.value,
             microGiftTitle: dom.customMicrogiftTitle.value,
+            customLookupText: dom.customLookupText ? dom.customLookupText.value : undefined,
           },
         }),
       });
