@@ -27,6 +27,36 @@ const emberMat = new THREE.MeshBasicMaterial({ color: 0xff6a1a });
 const trayMat = std(0xb8862e, { metalness: 0.8, roughness: 0.35 });
 const lotusMat = std(0xf49ac0, { emissive: 0x3a0c1e, roughness: 0.5 });
 
+const SHARED_ACTOR_MATS = new Set([
+  skinMat,
+  hairMat,
+  pantsMat,
+  ...robeMats,
+  ...robeTier1Mats,
+  ...robeTier2Mats,
+  stickMat,
+  emberMat,
+  trayMat,
+  lotusMat,
+]);
+
+function disposeActorHierarchy(root) {
+  if (!root) return;
+  root.traverse(obj => {
+    if (obj.geometry && typeof obj.geometry.dispose === 'function') {
+      obj.geometry.dispose();
+    }
+    if (obj.material) {
+      const mats = Array.isArray(obj.material) ? obj.material : [obj.material];
+      for (const m of mats) {
+        if (m && !SHARED_ACTOR_MATS.has(m) && typeof m.dispose === 'function') {
+          m.dispose();
+        }
+      }
+    }
+  });
+}
+
 function part(geo, mat, parent, x = 0, y = 0) {
   const m = new THREE.Mesh(geo, mat);
   m.position.set(x, y, 0);
@@ -233,9 +263,7 @@ export async function createActors(scene) {
     if (!e) return;
     clearTimeout(e.bubbleTimer);
     e.label.element.remove();
-    if (e.halo?.material && e.halo.material !== haloMat) {
-      e.halo.material.dispose();
-    }
+    disposeActorHierarchy(e.holder);
     e.holder.removeFromParent();
     live.delete(id);
   }

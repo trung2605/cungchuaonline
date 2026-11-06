@@ -115,6 +115,49 @@ const jetMat = std(0xb91c1c, { metalness: 0.55, roughness: 0.35, emissive: 0x450
 const flameMat = new THREE.MeshBasicMaterial({ color: 0xfacc15 });
 const crownMat = std(0xfacc15, { metalness: 0.78, roughness: 0.25, emissive: 0x422006 });
 
+const SHARED_RUNNER_MATS = new Set([
+  skinMat,
+  blushMat,
+  eyeMat,
+  eyeHighlightMat,
+  ...hairMats,
+  ...pantsMats,
+  bootMat,
+  soleMat,
+  packMat,
+  packPocketMat,
+  sleepRollMat,
+  nonLaMat,
+  hatBandMat,
+  staffWoodMat,
+  lanternGoldMat,
+  khanRanMat,
+  miniFlagMat,
+  wingMat,
+  cubBodyMat,
+  cubShieldMat,
+  jetMat,
+  flameMat,
+  crownMat,
+]);
+
+function disposeRunnerHierarchy(root) {
+  if (!root) return;
+  root.traverse(obj => {
+    if (obj.geometry && typeof obj.geometry.dispose === 'function') {
+      obj.geometry.dispose();
+    }
+    if (obj.material) {
+      const mats = Array.isArray(obj.material) ? obj.material : [obj.material];
+      for (const m of mats) {
+        if (m && !SHARED_RUNNER_MATS.has(m) && typeof m.dispose === 'function') {
+          m.dispose();
+        }
+      }
+    }
+  });
+}
+
 // Builds a detailed 3D Trekking Backpack with a Waving Miniature Vietnamese Flag (`Balo Xuyên Việt & Cờ Đỏ Sao Vàng`)
 function createTrekkingBackpack() {
   const pack = new THREE.Group();
@@ -652,7 +695,11 @@ function buildRunnerRig(skin = 0, tier = 0) {
       const nextKey = item ? `${item.propType}:${item.color}:${item.accent}` : '';
       if (nextKey === currentRegionalPropKey) return;
       currentRegionalPropKey = nextKey;
-      regionalPropHolder.clear();
+      while (regionalPropHolder.children.length > 0) {
+        const ch = regionalPropHolder.children[0];
+        regionalPropHolder.remove(ch);
+        disposeRunnerHierarchy(ch);
+      }
       if (item) {
         const mesh = buildRegionalHandheldProp(item);
         if (mesh) regionalPropHolder.add(mesh);
@@ -735,6 +782,7 @@ export function createRunners(scene) {
     if (!e) return;
     clearTimeout(e.bubbleTimer);
     e.label.element.remove();
+    disposeRunnerHierarchy(e.holder);
     e.holder.removeFromParent();
     live.delete(id);
   }

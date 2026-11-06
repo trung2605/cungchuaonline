@@ -1139,22 +1139,7 @@ function renderAll(state) {
 
   // Gift Catalog Table
   catalogCache = db.giftCatalog || [];
-  $('catalogBody').innerHTML = catalogCache.map(item => `
-    <tr>
-      <td style="font-family:var(--font-mono);color:var(--text-muted)">#${item.giftId}</td>
-      <td><strong>${esc(item.giftVi)}</strong> <span style="color:var(--text-muted)">(${esc(item.giftName)})</span></td>
-      <td style="font-weight:800;color:var(--gold)">💎 ${fmtNum(item.diamonds)}</td>
-      <td><span class="badge brand">Tier ${item.tier}</span></td>
-      <td style="font-size:12px">${esc(item.chuaReward)}</td>
-      <td style="font-size:12px">${esc(item.duaReward)}</td>
-      <td>
-        <div class="row-inline">
-          <button class="btn sm gold" data-edit-gift="${item.giftId}">✏️ Sửa Nhanh</button>
-          <button class="btn sm danger" data-del-gift="${item.giftId}">Xóa</button>
-        </div>
-      </td>
-    </tr>
-  `).join('');
+  renderGiftCatalogTable();
 
   // System & Work Logs
   $('sysMongoDetail').textContent = mongo.connected
@@ -1176,6 +1161,39 @@ function renderAll(state) {
 
   updateAllCharts(state, vm);
   if (window.lucide) window.lucide.createIcons();
+}
+
+function renderGiftCatalogTable() {
+  const bodyEl = $('catalogBody');
+  if (!bodyEl) return;
+  const q = ($('giftCatalogSearch')?.value || '').trim().toLowerCase();
+  const filtered = q
+    ? catalogCache.filter(item =>
+        String(item.giftId).includes(q) ||
+        String(item.giftVi || '').toLowerCase().includes(q) ||
+        String(item.giftName || '').toLowerCase().includes(q) ||
+        String(item.chuaReward || '').toLowerCase().includes(q) ||
+        String(item.duaReward || '').toLowerCase().includes(q)
+      )
+    : catalogCache;
+  bodyEl.innerHTML = filtered.length
+    ? filtered.map(item => `
+      <tr>
+        <td style="font-family:var(--font-mono);color:var(--text-muted)">#${item.giftId}</td>
+        <td><strong>${esc(item.giftVi)}</strong> <span style="color:var(--text-muted)">(${esc(item.giftName)})</span></td>
+        <td style="font-weight:800;color:var(--gold)">💎 ${fmtNum(item.diamonds)}</td>
+        <td><span class="badge brand">Tier ${item.tier}</span></td>
+        <td style="font-size:12px">${esc(item.chuaReward)}</td>
+        <td style="font-size:12px">${esc(item.duaReward)}</td>
+        <td>
+          <div class="row-inline">
+            <button class="btn sm gold" data-edit-gift="${item.giftId}">✏️ Sửa Nhanh</button>
+            <button class="btn sm danger" data-del-gift="${item.giftId}">Xóa</button>
+          </div>
+        </td>
+      </tr>
+    `).join('')
+    : '<tr><td colspan="7" style="text-align:center;color:var(--text-muted)">Không tìm thấy quà tặng phù hợp với từ khóa</td></tr>';
 }
 
 async function pollState() {
@@ -1862,6 +1880,64 @@ window.addEventListener('DOMContentLoaded', () => {
         inp.value = val;
         inp.focus();
       }
+    });
+  });
+
+  $('giftCatalogSearch')?.addEventListener('input', () => {
+    renderGiftCatalogTable();
+  });
+
+  // Contextual & Humanized Voice Transition Simulator (Overview Card)
+  document.querySelectorAll('[data-test-narrative]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const scenario = btn.dataset.testNarrative;
+      const box = $('narrativePreviewBox');
+      const badge = $('narrativeScenarioBadge');
+      if (scenario === 'join_to_join') {
+        if (badge) badge.textContent = '🙏 Tình huống: Chào Đón ➔ Thêm Người Mới Vào Liên Tiếp';
+        if (box) {
+          box.innerHTML =
+            '💬 <strong>[Lượt 1 - Minh Anh vào]:</strong> “Mời Phật tử Minh Anh bước vào chánh điện lễ Phật, chúc gia đình luôn bình an.”<br>' +
+            '🔗 <strong>[Lượt 2 - Hoàng Nam vào ngay sau đó — Câu dẫn đệm nối tiếp]:</strong> “<em>Nối tiếp bước chân thiện lành, có thêm</em> Hoàng Nam vừa về chánh điện, cùng chắp tay cầu bình an và sức khỏe.”';
+        }
+        await gameAction('cung-chua-online', '/api/test-event', { action: 'join', name: 'Minh Anh' });
+        setTimeout(() => {
+          gameAction('cung-chua-online', '/api/test-event', { action: 'join', name: 'Hoàng Nam' });
+        }, 900);
+        showToast('🎙️ Đã phát thử tình huống: Chào đón nối tiếp Chào đón (kèm câu dẫn đệm)!');
+      } else if (scenario === 'join_to_gift') {
+        if (badge) badge.textContent = '🎁 Tình huống: Đang Chào Đón ➔ Có Người Tặng Quà Xen Ngang';
+        if (box) {
+          box.innerHTML =
+            '💬 <strong>[Đang chào đón Bảo Ngọc]:</strong> “Hoài My xin chào đón Bảo Ngọc vừa gia nhập đoàn đi bộ xuyên Việt nhé.”<br>' +
+            '🔗 <strong>[Tuấn Kiệt tặng Hoa Rosa 10💎 xen ngang — Câu chuyển mạch]:</strong> “<em>Giữa lúc đoàn đang rộn ràng đón bạn mới,</em> Tuấn Kiệt vừa gửi tặng Hoa Rosa, lên ngay Xe Cub Phượt và cộng thêm 350 mét!”';
+        }
+        await gameAction('cuoc-dua-ky-thu', '/api/test-event', { action: 'join', name: 'Bảo Ngọc' });
+        setTimeout(() => {
+          gameAction('cuoc-dua-ky-thu', '/api/test-event', { action: 'gift10', name: 'Tuấn Kiệt', repeat: 1 });
+        }, 900);
+        showToast('🎙️ Đã phát thử tình huống: Đang chào đón ➔ Có người tặng quà xen ngang!');
+      } else if (scenario === 'story_gift_story') {
+        if (badge) badge.textContent = '🇻🇳 Tình huống: Đang Kể Chuyện ➔ Tặng Quà ➔ Nối Lại Câu Chuyện';
+        if (box) {
+          box.innerHTML =
+            '💬 <strong>[Đang kể chuyện vùng miền]:</strong> “Đoàn mình đang đi giữa đèo Mã Pí Lèng...”<br>' +
+            '🎁 <strong>[Khánh Linh tặng Bánh Vòng 30💎]:</strong> “<em>Tạm gác câu chuyện trên đường một chút,</em> cảm ơn Khánh Linh vừa tiếp sức Bánh Vòng, bứt phá 1.500 mét!”<br>' +
+            '🔗 <strong>[Tự động nối lại mạch truyện]:</strong> “<em>Cảm ơn món quà vừa rồi, giờ mình quay lại câu chuyện trên đường nhé.</em> Nhìn xuống dòng Nho Quế xanh ngắt dưới chân đèo mới thấy đất nước mình đẹp biết bao.”';
+        }
+        await gameAction('cuoc-dua-ky-thu', '/api/test-event', { action: 'gift30', name: 'Khánh Linh', repeat: 1 });
+        showToast('🎙️ Đã phát thử tình huống: Tặng quà giữa mạch kể chuyện ➔ Tự động nối lại câu chuyện!');
+      } else if (scenario === 'bodhi_silk') {
+        if (badge) badge.textContent = '🌳 Tình huống: Dâng Lễ ➔ Treo Dải Lụa Hoàng Kim Cây Bồ Đề';
+        if (box) {
+          box.innerHTML =
+            '💬 <strong>[Thiện Tâm dâng Hoa Rosa 10💎]:</strong> “Vừa đón người mới xong thì niềm vui lại nối tiếp, cảm tạ thí chủ Thiện Tâm đã thành tâm gửi tặng Hoa Rosa, khoác pháp phục Áo Tràng Vàng trang nghiêm.”<br>' +
+            '🌳 <strong>[Dải lụa bay lên Cây Bồ Đề]:</strong> “<em>Nối tiếp phước lành vừa gieo,</em> một dải lụa đỏ mang tên Thiện Tâm vừa bay lên cành Bồ Đề cổ thụ, gửi gắm ước nguyện Gia Đạo Bình An.”';
+        }
+        await gameAction('cung-chua-online', '/api/test-event', { action: 'gift10', name: 'Thiện Tâm', repeat: 1 });
+        showToast('🌳 Đã phát thử tình huống: Dâng lễ & Treo dải lụa ước nguyện lên Cây Bồ Đề!');
+      }
+      await pollState();
     });
   });
 

@@ -332,6 +332,33 @@
               <div class="reward-preset-desc">Nhân 5 lượt lạy &amp; quãng đường · Tặng 1💎 có ngay Lụa Vàng, 5💎 lên Áo Hoàng Kim</div>
             </button>
           </div>
+
+          <!-- Contextual & Humanized Voice Transition Studio (Preview & Live Trigger) -->
+          <div style="margin-top:12px;padding-top:12px;border-top:1px dashed var(--border);display:flex;flex-direction:column;gap:8px">
+            <div class="row-inline" style="justify-content:space-between;flex-wrap:wrap;gap:8px">
+              <div style="font-size:12.5px;font-weight:800;color:var(--text-primary)">
+                🎙️ Kiểm Thử Kịch Bản Lời Đọc Tình Huống &amp; Câu Dẫn Đệm Tự Nhiên (Humanized Narrative Engine)
+              </div>
+              <span class="badge teal" id="narrativeScenarioBadge">✨ Tự động đổi câu dẫn theo ngữ cảnh trước đó</span>
+            </div>
+            <div class="row-inline" style="flex-wrap:wrap;gap:8px">
+              <button type="button" class="btn sm" data-test-narrative="join_to_join">
+                🙏 Chào Đón ➔ Thêm Chào Đón (Câu Đệm Nối Tiếp)
+              </button>
+              <button type="button" class="btn sm gold" data-test-narrative="join_to_gift">
+                🎁 Đang Chào Đón ➔ Có Người Tặng Quà Xen Ngang
+              </button>
+              <button type="button" class="btn sm teal" data-test-narrative="story_gift_story">
+                🇻🇳 Đang Kể Chuyện ➔ Tặng Quà ➔ Nối Lại Câu Chuyện
+              </button>
+              <button type="button" class="btn sm primary" data-test-narrative="bodhi_silk">
+                🌳 Dâng Lễ ➔ Treo Lụa Hoàng Kim Cây Bồ Đề
+              </button>
+            </div>
+            <div id="narrativePreviewBox" style="padding:9px 12px;background:#fffbeb;border:1px solid #fde68a;font-size:12.5px;color:#78350f;line-height:1.45;font-weight:600">
+              💬 <strong>Lời đọc mẫu (Tự nhiên &amp; Mạch lạc):</strong> Bấm một tình huống ở trên để nghe thử và xem cách hệ thống tự động chèn câu dẫn đệm khi chuyển giữa <em>Chào đón ➔ Chào đón</em>, <em>Chào đón ➔ Tặng quà</em>, hoặc <em>Đang kể chuyện ➔ Tặng quà ➔ Kể tiếp</em> mà không bị lặp câu nhàm chán.
+            </div>
+          </div>
         </div>
 
         <!-- ================================================================== -->
@@ -917,8 +944,11 @@
         </div>
 
         <div class="card" style="margin-bottom:18px">
-          <div class="card-header">
+          <div class="card-header" style="flex-wrap:wrap;gap:10px">
             <h2 class="card-title"><i data-lucide="package-check"></i> Bảng Danh Mục Quà Tặng TikTok Đang Áp Dụng</h2>
+            <div class="row-inline" style="gap:8px">
+              <input type="text" id="giftCatalogSearch" placeholder="🔍 Tìm tên quà, ID, hoặc phần thưởng..." style="width:260px;padding:6px 10px;font-size:12.5px" />
+            </div>
           </div>
           <div class="table-wrap">
             <table>

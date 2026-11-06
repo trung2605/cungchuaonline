@@ -505,13 +505,15 @@ export function createBodhiTree(scene, { low = false, onRibbonTied = null } = {}
     }
   }
 
+  const knotGeo = new THREE.SphereGeometry(0.045, 8, 8);
+
   function createRibbonMesh(wishData, anchorIdx) {
     const anchor = branchAnchorPoints[anchorIdx % branchAnchorPoints.length];
     const group = new THREE.Group();
     group.position.copy(anchor);
 
     // Golden tie ring at top of ribbon
-    const knot = new THREE.Mesh(new THREE.SphereGeometry(0.045, 8, 8), goldMat);
+    const knot = new THREE.Mesh(knotGeo, goldMat);
     group.add(knot);
 
     // Segmented plane shifted down so y=0 is at the branch knot and y=-RIBBON_H is the bottom tassel

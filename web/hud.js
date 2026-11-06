@@ -107,6 +107,31 @@ const giftVi = g => GIFT_VI[String(g || '').trim().toLowerCase()] || g || 'Lễ 
           ci = -1;
           nextCouplet();
           break;
+        case 'reward_config': {
+          const cfg = msg.config || {};
+          const bowMult = Number(cfg.bowMultiplier) || 1;
+          const t1 = Number(cfg.tier1MinDiamonds ?? cfg.tier1Threshold) || 5;
+          const t2 = Number(cfg.tier2MinDiamonds ?? cfg.tier2Threshold) || 20;
+          const goldRibbon = Number(cfg.wishRibbonGoldMinDiamonds ?? cfg.goldRibbonThreshold) || 10;
+          const titleEl = $('#chua-guide-title') || $('#guide h3');
+          if (titleEl) {
+            titleEl.textContent = bowMult > 1 ? `🔥 ĐẠI LỄ ×${bowMult} CÔNG ĐỨC` : 'NGHI LỄ DÂNG LỄ';
+          }
+          const r1b = document.querySelector('#guide [data-chua-tier="1b"]');
+          if (r1b) {
+            r1b.textContent = `🪷 2–${Math.max(2, t1 - 1)} 💎 (Hoa Sen, Tim Tay): Hoa đăng`;
+          }
+          const r1 = document.querySelector('#guide [data-chua-tier="1"]');
+          if (r1) {
+            const silkTag = goldRibbon <= t1 ? ' + Lụa Vàng' : '';
+            r1.textContent = `🌺 ${t1}–${Math.max(t1, t2 - 1)} 💎 (Rosa, Tim Đôi): Áo Vàng${silkTag}`;
+          }
+          const r2 = document.querySelector('#guide [data-chua-tier="2"]');
+          if (r2) {
+            r2.textContent = `🏮 ${t2}+ 💎 (Nước Hoa, Bánh Vòng): Chuông lớn`;
+          }
+          break;
+        }
       }
     },
     notePrayer(actor) {

@@ -78,3 +78,23 @@ test('TC-07.11 wish_ribbon and snapshot wishes emit 3D Bodhi Tree draw commands'
   assert.ok(clearCmds.some(c => c.op === 'clear_wishes'));
   assert.equal(w.wishes.length, 0);
 });
+
+test('TC-07.12 reward_config in snapshot and standalone message emits HUD update command', () => {
+  const w = createWorld();
+  const snapCmds = applyMsg(w, {
+    ...snapshot([actor('pt_an', 20)]),
+    rewardConfig: { bowMultiplier: 3, tier1MinDiamonds: 3, tier2MinDiamonds: 10, preset: 'climax' },
+  }, 0);
+  const snapRewardCmd = snapCmds.find(c => c.op === 'hud' && c.msg.t === 'reward_config');
+  assert.ok(snapRewardCmd, 'snapshot with rewardConfig should emit hud reward_config cmd');
+  assert.equal(snapRewardCmd.msg.config.bowMultiplier, 3);
+
+  const liveCmds = applyMsg(w, {
+    t: 'reward_config',
+    config: { bowMultiplier: 5, tier1MinDiamonds: 2, tier2MinDiamonds: 5, preset: 'festival' },
+  }, 50);
+  assert.equal(liveCmds.length, 1);
+  assert.equal(liveCmds[0].op, 'hud');
+  assert.equal(liveCmds[0].msg.t, 'reward_config');
+  assert.equal(liveCmds[0].msg.config.bowMultiplier, 5);
+});

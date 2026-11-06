@@ -66,6 +66,7 @@ export function applyMsg(world, msg, now) {
         { op: 'scene', scene: msg.scene },
         { op: 'hud', msg: { t: 'board', top: msg.board ?? [] } },
         { op: 'hud', msg: { t: 'couplets', pairs: msg.couplets ?? [] } },
+        ...(msg.rewardConfig ? [{ op: 'hud', msg: { t: 'reward_config', config: msg.rewardConfig } }] : []),
         ...(Array.isArray(msg.wishes) ? [{ op: 'wishes_snapshot', wishes: world.wishes }] : []),
       ];
     }
@@ -126,6 +127,7 @@ export function applyMsg(world, msg, now) {
     case 'donor':
     case 'board':
     case 'couplets':
+    case 'reward_config':
       return [{ op: 'hud', msg }];
     default:
       return [];

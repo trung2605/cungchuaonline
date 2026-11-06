@@ -38,15 +38,18 @@ test('TC-BT.2 Stage clearWishes resets list and broadcasts clear', () => {
   assert.equal(stage.getWishes().length, 0);
 });
 
-test('TC-BT.3 Pipeline snapshot includes wishes', () => {
+test('TC-BT.3 Pipeline snapshot includes wishes and rewardConfig', () => {
   const stage = new Stage();
   stage.addWish({ uid: 'u1', name: 'Thanh Tâm', wish: 'Cầu Sức Khỏe', tier: 1 });
+  stage.setRewardConfig({ bowMultiplier: 2, preset: 'golden_hour' });
   const pipeline = createPipeline({ stage, dedupe: { seen: () => false } });
   const snap = pipeline.snapshot();
   assert.equal(snap.t, 'snapshot');
   assert.ok(Array.isArray(snap.wishes));
   assert.equal(snap.wishes.length, 1);
   assert.equal(snap.wishes[0].name, 'Thanh Tâm');
+  assert.ok(snap.rewardConfig);
+  assert.equal(snap.rewardConfig.bowMultiplier, 2);
 });
 
 test('TC-BT.4 BowRules emits wish_ribbon on gift and prayer', () => {

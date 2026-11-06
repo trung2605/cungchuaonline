@@ -52,6 +52,7 @@ const getSnapshot = () => ({
   worldDistanceM: Math.round(stage.worldDistanceM),
   board: stage.board(12),
   giftChest: stage.getGiftChest(),
+  rewardConfig: stage.getRewardConfig(),
   scene,
   stats: rules.statsState(status),
 });

@@ -8,8 +8,20 @@ export function createRaceHud() {
   let welcomeTimer = null;
   let donorTimer = null;
   let chestFlashTimer = null;
+  let lastBiome = null;
+  let lastWorldDistanceM = 0;
+  let lastBoardTop = [];
+  let activeRewardCfg = {
+    distanceMultiplier: 1,
+    speedMultiplier: 1,
+    tier2Threshold: 10,
+    tier3Threshold: 20,
+    tier4Threshold: 100,
+  };
   const donors = [];
   const joinFeed = [];
+
+  const fmtBonus = m => (m >= 1000 ? `+${(m / 1000).toFixed(1).replace(/\.0$/, '')}km` : `+${Math.round(m)}m`);
 
   // Rotate "Hot Gift" highlight across the 4 gift tier rows in #guide every 3.8s to draw viewer eyes
   let hotTierIdx = 0;
@@ -104,31 +116,45 @@ export function createRaceHud() {
 
   return {
     setBiome(biome, worldDistanceM = 0) {
-      if (biome) {
+      if (biome) lastBiome = biome;
+      lastWorldDistanceM = worldDistanceM;
+      const b = biome || lastBiome;
+      const distMult = Number(activeRewardCfg.distanceMultiplier) || 1;
+      const spdMult = Number(activeRewardCfg.speedMultiplier) || 1;
+      const turboLikes = Number(activeRewardCfg.turboEveryLikes) || 500;
+      const t2 = Number(activeRewardCfg.tier2Threshold) || 10;
+      const t3 = Number(activeRewardCfg.tier3Threshold) || 20;
+      const chatRowSpans = document.querySelectorAll('#guide [data-guide-static="chat"] span');
+      if (chatRowSpans[1]) chatRowSpans[1].textContent = fmtBonus(15 * distMult);
+      const likeRowSpans = document.querySelectorAll('#guide [data-guide-static="like"] span');
+      if (likeRowSpans[0]) likeRowSpans[0].textContent = `❤️ ${turboLikes} Tim: Bão Tốc`;
+      if (likeRowSpans[1]) likeRowSpans[1].textContent = `×${(2.2 * spdMult).toFixed(1)}`;
+      if (b) {
         const eyebrowEl = $('#biome-eyebrow');
         const titleEl = $('#biome-name');
         const subEl = $('#biome-sub');
         if (eyebrowEl) {
-          if (biome.province?.name) {
-            eyebrowEl.textContent = `🇻🇳 ĐI BỘ XUYÊN VIỆT · TỈNH ${biome.province.code}/${biome.province.total || 63}: ${biome.province.name.toUpperCase()}`;
+          if (b.province?.name) {
+            eyebrowEl.textContent = `🇻🇳 ĐI BỘ XUYÊN VIỆT · TỈNH ${b.province.code}/${b.province.total || 63}: ${b.province.name.toUpperCase()}`;
           } else {
             eyebrowEl.textContent = '🇻🇳 HÀNH TRÌNH ĐI BỘ XUYÊN VIỆT 63 TỈNH THÀNH';
           }
         }
-        if (titleEl) titleEl.textContent = biome.name;
-        if (subEl) subEl.textContent = biome.province?.landmark ? `${biome.sub} · 📍 ${biome.province.landmark}` : (biome.sub || '');
+        if (titleEl) titleEl.textContent = b.name;
+        if (subEl) subEl.textContent = b.province?.landmark ? `${b.sub} · 📍 ${b.province.landmark}` : (b.sub || '');
 
-        const specs = biome.specialties || biome.province?.specialties;
+        const specs = b.specialties || b.province?.specialties;
         if (specs) {
           const guideTitle = $('#guide h3');
-          if (guideTitle && biome.province?.name) {
-            guideTitle.textContent = `🎁 ĐẶC SẢN ${biome.province.name.toUpperCase()}`;
+          if (guideTitle && b.province?.name) {
+            const multTag = distMult > 1 ? ` · 🔥×${distMult}` : '';
+            guideTitle.textContent = `🎁 ĐẶC SẢN ${b.province.name.toUpperCase()}${multTag}`;
           }
           const tierRows = [
-            { key: '1', gift: '1💎 Hoa Hồng', bonus: '+80m', item: specs['1'] },
-            { key: '1b', gift: '2–5💎 Hoa Sen', bonus: '+240m', item: specs['1b'] },
-            { key: '2', gift: '10💎 Rosa', bonus: '+350m', item: specs['2'] },
-            { key: '3', gift: '20+💎 Bánh Vòng', bonus: '+1.5km', item: specs['3'] },
+            { key: '1', gift: '1💎 Hoa Hồng', bonus: fmtBonus(80 * distMult), item: specs['1'] },
+            { key: '1b', gift: `2–${Math.max(2, t2 - 1)}💎 Hoa Sen`, bonus: fmtBonus(240 * distMult), item: specs['1b'] },
+            { key: '2', gift: `${t2}💎 Rosa`, bonus: fmtBonus(350 * distMult), item: specs['2'] },
+            { key: '3', gift: `${t3}+💎 Bánh Vòng`, bonus: fmtBonus(1500 * distMult), item: specs['3'] },
           ];
           for (const rowDef of tierRows) {
             const rowEl = document.querySelector(`#guide [data-gift-tier="${rowDef.key}"]`);
@@ -150,6 +176,11 @@ export function createRaceHud() {
         const pct = Math.min(100, Math.round(((worldDistanceM % 600) / 600) * 100));
         progEl.style.width = `${pct}%`;
       }
+    },
+    setRewardConfig(cfg = {}) {
+      activeRewardCfg = { ...activeRewardCfg, ...cfg };
+      if (lastBiome) this.setBiome(lastBiome, lastWorldDistanceM);
+      this.updateBoard(lastBoardTop);
     },
     setActiveCount(n) {
       const el = $('#runner-count');
@@ -201,6 +232,12 @@ export function createRaceHud() {
     },
     updateGiftChest,
     updateBoard(top = []) {
+      lastBoardTop = top;
+      const distMult = Number(activeRewardCfg.distanceMultiplier) || 1;
+      const t2 = Number(activeRewardCfg.tier2Threshold) || 10;
+      const b1 = Math.round(80 * distMult);
+      const b2 = Math.round(350 * distMult);
+      const b3Str = fmtBonus(1500 * distMult);
       const empty = $('#board-empty');
       if (empty) empty.style.display = top.length ? 'none' : 'block';
       const kingEl = $('#king-spotlight');
@@ -218,15 +255,15 @@ export function createRaceHud() {
       if (hintEl) {
         if (top.length >= 2) {
           const gapM = Math.max(5, Math.round((top[0].distanceM || 0) - (top[1].distanceM || 0)));
-          if (gapM <= 80) {
-            hintEl.textContent = `🔥 #2 ${top[1].name} chỉ kém #1 ${gapM}m · Tặng 1🌹 (1💎 +80m) soán ngôi ngay!`;
-          } else if (gapM <= 350) {
-            hintEl.textContent = `🛵 Cách Top 1 ${gapM}m · Tặng Hoa Rosa (10💎 +350m) lên Xe Cub vượt #1!`;
+          if (gapM <= b1) {
+            hintEl.textContent = `🔥 #2 ${top[1].name} chỉ kém #1 ${gapM}m · Tặng 1🌹 (1💎 +${b1}m) soán ngôi ngay!`;
+          } else if (gapM <= b2) {
+            hintEl.textContent = `🛵 Cách Top 1 ${gapM}m · Tặng Hoa Rosa (${t2}💎 +${b2}m) lên Xe Cub vượt #1!`;
           } else {
-            hintEl.textContent = `🐉 Tặng quà nhận Xe Cub (+350m) hoặc Rồng Vàng (+1.5km) soán ngôi #1!`;
+            hintEl.textContent = `🐉 Tặng quà nhận Xe Cub (+${b2}m) hoặc Rồng Vàng (${b3Str}) soán ngôi #1!`;
           }
         } else {
-          hintEl.textContent = '🌹 Tặng 1 Hoa Hồng (1💎) nhận Cánh Chim +80m bứt phá Top 1!';
+          hintEl.textContent = `🌹 Tặng 1 Hoa Hồng (1💎) nhận Cánh Chim +${b1}m bứt phá Top 1!`;
         }
       }
       const ol = $('#board ol');

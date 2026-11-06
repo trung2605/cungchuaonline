@@ -367,6 +367,7 @@ async function initUnifiedRuntime() {
     worldDistanceM: Math.round(duaStage.worldDistanceM),
     board: duaStage.board(12),
     giftChest: duaStage.getGiftChest(),
+    rewardConfig: duaStage.getRewardConfig(),
     scene: duaScene,
     stats: duaRules.statsState(duaStatus),
   });

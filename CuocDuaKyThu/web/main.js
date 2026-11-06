@@ -149,6 +149,7 @@ function handleMsg(msg) {
     case 'snapshot':
       runners.clear();
       for (const r of msg.runners || []) runners.addOrUpdate(r);
+      if (msg.rewardConfig) hud.setRewardConfig?.(msg.rewardConfig);
       applyBiomeChange(msg.biome, msg.worldDistanceM || 0);
       hud.updateBoard(msg.board || []);
       if (msg.giftChest) hud.updateGiftChest?.(msg.giftChest, false);
@@ -246,6 +247,9 @@ function handleMsg(msg) {
       break;
     case 'banner':
       hud.showBanner(msg.text, msg.ms);
+      break;
+    case 'reward_config':
+      if (msg.config) hud.setRewardConfig?.(msg.config);
       break;
     case 'worldTick':
       applyBiomeChange(msg.biome, msg.worldDistanceM);
